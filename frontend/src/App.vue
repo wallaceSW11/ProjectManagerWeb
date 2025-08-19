@@ -12,7 +12,7 @@
         color="primary"
         prepend-icon="mdi-plus"
       >
-        New Project
+        New Project 1
       </v-btn>
     </v-app-bar>
 
