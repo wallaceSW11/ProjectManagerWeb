@@ -10,7 +10,7 @@ public class ShellExecute
     /// </summary>
     /// <param name="gitCommand">O comando Git a ser executado (ex: "status", "version").</param>
     /// <param name="workingDirectory">O diretório de trabalho onde o comando será executado. O padrão é o diretório atual.</param>
-    public static void ExecutarComando(string gitCommand)
+    public static void ExecutarComando(string gitCommand, bool ocultar = false)
     {
         if (string.IsNullOrWhiteSpace(gitCommand))
         {
@@ -19,20 +19,16 @@ public class ShellExecute
 
         try
         {
-            // Constrói o comando completo a ser executado pelo PowerShell
-            string powerShellCommand = $"powershell.exe -NoExit -Command \"C: {gitCommand}\"";
+            string arguments = $"/C start pwsh.exe -NoExit -Command \"C: ; {gitCommand}; {(ocultar ? "; exit" : "")}\"";
 
-            ProcessStartInfo processStartInfo = new("cmd.exe")
+            ProcessStartInfo psi = new("cmd.exe")
             {
-                // O argumento /K mantém o CMD aberto após a execução do comando
-                Arguments = $"/K {powerShellCommand}",
-                // Define o diretório de trabalho, se especificado
-                WorkingDirectory = "",
-                // UseShellExecute deve ser true para abrir uma nova janela de console
-                UseShellExecute = true
+                Arguments = arguments,
+                UseShellExecute = true,
+                WindowStyle = ocultar ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Minimized
             };
 
-            Process.Start(processStartInfo);
+            Process.Start(psi);
         }
         catch (Exception ex)
         {

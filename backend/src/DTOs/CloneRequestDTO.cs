@@ -8,7 +8,8 @@ public sealed record CloneRequestDTO(
     string Codigo,
     string Descricao,
     string Tipo,
-    Guid GitId, // Usamos Guid pois o valor parece ser um Identificador Único Global
+    string Branch,
+    Guid GitId,
     bool CriarBranchRemoto,
     bool BaixarAgregados,
     bool BaixarSomenteAgregados

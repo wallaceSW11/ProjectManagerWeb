@@ -9,7 +9,6 @@ namespace ProjectManagerWeb.src.Controllers;
 public class CloneController(CloneService cloneService) : ControllerBase
 {
 
-    // POST: api/Clone
     [HttpPost]
     public async Task<IActionResult> Clonar([FromBody] CloneRequestDTO novaClonagem)
     {

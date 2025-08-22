@@ -54,11 +54,16 @@ public class CloneService
         var nomeGit = ObterNomeRepositorio(gitPrincipal.Url) ?? throw new Exception("Nome do repositório git não encontrado");
 
         comando
-            .Append($"cd {diretorioCompleto}; ")
+            .Append($"cd {diretorioCompleto.ToString()}; ")
             .Append($"git clone {gitPrincipal.Url}; ")
             .Append($"cd {nomeGit}; ")
-            .Append($"git checkout {(clone.CriarBranchRemoto ? "-b" : "")} ")
-            .Append($"{clone.Tipo}/{clone.Codigo}");
+            .Append($"git checkout {clone.Branch}; ");
+
+        if (clone.CriarBranchRemoto)
+            if (clone.Tipo == "nenhum")
+                comando.Append($" git checkout -b {clone.Branch};");
+            else
+                comando.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
 
         ShellExecute.ExecutarComando(comando.ToString());
 
@@ -82,11 +87,17 @@ public class CloneService
 
                 nomeGit = ObterNomeRepositorio(agregado) ?? throw new Exception("Nome do repositório git não encontrado");
                 comando
-                    .Append($"cd {diretorioCompleto}; ")
+                    .Append($"cd {diretorioCompleto.ToString()}; ")
                     .Append($"git clone {agregado}; ")
                     .Append($"cd {nomeGit}; ")
-                    .Append($"git checkout {(clone.CriarBranchRemoto ? "-b" : "")} ")
-                    .Append($"{clone.Tipo}/{clone.Codigo}");
+                    .Append($"cd {nomeGit}; ")
+                    .Append($"git checkout {clone.Branch}; ");
+
+                if (clone.CriarBranchRemoto)
+                    if (clone.Tipo == "nenhum")
+                        comando.Append($" git checkout -b {clone.Branch};");
+                    else
+                        comando.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
 
                 ShellExecute.ExecutarComando(comando.ToString());
             });
