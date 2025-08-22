@@ -24,8 +24,7 @@ public class ShellExecute
             ProcessStartInfo psi = new("cmd.exe")
             {
                 Arguments = arguments,
-                UseShellExecute = true,
-                WindowStyle = ocultar ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Minimized
+                UseShellExecute = true
             };
 
             Process.Start(psi);
