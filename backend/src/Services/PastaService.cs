@@ -7,14 +7,46 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
   public async Task<List<PastaResponseDTO>> ObterTodas()
   {
-    return await ObterPastas();
+    var pastas = await ObterPastas();
+
+    if (pastas.Count == 0)
+      return [];
+
+    var pastaResponseList = new List<PastaResponseDTO>();
+    
+    foreach (var pasta in pastas)
+    {
+      var repositorio = await repositorioJsonService.GetByUrlAsync(pasta.GitUrl);
+
+      if (repositorio != null)
+      {
+        var codigo = pasta.Diretorio.Split("-")[0] ?? "Código não encontrado";
+        var descricao = pasta.Diretorio.Replace(codigo, "").Replace("-", "").Trim();
+        var tipo = pasta.Branch.Split("/")[0] ?? "Nenhum";
+
+        var pastaResponse = new PastaResponseDTO
+        (
+          pasta.Diretorio,
+          codigo,
+          descricao, 
+          tipo,
+          pasta.GitUrl,
+          []
+        );
+
+        pastaResponseList.Add(pastaResponse);
+        
+      }
+    }
+
+    return pastaResponseList;
   }
 
-  private async Task<List<PastaResponseDTO>> ObterPastas()
+  private async Task<List<PastaBaseResponseDTO>> ObterPastas()
   {
     var configuracao = await configuracaoService.ObterConfiguracaoAsync();
     var diretorioRaiz = configuracao.DiretorioRaiz;
-    var pastas = new List<PastaResponseDTO>();
+    var pastas = new List<PastaBaseResponseDTO>();
 
     if (string.IsNullOrEmpty(diretorioRaiz) || !Directory.Exists(diretorioRaiz))
       return pastas;
@@ -54,7 +86,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         }
 
         if (!string.IsNullOrEmpty(url) && !string.IsNullOrEmpty(branch))
-          pastas.Add(new PastaResponseDTO
+          pastas.Add(new PastaBaseResponseDTO
           (
             dir,
             url,

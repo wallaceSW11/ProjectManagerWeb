@@ -39,6 +39,12 @@ namespace ProjectManagerWeb.src.Services
             return repositorios.FirstOrDefault(r => r.Id == id);
         }
 
+        public async Task<RepositorioRequestDTO?> GetByUrlAsync(string url)
+        {
+            var repositorios = await LerListaDoArquivoAsync();
+            return repositorios.FirstOrDefault(r => r.Url.Equals(url, StringComparison.OrdinalIgnoreCase));
+        }      
+
         public async Task<RepositorioRequestDTO> AddAsync(RepositorioRequestDTO novoRepositorio)
         {
             await _semaphore.WaitAsync();
