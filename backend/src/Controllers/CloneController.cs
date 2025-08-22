@@ -15,6 +15,4 @@ public class CloneController(CloneService cloneService) : ControllerBase
         await cloneService.Clonar(novaClonagem);
         return Ok();
     }
-
-    
 }

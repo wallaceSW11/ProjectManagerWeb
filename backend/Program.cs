@@ -19,6 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<RepositorioJsonService>();
 builder.Services.AddSingleton<ConfiguracaoService>();
 builder.Services.AddSingleton<CloneService>();
+builder.Services.AddSingleton<PastaService>();
 
 var app = builder.Build();
 
