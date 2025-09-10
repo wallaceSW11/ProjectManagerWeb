@@ -5,11 +5,13 @@ public sealed record PastaResponseDTO(
     string Codigo,
     string Descricao,
     string Tipo,
+    string Branch,
     string Git,
-    List<ProjetooDTO> Projetos
+    Guid GitId,
+    List<ProjetoDisponivelDTO> Projetos
 );
 
-public sealed record ProjetooDTO(
+public sealed record ProjetoDisponivelDTO(
     string Nome,
     List<string> Comandos
 );

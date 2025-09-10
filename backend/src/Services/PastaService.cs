@@ -7,35 +7,87 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
   public async Task<List<PastaResponseDTO>> ObterTodas()
   {
+    var configuracao = await configuracaoService.ObterConfiguracaoAsync();
+    var diretorioRaiz = configuracao.DiretorioRaiz;
+
     var pastas = await ObterPastas();
 
     if (pastas.Count == 0)
       return [];
 
     var pastaResponseList = new List<PastaResponseDTO>();
-    
+
     foreach (var pasta in pastas)
     {
       var repositorio = await repositorioJsonService.GetByUrlAsync(pasta.GitUrl);
 
       if (repositorio != null)
       {
-        var codigo = pasta.Diretorio.Split("-")[0] ?? "Código não encontrado";
-        var descricao = pasta.Diretorio.Replace(codigo, "").Replace("-", "").Trim();
-        var tipo = pasta.Branch.Split("/")[0] ?? "Nenhum";
+        var codigo = "";
+        string? descricao;
+        var tipo = "";
+
+        if (pasta.Diretorio.Contains('_'))
+        {
+          codigo = pasta.Diretorio.Split("_")[0] ?? "Código não encontrado";
+          codigo = codigo.Replace(diretorioRaiz, "").Replace("\\", "");
+
+          descricao = pasta.Diretorio
+            .Replace(diretorioRaiz, "")
+            .Replace(codigo, "")
+            .Replace("_", " ")
+            .Replace("\\", "")
+            .Replace(repositorio.Nome, "")
+            .Trim();
+
+          if (pasta.Branch.Contains('_'))
+            tipo = pasta.Branch.Split("/")[0] ?? "nenhum";
+        }
+        else
+        {
+          descricao = pasta.Diretorio
+            .Replace(diretorioRaiz, "")
+            .Replace("\\", "");
+        }
+
+        var projetosDisponiveis = new List<ProjetoDisponivelDTO>();
+
+        repositorio.Projetos.ForEach(projeto =>
+        {
+          var comandos = new List<string>();
+
+          foreach (var cmd in projeto.Comandos)
+          {
+            if (!string.IsNullOrWhiteSpace(cmd.Instalar))
+              comandos.Add("Instalar");
+
+            if (!string.IsNullOrWhiteSpace(cmd.Iniciar))
+              comandos.Add("Iniciar");
+
+            if (!string.IsNullOrWhiteSpace(cmd.Buildar))
+              comandos.Add("Buildar");
+
+            if (cmd.AbrirNoVSCode) // só se quiser considerar
+              comandos.Add("AbrirNoVSCode");
+          }
+
+          projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Nome, comandos.ToList()));
+        });
 
         var pastaResponse = new PastaResponseDTO
         (
           pasta.Diretorio,
           codigo,
-          descricao, 
+          descricao,
           tipo,
+          pasta.Branch,
           pasta.GitUrl,
-          []
+          repositorio.Id,
+          projetosDisponiveis
         );
 
         pastaResponseList.Add(pastaResponse);
-        
+
       }
     }
 

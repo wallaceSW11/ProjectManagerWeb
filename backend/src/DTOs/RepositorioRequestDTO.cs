@@ -13,6 +13,7 @@ namespace ProjectManagerWeb.src.DTOs
     public sealed record RepositorioRequestDTO(
         Guid Id,
         string Url,
+        string Nome,
         List<ProjetoDTO> Projetos,
         List<string>? Agregados
     );
