@@ -9,8 +9,6 @@ public class ComandoService(ConfiguracaoService configuracaoService, Repositorio
 
   public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
   {
-    // buscar o repositorio, para pegar os comandos.
-
     var repositorio = await repositorioJsonService.GetByIdAsync(pasta.GitId) ?? throw new Exception("Repositório não encontrado");
     var comandos = new List<string>();
 
@@ -52,15 +50,11 @@ public class ComandoService(ConfiguracaoService configuracaoService, Repositorio
     try
     {
       comandos.ForEach(ShellExecute.ExecutarComando);
-
     }
     catch
     {
       return false;
     }
-
-
-
 
     return true;
   }

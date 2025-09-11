@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 
 namespace ProjectManagerWeb.src.Utils;
@@ -31,29 +30,4 @@ public class ShellExecute
             throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
     }
-
-    // public static void ExecutarComando(string gitCommand)
-    // {
-    //     if (string.IsNullOrWhiteSpace(gitCommand))
-    //     {
-    //         throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(gitCommand));
-    //     }
-
-    //     try
-    //     {
-    //         string arguments = $"/C start pwsh.exe -NoExit -Command \"C: ; {gitCommand}; \"";
-
-    //         ProcessStartInfo psi = new("cmd.exe")
-    //         {
-    //             Arguments = arguments,
-    //             UseShellExecute = true
-    //         };
-
-    //         Process.Start(psi);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         throw new Exception($"Ocorreu um erro ao tentar executar o comando: {ex.Message}");
-    //     }
-    // }
 }
