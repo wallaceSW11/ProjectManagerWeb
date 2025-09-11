@@ -20,6 +20,7 @@ builder.Services.AddSingleton<RepositorioJsonService>();
 builder.Services.AddSingleton<ConfiguracaoService>();
 builder.Services.AddSingleton<CloneService>();
 builder.Services.AddSingleton<PastaService>();
+builder.Services.AddSingleton<ComandoService>();
 
 var app = builder.Build();
 

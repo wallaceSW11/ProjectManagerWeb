@@ -27,7 +27,8 @@ namespace ProjectManagerWeb.src.DTOs
     public sealed record ProjetoDTO(
         string Nome,
         string Subdiretorio,
-        List<ComandoDTO> Comandos
+        string PerfilVSCode,
+        ComandoDTO Comandos
     );
 
     /// <summary>

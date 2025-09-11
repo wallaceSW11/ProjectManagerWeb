@@ -10,20 +10,17 @@ public class ShellExecute
     /// </summary>
     /// <param name="gitCommand">O comando Git a ser executado (ex: "status", "version").</param>
     /// <param name="workingDirectory">O diretório de trabalho onde o comando será executado. O padrão é o diretório atual.</param>
-    public static void ExecutarComando(string gitCommand, bool ocultar = false)
+    public static void ExecutarComando(string command)
     {
-        if (string.IsNullOrWhiteSpace(gitCommand))
-        {
-            throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(gitCommand));
-        }
+        if (string.IsNullOrWhiteSpace(command))
+            throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
         try
         {
-            string arguments = $"/C start pwsh.exe -NoExit -Command \"C: ; {gitCommand}; {(ocultar ? "; exit" : "")}\"";
-
-            ProcessStartInfo psi = new("cmd.exe")
+            var psi = new ProcessStartInfo
             {
-                Arguments = arguments,
+                FileName = "pwsh.exe",
+                Arguments = $"-NoExit -Command \"{command}\"",
                 UseShellExecute = true
             };
 
@@ -31,7 +28,32 @@ public class ShellExecute
         }
         catch (Exception ex)
         {
-            throw new Exception($"Ocorreu um erro ao tentar executar o comando: {ex.Message}");
+            throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
     }
+
+    // public static void ExecutarComando(string gitCommand)
+    // {
+    //     if (string.IsNullOrWhiteSpace(gitCommand))
+    //     {
+    //         throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(gitCommand));
+    //     }
+
+    //     try
+    //     {
+    //         string arguments = $"/C start pwsh.exe -NoExit -Command \"C: ; {gitCommand}; \"";
+
+    //         ProcessStartInfo psi = new("cmd.exe")
+    //         {
+    //             Arguments = arguments,
+    //             UseShellExecute = true
+    //         };
+
+    //         Process.Start(psi);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         throw new Exception($"Ocorreu um erro ao tentar executar o comando: {ex.Message}");
+    //     }
+    // }
 }

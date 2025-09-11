@@ -56,22 +56,22 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         {
           var comandos = new List<string>();
 
-          foreach (var cmd in projeto.Comandos)
-          {
-            if (!string.IsNullOrWhiteSpace(cmd.Instalar))
+          // foreach (var cmd in projeto.Comandos)
+          // {
+            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
               comandos.Add("Instalar");
 
-            if (!string.IsNullOrWhiteSpace(cmd.Iniciar))
+            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
               comandos.Add("Iniciar");
 
-            if (!string.IsNullOrWhiteSpace(cmd.Buildar))
+            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
               comandos.Add("Buildar");
 
-            if (cmd.AbrirNoVSCode) // só se quiser considerar
+            if (projeto.Comandos.AbrirNoVSCode) // só se quiser considerar
               comandos.Add("AbrirNoVSCode");
-          }
+          // }
 
-          projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Nome, comandos.ToList()));
+          projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Nome, [.. comandos]));
         });
 
         var pastaResponse = new PastaResponseDTO
