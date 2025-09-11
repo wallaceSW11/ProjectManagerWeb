@@ -64,8 +64,9 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
 import ConfiguracaoModel from '../models/ConfiguracaoModel';
+import ConfiguracaoService from '../services/ConfiguracaoService';
 
-const configuracao = reactive(new ConfiguracaoModel());
+let configuracao = reactive(new ConfiguracaoModel());
 const colunas = ref([
   {
     title: "Perfil",
@@ -80,8 +81,16 @@ const colunas = ref([
   },
 ]);
 
-onMounted(() => {
-  configuracao.diretorioRaiz = 'C:\\git';
-  configuracao.perfisVSCode = [{ nome: "01_Front_vue" }]
+async function consultarConfiguracao() {
+  try {
+    let response = await ConfiguracaoService.getConfiguracao();
+    Object.assign(configuracao, new ConfiguracaoModel(response));  
+  } catch (error) {
+    console.log('Falha ao consultar as configurações', error)
+  }
+}
+
+onMounted(async () => {
+  consultarConfiguracao();
 })
 </script>
