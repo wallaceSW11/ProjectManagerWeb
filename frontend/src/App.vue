@@ -1,42 +1,42 @@
 <script setup>
-// App.vue no longer needs to import HelloWorld as it's now in HomeView
+// Component imports and setup here
 </script>
 
 <template>
   <v-app>
     <v-app-bar>
-      <v-app-bar-title>Project Manager Web</v-app-bar-title>
-      <v-spacer></v-spacer>
-      <v-btn
-        :to="{ name: 'new-project' }"
-        color="primary"
-        prepend-icon="mdi-plus"
-      >
-        New Project 1
-      </v-btn>
+      <v-app-bar-title>
+          Project Manager Web
+      </v-app-bar-title>
+
+      <div>
+        <v-btn class="text-none">
+          <v-icon>mdi-git</v-icon>
+          Clonar
+        </v-btn>
+        <v-btn class="text-none" :to="{ name: 'pastas'}">
+          <v-icon>mdi-folder</v-icon>
+          Pastas
+        </v-btn>
+        <v-btn class="text-none" :to="{ name: 'repositorios'}">
+          <v-icon>mdi-folder</v-icon>
+          Repositórios
+        </v-btn>
+        <v-btn class="text-none" :to="{ name: 'configuracao'}">
+          <v-icon>mdi-cog</v-icon>
+          Configurações
+        </v-btn>
+      </div>
+
     </v-app-bar>
 
     <v-main>
-      <router-view v-slot="{ Component }">
-        <v-fade-transition mode="out-in">
-          <component :is="Component" />
-        </v-fade-transition>
-      </router-view>
+      <router-view />
     </v-main>
+
   </v-app>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+<style>
+/* Add global styles here if needed */
 </style>
