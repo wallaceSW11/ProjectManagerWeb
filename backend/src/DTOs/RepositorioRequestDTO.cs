@@ -11,7 +11,7 @@ namespace ProjectManagerWeb.src.DTOs
     /// <param name="Projetos">A lista de projetos contidos neste repositório.</param>
     /// <param name="Agregados">Uma lista opcional de URLs de repositórios relacionados/agregados.</param>
     public sealed record RepositorioRequestDTO(
-        Guid? Id,
+        Guid Id,
         string Url,
         string Nome,
         List<ProjetoDTO> Projetos,

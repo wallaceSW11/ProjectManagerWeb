@@ -1,7 +1,7 @@
 namespace ProjectManagerWeb.src.DTOs;
 
 public sealed record PastaResponseDTO(
-    string Pasta,
+    string Diretorio,
     string Codigo,
     string Descricao,
     string Tipo,
