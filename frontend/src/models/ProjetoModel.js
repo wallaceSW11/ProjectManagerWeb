@@ -1,0 +1,22 @@
+export default class ProjetoModel {
+  constructor(obj) {
+    obj = obj || {};
+
+    this.id = obj.id || crypto.randomUUID();
+    this.nome = obj.nome || null;
+    this.subdiretorio = obj.subdiretorio || null;
+    this.perfilVSCode = obj.perfilVSCode || null;
+    this.comandos = new ComandosModel(obj.comandos);
+  }
+}
+
+class ComandosModel {
+  constructor(obj) {
+    obj = obj || {};
+
+    this.instalar = obj.instalar || null;
+    this.iniciar = obj.iniciar || null;
+    this.buildar = obj.buildar || null;
+    this.abrirNoVSCode = !!obj.abrirNoVSCode;
+  }
+}
