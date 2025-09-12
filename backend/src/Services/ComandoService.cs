@@ -1,10 +1,9 @@
-using System.Text;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Utils;
 
 namespace ProjectManagerWeb.src.Services;
 
-public class ComandoService(ConfiguracaoService configuracaoService, RepositorioJsonService repositorioJsonService)
+public class ComandoService(RepositorioJsonService repositorioJsonService)
 {
 
   public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
