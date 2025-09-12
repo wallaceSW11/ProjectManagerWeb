@@ -1,5 +1,5 @@
 <script setup>
-// Component imports and setup here
+
 </script>
 
 <template>
