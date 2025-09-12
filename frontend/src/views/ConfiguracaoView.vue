@@ -20,10 +20,12 @@
             />
           </v-col>
 
-          <v-divider />
-
           <!-- Perfis -->
           <v-col cols="12">
+            <h2>Perfis do VS Code</h2>
+
+            <v-divider />
+
             <div class="d-flex flex-column justify-center">
               <!-- Input e botão de adicionar perfil -->
               <div class="d-flex align-center">
@@ -68,7 +70,7 @@ import ConfiguracaoService from "../services/ConfiguracaoService";
 const nomePerfil = ref(""); // input do perfil
 const configuracao = reactive(new ConfiguracaoModel());
 
-const colunas = ref([
+const colunas = reactive([
   { title: "Perfil", key: "nome", align: "start" },
   { title: "Actions", key: "actions", align: "center", width: "200px" },
 ]);

@@ -1,6 +1,15 @@
+import axios from "axios";
+
 class BaseApiService {
   constructor() {
     this.baseUrl = this.getBaseUrl();
+
+    this.api = axios.create({
+      baseURL: this.baseUrl,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   }
 
   getBaseUrl() {
@@ -8,43 +17,45 @@ class BaseApiService {
     return isDevelopment ? "http://localhost:2024/api" : "/api";
   }
 
-  async get(endpoint) {
+  async get(endpoint, config = {}) {
     try {
-      const response = await fetch(`${this.baseUrl}/${endpoint}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const response = await this.api.get(endpoint, config);
+      return response.data;
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("GET request error:", error);
       throw error;
     }
   }
 
-  async post(endpoint, body) {
+  async post(endpoint, body, config = {}) {
     try {
-      const response = await fetch(`${this.baseUrl}/${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Verifica se tem conteúdo antes de tentar fazer o parse
-      const text = await response.text();
-      return text ? JSON.parse(text) : null;
+      const response = await this.api.post(endpoint, body, config);
+      return response.data;
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("POST request error:", error);
       throw error;
     }
   }
 
-  // Você pode adicionar outros métodos HTTP aqui (post, put, delete, etc.)
+  async put(endpoint, body, config = {}) {
+    try {
+      const response = await this.api.put(endpoint, body, config);
+      return response.data;
+    } catch (error) {
+      console.error("PUT request error:", error);
+      throw error;
+    }
+  }
+
+  async delete(endpoint, config = {}) {
+    try {
+      const response = await this.api.delete(endpoint, config);
+      return response.data;
+    } catch (error) {
+      console.error("DELETE request error:", error);
+      throw error;
+    }
+  }
 }
 
 export default BaseApiService;
