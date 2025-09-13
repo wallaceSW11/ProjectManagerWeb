@@ -12,7 +12,10 @@
             :key="pasta.diretorio"
             :class="[
               'mb-2',
-              { 'card-selecionado': pastaSelecionada.diretorio === pasta.diretorio },
+              {
+                'card-selecionado':
+                  pastaSelecionada.diretorio === pasta.diretorio,
+              },
             ]"
             @click="selecionarPasta(pasta)"
           >
@@ -73,7 +76,12 @@
             </div>
 
             <div class="d-flex">
-              <v-btn size="large" color="primary" width="100%" @click="executarAcoes">
+              <v-btn
+                size="large"
+                color="primary"
+                width="100%"
+                @click="executarAcoes"
+              >
                 <v-icon>mdi-lightning-bolt</v-icon>
                 Executar
               </v-btn>
@@ -86,7 +94,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import ConfiguracaoModel from "../models/ConfiguracaoModel";
 import ConfiguracaoService from "../services/ConfiguracaoService";
 import PastasService from "../services/PastasService";
@@ -144,34 +152,32 @@ const selecionarPasta = (pasta) => {
   Object.assign(pastaSelecionada, pasta);
 
   if (pastaSelecionada.projetos) {
-    pastaSelecionada.projetos.forEach(projeto => {
+    pastaSelecionada.projetos.forEach((projeto) => {
       if (!projeto.comandosSelecionados) projeto.comandosSelecionados = [];
     });
   }
-}
+};
 
 const executarAcoes = async () => {
   const payload = {
     diretorio: pastaSelecionada.diretorio,
     gitId: pastaSelecionada.gitId,
     projetos: pastaSelecionada.projetos
-      .filter(p => p.comandosSelecionados.length > 0)
-      .map(p => {
-      return {
-        nome: p.nome,
-        comandos: p.comandosSelecionados
-      }
-    })
-  }
+      .filter((p) => p.comandosSelecionados.length > 0)
+      .map((p) => {
+        return {
+          nome: p.nome,
+          comandos: p.comandosSelecionados,
+        };
+      }),
+  };
 
   try {
     await ComandosService.executarComando(payload);
   } catch (error) {
-    console.error('Falha ao executar as acoes: ', error);
+    console.error("Falha ao executar as acoes: ", error);
   }
-}
-
-
+};
 </script>
 
 <style scoped>
@@ -182,13 +188,11 @@ const executarAcoes = async () => {
 
 .card-selecionado {
   border: 1px solid orange;
-  ;
 }
 
 ::v-deep .v-checkbox .v-selection-control {
   min-height: 40px;
 }
-
 
 .altura-acoes {
   height: calc(100dvh - 140px);
