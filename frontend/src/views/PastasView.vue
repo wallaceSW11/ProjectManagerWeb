@@ -164,11 +164,6 @@ const executarAcoes = async () => {
     })
   }
 
-  console.log(payload);
-
-
-  // console.log(pastaSelecionada);
-
   try {
     await ComandosService.executarComando(payload);
   } catch (error) {

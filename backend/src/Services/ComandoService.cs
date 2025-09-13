@@ -21,10 +21,15 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
       {
         if (comando.Equals("Iniciar"))
         {
-          if (Directory.Exists($"{diretorio}{projetoCadastrado.Nome}\\node_modules"))
-            comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Iniciar}; ");
+          if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && projetoCadastrado.Comandos.Instalar.Contains("npm i"))
+          {
+            if (Directory.Exists($"{diretorio}{projetoCadastrado.Nome}\\node_modules"))
+              comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Iniciar}; ");
+            else
+              comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};");
+          }
           else
-            comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};");
+            comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Iniciar}; ");
         }
 
         if (comando.Equals("Instalar"))

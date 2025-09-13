@@ -9,8 +9,9 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
   {
     var configuracao = await configuracaoService.ObterConfiguracaoAsync();
     var diretorioRaiz = configuracao.DiretorioRaiz;
+    var repositorios = await repositorioJsonService.GetAllAsync();
 
-    var pastas = await ObterPastas();
+    var pastas = await ObterPastas(configuracao);
 
     if (pastas.Count == 0)
       return [];
@@ -19,7 +20,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
     foreach (var pasta in pastas)
     {
-      var repositorio = await repositorioJsonService.GetByUrlAsync(pasta.GitUrl);
+      var repositorio = repositorios.FirstOrDefault(r => r.Url.Equals(pasta.GitUrl));
 
       if (repositorio != null)
       {
@@ -56,20 +57,17 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         {
           var comandos = new List<string>();
 
-          // foreach (var cmd in projeto.Comandos)
-          // {
-            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
-              comandos.Add("Instalar");
+          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
+            comandos.Add("Instalar");
 
-            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
-              comandos.Add("Iniciar");
+          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
+            comandos.Add("Iniciar");
 
-            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
-              comandos.Add("Buildar");
+          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
+            comandos.Add("Buildar");
 
-            if (projeto.Comandos.AbrirNoVSCode) // só se quiser considerar
-              comandos.Add("AbrirNoVSCode");
-          // }
+          if (projeto.Comandos.AbrirNoVSCode)
+            comandos.Add("AbrirNoVSCode");
 
           projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Nome, [.. comandos]));
         });
@@ -94,9 +92,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
     return pastaResponseList;
   }
 
-  private async Task<List<PastaBaseResponseDTO>> ObterPastas()
+  private async Task<List<PastaBaseResponseDTO>> ObterPastas(ConfiguracaoRequestDTO configuracao)
   {
-    var configuracao = await configuracaoService.ObterConfiguracaoAsync();
     var diretorioRaiz = configuracao.DiretorioRaiz;
     var pastas = new List<PastaBaseResponseDTO>();
 
