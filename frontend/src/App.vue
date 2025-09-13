@@ -166,7 +166,7 @@ const clonar = async () => {
 
   try {
     await CloneService.clonar(clone);
-    exibirModalClone = false;
+    exibirModalClone.value = false;
   } catch (error) {
     console.error("Falha ao clonar:", error);
   }
