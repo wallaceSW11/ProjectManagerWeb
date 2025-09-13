@@ -190,7 +190,7 @@ const executarAcoes = async () => {
   border: 1px solid orange;
 }
 
-::v-deep .v-checkbox .v-selection-control {
+:deep(.v-checkbox .v-selection-control) {
   min-height: 40px;
 }
 

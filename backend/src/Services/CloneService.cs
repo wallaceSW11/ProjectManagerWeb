@@ -61,7 +61,7 @@ public class CloneService
 
         if (clone.CriarBranchRemoto)
             if (clone.Tipo == "nenhum")
-                comando.Append($" git checkout -b {clone.Branch};");
+                comando.Append($" git checkout -b {clone.Codigo};");
             else
                 comando.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
 

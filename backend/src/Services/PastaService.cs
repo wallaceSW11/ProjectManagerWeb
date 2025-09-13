@@ -97,56 +97,62 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
     var diretorioRaiz = configuracao.DiretorioRaiz;
     var pastas = new List<PastaBaseResponseDTO>();
 
-    if (string.IsNullOrEmpty(diretorioRaiz) || !Directory.Exists(diretorioRaiz))
+    if (string.IsNullOrWhiteSpace(diretorioRaiz) || !Directory.Exists(diretorioRaiz))
       return pastas;
 
-    foreach (var dir in Directory.GetDirectories(diretorioRaiz, "*", SearchOption.AllDirectories))
+    // percorre só as pastas diretas (ex: C:\git\PWM1_ProjectManagerWEB)
+    foreach (var tarefaDir in Directory.GetDirectories(diretorioRaiz, "*", SearchOption.TopDirectoryOnly))
     {
-      var gitDir = Path.Combine(dir, ".git");
+      var repoDir = EncontrarPastaGit(tarefaDir);
+      if (repoDir is null)
+        continue;
 
-      if (Directory.Exists(gitDir))
+      var gitDir = Path.Combine(repoDir, ".git");
+      string? url = null;
+      string? branch = null;
+
+      var configPath = Path.Combine(gitDir, "config");
+      var headPath = Path.Combine(gitDir, "HEAD");
+
+      if (File.Exists(configPath))
       {
-        string? url = null;
-        string? branch = null;
-        var configPath = Path.Combine(gitDir, "config");
-        var headPath = Path.Combine(gitDir, "HEAD");
-
-        if (File.Exists(configPath))
-        {
-          var configLines = await File.ReadAllLinesAsync(configPath);
-          foreach (var line in configLines)
-          {
-            if (line.Trim().StartsWith("url = "))
-            {
-              url = line.Split('=')[1].Trim();
-              break;
-            }
-          }
-        }
-
-        if (File.Exists(headPath))
-        {
-          var headLine = await File.ReadAllTextAsync(headPath);
-          if (headLine.StartsWith("ref: "))
-          {
-            var parts = headLine.Split('/');
-            branch = parts.Last().Trim();
-          }
-        }
-
-        if (!string.IsNullOrEmpty(url) && !string.IsNullOrEmpty(branch))
-          pastas.Add(new PastaBaseResponseDTO
-          (
-            dir,
-            url,
-            branch
-          ));
-
+        var configLines = await File.ReadAllLinesAsync(configPath);
+        url = configLines
+            .FirstOrDefault(l => l.Trim().StartsWith("url = "))
+            ?.Split('=')[1]
+            .Trim();
       }
+
+      if (File.Exists(headPath))
+      {
+        var headLine = await File.ReadAllTextAsync(headPath);
+        if (headLine.StartsWith("ref: "))
+          branch = headLine.Split('/').Last().Trim();
+      }
+
+      if (!string.IsNullOrEmpty(url) && !string.IsNullOrEmpty(branch))
+        pastas.Add(new PastaBaseResponseDTO(repoDir, url, branch));
     }
 
     return pastas;
   }
 
-  // Additional methods for managing "pasta" entities can be added here
+  /// <summary>
+  /// Encontra a primeira subpasta (inclusive a própria) que contenha um .git.
+  /// </summary>
+  private string? EncontrarPastaGit(string diretorio)
+  {
+    // se o diretório atual já tem .git, retorna
+    if (Directory.Exists(Path.Combine(diretorio, ".git")))
+      return diretorio;
+
+    // senão, procura apenas no primeiro nível de subpastas
+    foreach (var sub in Directory.GetDirectories(diretorio, "*", SearchOption.TopDirectoryOnly))
+    {
+      if (Directory.Exists(Path.Combine(sub, ".git")))
+        return sub;
+    }
+
+    return null;
+  }
 }
