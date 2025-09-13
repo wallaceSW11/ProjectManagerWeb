@@ -11,7 +11,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     var repositorio = await repositorioJsonService.GetByIdAsync(pasta.GitId) ?? throw new Exception("Repositório não encontrado");
     var comandos = new List<string>();
 
-    var diretorio = pasta.Diretorio + "\\" + repositorio.Nome + "\\";
+    var diretorio = pasta.Diretorio + "\\";
 
     pasta.Projetos.ForEach(projeto =>
     {
@@ -42,7 +42,6 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
           comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {texto}; exit;");
         }
-
       });
     });
 
@@ -53,6 +52,10 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     catch
     {
       return false;
+    }
+    finally
+    {
+      comandos.Clear();
     }
 
     return true;

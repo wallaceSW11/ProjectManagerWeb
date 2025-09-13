@@ -154,7 +154,9 @@ const executarAcoes = async () => {
   const payload = {
     diretorio: pastaSelecionada.diretorio,
     gitId: pastaSelecionada.gitId,
-    projetos: pastaSelecionada.projetos.map(p => {
+    projetos: pastaSelecionada.projetos
+      .filter(p => p.comandosSelecionados.length > 0)
+      .map(p => {
       return {
         nome: p.nome,
         comandos: p.comandosSelecionados
@@ -168,7 +170,7 @@ const executarAcoes = async () => {
   // console.log(pastaSelecionada);
 
   try {
-    await ComandosService.executarComando(pastaSelecionada);
+    await ComandosService.executarComando(payload);
   } catch (error) {
     console.error('Falha ao executar as acoes: ', error);
   }
