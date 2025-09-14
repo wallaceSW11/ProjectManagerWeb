@@ -108,8 +108,20 @@ const router = useRouter();
 const pastaSelecionada = reactive(new PastaModel());
 
 onMounted(async () => {
+  await inicializarPagina();
+});
+
+const inicializarPagina = async () => {
   await consultarConfiguracao();
 
+  if (redirecionarParaConfiguracaoInicial()) return;
+
+  await carregarPastas();
+
+  selecionarPastaSalva();
+};
+
+const redirecionarParaConfiguracaoInicial = () => {
   if (!configuracao.diretorioRaiz) {
     alert(
       "O diretório raiz não foi informado, será redirecionado para a tela de configurações"
@@ -117,12 +129,31 @@ onMounted(async () => {
 
     router.push({ name: "configuracao" });
 
+    return true;
+  }
+
+  return false;
+};
+
+const selecionarPastaSalva = () => {
+  if (!pastas.length) return;
+
+  const diretorioSalvo = consultarPastaSelecionadaDoStorage();
+
+  if (!diretorioSalvo) {
+    selecionarPasta(pastas[0]);
+
     return;
   }
 
-  await carregarPastas();
-  if (pastas.length > 0) selecionarPasta(pastas[0]); // mudar para pegar do storage
-});
+  const selecionada = pastas.find((p) => p.diretorio === diretorioSalvo);
+
+  if (!selecionada) return;
+
+  const indice = pastas.findIndex((p) => p.diretorio === diretorioSalvo);
+
+  indice !== -1 && selecionarPasta(pastas[indice]);
+};
 
 const consultarConfiguracao = async () => {
   try {
@@ -151,11 +182,37 @@ const descricaoPasta = (pasta) => {
 const selecionarPasta = (pasta) => {
   Object.assign(pastaSelecionada, pasta);
 
+  const acoes = consultarAcoesSelecionadas();
+
   if (pastaSelecionada.projetos) {
     pastaSelecionada.projetos.forEach((projeto) => {
-      if (!projeto.comandosSelecionados) projeto.comandosSelecionados = [];
+      const comandos = acoes
+        .find(a => a.diretorio === pasta.diretorio)
+        ?.projetos.find(p => p.nome === projeto.nome)
+        ?.comandos;
+
+      projeto.comandosSelecionados = comandos || [];
     });
   }
+
+  salvarPastaSelecionadaNoStorage();
+};
+
+const CHAVE_PASTA_SELECIONADA = "PastaSelecionada";
+
+const salvarPastaSelecionadaNoStorage = () => {
+  localStorage.setItem(
+    CHAVE_PASTA_SELECIONADA,
+    JSON.stringify(pastaSelecionada.diretorio)
+  );
+};
+
+const consultarPastaSelecionadaDoStorage = () => {
+  const pasta = localStorage.getItem(CHAVE_PASTA_SELECIONADA);
+
+  if (!pasta) return;
+
+  return JSON.parse(pasta);
 };
 
 const executarAcoes = async () => {
@@ -174,9 +231,38 @@ const executarAcoes = async () => {
 
   try {
     await ComandosService.executarComando(payload);
+    salvarAcoesSelecionadas(payload);
   } catch (error) {
     console.error("Falha ao executar as acoes: ", error);
   }
+};
+
+const CHAVE_ACOES_SELECIONADAS = "AcoesSelecionadas";
+
+const salvarAcoesSelecionadas = (payload) => {
+  const salvarNoLocalStorage = (valor) => {
+    localStorage.setItem(CHAVE_ACOES_SELECIONADAS, JSON.stringify(valor));
+  };
+
+  let acoes = consultarAcoesSelecionadas();
+
+  if (!acoes?.length) {
+    salvarNoLocalStorage([payload]);
+
+    return;
+  }
+
+  const indice = acoes.findIndex((a) => a.diretorio === payload.diretorio);
+
+  indice === -1 ? acoes.push(payload) : acoes.splice(indice, payload);
+
+  salvarNoLocalStorage(acoes);
+};
+
+const consultarAcoesSelecionadas = () => {
+  const acoes = localStorage.getItem(CHAVE_ACOES_SELECIONADAS);
+
+  return acoes ? JSON.parse(acoes) : null;
 };
 </script>
 

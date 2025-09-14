@@ -1,4 +1,4 @@
-import ProjetoModel from "@/models/ProjetoModel";
+import ProjetoModel from "@/models/ProjetoModel.js";
 
 export default class PastaModel {
   constructor(obj) {
