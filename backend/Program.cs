@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.FileProviders;
 using ProjectManagerWeb.src.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +43,24 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// habilita arquivos estáticos
+app.UseDefaultFiles(); // para servir index.html por padrão
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "frontend", "dist")
+    ),
+    RequestPath = ""
+});
+
+// se não encontrar rota na API, cai pro index.html do Vue
+app.MapFallbackToFile("index.html", new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "frontend", "dist")
+    )
+});
 
 // Habilita CORS
 app.UseCors("AllowAll");

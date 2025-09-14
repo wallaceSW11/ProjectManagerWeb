@@ -1,7 +1,10 @@
 <template>
   <v-app>
     <v-app-bar>
-      <v-app-bar-title> Project Manager Web </v-app-bar-title>
+      <v-app-bar-title>
+        <img :src="logo" width="20px"/>
+            Project Manager Web
+        </v-app-bar-title>
 
       <div>
         <v-btn class="text-none" @click="exibirModalClone = true">
@@ -115,6 +118,7 @@ import CloneModel from "./models/CloneModel";
 import ConfiguracaoModel from "./models/ConfiguracaoModel";
 import ConfiguracaoService from "./services/ConfiguracaoService";
 import CloneService from "./services/CloneService";
+import logo from "@/assets/logo.svg"
 
 let exibirModalClone = ref(false);
 const repositorios = reactive([]);
