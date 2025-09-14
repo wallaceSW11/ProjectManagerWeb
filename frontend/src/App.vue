@@ -5,20 +5,19 @@
 
       <div>
         <v-btn class="text-none" @click="exibirModalClone = true">
-          <v-icon>mdi-git</v-icon>
+          <v-icon class="pr-2" color="primary">mdi-git</v-icon>
           Clonar
         </v-btn>
         <v-btn class="text-none" :to="{ name: 'pastas' }">
-          <v-icon>mdi-folder</v-icon>
+          <v-icon class="pr-2" color="primary">mdi-folder</v-icon>
           Pastas
         </v-btn>
         <v-btn class="text-none" :to="{ name: 'repositorios' }">
-          <v-icon>mdi-folder</v-icon>
+          <v-icon class="pr-2" color="primary">mdi-source-repository</v-icon>
           Repositórios
         </v-btn>
-        <v-btn class="text-none" :to="{ name: 'configuracao' }">
-          <v-icon>mdi-cog</v-icon>
-          Configurações
+        <v-btn icon :to="{ name: 'configuracao' }">
+          <v-icon class="pr-2" color="primary">mdi-cog</v-icon>
         </v-btn>
       </div>
     </v-app-bar>
@@ -33,7 +32,7 @@
       <v-card>
         <v-card-title> Clonar </v-card-title>
 
-        <v-card-text>
+        <v-card-text class="pt-0">
           <v-form ref="formClone">
             <v-text-field
               label="Diretório"
@@ -63,7 +62,7 @@
             />
             <v-checkbox
               label="Criar branch remoto"
-              hide-detail
+              hide-details
               v-model="clone.criarBranchRemoto"
             />
 

@@ -45,7 +45,7 @@ export const vuetify = createVuetify({
       },
       dark: {
         colors: {
-          primary: '#e9581fff',
+          primary: '#FF5533',
           secondary: '#6d625eff',
           accent: '#FF4081',
           error: '#FF5252',
