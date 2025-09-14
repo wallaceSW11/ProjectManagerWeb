@@ -1,12 +1,18 @@
 <template>
   <v-container>
     <div class="d-flex flex-column">
-      <div>
-        <h2>Pastas</h2>
-      </div>
+      <v-row no-gutters>
+        <v-col cols="8">
+          <h2>Pastas</h2>
+        </v-col>
+
+        <v-col class="ml-4 d-flex align-center">
+          <h3>Projetos / Ações</h3>
+        </v-col>
+      </v-row>
 
       <v-row no-gutters class="d-flex altura-limitada">
-        <v-col cols="8">
+        <v-col cols="8" class="mr-2">
           <v-card
             v-for="pasta in pastas"
             :key="pasta.diretorio"
@@ -58,7 +64,24 @@
                 class="mb-2"
               >
                 <v-card-title>
-                  {{ projeto.nome }}
+                  <div class="d-flex justify-space-between">
+                    <div>
+                      {{ projeto.nome }}
+                    </div>
+
+                    <div>
+                      <v-tooltip text="Desmarcar todos">
+                        <template #activator="{ props }">
+                          <v-icon
+                            v-bind="props"
+                            size="16px"
+                            @click="projeto.comandosSelecionados = []"
+                            >mdi-close-box-multiple-outline</v-icon
+                          >
+                        </template>
+                      </v-tooltip>
+                    </div>
+                  </div>
                 </v-card-title>
 
                 <v-card-text>
@@ -81,6 +104,11 @@
                 color="primary"
                 width="100%"
                 @click="executarAcoes"
+                :disabled="
+                  !pastaSelecionada.projetos.some(
+                    (p) => p.comandosSelecionados.length > 0
+                  )
+                "
               >
                 <v-icon>mdi-lightning-bolt</v-icon>
                 Executar
@@ -187,9 +215,8 @@ const selecionarPasta = (pasta) => {
   if (pastaSelecionada.projetos) {
     pastaSelecionada.projetos.forEach((projeto) => {
       const comandos = acoes
-        .find(a => a.diretorio === pasta.diretorio)
-        ?.projetos.find(p => p.nome === projeto.nome)
-        ?.comandos;
+        ?.find((a) => a.diretorio === pasta.diretorio)
+        ?.projetos.find((p) => p.nome === projeto.nome)?.comandos;
 
       projeto.comandosSelecionados = comandos || [];
     });
