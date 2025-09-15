@@ -5,7 +5,6 @@ namespace ProjectManagerWeb.src.Services;
 
 public class ComandoService(RepositorioJsonService repositorioJsonService)
 {
-
   public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
   {
     var repositorio = await repositorioJsonService.GetByIdAsync(pasta.GitId) ?? throw new Exception("Repositório não encontrado");
@@ -23,13 +22,13 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
         {
           if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && projetoCadastrado.Comandos.Instalar.Contains("npm i"))
           {
-            if (Directory.Exists($"{diretorio}{projetoCadastrado.Nome}\\node_modules"))
-              comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Iniciar}; ");
+            if (Directory.Exists($"{diretorio}{projetoCadastrado.Subdiretorio}\\node_modules"))
+              comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ");
             else
-              comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};");
+              comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};");
           }
           else
-            comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Iniciar}; ");
+            comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ");
         }
 
         if (comando.Equals("Instalar"))
@@ -45,7 +44,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
           if (!string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
             texto += $"--profile {projetoCadastrado.PerfilVSCode}";
 
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {texto}; exit;");
+          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; exit;");
         }
       });
     });

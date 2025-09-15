@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace ProjectManagerWeb.src.DTOs
 {
@@ -16,7 +17,18 @@ namespace ProjectManagerWeb.src.DTOs
         string Nome,
         List<ProjetoDTO> Projetos,
         List<string>? Agregados
-    );
+    )
+    {
+        public static string ObterNomeRepositorio(string url)
+        {
+            var regexPattern = @"/([^/]+)\.git$";
+            var regex = new Regex(regexPattern);
+
+            Match match = regex.Match(url);
+
+            return match.Success ? match.Groups[1].Value : string.Empty;
+        }
+    }
     
     /// <summary>
     /// Representa um projeto específico dentro de um repositório.
@@ -27,7 +39,7 @@ namespace ProjectManagerWeb.src.DTOs
     public sealed record ProjetoDTO(
         Guid Id,
         string Nome,
-        string Subdiretorio,
+        string? Subdiretorio,
         string? PerfilVSCode,
         ComandoDTO Comandos
     );
