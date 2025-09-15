@@ -11,13 +11,19 @@
         </v-col>
       </v-row>
 
-      <v-row no-gutters class="d-flex altura-limitada">
-        <v-col cols="8" class="mr-2">
+      <v-row no-gutters class="d-flex">
+        <v-col cols="8" class="altura-limitada mr-2">
+          <div v-if="pastas.length === 0">
+            Não há pastas do diretório raiz informado.
+            <p>{{ configuracao.diretorioRaiz }}</p>
+          </div>
+
           <v-card
+            v-else
             v-for="pasta in pastas"
             :key="pasta.diretorio"
             :class="[
-              'mb-2',
+              'mb-4 mr-2',
               {
                 'card-selecionado':
                   pastaSelecionada.diretorio === pasta.diretorio,
@@ -32,7 +38,7 @@
                 </div>
 
                 <div>
-                  <v-btn icon variant="outlined" size="small">
+                  <v-btn icon variant="flat" size="small">
                     <v-icon small>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </div>
@@ -55,13 +61,85 @@
           </v-card>
         </v-col>
 
-        <v-col class="ml-2">
-          <div class="altura-acoes d-flex flex-column">
-            <div class="d-flex flex-grow-1 flex-column corpo-acoes">
+        <v-col>
+          <div
+            class="d-flex flex-column ml-2"
+            style="height: calc(100dvh - 140px)"
+          >
+            <div
+              class="d-flex flex-grow-1 flex-column pr-2"
+              style="overflow: auto"
+            >
+              <div v-if="pastaSelecionada?.projetos.length === 0">
+                Não há projetos disponíveis.
+              </div>
+
+              <div
+                v-else
+                v-for="projeto in pastaSelecionada.projetos"
+                :key="projeto.id"
+              >
+                <v-card class="mb-2" style="background-color: #2d2d30;">
+                  <v-card-title>
+                    <div class="d-flex justify-space-between">
+                      <div>
+                        {{ projeto.nome }}
+                      </div>
+
+                      <div>
+                        <v-tooltip text="Desmarcar todos">
+                          <template #activator="{ props }">
+                            <v-icon
+                              v-bind="props"
+                              size="16px"
+                              @click="projeto.comandosSelecionados = []"
+                              >mdi-close-box-multiple-outline</v-icon
+                            >
+                          </template>
+                        </v-tooltip>
+                      </div>
+                    </div>
+                  </v-card-title>
+
+                  <v-card-text>
+                    <v-checkbox
+                      v-for="(comando, indice) in projeto.comandos"
+                      :key="indice"
+                      :label="comando"
+                      :value="comando"
+                      v-model="projeto.comandosSelecionados"
+                      hide-details
+                      height="40px"
+                    />
+                  </v-card-text>
+                </v-card>
+              </div>
+            </div>
+
+            <div class="d-flex shrink mt-1">
+              <v-btn
+                size="large"
+                color="primary"
+                width="100%"
+                @click="executarAcoes"
+                :disabled="
+                  !pastaSelecionada.projetos.some(
+                    (p) => p.comandosSelecionados.length > 0
+                  )
+                "
+              >
+                <v-icon>mdi-lightning-bolt</v-icon>
+                Executar
+              </v-btn>
+            </div>
+          </div>
+          <!-- <div class="altura-acoes d-flex flex-column" style="border: 1px solid yellow">
+            <div class="d-flex flex-column" style="border: 1px solid purple">
               <v-card
                 v-for="projeto in pastaSelecionada.projetos"
                 :key="projeto.id"
                 class="mb-2"
+                v-if="false"
               >
                 <v-card-title>
                   <div class="d-flex justify-space-between">
@@ -114,7 +192,7 @@
                 Executar
               </v-btn>
             </div>
-          </div>
+          </div> -->
         </v-col>
       </v-row>
     </div>

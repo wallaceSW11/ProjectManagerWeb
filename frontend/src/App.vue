@@ -22,6 +22,14 @@
         <v-btn icon :to="{ name: 'configuracao' }">
           <v-icon class="pr-2" color="primary">mdi-cog</v-icon>
         </v-btn>
+
+        <v-btn>
+          <v-icon color="primary">mdi-calendar</v-icon>
+          <v-tooltip
+            activator="parent"
+            location="left"
+          >{{ `Compilado em: ${compiladoEm}` }}</v-tooltip>
+        </v-btn>
       </div>
     </v-app-bar>
 
@@ -119,15 +127,18 @@ import ConfiguracaoModel from "./models/ConfiguracaoModel";
 import ConfiguracaoService from "./services/ConfiguracaoService";
 import CloneService from "./services/CloneService";
 import logo from "@/assets/logo.svg"
+import VersaoService from "./services/VersaoService";
 
 let exibirModalClone = ref(false);
 const repositorios = reactive([]);
 const configuracao = reactive(new ConfiguracaoModel());
 const clone = reactive(new CloneModel());
+const compiladoEm = ref();
 
 onMounted(async () => {
   await consultarRepositorios();
   await consultarConfiguracao();
+  await consultarVersao();
 
   clone.diretorioRaiz = configuracao.diretorioRaiz + "\\";
 });
@@ -150,6 +161,15 @@ const consultarConfiguracao = async () => {
     Object.assign(configuracao, new ConfiguracaoModel(response));
   } catch (error) {
     console.error("Falha ao consultar as configurações:", error);
+  }
+};
+
+const consultarVersao = async () => {
+  try {
+    const response = await VersaoService.obterVersao();
+    compiladoEm.value = response;
+  } catch (error) {
+    console.error("Falha ao consultar a versão:", error);
   }
 };
 

@@ -145,6 +145,7 @@ const mudarParaEdicao = (identificador) => {
 
 const mudarParaCadastro = () => {
   modoOperacao.value = MODO_OPERACAO.NOVO.valor;
+  limparCampos();
   irParaCadastro();
 };
 
@@ -155,24 +156,32 @@ const formularioValido = () => {
 const salvarAlteracoes = () => {
   if (!formularioValido()) return;
 
-  emModoCadastro ? criarRepositorio() : atualizarRepositorio();
+  try {
+    emModoCadastro.value ? criarRepositorio() : atualizarRepositorio();
+    irParaListagem();
+  } catch (error) {
+    console.error('Falha ao salvar alteracoes: ', error);
+  }
 
-  irParaListagem();
+  
 };
 
 const criarRepositorio = async () => {
   try {
     await RepositoriosService.adicionarRepositorio(repositorioSelecionado);
     repositorios.push(new RepositorioModel(repositorioSelecionado));
-    Object.assign(repositorioSelecionado, new RepositorioModel());
+    limparCampos();
   } catch (error) {
-    console.error("Falha ao criar repositorio" + error);
+    console.error("Falha ao criar repositorio: " + error);
   }
 };
 
 const atualizarRepositorio = async () => {
   try {
     await RepositoriosService.atualizarRepositorio(repositorioSelecionado);
+
+    const indice = repositorios.findIndex(r => r.id === repositorioSelecionado.id);
+    (indice !== -1) && Object.assign(repositorios[indice], repositorioSelecionado);
   } catch (error) {
     console.error("Falha ao criar repositorio" + error);
   }

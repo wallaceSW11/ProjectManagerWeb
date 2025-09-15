@@ -19,8 +19,8 @@
               {{ repositorio.url }}
             </v-col>
 
-            <v-col cols="12" class="pt-2">
-              <p>Projetos</p>
+            <v-col cols="12" class="pt-3">
+              <h3>Projetos</h3>
               {{ repositorio.projetos.map((p) => p.nome).join(", ") }}
             </v-col>
           </v-row>

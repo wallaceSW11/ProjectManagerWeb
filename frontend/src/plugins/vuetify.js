@@ -57,3 +57,11 @@ export const vuetify = createVuetify({
     }
   }
 })
+
+
+
+// #007acc
+// #3e3e42
+// #2d2d30
+// #252526
+// #1e1e1e
