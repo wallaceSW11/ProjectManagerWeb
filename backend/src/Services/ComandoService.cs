@@ -64,4 +64,19 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
     return true;
   }
+
+  public bool ExecutarComandoAvulso(string comando)
+  {
+    try
+    {
+      ShellExecute.ExecutarComando(comando);
+    }
+    catch
+    {
+      return false;
+    }
+
+    return true;
+  }
+  
 }

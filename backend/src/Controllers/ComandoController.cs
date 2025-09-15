@@ -15,4 +15,11 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
     var comandos = await comandoService.ExecutarComando(pasta);
     return Ok(comandos);
   }
+
+  [HttpPost("avulso")]
+  public IActionResult ExecutarComandoAvulso(string comando)
+  {
+    var comandos = comandoService.ExecutarComandoAvulso(comando);
+    return Ok(comandos);
+  }
 }
