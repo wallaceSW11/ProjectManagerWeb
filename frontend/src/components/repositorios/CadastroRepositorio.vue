@@ -78,7 +78,6 @@
               <v-text-field
                 label="Subdiretório"
                 v-model="projetoSelecionado.subdiretorio"
-                :rules="obrigatorio"
               />
               <v-text-field
                 label="Perfil VS Code"
@@ -190,9 +189,13 @@ const mudarParaCadastro = () => {
 const salvarAlteracoes = async () => {
   if (!(await formularioProjetoValido())) return;
 
-  emModoCadastro.value ? adicionarProjeto() : atualizarProjeto();
+  try {
+    emModoCadastro.value ? adicionarProjeto() : atualizarProjeto();
+    irParaListagem();
+  } catch (error) {
+    console.error('Falha ao salvar alteracoes do cadastro:', error);
+  }
 
-  irParaListagem();
 };
 
 const atualizarProjeto = () => {
@@ -200,9 +203,7 @@ const atualizarProjeto = () => {
     (p) => p.id === projetoSelecionado.id
   );
 
-  if (indice === -1) return;
-
-  Object.assign(repositorio.value.projetos[indice], projetoSelecionado);
+  (indice !== -1) && Object.assign(repositorio.value.projetos[indice], projetoSelecionado);
 };
 
 const excluirProjeto = (item) => {

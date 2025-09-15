@@ -22,71 +22,86 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
     {
       var repositorio = repositorios.FirstOrDefault(r => r.Url.Equals(pasta.GitUrl));
 
-      if (repositorio != null)
+      if (repositorio == null)
       {
-        var codigo = "";
-        string? descricao;
-        var tipo = "";
-
-        if (pasta.Diretorio.Contains('_'))
-        {
-          codigo = pasta.Diretorio.Split("_")[0] ?? "Código não encontrado";
-          codigo = codigo.Replace(diretorioRaiz, "").Replace("\\", "");
-
-          descricao = pasta.Diretorio
-            .Replace(diretorioRaiz, "")
-            .Replace(codigo, "")
-            .Replace("_", " ")
-            .Replace("\\", "")
-            .Replace(repositorio.Nome, "")
-            .Trim();
-
-          if (pasta.Branch.Contains('_'))
-            tipo = pasta.Branch.Split("/")[0] ?? "nenhum";
-        }
-        else
-        {
-          descricao = pasta.Diretorio
-            .Replace(diretorioRaiz, "")
-            .Replace("\\", "");
-        }
-
-        var projetosDisponiveis = new List<ProjetoDisponivelDTO>();
-
-        repositorio.Projetos.ForEach(projeto =>
-        {
-          var comandos = new List<string>();
-
-          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
-            comandos.Add("Instalar");
-
-          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
-            comandos.Add("Iniciar");
-
-          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
-            comandos.Add("Buildar");
-
-          if (projeto.Comandos.AbrirNoVSCode)
-            comandos.Add("AbrirNoVSCode");
-
-          projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Nome, [.. comandos]));
-        });
-
-        var pastaResponse = new PastaResponseDTO
+        pastaResponseList.Add(new PastaResponseDTO
         (
           pasta.Diretorio,
-          codigo,
-          descricao,
-          tipo,
+          "",
+          "",
+          "",
           pasta.Branch,
           pasta.GitUrl,
-          repositorio.Id,
-          projetosDisponiveis
-        );
+          new Guid(),
+          []
+        ));
 
-        pastaResponseList.Add(pastaResponse);
-
+        continue;
       }
+
+      var codigo = "";
+      string? descricao;
+      var tipo = "";
+      var nomeRepositorio = RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url);
+
+      if (pasta.Diretorio.Contains('_'))
+      {
+        codigo = pasta.Diretorio.Split("_")[0] ?? "Código não encontrado";
+        codigo = codigo.Replace(diretorioRaiz, "").Replace("\\", "");
+
+        descricao = pasta.Diretorio
+          .Replace(diretorioRaiz, "")
+          .Replace(codigo, "")
+          .Replace("_", " ")
+          .Replace("\\", "")
+          .Replace(nomeRepositorio.ToLower().Trim(), "")
+          .Trim();
+
+        if (pasta.Branch.Contains('_'))
+          tipo = pasta.Branch.Split("/")[0] ?? "nenhum";
+      }
+      else
+      {
+        descricao = pasta.Diretorio
+          .Replace(diretorioRaiz, "")
+          .Replace(nomeRepositorio, "")
+          .Replace("\\", "");
+      }
+
+      var projetosDisponiveis = new List<ProjetoDisponivelDTO>();
+
+      repositorio.Projetos.ForEach(projeto =>
+      {
+        var comandos = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
+          comandos.Add("Instalar");
+
+        if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
+          comandos.Add("Iniciar");
+
+        if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
+          comandos.Add("Buildar");
+
+        if (projeto.Comandos.AbrirNoVSCode)
+          comandos.Add("AbrirNoVSCode");
+
+        projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Nome, [.. comandos]));
+      });
+
+      var pastaResponse = new PastaResponseDTO
+      (
+        pasta.Diretorio,
+        codigo,
+        descricao,
+        tipo,
+        pasta.Branch,
+        pasta.GitUrl,
+        repositorio.Id,
+        projetosDisponiveis
+      );
+
+      pastaResponseList.Add(pastaResponse);
     }
 
     return pastaResponseList;
