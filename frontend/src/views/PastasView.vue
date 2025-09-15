@@ -23,7 +23,7 @@
             v-for="pasta in pastas"
             :key="pasta.diretorio"
             :class="[
-              'mb-2 mr-2',
+              'mb-4 mr-2',
               {
                 'card-selecionado':
                   pastaSelecionada.diretorio === pasta.diretorio,
@@ -79,7 +79,7 @@
                 v-for="projeto in pastaSelecionada.projetos"
                 :key="projeto.id"
               >
-                <v-card class="mb-2">
+                <v-card class="mb-2" style="background-color: #2d2d30;">
                   <v-card-title>
                     <div class="d-flex justify-space-between">
                       <div>

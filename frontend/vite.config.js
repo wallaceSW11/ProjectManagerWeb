@@ -10,9 +10,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Project Manager',
-        short_name: 'ProjectManager',
-        theme_color: '#ffffff',
+        name: 'Project Manager Web',
+        short_name: 'ProjectManagerWeb',
+        theme_color: '#333',
         icons: [
           {
             src: '/logo.svg',

@@ -9,5 +9,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="frontend\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <LinkBase>frontend</LinkBase>
+    </Content>
+</ItemGroup>
 
 </Project>
