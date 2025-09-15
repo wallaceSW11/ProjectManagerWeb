@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "deploy:backend": "npm run build && npm run copy:to:backend && npm run publish:backend",
     "copy:to:backend": "xcopy dist\\* C:\\inetpub\\wwwroot\\PMW\\frontend /s /e /y /i",
-    "publish:backend": "cd ..\\Backend && dotnet publish .\\ProjectManagerWeb.csproj -c Release -o C:\\inetpub\\wwwroot\\PMW"
+    "publish:all": "cd ..\\Backend && dotnet publish .\\ProjectManagerWeb.csproj -c Release -o C:\\inetpub\\wwwroot\\PMW"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",

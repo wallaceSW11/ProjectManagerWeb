@@ -23,10 +23,8 @@
           <v-icon class="pr-2" color="primary">mdi-cog</v-icon>
         </v-btn>
 
-        a
-
         <v-btn>
-          <v-icon>mdi-calendar</v-icon>
+          <v-icon color="primary">mdi-calendar</v-icon>
           <v-tooltip
             activator="parent"
             location="left"
