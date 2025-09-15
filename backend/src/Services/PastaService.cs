@@ -127,7 +127,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
       {
         var headLine = await File.ReadAllTextAsync(headPath);
         if (headLine.StartsWith("ref: "))
-          branch = headLine.Split('/').Last().Trim();
+          branch = headLine.Replace("ref: refs/heads/", "").Replace("\n", "");
       }
 
       if (!string.IsNullOrEmpty(url) && !string.IsNullOrEmpty(branch))
