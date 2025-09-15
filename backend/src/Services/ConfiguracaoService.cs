@@ -5,28 +5,35 @@ namespace ProjectManagerWeb.src.Services;
 
 public class ConfiguracaoService
 {
-    private const string FilePath = "Banco/Configuracao.json";
+    private static readonly string BasePath =
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "PMW",
+            "Banco"
+        );
+
+    private static readonly string FilePath =
+        Path.Combine(BasePath, "Configuracao.json");
+
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
-    private readonly JsonSerializerOptions _jsonOptions = new() 
-    { 
+
+    private readonly JsonSerializerOptions _jsonOptions = new()
+    {
         WriteIndented = true,
-        // Adicionamos esta opção para garantir que o mapeamento de nomes funcione bem
-        PropertyNameCaseInsensitive = true 
+        PropertyNameCaseInsensitive = true
     };
 
     public ConfiguracaoService()
     {
-        var directoryName = Path.GetDirectoryName(FilePath);
-        if (!string.IsNullOrEmpty(directoryName) && !Directory.Exists(directoryName))
+        if (!Directory.Exists(BasePath))
         {
-            Directory.CreateDirectory(directoryName);
+            Directory.CreateDirectory(BasePath);
         }
     }
 
     /// <summary>
     /// Obtém o objeto de configuração do arquivo JSON.
     /// </summary>
-    /// <returns>O objeto de configuração ou um objeto padrão se o arquivo não existir.</returns>
     public async Task<ConfiguracaoRequestDTO> ObterConfiguracaoAsync()
     {
         await _semaphore.WaitAsync();
@@ -34,7 +41,6 @@ public class ConfiguracaoService
         {
             if (!File.Exists(FilePath))
             {
-                // Retorna um objeto padrão se o arquivo de configuração ainda não foi criado
                 return new ConfiguracaoRequestDTO();
             }
 
@@ -56,7 +62,6 @@ public class ConfiguracaoService
     /// <summary>
     /// Salva (substitui) o objeto de configuração no arquivo JSON.
     /// </summary>
-    /// <param name="configuracao">O objeto de configuração a ser salvo.</param>
     public async Task SalvarConfiguracaoAsync(ConfiguracaoRequestDTO configuracao)
     {
         await _semaphore.WaitAsync();

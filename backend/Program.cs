@@ -49,7 +49,7 @@ app.UseDefaultFiles(); // para servir index.html por padrão
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "frontend", "dist")
+        Path.Combine(Directory.GetCurrentDirectory(), "frontend")
     ),
     RequestPath = ""
 });
@@ -58,7 +58,7 @@ app.UseStaticFiles(new StaticFileOptions
 app.MapFallbackToFile("index.html", new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "frontend", "dist")
+        Path.Combine(Directory.GetCurrentDirectory(), "frontend")
     )
 });
 
