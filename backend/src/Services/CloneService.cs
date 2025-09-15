@@ -84,12 +84,11 @@ public class CloneService
                     .Append($"cd {diretorioCompleto.ToString()}; ")
                     .Append($"git clone {agregado}; ")
                     .Append($"cd {nomeGit}; ")
-                    .Append($"cd {nomeGit}; ")
                     .Append($"git checkout {clone.Branch}; ");
 
                 if (clone.CriarBranchRemoto)
                     if (clone.Tipo == "nenhum")
-                        comando.Append($" git checkout -b {clone.Branch};");
+                        comando.Append($" git checkout -b {clone.Codigo};");
                     else
                         comando.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
 

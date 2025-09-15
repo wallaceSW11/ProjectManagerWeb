@@ -2,8 +2,14 @@
   <v-container>
     <div class="d-flex flex-column">
       <v-row no-gutters>
-        <v-col cols="8">
+        <v-col cols="8" class="d-flex justify-space-between">
           <h2>Pastas</h2>
+          
+            <v-btn @click="carregarPastas" size="small">
+              <v-icon>mdi-refresh</v-icon>
+              <v-tooltip location="top" text="Atualizar listagem" activator="parent"/>
+            </v-btn>
+          
         </v-col>
 
         <v-col class="ml-4 d-flex align-center">

@@ -108,7 +108,7 @@
             <v-icon>mdi-download</v-icon>
             Clonar
           </v-btn>
-          <v-btn>
+          <v-btn @click="fecharClone">
             <v-icon>mdi-close</v-icon>
             Fechar
           </v-btn>
@@ -128,12 +128,14 @@ import ConfiguracaoService from "./services/ConfiguracaoService";
 import CloneService from "./services/CloneService";
 import logo from "@/assets/logo.svg"
 import VersaoService from "./services/VersaoService";
+import { useRoute } from "vue-router";
 
 let exibirModalClone = ref(false);
 const repositorios = reactive([]);
 const configuracao = reactive(new ConfiguracaoModel());
 const clone = reactive(new CloneModel());
 const compiladoEm = ref();
+const route = useRoute();
 
 onMounted(async () => {
   await consultarRepositorios();
@@ -185,15 +187,19 @@ const formularioValido = async () => {
 const clonar = async () => {
   if (!(await formularioValido())) return;
 
-  console.log(clone);
-
   try {
     await CloneService.clonar(clone);
     exibirModalClone.value = false;
+    route.go(0);
   } catch (error) {
     console.error("Falha ao clonar:", error);
   }
 };
+
+const fecharClone = () => {
+  exibirModalClone.value = false;
+  Object.assign(clone, new CloneModel());
+}
 </script>
 
 <style>
