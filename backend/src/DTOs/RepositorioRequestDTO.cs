@@ -1,5 +1,7 @@
+using System.ComponentModel.Design;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using ProjectManagerWeb.src.Enuns;
 
 namespace ProjectManagerWeb.src.DTOs
 {
@@ -16,7 +18,8 @@ namespace ProjectManagerWeb.src.DTOs
         string Url,
         string Nome,
         List<ProjetoDTO> Projetos,
-        List<string>? Agregados
+        List<string>? Agregados,
+        List<MenuDTO>? Menus
     )
     {
         public static string ObterNomeRepositorio(string url)
@@ -29,7 +32,7 @@ namespace ProjectManagerWeb.src.DTOs
             return match.Success ? match.Groups[1].Value : string.Empty;
         }
     }
-    
+
     /// <summary>
     /// Representa um projeto específico dentro de um repositório.
     /// </summary>
@@ -57,5 +60,18 @@ namespace ProjectManagerWeb.src.DTOs
         string? Iniciar,
         string? Buildar,
         bool AbrirNoVSCode
+    );
+
+    public sealed record MenuDTO(
+        Guid Id,
+        string Nome,
+        string Tipo,
+        List<ArquivosDTO>? Arquivos
+    );
+
+    public sealed record ArquivosDTO(
+        string Arquivo,
+        string Destino,
+        bool IgnorarGit
     );
 }

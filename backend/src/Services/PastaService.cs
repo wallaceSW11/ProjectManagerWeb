@@ -33,6 +33,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           pasta.Branch,
           pasta.GitUrl,
           new Guid(),
+          [],
           []
         ));
 
@@ -98,7 +99,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         pasta.Branch,
         pasta.GitUrl,
         repositorio.Id,
-        projetosDisponiveis
+        projetosDisponiveis,
+        repositorio.Menus ?? []
       );
 
       pastaResponseList.Add(pastaResponse);

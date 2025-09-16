@@ -329,7 +329,7 @@ const consultarPastaSelecionadaDoStorage = () => {
 const executarAcoes = async () => {
   const payload = {
     diretorio: pastaSelecionada.diretorio,
-    gitId: pastaSelecionada.gitId,
+    repositorioId: pastaSelecionada.repositorioId,
     projetos: pastaSelecionada.projetos
       .filter((p) => p.comandosSelecionados.length > 0)
       .map((p) => {

@@ -56,7 +56,7 @@
               :items="repositorios"
               item-title="nome"
               item-value="id"
-              v-model="clone.gitId"
+              v-model="clone.repositorioId"
               :rules="obrigatorio"
             />
 
