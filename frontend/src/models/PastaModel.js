@@ -13,5 +13,6 @@ export default class PastaModel {
     this.git = obj.git || "";
     this.repositorioId = obj.repositorioId;
     this.projetos = (obj.projetos || []).map((p) => new ProjetoModel(p));
+    this.menus = obj.menus || [];
   }
 }

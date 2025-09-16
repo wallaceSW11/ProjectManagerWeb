@@ -4,12 +4,15 @@
       <v-row no-gutters>
         <v-col cols="8" class="d-flex justify-space-between">
           <h2>Pastas</h2>
-          
-            <v-btn @click="carregarPastas" size="small">
-              <v-icon>mdi-refresh</v-icon>
-              <v-tooltip location="top" text="Atualizar listagem" activator="parent"/>
-            </v-btn>
-          
+
+          <v-btn @click="carregarPastas" size="small">
+            <v-icon>mdi-refresh</v-icon>
+            <v-tooltip
+              location="top"
+              text="Atualizar listagem"
+              activator="parent"
+            />
+          </v-btn>
         </v-col>
 
         <v-col class="ml-4 d-flex align-center">
@@ -44,9 +47,29 @@
                 </div>
 
                 <div>
-                  <v-btn icon variant="flat" size="small">
+                  <!-- <v-btn icon variant="flat" size="small">
                     <v-icon small>mdi-dots-vertical</v-icon>
-                  </v-btn>
+                  </v-btn> -->
+
+                  <v-menu location="bottom">
+                    <template #activator="{ props }">
+                      <v-btn v-bind="props" icon size="small" variant="flat">
+                        <v-icon small>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
+
+                    <v-list>
+                      <v-list-item
+                        v-for="menu in pasta.menus"
+                        :key="menu.id"
+                        @click="executarMenu(pasta, menu.id)"
+                      >
+                        <v-list-item-title>
+                          {{ menu.nome }}
+                        </v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
                 </div>
               </div>
             </v-card-title>
@@ -85,7 +108,7 @@
                 v-for="projeto in pastaSelecionada.projetos"
                 :key="projeto.id"
               >
-                <v-card class="mb-2" style="background-color: #2d2d30;">
+                <v-card class="mb-2" style="background-color: #2d2d30">
                   <v-card-title>
                     <div class="d-flex justify-space-between">
                       <div>
@@ -139,66 +162,6 @@
               </v-btn>
             </div>
           </div>
-          <!-- <div class="altura-acoes d-flex flex-column" style="border: 1px solid yellow">
-            <div class="d-flex flex-column" style="border: 1px solid purple">
-              <v-card
-                v-for="projeto in pastaSelecionada.projetos"
-                :key="projeto.id"
-                class="mb-2"
-                v-if="false"
-              >
-                <v-card-title>
-                  <div class="d-flex justify-space-between">
-                    <div>
-                      {{ projeto.nome }}
-                    </div>
-
-                    <div>
-                      <v-tooltip text="Desmarcar todos">
-                        <template #activator="{ props }">
-                          <v-icon
-                            v-bind="props"
-                            size="16px"
-                            @click="projeto.comandosSelecionados = []"
-                            >mdi-close-box-multiple-outline</v-icon
-                          >
-                        </template>
-                      </v-tooltip>
-                    </div>
-                  </div>
-                </v-card-title>
-
-                <v-card-text>
-                  <v-checkbox
-                    v-for="(comando, indice) in projeto.comandos"
-                    :key="indice"
-                    :label="comando"
-                    :value="comando"
-                    v-model="projeto.comandosSelecionados"
-                    hide-details
-                    height="40px"
-                  />
-                </v-card-text>
-              </v-card>
-            </div>
-
-            <div class="d-flex">
-              <v-btn
-                size="large"
-                color="primary"
-                width="100%"
-                @click="executarAcoes"
-                :disabled="
-                  !pastaSelecionada.projetos.some(
-                    (p) => p.comandosSelecionados.length > 0
-                  )
-                "
-              >
-                <v-icon>mdi-lightning-bolt</v-icon>
-                Executar
-              </v-btn>
-            </div>
-          </div> -->
         </v-col>
       </v-row>
     </div>
@@ -206,7 +169,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import ConfiguracaoModel from "../models/ConfiguracaoModel";
 import ConfiguracaoService from "../services/ConfiguracaoService";
 import PastasService from "../services/PastasService";
@@ -374,6 +337,21 @@ const consultarAcoesSelecionadas = () => {
   const acoes = localStorage.getItem(CHAVE_ACOES_SELECIONADAS);
 
   return acoes ? JSON.parse(acoes) : null;
+};
+
+const executarMenu = async (pasta, menuId) => {
+  const payload = {
+    diretorio: pasta.diretorio,
+    repositorioId: pasta.repositorioId,
+    comandoId: menuId,
+  };
+  console.log(". ~ payload:", payload);
+
+  try {
+    await ComandosService.executarComandoMenu(payload);
+  } catch (error) {
+    console.error("Falha ao executar o menu: ", error);
+  }
 };
 </script>
 
