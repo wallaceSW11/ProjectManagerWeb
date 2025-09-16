@@ -47,10 +47,6 @@
                 </div>
 
                 <div>
-                  <!-- <v-btn icon variant="flat" size="small">
-                    <v-icon small>mdi-dots-vertical</v-icon>
-                  </v-btn> -->
-
                   <v-menu location="bottom">
                     <template #activator="{ props }">
                       <v-btn v-bind="props" icon size="small" variant="flat">
