@@ -9,7 +9,7 @@ public sealed record CloneRequestDTO(
     string Descricao,
     string Tipo,
     string Branch,
-    Guid GitId,
+    Guid RepositorioId,
     bool CriarBranchRemoto,
     bool BaixarAgregados,
     bool BaixarSomenteAgregados

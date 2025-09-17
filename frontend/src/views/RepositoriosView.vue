@@ -10,33 +10,11 @@
       </v-col>
 
       <v-col cols="12">
-        <div
-          :class="[
-            'd-flex align-center',
-            emModoInicial ? 'justify-space-between' : 'justify-end',
-          ]"
-          style="height: 70px"
-        >
-          <div>
-            <v-btn
-              @click="
-                () => (emModoInicial ? mudarParaCadastro() : salvarAlteracoes())
-              "
-            >
-              <v-icon>{{ emModoInicial ? "mdi-plus" : "mdi-check" }}</v-icon>
-              {{ emModoInicial ? "Adicionar" : "Salvar" }}
-            </v-btn>
-
-            <v-btn
-              v-if="emModoCadastroEdicao"
-              variant="plain"
-              class="ml-2"
-              @click="descartarAlteracoes"
-            >
-              <v-icon>mdi-cancel</v-icon>
-              Cancelar
-            </v-btn>
-          </div>
+        <div class="d-flex justify-space-between align-center">
+          <v-btn v-if="!emModoCadastroEdicao" @click="mudarParaCadastro()">
+            <v-icon>mdi-plus</v-icon>
+            Adicionar
+          </v-btn>
 
           <div v-if="emModoInicial" style="width: 300px">
             <v-text-field
@@ -45,20 +23,56 @@
             />
           </div>
         </div>
+      </v-col>
 
-        <v-tabs-window v-model="pagina" class="altura-limitada">
-          <v-tabs-window-item>
-            <ListaRepositorios
-              :itens="repositorios"
-              @editar="mudarParaEdicao"
-              @excluir="excluirRepositorio"
-            />
-          </v-tabs-window-item>
+      <v-col cols="12">
+        <div>
+          <v-tabs-window v-model="pagina" class="altura-limitada">
+            <v-tabs-window-item>
+              <ListaRepositorios
+                :itens="repositorios"
+                @editar="mudarParaEdicao"
+                @excluir="excluirRepositorio"
+              />
+            </v-tabs-window-item>
 
-          <v-tabs-window-item>
-            <CadastroRepositorio v-model="repositorioSelecionado" />
-          </v-tabs-window-item>
-        </v-tabs-window>
+            <v-tabs-window-item>
+              <v-tabs v-model="paginaCadastro">
+                <v-tab>Geral</v-tab>
+                <v-tab>Projetos</v-tab>
+                <v-tab>Menu de contexo</v-tab>
+              </v-tabs>
+
+              <v-tabs-window v-model="paginaCadastro">
+                <v-tabs-window-item>
+                  <CadastroRepositorio v-model="repositorioSelecionado" />
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <CadastroProjeto v-model="repositorioSelecionado" />
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <CadastroMenu v-model="repositorioSelecionado" />
+                </v-tabs-window-item>
+              </v-tabs-window>
+            </v-tabs-window-item>
+          </v-tabs-window>
+        </div>
+      </v-col>
+
+      <v-col cols="12">
+        <div class="d-flex align-center justify-end">
+          <div>
+            <v-btn @click="salvarAlteracoes()">
+              <v-icon>mdi-check</v-icon>
+              Salvar
+            </v-btn>
+
+            <v-btn variant="plain" class="ml-2" @click="descartarAlteracoes">
+              <v-icon>mdi-cancel</v-icon>
+              Cancelar
+            </v-btn>
+          </div>
+        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -70,6 +84,8 @@ import ListaRepositorios from "../components/repositorios/ListaRepositorios.vue"
 import CadastroRepositorio from "../components/repositorios/CadastroRepositorio.vue";
 import RepositorioModel from "../models/RepositorioModel";
 import RepositoriosService from "../services/RepositoriosService";
+import CadastroMenu from "@/components/repositorios/CadastroMenu.vue";
+import CadastroProjeto from "../components/repositorios/CadastroProjeto.vue";
 
 let repositorios = reactive([]);
 const repositorioSelecionado = reactive(new RepositorioModel());
@@ -77,6 +93,7 @@ const repositorioSelecionado = reactive(new RepositorioModel());
 const obterRepositorios = async () => {
   try {
     const resposta = await RepositoriosService.getRepositorios();
+    console.log(". ~ resposta:", resposta);
 
     Object.assign(
       repositorios,
@@ -92,6 +109,7 @@ onMounted(async () => {
 });
 
 const pagina = ref(0);
+const paginaCadastro = ref(0);
 
 const MODO_OPERACAO = {
   INICIAL: {
@@ -160,10 +178,8 @@ const salvarAlteracoes = () => {
     emModoCadastro.value ? criarRepositorio() : atualizarRepositorio();
     irParaListagem();
   } catch (error) {
-    console.error('Falha ao salvar alteracoes: ', error);
+    console.error("Falha ao salvar alteracoes: ", error);
   }
-
-  
 };
 
 const criarRepositorio = async () => {
@@ -179,9 +195,12 @@ const criarRepositorio = async () => {
 const atualizarRepositorio = async () => {
   try {
     await RepositoriosService.atualizarRepositorio(repositorioSelecionado);
-
-    const indice = repositorios.findIndex(r => r.id === repositorioSelecionado.id);
-    (indice !== -1) && Object.assign(repositorios[indice], repositorioSelecionado);
+    
+    const indice = repositorios.findIndex(
+      (r) => r.id === repositorioSelecionado.id
+    );
+    indice !== -1 &&
+      Object.assign(repositorios[indice], repositorioSelecionado);
   } catch (error) {
     console.error("Falha ao criar repositorio" + error);
   }
@@ -194,8 +213,8 @@ const excluirRepositorio = async (item) => {
 
   try {
     await RepositoriosService.excluirRepositorio(item);
-    const indice = repositorios.findIndex((r) => r.id === item.id);    
-    (indice !== -1) && repositorios.splice(indice, 1);    
+    const indice = repositorios.findIndex((r) => r.id === item.id);
+    indice !== -1 && repositorios.splice(indice, 1);
   } catch (error) {
     console.error("Falha ao excluir repositorio" + error);
   }

@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Text;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Utils;
 
@@ -7,7 +9,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 {
   public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
   {
-    var repositorio = await repositorioJsonService.GetByIdAsync(pasta.GitId) ?? throw new Exception("Repositório não encontrado");
+    var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
     var comandos = new List<string>();
 
     var diretorio = pasta.Diretorio + "\\";
@@ -78,5 +80,41 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
     return true;
   }
+
+  public async Task<bool> ExecutarComandoMenu(MenuRequestDTO menu)
+  {
+    var repositorio = await repositorioJsonService.GetByIdAsync(menu.RepositorioId) ?? throw new Exception("Repositório não encontrado");
+    var menuRepositorio = repositorio.Menus?.FirstOrDefault(m => m.Id == menu.ComandoId) ?? throw new Exception("Comando não encontrado");
+    var nomeRepositorio = RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url);
+
+    var comandos = new List<string>();
+
+    menuRepositorio.Arquivos?.ForEach(a =>
+    {
+      var nomeArquivo = Path.GetFileName(a.Arquivo);
+
+      comandos
+        .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
+ 
+      if (a.IgnorarGit)
+        comandos.Add($"cd {menu.Diretorio}\\{a.Destino}; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
+    });
+
+    try
+    {
+      comandos.ForEach(ShellExecute.ExecutarComando);
+    }
+    catch
+    {
+      return false;
+    }
+    finally
+    {
+      comandos.Clear();
+    }
+
+    return true;
+  }
+
   
 }

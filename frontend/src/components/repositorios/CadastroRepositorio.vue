@@ -16,97 +16,6 @@
           :rules="obrigatorio"
         />
       </v-col>
-
-      <v-col cols="12">
-        <h2>Projetos</h2>
-        <v-divider class="py-2" />
-
-        <div
-          :class="[
-            'd-flex align-center',
-            emModoInicial ? 'justify-space-between' : 'justify-end',
-          ]"
-          style="height: 70px"
-        >
-          <div>
-            <v-btn
-              @click="
-                () => (emModoInicial ? mudarParaCadastro() : salvarAlteracoes())
-              "
-            >
-              <v-icon>{{ emModoInicial ? "mdi-plus" : "mdi-check" }}</v-icon>
-              {{ emModoInicial ? "Adicionar" : "Salvar" }}
-            </v-btn>
-
-            <v-btn
-              v-if="emModoCadastroEdicao"
-              variant="plain"
-              class="ml-2"
-              @click="descartarAlteracoes"
-            >
-              <v-icon>mdi-cancel</v-icon>
-              Cancelar
-            </v-btn>
-          </div>
-        </div>
-
-        <v-tabs-window v-model="pagina">
-          <v-tabs-window-item>
-            <v-data-table
-              :headers="colunas"
-              :items="repositorio.projetos"
-              hide-default-footer
-            >
-              <template #[`item.actions`]="{ item }">
-                <v-btn icon @click="mudarParaEdicao(item)"
-                  ><v-icon>mdi-pencil</v-icon></v-btn
-                >
-                <v-btn icon @click="excluirProjeto(item)"
-                  ><v-icon>mdi-delete</v-icon></v-btn
-                >
-              </template>
-            </v-data-table>
-          </v-tabs-window-item>
-
-          <v-tabs-window-item>
-            <v-form ref="formProjeto">
-              <v-text-field
-                label="Nome"
-                v-model="projetoSelecionado.nome"
-                :rules="obrigatorio"
-              />
-              <v-text-field
-                label="Subdiretório"
-                v-model="projetoSelecionado.subdiretorio"
-              />
-              <v-text-field
-                label="Perfil VS Code"
-                v-model="projetoSelecionado.perfilVSCode"
-              />
-
-              <h2>Comandos:</h2>
-              <v-divider />
-
-              <v-text-field
-                label="Instalar"
-                v-model="projetoSelecionado.comandos.instalar"
-              />
-              <v-text-field
-                label="Iniciar"
-                v-model="projetoSelecionado.comandos.iniciar"
-              />
-              <v-text-field
-                label="Buildar"
-                v-model="projetoSelecionado.comandos.buildar"
-              />
-              <v-checkbox
-                label="Abrir no VS Code"
-                v-model="projetoSelecionado.comandos.abrirNoVSCode"
-              />
-            </v-form>
-          </v-tabs-window-item>
-        </v-tabs-window>
-      </v-col>
     </v-row>
   </v-form>
 </template>
@@ -122,12 +31,24 @@ const obrigatorio = [(v) => !!v || "Obrigatório"];
 
 const pagina = ref(0);
 
+const salvarProjeto = () => {};
+
 const colunas = reactive([
   { title: "Nome", key: "nome", align: "start" },
   { title: "Subdiretorio", key: "subdiretorio", align: "start" },
   { title: "Perfil VS Code", key: "perfilVSCode", align: "start" },
   { title: "Actions", key: "actions", align: "center", width: "200px" },
 ]);
+
+const campos = [
+  { model: "nome", component: "v-text-field", props: { label: "Nome", rules: [(v) => !!v || 'Obrigatório'] } },
+  { model: "subdiretorio", component: "v-text-field", props: { label: "Subdiretório" } },
+  { model: "perfilVSCode", component: "v-text-field", props: { label: "Perfil VS Code" } },
+  { model: "comandos.instalar", component: "v-text-field", props: { label: "Instalar" } },
+  { model: "comandos.iniciar", component: "v-text-field", props: { label: "Iniciar" } },
+  { model: "comandos.buildar", component: "v-text-field", props: { label: "Buildar" } },
+  { model: "comandos.abrirNoVSCode", component: "v-checkbox", props: { label: "Abrir no VS Code" } }
+];
 
 const projetoSelecionado = reactive(new ProjetoModel());
 

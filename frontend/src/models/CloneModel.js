@@ -7,7 +7,7 @@ export default class CloneModel {
     this.descricao = obj.descricao;
     this.tipo = obj.tipo || "nenhum";
     this.branch = obj.branch;
-    this.gitId = obj.gitId;
+    this.repositorioId = obj.repositorioId;
     this.criarBranchRemoto = obj.criarBranchRemoto;
     this.baixarAgregados = obj.baixarAgregados;
   }

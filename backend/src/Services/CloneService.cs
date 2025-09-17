@@ -37,7 +37,7 @@ public class CloneService
         if (!Directory.Exists(diretorioCompleto.ToString()))
             Directory.CreateDirectory(diretorioCompleto.ToString());
 
-        var gitPrincipal = await _repositorioJson.GetByIdAsync(clone.GitId);
+        var gitPrincipal = await _repositorioJson.GetByIdAsync(clone.RepositorioId);
 
         if (gitPrincipal is null)
         {

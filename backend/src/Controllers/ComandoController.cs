@@ -22,4 +22,11 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
     var comandos = comandoService.ExecutarComandoAvulso(comando);
     return Ok(comandos);
   }
+
+  [HttpPost("menu")]
+  public async Task<IActionResult> ExecutarComandoMenu(MenuRequestDTO menu)
+  {
+    var comandos = await comandoService.ExecutarComandoMenu(menu);
+    return Ok(comandos);
+  }
 }

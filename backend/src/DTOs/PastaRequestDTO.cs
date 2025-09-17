@@ -2,6 +2,6 @@ namespace ProjectManagerWeb.src.DTOs;
 
 public sealed record PastaRequestDTO(
     string Diretorio,
-    Guid GitId,
+    Guid RepositorioId,
     List<ProjetoDisponivelDTO> Projetos
 );
