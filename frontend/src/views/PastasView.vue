@@ -54,14 +54,21 @@
                       </v-btn>
                     </template>
 
-                    <v-list>
+                    <div v-if="pasta.menus.length === 0">
+                      <v-card>
+                        <v-card-title>Nenhum menu foi adicionado no repositório</v-card-title>
+                      </v-card>
+                    </div>
+
+                    <v-list v-else dense>
                       <v-list-item
                         v-for="menu in pasta.menus"
                         :key="menu.id"
                         @click="executarMenu(pasta, menu.id)"
                       >
                         <v-list-item-title>
-                          {{ menu.nome }}
+                          <v-icon>mdi-folder</v-icon>
+                          {{ menu.titulo }}
                         </v-list-item-title>
                       </v-list-item>
                     </v-list>

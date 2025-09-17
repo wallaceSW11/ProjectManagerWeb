@@ -64,7 +64,7 @@ namespace ProjectManagerWeb.src.DTOs
 
     public sealed record MenuDTO(
         Guid Id,
-        string Nome,
+        string Titulo,
         string Tipo,
         List<ArquivosDTO>? Arquivos
     );

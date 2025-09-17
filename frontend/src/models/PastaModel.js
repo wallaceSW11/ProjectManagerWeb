@@ -4,7 +4,7 @@ export default class PastaModel {
   constructor(obj) {
     obj = obj || {};
 
-    this.id = obj.id;
+    this.id = obj.id || crypto.randomUUID();
     this.diretorio = obj.diretorio || "";
     this.codigo = obj.codigo || "";
     this.descricao = obj.descricao || "";
