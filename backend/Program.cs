@@ -6,6 +6,10 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     WebRootPath = "frontend"
 });
 
+#if !DEBUG
+builder.WebHost.UseUrls("http://localhost:2025");
+#endif
+
 // Add services to the container.
 builder.Services.AddOpenApi();
 
