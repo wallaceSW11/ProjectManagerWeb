@@ -83,6 +83,7 @@ import ConfiguracaoModel from "@/models/ConfiguracaoModel";
 import RepositorioModel from "@/models/RepositorioModel";
 import ConfiguracaoService from "@/services/ConfiguracaoService";
 import RepositoriosService from "@/services/RepositoriosService";
+import { notificar } from "@/utils/eventBus";
 import { onMounted, reactive, ref } from "vue";
 
 const clone = reactive(new CloneModel());
@@ -106,7 +107,7 @@ const consultarRepositorios = async () => {
       response.map((r) => new RepositorioModel(r))
     );
   } catch (error) {
-    console.log("Falha ao consultar os repositorios", error);
+    notificar('erro', "Falha ao consultar os repositorios", error.message);
   }
 };
 
