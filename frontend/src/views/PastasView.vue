@@ -56,7 +56,10 @@
 
                     <div v-if="pasta.menus.length === 0">
                       <v-card>
-                        <v-card-title>Nenhum menu foi adicionado no repositório</v-card-title>
+                        <v-card-title
+                          >Nenhum menu foi adicionado no
+                          repositório</v-card-title
+                        >
                       </v-card>
                     </div>
 
@@ -179,6 +182,7 @@ import PastasService from "../services/PastasService";
 import { useRouter } from "vue-router";
 import PastaModel from "../models/PastaModel";
 import ComandosService from "../services/ComandosService";
+import { carregandoAsync } from "@/utils/eventBus";
 
 let configuracao = reactive(new ConfiguracaoModel());
 const pastas = reactive([]);
@@ -244,7 +248,9 @@ const consultarConfiguracao = async () => {
 
 const carregarPastas = async () => {
   try {
-    const resposta = await PastasService.getPastas();
+    const resposta = await carregandoAsync(async () => {
+      return await PastasService.getPastas();
+    });
     Object.assign(pastas, resposta);
   } catch (error) {
     console.error("Falha ao obter as pastas", error);

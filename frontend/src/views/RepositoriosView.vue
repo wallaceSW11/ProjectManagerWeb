@@ -86,14 +86,16 @@ import RepositorioModel from "../models/RepositorioModel";
 import RepositoriosService from "../services/RepositoriosService";
 import CadastroMenu from "@/components/repositorios/CadastroMenu.vue";
 import CadastroProjeto from "../components/repositorios/CadastroProjeto.vue";
+import { carregandoAsync } from "@/utils/eventBus";
 
 let repositorios = reactive([]);
 const repositorioSelecionado = reactive(new RepositorioModel());
 
 const obterRepositorios = async () => {
   try {
-    const resposta = await RepositoriosService.getRepositorios();
-    console.log(". ~ resposta:", resposta);
+    const resposta = await carregandoAsync(async () => {
+      return await RepositoriosService.getRepositorios();
+    })
 
     Object.assign(
       repositorios,
