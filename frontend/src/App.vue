@@ -226,7 +226,8 @@ const clonar = async () => {
   try {
     await CloneService.clonar(clone);
     exibirModalClone.value = false;
-    route.go(0);
+    Object.assign(clone, new CloneModel());
+    clone.diretorioRaiz = configuracao.diretorioRaiz + "\\";
   } catch (error) {
     console.error("Falha ao clonar:", error);
   }
