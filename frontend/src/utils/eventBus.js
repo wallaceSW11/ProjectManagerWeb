@@ -1,36 +1,31 @@
-// src/eventBus.js
-import mitt from 'mitt'
+import mitt from "mitt";
 
-const emitter = mitt()
+const emitter = mitt();
 
-// helper simples para emitir o overlay
-function carregando(exibir, texto = 'Carregando...') {
-  emitter.emit('carregando', { exibir, texto })
+// Overlay helpers (se quiser continuar usando)
+function carregando(exibir, texto = "Carregando...") {
+  emitter.emit("carregando", { exibir, texto });
 }
 
-/**
- * Helper para executar uma promise com overlay automaticamente.
- * @param {Promise|Function} promiseOrFn - Promise ou função async
- * @param {string} texto - mensagem do overlay
- */
-async function carregandoAsync(promiseOrFn, texto = 'Carregando...') {
+async function carregandoAsync(promiseOrFn, texto = "Carregando...") {
   try {
-    // abre overlay
-    carregando(true, texto)
-
-    let result
-    if (typeof promiseOrFn === 'function') {
-      result = await promiseOrFn()
+    carregando(true, texto);
+    let result;
+    if (typeof promiseOrFn === "function") {
+      result = await promiseOrFn();
     } else {
-      result = await promiseOrFn
+      result = await promiseOrFn;
     }
-
-    return result
+    return result;
   } finally {
-    // fecha overlay sempre
-    carregando(false)
+    carregando(false);
   }
 }
 
-export default emitter
-export { carregando, carregandoAsync }
+// Notificações / Toast
+function notificar(tipo, titulo, mensagem = "") {
+  emitter.emit("notificar", { tipo, titulo, mensagem });
+}
+
+export default emitter;
+export { carregando, carregandoAsync, notificar };

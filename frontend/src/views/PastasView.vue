@@ -182,7 +182,7 @@ import PastasService from "../services/PastasService";
 import { useRouter } from "vue-router";
 import PastaModel from "../models/PastaModel";
 import ComandosService from "../services/ComandosService";
-import { carregandoAsync } from "@/utils/eventBus";
+import { carregandoAsync, notificar } from "@/utils/eventBus";
 
 let configuracao = reactive(new ConfiguracaoModel());
 const pastas = reactive([]);
@@ -313,10 +313,14 @@ const executarAcoes = async () => {
   };
 
   try {
-    await ComandosService.executarComando(payload);
+    await carregandoAsync(async () => {
+      await ComandosService.executarComando(payload);
+    });
     salvarAcoesSelecionadas(payload);
+    notificar("sucesso", "Comando solicitado");
   } catch (error) {
     console.error("Falha ao executar as acoes: ", error);
+    notificar("erro", "Falha ao executar a ação", error);
   }
 };
 
