@@ -59,8 +59,10 @@ app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value;
 
+    if (path is null) return;
+
     // Se for API, passa para o próximo middleware
-    if (path.StartsWith("/api"))
+    if (path is not null && path.StartsWith("/api"))
     {
         await next();
         return;
