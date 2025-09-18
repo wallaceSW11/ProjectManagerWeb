@@ -1,37 +1,41 @@
 <template>
   <v-overlay
-      v-model="exibirCarregando"
-      class="d-flex flex-column align-center justify-center text-center"
-      persistent
-      scrim="#121212dd"
-      opacity=".9"
+    v-model="exibirCarregando"
+    class="d-flex flex-column align-center justify-center text-center"
+    persistent
+    scrim="#121212dd"
+    opacity=".9"
+  >
+    <div
+      class="bg-surface rounded-xl px-8 py-6 d-flex flex-column align-center"
     >
-      <div class="bg-surface rounded-xl px-8 py-6 d-flex flex-column align-center">
-        <div class="d-flex align-center mb-3">
-          <img :src="logo" width="24px" height="24px" />
-          <h2 class="ml-2text-h5 font-weight-bold">Project Manager Web</h2>
-        </div>
-
-        <v-progress-circular
-          indeterminate
-          color="primary"
-          size="32"
-          width="6"
-          class="mb-4"
-        />
-
-        <span class="text-subtitle-1 font-italic">
-          {{ mensagem }}
-        </span>
+      <div class="d-flex align-center mb-3">
+        <img :src="logo" width="24px" height="24px" />
+        <h2 class="ml-2text-h5 font-weight-bold">Project Manager Web</h2>
       </div>
-    </v-overlay>
+
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        size="32"
+        width="6"
+        class="mb-4"
+      />
+
+      <span class="text-subtitle-1 font-italic">
+        {{ mensagem }}
+      </span>
+    </div>
+  </v-overlay>
+
+  <SnackbarNotificacao />
 
   <v-app>
     <v-app-bar>
       <v-app-bar-title>
-        <img :src="logo" width="20px"/>
-            Project Manager Web
-        </v-app-bar-title>
+        <img :src="logo" width="20px" />
+        Project Manager Web
+      </v-app-bar-title>
 
       <div>
         <v-btn class="text-none" @click="exibirModalClone = true">
@@ -52,10 +56,9 @@
 
         <v-btn>
           <v-icon color="primary">mdi-calendar</v-icon>
-          <v-tooltip
-            activator="parent"
-            location="left"
-          >{{ `Compilado em: ${compiladoEm}` }}</v-tooltip>
+          <v-tooltip activator="parent" location="left">{{
+            `Compilado em: ${compiladoEm}`
+          }}</v-tooltip>
         </v-btn>
       </div>
     </v-app-bar>
@@ -153,9 +156,10 @@ import CloneModel from "./models/CloneModel";
 import ConfiguracaoModel from "./models/ConfiguracaoModel";
 import ConfiguracaoService from "./services/ConfiguracaoService";
 import CloneService from "./services/CloneService";
-import logo from "@/assets/logo.svg"
+import logo from "@/assets/logo.svg";
 import VersaoService from "./services/VersaoService";
 import { useRoute } from "vue-router";
+import SnackbarNotificacao from "@/components/comum/SnackbarNotificacao.vue";
 
 let exibirModalClone = ref(false);
 const repositorios = reactive([]);
@@ -196,16 +200,16 @@ const consultarConfiguracao = async () => {
 const consultarVersao = async () => {
   try {
     const response = await carregandoAsync(async () => {
-      const res = await VersaoService.obterVersao()
+      const res = await VersaoService.obterVersao();
 
-      return res
-    }, 'Consultando a versão...');
+      return res;
+    }, "Consultando a versão...");
 
-    compiladoEm.value = response
+    compiladoEm.value = response;
   } catch (error) {
-    console.error("Falha ao consultar a versão:", error)
+    console.error("Falha ao consultar a versão:", error);
   }
-}
+};
 
 const formClone = ref(null);
 const obrigatorio = [(v) => !!v || "Obrigatório"];
@@ -231,24 +235,22 @@ const clonar = async () => {
 const fecharClone = () => {
   exibirModalClone.value = false;
   Object.assign(clone, new CloneModel());
-}
+};
 
-
-
-import eventBus, { carregandoAsync } from '@/utils/eventBus'
-const exibirCarregando = ref(true)
-const mensagem = ref('Carregando...')
+import eventBus, { carregandoAsync } from "@/utils/eventBus";
+const exibirCarregando = ref(true);
+const mensagem = ref("Carregando...");
 
 const handleCarregando = ({ exibir, texto }) => {
-  exibirCarregando.value = exibir
-  mensagem.value = texto
-}
+  exibirCarregando.value = exibir;
+  mensagem.value = texto;
+};
 
 onMounted(() => {
-  eventBus.on('carregando', handleCarregando)
-})
+  eventBus.on("carregando", handleCarregando);
+});
 
 onBeforeUnmount(() => {
-  eventBus.off('carregando', handleCarregando)
-})
+  eventBus.off("carregando", handleCarregando);
+});
 </script>
