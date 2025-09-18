@@ -1,4 +1,31 @@
 <template>
+  <v-overlay
+      v-model="exibirCarregando"
+      class="d-flex flex-column align-center justify-center text-center"
+      persistent
+      scrim="#121212dd"
+      opacity=".9"
+    >
+      <div class="bg-surface rounded-xl px-8 py-6 d-flex flex-column align-center">
+        <div class="d-flex align-center mb-3">
+          <img :src="logo" width="24px" height="24px" />
+          <h2 class="ml-2text-h5 font-weight-bold">Project Manager Web</h2>
+        </div>
+
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="32"
+          width="6"
+          class="mb-4"
+        />
+
+        <span class="text-subtitle-1 font-italic">
+          {{ mensagem }}
+        </span>
+      </div>
+    </v-overlay>
+
   <v-app>
     <v-app-bar>
       <v-app-bar-title>
@@ -119,7 +146,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import RepositorioModel from "./models/RepositorioModel";
 import RepositoriosService from "./services/RepositoriosService";
 import CloneModel from "./models/CloneModel";
@@ -168,12 +195,17 @@ const consultarConfiguracao = async () => {
 
 const consultarVersao = async () => {
   try {
-    const response = await VersaoService.obterVersao();
-    compiladoEm.value = response;
+    const response = await carregandoAsync(async () => {
+      const res = await VersaoService.obterVersao()
+
+      return res
+    }, 'Consultando a versão...');
+
+    compiladoEm.value = response
   } catch (error) {
-    console.error("Falha ao consultar a versão:", error);
+    console.error("Falha ao consultar a versão:", error)
   }
-};
+}
 
 const formClone = ref(null);
 const obrigatorio = [(v) => !!v || "Obrigatório"];
@@ -200,8 +232,23 @@ const fecharClone = () => {
   exibirModalClone.value = false;
   Object.assign(clone, new CloneModel());
 }
-</script>
 
-<style>
-/* Add global styles here if needed */
-</style>
+
+
+import eventBus, { carregandoAsync } from '@/utils/eventBus'
+const exibirCarregando = ref(true)
+const mensagem = ref('Carregando...')
+
+const handleCarregando = ({ exibir, texto }) => {
+  exibirCarregando.value = exibir
+  mensagem.value = texto
+}
+
+onMounted(() => {
+  eventBus.on('carregando', handleCarregando)
+})
+
+onBeforeUnmount(() => {
+  eventBus.off('carregando', handleCarregando)
+})
+</script>
