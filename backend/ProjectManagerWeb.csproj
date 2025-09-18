@@ -18,4 +18,10 @@
     </Content>
 </ItemGroup>
 
+<PropertyGroup>
+  <ApplicationIcon>logo.ico</ApplicationIcon>
+  <UseWinForms>true</UseWinForms>
+  <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+</PropertyGroup>
+
 </Project>

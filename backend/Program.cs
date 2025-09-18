@@ -3,20 +3,16 @@ using ProjectManagerWeb.src.Services;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
+    // Define a pasta do frontend como WebRoot
     WebRootPath = "frontend"
 });
 
-#if !DEBUG
-builder.WebHost.UseUrls("http://localhost:2025");
-#endif
-
-// Add services to the container.
+// Adiciona serviços
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
 {
-    // Dica: Para produção, troque por .WithOrigins("http://seu-dominio.com")
-    options.AddPolicy("AllowAll", policy => 
+    options.AddPolicy("AllowAll", policy =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
@@ -36,17 +32,51 @@ builder.Services.AddSingleton<ComandoService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configura porta 2025 em execução standalone (não IIS)
+if (!app.Environment.IsDevelopment())
+{
+    app.Urls.Clear();
+    app.Urls.Add("http://*:2025");
+}
+
+// Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-// Habilita CORS
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
+
+// Serve arquivos estáticos (JS, CSS, assets)
 app.UseStaticFiles();
+
+// Rotas da API
 app.MapControllers();
-app.MapFallbackToFile("index.html");
+
+// Fallback para rotas do Vue
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+
+    // Se for API, passa para o próximo middleware
+    if (path.StartsWith("/api"))
+    {
+        await next();
+        return;
+    }
+
+    // Se existir arquivo físico correspondente, serve ele
+    var filePath = Path.Combine(app.Environment.WebRootPath, path.TrimStart('/'));
+    if (File.Exists(filePath))
+    {
+        await context.Response.SendFileAsync(filePath);
+        return;
+    }
+
+    // Qualquer outra rota cai no index.html (Vue Router)
+    context.Response.ContentType = "text/html";
+    await context.Response.SendFileAsync(Path.Combine(app.Environment.WebRootPath, "index.html"));
+});
 
 app.Run();
