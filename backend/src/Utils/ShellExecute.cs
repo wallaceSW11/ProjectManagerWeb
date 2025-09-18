@@ -20,8 +20,7 @@ public class ShellExecute
             {
                 FileName = "pwsh.exe",
                 Arguments = $"-NoExit -Command \"{command}\"",
-                UseShellExecute = true,
-                WindowStyle = ProcessWindowStyle.Minimized
+                UseShellExecute = true
             };
 
             Process.Start(psi);
