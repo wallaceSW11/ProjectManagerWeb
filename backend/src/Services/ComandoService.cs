@@ -93,11 +93,13 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     {
       var nomeArquivo = Path.GetFileName(a.Arquivo);
 
-      comandos
-        .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
- 
+
       if (a.IgnorarGit)
-        comandos.Add($"cd {menu.Diretorio}\\{a.Destino}; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
+        comandos
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
+      else
+        comandos
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force;");
     });
 
     try
@@ -116,5 +118,5 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     return true;
   }
 
-  
+
 }
