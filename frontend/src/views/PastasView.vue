@@ -23,7 +23,7 @@
       <v-row no-gutters class="d-flex">
         <v-col cols="8" class="altura-limitada mr-2">
           <div v-if="pastas.length === 0">
-            Não há pastas do diretório raiz informado.
+            Não há pastas no diretório raiz informado.
             <p>{{ configuracao.diretorioRaiz }}</p>
           </div>
 
@@ -56,7 +56,10 @@
 
                     <div v-if="pasta.menus.length === 0">
                       <v-card>
-                        <v-card-title>Nenhum menu foi adicionado no repositório</v-card-title>
+                        <v-card-title
+                          >Nenhum menu foi adicionado no
+                          repositório</v-card-title
+                        >
                       </v-card>
                     </div>
 
@@ -179,6 +182,7 @@ import PastasService from "../services/PastasService";
 import { useRouter } from "vue-router";
 import PastaModel from "../models/PastaModel";
 import ComandosService from "../services/ComandosService";
+import { carregandoAsync, notificar } from "@/utils/eventBus";
 
 let configuracao = reactive(new ConfiguracaoModel());
 const pastas = reactive([]);
@@ -190,7 +194,15 @@ onMounted(async () => {
 });
 
 const inicializarPagina = async () => {
-  await consultarConfiguracao();
+  try {
+    const resposta = await ConfiguracaoService.getConfiguracao();
+
+    Object.assign(configuracao, new ConfiguracaoModel(resposta));
+  } catch (error) {
+    notificar("erro", "Falha ao consultar configuração", error.message);
+
+    return;
+  }
 
   if (redirecionarParaConfiguracaoInicial()) return;
 
@@ -233,18 +245,12 @@ const selecionarPastaSalva = () => {
   indice !== -1 && selecionarPasta(pastas[indice]);
 };
 
-const consultarConfiguracao = async () => {
-  try {
-    let response = await ConfiguracaoService.getConfiguracao();
-    Object.assign(configuracao, new ConfiguracaoModel(response));
-  } catch (error) {
-    console.log("Falha ao consultar as configurações", error);
-  }
-};
 
 const carregarPastas = async () => {
   try {
-    const resposta = await PastasService.getPastas();
+    const resposta = await carregandoAsync(async () => {
+      return await PastasService.getPastas();
+    });
     Object.assign(pastas, resposta);
   } catch (error) {
     console.error("Falha ao obter as pastas", error);
@@ -307,10 +313,14 @@ const executarAcoes = async () => {
   };
 
   try {
-    await ComandosService.executarComando(payload);
+    await carregandoAsync(async () => {
+      await ComandosService.executarComando(payload);
+    });
     salvarAcoesSelecionadas(payload);
+    notificar("sucesso", "Comando solicitado");
   } catch (error) {
     console.error("Falha ao executar as acoes: ", error);
+    notificar("erro", "Falha ao executar a ação", error);
   }
 };
 
