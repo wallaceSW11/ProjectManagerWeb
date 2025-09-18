@@ -23,7 +23,7 @@
       <v-row no-gutters class="d-flex">
         <v-col cols="8" class="altura-limitada mr-2">
           <div v-if="pastas.length === 0">
-            Não há pastas do diretório raiz informado.
+            Não há pastas no diretório raiz informado.
             <p>{{ configuracao.diretorioRaiz }}</p>
           </div>
 
@@ -194,7 +194,15 @@ onMounted(async () => {
 });
 
 const inicializarPagina = async () => {
-  await consultarConfiguracao();
+  try {
+    const resposta = await ConfiguracaoService.getConfiguracao();
+
+    Object.assign(configuracao, new ConfiguracaoModel(resposta));
+  } catch (error) {
+    notificar("erro", "Falha ao consultar configuração", error.message);
+
+    return;
+  }
 
   if (redirecionarParaConfiguracaoInicial()) return;
 
@@ -237,14 +245,6 @@ const selecionarPastaSalva = () => {
   indice !== -1 && selecionarPasta(pastas[indice]);
 };
 
-const consultarConfiguracao = async () => {
-  try {
-    let response = await ConfiguracaoService.getConfiguracao();
-    Object.assign(configuracao, new ConfiguracaoModel(response));
-  } catch (error) {
-    console.log("Falha ao consultar as configurações", error);
-  }
-};
 
 const carregarPastas = async () => {
   try {
