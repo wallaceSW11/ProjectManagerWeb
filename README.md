@@ -41,7 +41,7 @@ Este projeto foi feito no modo *“go horse” / “vibe coding”* — ou seja:
 
 4. Rode o frontend em modo dev (porta **5173**)  
    ```bash
-   npm run dev
+   npm start
    ```
 
 5. Inicie o backend (porta **2024**)  
@@ -53,7 +53,7 @@ Este projeto foi feito no modo *“go horse” / “vibe coding”* — ou seja:
 
 6. Acesse:  
    - Frontend dev: [http://localhost:5173](http://localhost:5173)  
-   - Backend dev: [http://localhost:2024](http://localhost:2024)  
+   - Backend dev: [http://localhost:2024/api](http://localhost:2024/api)  
 
 ---
 
