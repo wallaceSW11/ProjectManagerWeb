@@ -23,7 +23,7 @@
           v-model="repositorio.agregados"
           :items="repositoriosDisponiveis"
           item-title="nome"
-          item-value="id"
+          item-value="identificador"
           multiple
           chips
           clearable
@@ -50,6 +50,6 @@ const obrigatorio = [(v) => !!v || "Obrigatório"];
 
 
 const repositoriosDisponiveis = computed(() => {
-  return props.repositorios.filter((r) => r.id !== repositorio.value.id);
+  return props.repositorios.filter((r) => r.identificador !== repositorio.value.identificador);
 });
 </script>

@@ -66,8 +66,8 @@
                     <v-list v-else dense>
                       <v-list-item
                         v-for="menu in pasta.menus"
-                        :key="menu.id"
-                        @click="executarMenu(pasta, menu.id)"
+                        :key="menu.identificador"
+                        @click="executarMenu(pasta, menu.identificador)"
                       >
                         <v-list-item-title>
                           <v-icon>mdi-folder</v-icon>
@@ -112,7 +112,7 @@
               <div
                 v-else
                 v-for="projeto in pastaSelecionada.projetos"
-                :key="projeto.id"
+                :key="projeto.identificador"
               >
                 <v-card class="mb-2" style="background-color: #2d2d30">
                   <v-card-title>
@@ -306,8 +306,10 @@ const executarAcoes = async () => {
       .filter((p) => p.comandosSelecionados.length > 0)
       .map((p) => {
         return {
+          identificador: p.identificador,
           nome: p.nome,
           comandos: p.comandosSelecionados,
+          identificadorRepositorioAgregado: p.identificadorRepositorioAgregado,
         };
       }),
   };

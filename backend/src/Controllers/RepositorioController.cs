@@ -32,13 +32,13 @@ namespace ProjectManagerWeb.src.Controllers
             }
         }
         
-        // PUT: api/Configuracao/repositorios/{id}
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] RepositorioRequestDTO repositorioAtualizado)
+        // PUT: api/Configuracao/repositorios/{identificador}
+        [HttpPut("{identificador:guid}")]
+        public async Task<IActionResult> Update(Guid identificador, [FromBody] RepositorioRequestDTO repositorioAtualizado)
         {
             if (repositorioAtualizado == null) return BadRequest();
 
-            var sucesso = await repositorioService.UpdateAsync(id, repositorioAtualizado);
+            var sucesso = await repositorioService.UpdateAsync(identificador, repositorioAtualizado);
             if (!sucesso)
             {
                 return NotFound(); // Retorna 404 se o ID a ser atualizado não existe
@@ -47,11 +47,11 @@ namespace ProjectManagerWeb.src.Controllers
             return NoContent(); // Retorna 204 para indicar sucesso na atualização
         }
 
-        // DELETE: api/Configuracao/repositorios/{id}
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id)
+        // DELETE: api/Configuracao/repositorios/{identificador}
+        [HttpDelete("{identificador:guid}")]
+        public async Task<IActionResult> Delete(Guid identificador)
         {
-            var sucesso = await repositorioService.DeleteAsync(id);
+            var sucesso = await repositorioService.DeleteAsync(identificador);
             if (!sucesso)
             {
                 return NotFound(); // Retorna 404 se o ID a ser excluído não existe

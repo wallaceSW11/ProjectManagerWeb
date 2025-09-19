@@ -15,7 +15,7 @@
               label="Repositório"
               :items="repositorios"
               item-title="nome"
-              item-value="id"
+              item-value="identificador"
               v-model="clone.repositorioId"
               :rules="obrigatorio"
             />
@@ -30,7 +30,7 @@
               label="Clonar agregados"
               hide-details
               v-model="clone.baixarAgregados"
-              :disabled="!repositorios.find(r => r.id === clone.repositorioId)?.agregados?.length"
+              :disabled="!repositorios.find(r => r.identificador === clone.repositorioId)?.agregados?.length"
             />
             <v-checkbox
               label="Criar branch remoto"

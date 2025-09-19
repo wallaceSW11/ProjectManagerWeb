@@ -5,7 +5,7 @@ export default class RepositorioModel {
   constructor(obj) {
     obj = obj || {};
 
-    this.id = obj.id || crypto.randomUUID();
+    this.identificador = obj.identificador || crypto.randomUUID();
     this.url = obj.url || null;
     this.nome = obj.nome || null;
     this.projetos = Array.isArray(obj.projetos)

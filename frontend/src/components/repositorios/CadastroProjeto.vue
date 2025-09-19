@@ -216,7 +216,7 @@ const salvarAlteracoes = async () => {
 
 const atualizarProjeto = () => {
   const indice = repositorio.value.projetos.findIndex(
-    (p) => p.id === projetoSelecionado.id
+    (p) => p.identificador === projetoSelecionado.identificador
   );
 
   indice !== -1 &&
@@ -229,7 +229,7 @@ const excluirProjeto = (item) => {
   if (!confirmDelete) return;
 
   repositorio.value.projetos = repositorio.value.projetos.filter(
-    (p) => p.id !== item.id
+    (p) => p.identificador !== item.identificador
   );
 };
 
