@@ -83,6 +83,7 @@
 import CloneModel from "@/models/CloneModel";
 import ConfiguracaoModel from "@/models/ConfiguracaoModel";
 import RepositorioModel from "@/models/RepositorioModel";
+import CloneService from "@/services/CloneService";
 import ConfiguracaoService from "@/services/ConfiguracaoService";
 import RepositoriosService from "@/services/RepositoriosService";
 import { notificar } from "@/utils/eventBus";
