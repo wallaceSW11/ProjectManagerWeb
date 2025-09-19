@@ -65,31 +65,31 @@
 import { onMounted, reactive, ref } from "vue";
 import ConfiguracaoModel from "../models/ConfiguracaoModel";
 import ConfiguracaoService from "../services/ConfiguracaoService";
+import { useConfiguracaoStore } from "@/stores/configuracao";
+import { notificar } from "@/utils/eventBus";
+
+const configuracaoStore = useConfiguracaoStore();
 
 // --- STATE ---
 const nomePerfil = ref(""); // input do perfil
 const configuracao = reactive(new ConfiguracaoModel());
+
+onMounted(() => {
+  Object.assign(configuracao, new ConfiguracaoModel(configuracaoStore));
+});
 
 const colunas = reactive([
   { title: "Perfil", key: "nome", align: "start" },
   { title: "Actions", key: "actions", align: "center", width: "200px" },
 ]);
 
-// --- ACTIONS / HELPERS ---
-const consultarConfiguracao = async () => {
-  try {
-    const response = await ConfiguracaoService.getConfiguracao();
-    Object.assign(configuracao, new ConfiguracaoModel(response));
-  } catch (error) {
-    console.error("Falha ao consultar as configurações:", error);
-  }
-};
-
 const salvarConfiguracao = async () => {
   try {
     await ConfiguracaoService.postConfiguracao(configuracao);
+    configuracaoStore.salvarConfiguracao(configuracao);
+    notificar("sucesso", "Configurações atualizadas");
   } catch (error) {
-    console.error("Falha ao salvar as configurações:", error);
+    notificar("erro", "Falha ao salvar configuração", error.message);
   }
 };
 
@@ -141,9 +141,4 @@ const removerPerfil = (item) => {
     salvarConfiguracao();
   }
 };
-
-// --- LIFECYCLE ---
-onMounted(() => {
-  consultarConfiguracao();
-});
 </script>
