@@ -45,7 +45,7 @@
 
               <v-tabs-window v-model="paginaCadastro">
                 <v-tabs-window-item>
-                  <CadastroRepositorio v-model="repositorioSelecionado" />
+                  <CadastroRepositorio v-model="repositorioSelecionado" :repositorios="repositorios"/>
                 </v-tabs-window-item>
                 <v-tabs-window-item>
                   <CadastroProjeto v-model="repositorioSelecionado" />

@@ -63,26 +63,30 @@ public class CloneService
 
         if (clone.BaixarAgregados)
         {
-            diretorioCompleto.Clear();
-            comando.Clear();
+            // diretorioCompleto.Clear();
+            // comando.Clear();
 
-            diretorioCompleto
-                .Append(clone.DiretorioRaiz)
-                .Append(clone.Codigo)
-                .Append("_Backend_")
-                .Append(clone.Descricao.Replace(" ", "_"));
+            // diretorioCompleto
+            //     .Append(clone.DiretorioRaiz)
+            //     .Append(clone.Codigo)
+            //     .Append("_Backend_")
+            //     .Append(clone.Descricao.Replace(" ", "_"));
 
-            if (!Directory.Exists(diretorioCompleto.ToString()))
-                Directory.CreateDirectory(diretorioCompleto.ToString());
+            // if (!Directory.Exists(diretorioCompleto.ToString()))
+            //     Directory.CreateDirectory(diretorioCompleto.ToString());
 
-            gitPrincipal.Agregados?.ForEach(agregado =>
+            gitPrincipal.Agregados?.ForEach(async identificadorAgredado =>
             {
+                var agregado = await _repositorioJson.GetByIdAsync(identificadorAgredado);
+
+                if (agregado is null) return;
+
                 comando.Clear();
 
-                nomeGit = RepositorioRequestDTO.ObterNomeRepositorio(agregado) ?? throw new Exception("Nome do repositório git não encontrado");
+                nomeGit = RepositorioRequestDTO.ObterNomeRepositorio(agregado.Url) ?? throw new Exception("Nome do repositório git não encontrado");
                 comando
                     .Append($"cd {diretorioCompleto.ToString()}; ")
-                    .Append($"git clone {agregado}; ")
+                    .Append($"git clone {identificadorAgredado}; ")
                     .Append($"cd {nomeGit}; ")
                     .Append($"git checkout {clone.Branch}; ");
 
