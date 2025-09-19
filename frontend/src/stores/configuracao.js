@@ -7,6 +7,11 @@ export const useConfiguracaoStore = defineStore('configuracao', {
     configuracao: new ConfiguracaoModel()
   }),
   
+  getters: {
+    diretorioRaiz: (state) => state.configuracao.diretorioRaiz,
+    perfisVSCode: (state) => state.configuracao.perfisVSCode
+  },
+  
   actions: {
     async carregarConfiguracao() {
       try {

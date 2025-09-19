@@ -15,8 +15,26 @@
           </v-btn>
         </v-col>
 
-        <v-col class="ml-4 d-flex align-center">
-          <h3>Projetos / Ações</h3>
+        <v-col class="ml-4 d-flex align-center justify-space-between">
+          <div>
+            <h3>Projetos / Ações</h3>
+          </div>
+          <div class="pr-3">
+            <v-tooltip text="Desmarcar todos">
+              <template #activator="{ props }">
+                <v-icon
+                  v-bind="props"
+                  size="16px"
+                  @click="
+                    pastaSelecionada.projetos.forEach(
+                      (projeto) => (projeto.comandosSelecionados = [])
+                    )
+                  "
+                  >mdi-close-box-multiple-outline</v-icon
+                >
+              </template>
+            </v-tooltip>
+          </div>
         </v-col>
       </v-row>
 
@@ -24,7 +42,7 @@
         <v-col cols="8" class="altura-limitada mr-2">
           <div v-if="pastas.length === 0">
             Não há pastas no diretório raiz informado.
-            <p>{{ configuracao.diretorioRaiz }}</p>
+            <p>{{ configuracaoStore.diretorioRaiz }}</p>
           </div>
 
           <v-card
@@ -176,34 +194,25 @@
 
 <script setup>
 import { onMounted, reactive, ref } from "vue";
-import ConfiguracaoModel from "../models/ConfiguracaoModel";
-import ConfiguracaoService from "../services/ConfiguracaoService";
 import PastasService from "../services/PastasService";
 import { useRouter } from "vue-router";
 import PastaModel from "../models/PastaModel";
 import ComandosService from "../services/ComandosService";
 import { carregandoAsync, notificar } from "@/utils/eventBus";
 
-let configuracao = reactive(new ConfiguracaoModel());
 const pastas = reactive([]);
 const router = useRouter();
 const pastaSelecionada = reactive(new PastaModel());
+
+import { useConfiguracaoStore } from "@/stores/configuracao";
+
+const configuracaoStore = useConfiguracaoStore();
 
 onMounted(async () => {
   await inicializarPagina();
 });
 
 const inicializarPagina = async () => {
-  try {
-    const resposta = await ConfiguracaoService.getConfiguracao();
-
-    Object.assign(configuracao, new ConfiguracaoModel(resposta));
-  } catch (error) {
-    notificar("erro", "Falha ao consultar configuração", error.message);
-
-    return;
-  }
-
   if (redirecionarParaConfiguracaoInicial()) return;
 
   await carregarPastas();
@@ -212,7 +221,7 @@ const inicializarPagina = async () => {
 };
 
 const redirecionarParaConfiguracaoInicial = () => {
-  if (!configuracao.diretorioRaiz) {
+  if (!configuracaoStore.diretorioRaiz) {
     alert(
       "O diretório raiz não foi informado, será redirecionado para a tela de configurações"
     );
@@ -244,7 +253,6 @@ const selecionarPastaSalva = () => {
 
   indice !== -1 && selecionarPasta(pastas[indice]);
 };
-
 
 const carregarPastas = async () => {
   try {
@@ -360,7 +368,6 @@ const executarMenu = async (pasta, menuId) => {
     repositorioId: pasta.repositorioId,
     comandoId: menuId,
   };
-  console.log(". ~ payload:", payload);
 
   try {
     await ComandosService.executarComandoMenu(payload);
