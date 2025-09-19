@@ -29,10 +29,19 @@ namespace ProjectManagerWeb.src.Services
             return await LerListaDoArquivoAsync();
         }
 
-        public async Task<RepositorioRequestDTO?> GetByIdAsync(Guid id)
+        public async Task<RepositorioRequestDTO?> GetByIdAsync(Guid identificador)
         {
             var repositorios = await LerListaDoArquivoAsync();
-            return repositorios.FirstOrDefault(r => r.Id == id);
+            return repositorios.FirstOrDefault(r => r.Identificador == identificador);
+        }
+
+        public async Task<ProjetoDTO> GetProjetoByIdAsync(Guid identificadorProjeto)
+        {
+            var repositorios = await LerListaDoArquivoAsync();
+            return repositorios
+                .SelectMany(r => r.Projetos)
+                .FirstOrDefault(p => p.Identificador == identificadorProjeto)
+                ?? throw new Exception($"Projeto não encontrado com o id {identificadorProjeto}");
         }
 
         public async Task<RepositorioRequestDTO?> GetByUrlAsync(string url)
@@ -51,7 +60,7 @@ namespace ProjectManagerWeb.src.Services
                 if (repositorios.Exists(repo => repo.Url.Equals(novoRepositorio.Url, StringComparison.OrdinalIgnoreCase)))
                     throw new Exception("Já existe um repositório com essa URL");
 
-                var repositorioParaAdicionar = novoRepositorio with { Id = Guid.NewGuid() };
+                var repositorioParaAdicionar = novoRepositorio with { Identificador = Guid.NewGuid() };
 
                 repositorios.Add(repositorioParaAdicionar);
                 await GravarListaNoArquivoAsync(repositorios, locked: true);
@@ -64,17 +73,17 @@ namespace ProjectManagerWeb.src.Services
             }
         }
 
-        public async Task<bool> UpdateAsync(Guid id, RepositorioRequestDTO repositorioAtualizado)
+        public async Task<bool> UpdateAsync(Guid identificador, RepositorioRequestDTO repositorioAtualizado)
         {
             await _semaphore.WaitAsync();
             try
             {
                 var repositorios = await LerListaDoArquivoAsync(locked: true);
-                var index = repositorios.FindIndex(r => r.Id == id);
+                var index = repositorios.FindIndex(r => r.Identificador == identificador);
 
                 if (index == -1) return false;
 
-                repositorios[index] = repositorioAtualizado with { Id = id };
+                repositorios[index] = repositorioAtualizado with { Identificador = identificador };
 
                 await GravarListaNoArquivoAsync(repositorios, locked: true);
                 return true;
@@ -85,13 +94,13 @@ namespace ProjectManagerWeb.src.Services
             }
         }
 
-        public async Task<bool> DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid identificador)
         {
             await _semaphore.WaitAsync();
             try
             {
                 var repositorios = await LerListaDoArquivoAsync(locked: true);
-                var itemsRemovidos = repositorios.RemoveAll(r => r.Id == id);
+                var itemsRemovidos = repositorios.RemoveAll(r => r.Identificador == identificador);
 
                 if (itemsRemovidos == 0) return false;
 

@@ -160,7 +160,7 @@ const adicionarMenuItem = () => {
 
 const atualizarMenuItem = () => {
   const indice = menu.value.arquivos.findIndex(
-    (p) => p.id === arquivoSelecionado.id
+    (p) => p.identificador === arquivoSelecionado.identificador
   );
 
   indice !== -1 &&
@@ -173,7 +173,7 @@ const excluirProjeto = (item) => {
   if (!confirmDelete) return;
 
   menu.value.arquivos = menu.value.arquivos.filter(
-    (p) => p.id !== item.id
+    (p) => p.identificador !== item.identificador
   );
 };
 

@@ -58,9 +58,12 @@
             label="Subdiretório"
             v-model="projetoSelecionado.subdiretorio"
           />
-          <v-text-field
+          <v-select
+            :items="configuracaoStore.perfisVSCode"
             label="Perfil VS Code"
             v-model="projetoSelecionado.perfilVSCode"
+            item-title="nome"
+            item-value="nome"
           />
 
           <h2>Comandos:</h2>
@@ -92,14 +95,13 @@
 import { computed, reactive, ref } from "vue";
 import RepositorioModel from "../../models/RepositorioModel";
 import ProjetoModel from "../../models/ProjetoModel";
+import { useConfiguracaoStore } from "@/stores/configuracao";
 
 const repositorio = defineModel(new RepositorioModel());
-
+const configuracaoStore = useConfiguracaoStore();
 const obrigatorio = [(v) => !!v || "Obrigatório"];
 
 const pagina = ref(0);
-
-const salvarProjeto = () => {};
 
 const colunas = reactive([
   { title: "Nome", key: "nome", align: "start" },
@@ -108,43 +110,6 @@ const colunas = reactive([
   { title: "Actions", key: "actions", align: "center", width: "200px" },
 ]);
 
-const campos = [
-  {
-    model: "nome",
-    component: "v-text-field",
-    props: { label: "Nome", rules: [(v) => !!v || "Obrigatório"] },
-  },
-  {
-    model: "subdiretorio",
-    component: "v-text-field",
-    props: { label: "Subdiretório" },
-  },
-  {
-    model: "perfilVSCode",
-    component: "v-text-field",
-    props: { label: "Perfil VS Code" },
-  },
-  {
-    model: "comandos.instalar",
-    component: "v-text-field",
-    props: { label: "Instalar" },
-  },
-  {
-    model: "comandos.iniciar",
-    component: "v-text-field",
-    props: { label: "Iniciar" },
-  },
-  {
-    model: "comandos.buildar",
-    component: "v-text-field",
-    props: { label: "Buildar" },
-  },
-  {
-    model: "comandos.abrirNoVSCode",
-    component: "v-checkbox",
-    props: { label: "Abrir no VS Code" },
-  },
-];
 
 const projetoSelecionado = reactive(new ProjetoModel());
 
@@ -216,7 +181,7 @@ const salvarAlteracoes = async () => {
 
 const atualizarProjeto = () => {
   const indice = repositorio.value.projetos.findIndex(
-    (p) => p.id === projetoSelecionado.id
+    (p) => p.identificador === projetoSelecionado.identificador
   );
 
   indice !== -1 &&
@@ -229,7 +194,7 @@ const excluirProjeto = (item) => {
   if (!confirmDelete) return;
 
   repositorio.value.projetos = repositorio.value.projetos.filter(
-    (p) => p.id !== item.id
+    (p) => p.identificador !== item.identificador
   );
 };
 

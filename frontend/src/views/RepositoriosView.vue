@@ -45,7 +45,7 @@
 
               <v-tabs-window v-model="paginaCadastro">
                 <v-tabs-window-item>
-                  <CadastroRepositorio v-model="repositorioSelecionado" />
+                  <CadastroRepositorio v-model="repositorioSelecionado" :repositorios="repositorios"/>
                 </v-tabs-window-item>
                 <v-tabs-window-item>
                   <CadastroProjeto v-model="repositorioSelecionado" />
@@ -150,7 +150,7 @@ const irParaListagem = () => {
 const irParaCadastro = () => (pagina.value = 1);
 
 const mudarParaEdicao = (identificador) => {
-  let repo = repositorios.find((r) => r.id === identificador);
+  let repo = repositorios.find((r) => r.identificador === identificador);
 
   if (!repo) {
     alert("Repositorio nao encontrado");
@@ -199,7 +199,7 @@ const atualizarRepositorio = async () => {
     await RepositoriosService.atualizarRepositorio(repositorioSelecionado);
     
     const indice = repositorios.findIndex(
-      (r) => r.id === repositorioSelecionado.id
+      (r) => r.identificador === repositorioSelecionado.identificador
     );
     indice !== -1 &&
       Object.assign(repositorios[indice], repositorioSelecionado);
@@ -215,7 +215,7 @@ const excluirRepositorio = async (item) => {
 
   try {
     await RepositoriosService.excluirRepositorio(item);
-    const indice = repositorios.findIndex((r) => r.id === item.id);
+    const indice = repositorios.findIndex((r) => r.identificador === item.identificador);
     indice !== -1 && repositorios.splice(indice, 1);
   } catch (error) {
     console.error("Falha ao excluir repositorio" + error);

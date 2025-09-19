@@ -1,3 +1,4 @@
+using System.Net;
 using ProjectManagerWeb.src.DTOs;
 
 namespace ProjectManagerWeb.src.Services;
@@ -87,8 +88,47 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         if (projeto.Comandos.AbrirNoVSCode)
           comandos.Add("AbrirNoVSCode");
 
-        projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Nome, [.. comandos]));
+        projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Identificador, projeto.Nome, [.. comandos]));
       });
+
+      repositorio.Agregados?.ForEach(identificadorAgregado =>
+      {
+        var repositorioAgregado = repositorios.FirstOrDefault(r => r.Identificador == identificadorAgregado);
+
+        if (repositorioAgregado == null) return;
+
+        var nomeRepositorioAgregado = RepositorioRequestDTO.ObterNomeRepositorio(repositorioAgregado.Url);
+
+        if (!Directory.Exists(pasta.Diretorio.Replace(nomeRepositorio, "") + nomeRepositorioAgregado) || string.IsNullOrWhiteSpace(nomeRepositorioAgregado))
+          return;
+
+        repositorioAgregado.Projetos.ForEach(projeto =>
+        {
+          var comandos = new List<string>();
+
+          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
+            comandos.Add("Instalar");
+
+          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
+            comandos.Add("Iniciar");
+
+          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
+            comandos.Add("Buildar");
+
+          if (projeto.Comandos.AbrirNoVSCode)
+            comandos.Add("AbrirNoVSCode");
+
+          var nomeProjetoFormatado = $"{projeto.Nome} ({repositorioAgregado.Nome})";
+         
+          projetosDisponiveis.Add(new ProjetoDisponivelDTO(
+            projeto.Identificador,
+            nomeProjetoFormatado,
+            [.. comandos],
+            repositorioAgregado.Identificador
+          ));
+        });
+      });
+
 
       var pastaResponse = new PastaResponseDTO
       (
@@ -98,7 +138,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         tipo,
         pasta.Branch,
         pasta.GitUrl,
-        repositorio.Id,
+        repositorio.Identificador,
         projetosDisponiveis,
         repositorio.Menus ?? []
       );

@@ -14,11 +14,11 @@ namespace ProjectManagerWeb.src.DTOs
     /// <param name="Projetos">A lista de projetos contidos neste repositório.</param>
     /// <param name="Agregados">Uma lista opcional de URLs de repositórios relacionados/agregados.</param>
     public sealed record RepositorioRequestDTO(
-        Guid Id,
+        Guid Identificador,
         string Url,
         string Nome,
         List<ProjetoDTO> Projetos,
-        List<string>? Agregados,
+        List<Guid>? Agregados,
         List<MenuDTO>? Menus
     )
     {
@@ -40,7 +40,7 @@ namespace ProjectManagerWeb.src.DTOs
     /// <param name="Subdiretorio">O caminho relativo para a pasta do projeto dentro do repositório.</param>
     /// <param name="Comandos">A lista de objetos de comando associados a este projeto.</param>
     public sealed record ProjetoDTO(
-        Guid Id,
+        Guid Identificador,
         string Nome,
         string? Subdiretorio,
         string? PerfilVSCode,
@@ -63,7 +63,7 @@ namespace ProjectManagerWeb.src.DTOs
     );
 
     public sealed record MenuDTO(
-        Guid Id,
+        Guid Identificador,
         string Titulo,
         string Tipo,
         List<ArquivosDTO>? Arquivos

@@ -10,11 +10,11 @@ class RepositoriosService extends BaseApiService {
   }
   
   async atualizarRepositorio(repositorio) {
-    return await this.put(`repositorios/${repositorio.id}`, repositorio);
+    return await this.put(`repositorios/${repositorio.identificador}`, repositorio);
   }
 
   async excluirRepositorio(repositorio) {
-    return await this.delete(`repositorios/${repositorio.id}`);
+    return await this.delete(`repositorios/${repositorio.identificador}`);
   }
 }
 
