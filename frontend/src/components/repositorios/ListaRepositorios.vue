@@ -5,7 +5,7 @@
     <div v-else>
       <v-card
         v-for="repositorio in itens"
-        :key="repositorio.id"
+        :key="repositorio.identificador"
         class="mb-2"
       >
         <v-card-title>
@@ -28,7 +28,7 @@
 
         <v-card-actions class="d-flex justify-end">
           <div>
-            <v-btn icon @click="emit('editar', repositorio.id)">
+            <v-btn icon @click="emit('editar', repositorio.identificador)">
               <v-icon>mdi-pencil</v-icon>
               <v-tooltip activator="parent" location="top">Editar</v-tooltip>
             </v-btn>

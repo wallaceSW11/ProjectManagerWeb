@@ -14,9 +14,10 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
     var diretorio = pasta.Diretorio + "\\";
 
-    pasta.Projetos.ForEach(projeto =>
+    // Projetos originais do repositório
+    pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null).ToList().ForEach(projeto =>
     {
-      var projetoCadastrado = repositorio.Projetos.FirstOrDefault(p => p.Nome.Equals(projeto.Nome)) ?? throw new Exception("projeto não encontrado");
+      var projetoCadastrado = repositorio.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto não encontrado com o identificador {projeto.Identificador}");
 
       projeto.Comandos.ForEach(comando =>
       {
@@ -46,10 +47,54 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
           if (!string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
             texto += $"--profile {projetoCadastrado.PerfilVSCode}";
 
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; exit;");
+          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;");
         }
       });
     });
+
+    // Processa projetos agregados aguardando adequadamente as operações assíncronas
+    foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is not null))
+    {
+      if (projeto.IdentificadorRepositorioAgregado is null) continue;
+
+      var repositorioAgregado = await repositorioJsonService.GetByIdAsync(projeto.IdentificadorRepositorioAgregado.Value) ?? throw new Exception($"Repositório agregado não encontrado com o identificador {projeto.IdentificadorRepositorioAgregado}");
+
+      var projetoAgregadoCadastrado = repositorioAgregado.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto agregado não encontrado com o identificador {projeto.Identificador}");
+
+      var diretorioAgregado = diretorio.Replace(RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url), RepositorioRequestDTO.ObterNomeRepositorio(repositorioAgregado.Url)) + "\\";
+
+      projeto.Comandos.ForEach(comando =>
+      {
+        if (comando.Equals("Iniciar"))
+        {
+          if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && projetoAgregadoCadastrado.Comandos.Instalar.Contains("npm i"))
+          {
+            if (Directory.Exists($"{diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}\\node_modules"))
+              comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ");
+            else
+              comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};");
+          }
+          else
+            comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ");
+        }
+
+        if (comando.Equals("Instalar"))
+          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Nome}; {projetoAgregadoCadastrado.Comandos.Instalar}; ");
+
+        if (comando.Equals("Buildar"))
+          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Nome}; {projetoAgregadoCadastrado.Comandos.Buildar}; ");
+
+        if (comando.Equals("AbrirNoVSCode"))
+        {
+          var texto = "code . ";
+
+          if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
+            texto += $"--profile {projetoAgregadoCadastrado.PerfilVSCode}";
+
+          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;");
+        }
+      });
+    }
 
     try
     {
@@ -84,7 +129,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
   public async Task<bool> ExecutarComandoMenu(MenuRequestDTO menu)
   {
     var repositorio = await repositorioJsonService.GetByIdAsync(menu.RepositorioId) ?? throw new Exception("Repositório não encontrado");
-    var menuRepositorio = repositorio.Menus?.FirstOrDefault(m => m.Id == menu.ComandoId) ?? throw new Exception("Comando não encontrado");
+    var menuRepositorio = repositorio.Menus?.FirstOrDefault(m => m.Identificador == menu.ComandoId) ?? throw new Exception("Comando não encontrado");
     var nomeRepositorio = RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url);
 
     var comandos = new List<string>();
@@ -93,11 +138,13 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     {
       var nomeArquivo = Path.GetFileName(a.Arquivo);
 
-      comandos
-        .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
- 
+
       if (a.IgnorarGit)
-        comandos.Add($"cd {menu.Diretorio}\\{a.Destino}; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
+        comandos
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; cd {menu.Diretorio}\\{a.Destino}; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
+      else
+        comandos
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force;");
     });
 
     try
@@ -116,5 +163,5 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     return true;
   }
 
-  
+
 }

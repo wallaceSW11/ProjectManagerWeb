@@ -163,7 +163,7 @@ const adicionarMenu = () => {
 
 const atualizarProjeto = () => {
   const indice = repositorio.value.menus.findIndex(
-    (p) => p.id === menuSelecionado.id
+    (p) => p.identificador === menuSelecionado.identificador
   );
 
   indice !== -1 &&
@@ -176,7 +176,7 @@ const excluirProjeto = (item) => {
   if (!confirmDelete) return;
 
   repositorio.value.menus = repositorio.value.menus.filter(
-    (p) => p.id !== item.id
+    (p) => p.identificador !== item.identificador
   );
 };
 

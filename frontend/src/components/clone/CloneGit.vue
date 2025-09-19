@@ -15,7 +15,7 @@
               label="Repositório"
               :items="repositorios"
               item-title="nome"
-              item-value="id"
+              item-value="identificador"
               v-model="clone.repositorioId"
               :rules="obrigatorio"
             />
@@ -30,6 +30,7 @@
               label="Clonar agregados"
               hide-details
               v-model="clone.baixarAgregados"
+              :disabled="!repositorios.find(r => r.identificador === clone.repositorioId)?.agregados?.length"
             />
             <v-checkbox
               label="Criar branch remoto"
@@ -39,7 +40,8 @@
 
             <v-text-field
               label="Número da tarefa"
-              v-model="clone.codigo"
+              v-model.uppercase="clone.codigo"
+              class="uppercase-input"
               :rules="obrigatorio"
             />
             <v-text-field
@@ -148,3 +150,9 @@ const fecharClone = () => {
   Object.assign(clone, new CloneModel());
 };
 </script>
+
+<style scoped>
+.uppercase-input :deep(input) {
+  text-transform: uppercase;
+}
+</style>
