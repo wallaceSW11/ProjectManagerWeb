@@ -47,7 +47,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
           if (!string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
             texto += $"--profile {projetoCadastrado.PerfilVSCode}";
 
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; exit;");
+          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;");
         }
       });
     });
@@ -91,7 +91,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
           if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
             texto += $"--profile {projetoAgregadoCadastrado.PerfilVSCode}";
 
-          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; exit;");
+          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;");
         }
       });
     }
@@ -141,7 +141,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
       if (a.IgnorarGit)
         comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; cd {menu.Diretorio}\\{a.Destino}; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
       else
         comandos
           .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force;");
