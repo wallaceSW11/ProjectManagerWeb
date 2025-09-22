@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ProjectManagerWeb.DTOs;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Services;
 
@@ -13,6 +14,23 @@ public class PastaController(PastaService pastaService) : ControllerBase
   public async Task<IActionResult> ObterTodas()
   {
     var pastas = await pastaService.ObterTodas();
+    return Ok(pastas);
+  }
+
+  [HttpPost]
+  public async Task<IActionResult> Cadastrar([FromBody] PastaCadastroRequestDTO pastaCadastro)
+  {
+    if (!ModelState.IsValid)
+      return BadRequest(ModelState);
+
+    var pasta = await pastaService.Cadastrar(pastaCadastro);
+    return CreatedAtAction(nameof(ObterTodas), new { id = pasta.Identificador }, pasta);
+  }
+
+  [HttpGet("todas")]
+  public async Task<IActionResult> ObterTodasAsPastas()
+  {
+    var pastas = await pastaService.ObterTodas2();
     return Ok(pastas);
   }
 }
