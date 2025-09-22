@@ -26,11 +26,4 @@ public class PastaController(PastaService pastaService) : ControllerBase
     var pasta = await pastaService.Cadastrar(pastaCadastro);
     return CreatedAtAction(nameof(ObterTodas), new { id = pasta.Identificador }, pasta);
   }
-
-  [HttpGet("todas")]
-  public async Task<IActionResult> ObterTodasAsPastas()
-  {
-    var pastas = await pastaService.ObterTodas2();
-    return Ok(pastas);
-  }
 }
