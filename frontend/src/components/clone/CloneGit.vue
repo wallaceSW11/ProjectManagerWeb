@@ -82,15 +82,28 @@ import CloneModel from "@/models/CloneModel";
 import CloneService from "@/services/CloneService";
 import { onMounted, reactive, ref } from "vue";
 import { useConfiguracaoStore } from "@/stores/configuracao";
+import RepositoriosService from "@/services/RepositoriosService";
+import RepositorioModel from "@/models/RepositorioModel";
 
 const clone = reactive(new CloneModel());
 const repositorios = reactive([]);
 const configuracaoStore = useConfiguracaoStore();
 const exibirModalClone = defineModel(false);
 
-onMounted(() => {
+
+onMounted(async () => {
   clone.diretorioRaiz = configuracaoStore.diretorioRaiz + "\\";
+  await consultarRepositorios();
 });
+
+const consultarRepositorios = async () => {
+  try {
+    const resposta = await RepositoriosService.getRepositorios();
+    Object.assign(repositorios, resposta.map(r => new RepositorioModel(r)))
+  } catch (error) {
+    console.error('falha')
+  }
+}
 
 const formClone = ref(null);
 const obrigatorio = [(v) => !!v || "Obrigatório"];
