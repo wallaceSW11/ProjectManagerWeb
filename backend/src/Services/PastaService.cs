@@ -102,7 +102,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           projetosDisponiveis.Add(new ProjetoDisponivelDTO(
             projeto.Identificador,
             nomeProjetoFormatado,
-            [.. comandos]
+            [.. comandos],
+            repositorioAgregado.Identificador
           ));
         }); 
       });
@@ -132,7 +133,13 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
   public async Task<PastaCadastroRequestDTO> Cadastrar(PastaCadastroRequestDTO pastaCadastro)
   {
-    await pastaJsonService.AddAsync(pastaCadastro);
+    try
+    {
+      await pastaJsonService.AddAsync(pastaCadastro);
+    } catch (Exception ex)
+    {
+      throw new Exception($"Erro ao cadastrar a pasta: {ex.Message}");
+    }
 
     return pastaCadastro;
   }

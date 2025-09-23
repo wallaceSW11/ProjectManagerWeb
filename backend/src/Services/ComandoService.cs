@@ -10,7 +10,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
     var comandos = new List<string>();
 
-    var diretorio = pasta.Diretorio + "\\";
+    var diretorio = pasta.Diretorio + "\\" + RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url) + "\\";
 
     // Projetos originais do repositório
     pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null).ToList().ForEach(projeto =>
@@ -33,10 +33,10 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
         }
 
         if (comando.Equals("Instalar"))
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Instalar}; ");
+          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; ");
 
         if (comando.Equals("Buildar"))
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Buildar}; ");
+          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Buildar}; ");
 
         if (comando.Equals("AbrirNoVSCode"))
         {
