@@ -8,7 +8,7 @@ public sealed record PastaResponseDTO(
     string Branch,
     string Git,
     Guid RepositorioId,
-    Guid PastaId,
+    Guid? PastaId,
     List<ProjetoDisponivelDTO> Projetos,
     List<MenuDTO>? Menus
 );

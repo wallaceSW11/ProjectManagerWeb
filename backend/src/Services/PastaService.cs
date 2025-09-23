@@ -1,5 +1,4 @@
 using System.Net;
-using ProjectManagerWeb.DTOs;
 using ProjectManagerWeb.src.DTOs;
 
 namespace ProjectManagerWeb.src.Services;
@@ -37,7 +36,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           "",
           "",
           new Guid(),
-          new Guid(),
+          null,
           [],
           []
         );
@@ -103,10 +102,9 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           projetosDisponiveis.Add(new ProjetoDisponivelDTO(
             projeto.Identificador,
             nomeProjetoFormatado,
-            [.. comandos],
-            repositorioAgregado.Identificador
+            [.. comandos]
           ));
-        });
+        }); 
       });
 
 

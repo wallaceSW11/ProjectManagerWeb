@@ -1,4 +1,4 @@
-namespace ProjectManagerWeb.DTOs;
+namespace ProjectManagerWeb.src.DTOs;
 
 public sealed record PastaCadastroRequestDTO(
     Guid Identificador,

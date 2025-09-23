@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ProjectManagerWeb.DTOs;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Services;
 
