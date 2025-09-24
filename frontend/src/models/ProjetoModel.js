@@ -4,6 +4,7 @@ export default class ProjetoModel {
 
     this.identificador = obj.identificador || crypto.randomUUID();
     this.nome = obj.nome || null;
+    this.nomeRepositorio = obj.nomeRepositorio || null;
     this.subdiretorio = obj.subdiretorio || null;
     this.perfilVSCode = obj.perfilVSCode || null;
     this.comandos = new ComandosModel(obj.comandos);

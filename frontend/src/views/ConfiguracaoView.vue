@@ -100,7 +100,7 @@ const perfilValido = () => {
     return false;
   }
 
-  const jaInformado = configuracao.perfisVSCode.some(
+  const jaInformado = configuracao.perfisVSCode?.some(
     (p) => p.nome === nomePerfil.value
   );
 

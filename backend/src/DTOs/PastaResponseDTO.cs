@@ -16,6 +16,7 @@ public sealed record PastaResponseDTO(
 public sealed record ProjetoDisponivelDTO(
     Guid Identificador,
     string Nome,
+    string NomeRepositorio,
     List<string> Comandos,
     Guid? IdentificadorRepositorioAgregado = null
 );
