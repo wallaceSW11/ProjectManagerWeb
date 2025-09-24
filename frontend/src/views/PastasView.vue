@@ -161,7 +161,7 @@
 
                           <v-list dense>
                             <v-list-item
-                              v-for="menu in menusProjetos"
+                              v-for="menu in menusProjetoDisponiveis(projeto)"
                               :key="menu.identificador"
                               @click="menu.acao(projeto)"
                             >
@@ -451,6 +451,27 @@ const menusProjetos = [
     },
   },
 ];
+
+const menusProjetoDisponiveis = (projeto) => {
+  let menus = [...menusProjetos];
+
+  console.log(projeto);
+
+  if (projeto.arquivoCoverage) {
+    menus.push({
+      identificador: 5,
+      titulo: "Abrir coverage",
+      icone: "mdi-file-chart",
+      acao: (projeto) => {
+        const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.arquivoCoverage}`;
+        executarComandoAvulso(comando);
+      },
+    });
+  }
+  
+
+  return menus;
+};
 
 const executarComandoAvulso = (comando) => {
   try {

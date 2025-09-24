@@ -51,6 +51,11 @@
             item-value="nome"
           />
 
+          <v-text-field
+            label="Comando para abrir o arquivo coverage"
+            v-model="projetoSelecionado.arquivoCoverage"
+          />
+
           <h2>Comandos:</h2>
           <v-divider />
 
