@@ -43,15 +43,14 @@
             />
             <v-select
               label="Tipo"
-              :items="[
-                { titulo: 'Aplicar arquivos', valor: 'APLICAR_ARQUIVO' },
-              ]"
+              :items="TIPOS_MENU"
               v-model="menuSelecionado.tipo"
               item-value="valor"
               item-title="titulo"
             />
 
-            <CadastroMenuItem v-model="menuSelecionado" />
+            <CadastroMenuItemArquivo v-model="menuSelecionado" v-if="menuSelecionado.tipo === 'APLICAR_ARQUIVO'" />
+            <CadastroMenuItemComandoAvulso v-if="menuSelecionado.tipo === 'COMANDO_AVULSO'" v-model="menuSelecionado" />
           </v-form>
         </ModalPadrao>
       </div>
@@ -62,9 +61,10 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
 import RepositorioModel from "@/models/RepositorioModel";
-import MenuModel from "@/models/MenuModal";
+import MenuModel from "@/models/MenuModel";
 import ModalPadrao from "@/components/comum/ModalPadrao.vue";
-import CadastroMenuItem from "@/components/repositorios/CadastroMenuItem.vue";
+import CadastroMenuItemArquivo from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemArquivo.vue";
+import CadastroMenuItemComandoAvulso from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemComandoAvulso.vue";
 
 const repositorio = defineModel(new RepositorioModel());
 
@@ -76,6 +76,11 @@ const colunas = reactive([
   { title: "Título", key: "titulo", align: "start" },
   { title: "Tipo", key: "tipo", align: "start" },
   { title: "Actions", key: "actions", align: "center", width: "200px" },
+]);
+
+const TIPOS_MENU = reactive([
+  { titulo: "Aplicar arquivos", valor: "APLICAR_ARQUIVO" },
+  { titulo: "Comando avulso", valor: "COMANDO_AVULSO" }
 ]);
 
 const menuSelecionado = reactive(new MenuModel());

@@ -1,4 +1,4 @@
-import MenuModel from "./MenuModal";
+import MenuModel from "./MenuModel";
 import ProjetoModel from "./ProjetoModel";
 
 export default class RepositorioModel {
