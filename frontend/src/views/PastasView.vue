@@ -238,7 +238,7 @@ onUnmounted(() => {
 });
 
 const inicializarPagina = async () => {
-  if (redirecionarParaConfiguracaoInicial()) return;
+  // if (redirecionarParaConfiguracaoInicial()) return;
 
   await carregarPastas();
 

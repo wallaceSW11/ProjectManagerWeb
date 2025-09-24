@@ -41,6 +41,13 @@
             v-model="clone.criarBranchRemoto"
           />
 
+          <v-radio-group label="Tipo" inline hide-details v-model="clone.tipo" :disabled="!clone.criarBranchRemoto">
+            <v-radio label="Nenhum" value="nenhum" />
+            <v-radio label="Feature" value="feature" />
+            <v-radio label="Bug" value="bug" />
+            <v-radio label="HotFix" value="hotfix" />
+          </v-radio-group>
+
           <v-text-field
             label="Número da tarefa"
             v-model.uppercase="clone.codigo"
@@ -53,12 +60,7 @@
             :rules="obrigatorio"
           />
 
-          <v-radio-group label="Tipo" inline hide-details v-model="clone.tipo">
-            <v-radio label="Nenhum" value="nenhum" />
-            <v-radio label="Feature" value="feature" />
-            <v-radio label="Bug" value="bug" />
-            <v-radio label="HotFix" value="hotfix" />
-          </v-radio-group>
+          
         </v-form>
       </v-card-text>
 
@@ -119,6 +121,7 @@ const clonar = async () => {
   if (!(await formularioValido())) return;
 
   try {
+    clone.codigo = clone.codigo.toUpperCase();
     await CloneService.clonar(clone);
     exibirModalClone.value = false;
     Object.assign(clone, new CloneModel());

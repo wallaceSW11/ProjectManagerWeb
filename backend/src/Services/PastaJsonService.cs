@@ -50,7 +50,7 @@ namespace ProjectManagerWeb.src.Services
                 var pastas = await LerListaDoArquivoAsync(locked: true);
 
                 if (pastas.Exists(pasta => pasta.Diretorio.Equals(novaPasta.Diretorio, StringComparison.OrdinalIgnoreCase)))
-                    throw new Exception("Já existe uma pasta com esse diretório");
+                    await DeleteAsync(novaPasta.Diretorio);
 
                 var pastaParaAdicionar = novaPasta;
                 pastas.Add(pastaParaAdicionar);

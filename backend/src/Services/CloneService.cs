@@ -50,20 +50,25 @@ public class CloneService
         comando
             .Append($"cd {diretorioCompleto.ToString()}; ")
             .Append($"git clone {gitPrincipal.Url}; ")
-            .Append($"cd {nomeGit}; ")
-            .Append($"git checkout {clone.Branch}; ");
+            .Append($"cd {nomeGit}; ");
 
         if (clone.CriarBranchRemoto)
+        {
             if (clone.Tipo == "nenhum")
                 comando.Append($" git checkout -b {clone.Codigo};");
             else
                 comando.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
+        }
+        else
+        {
+            comando.Append($" git checkout {clone.Branch};");
+        }
 
         ShellExecute.ExecutarComando(comando.ToString());
 
         if (clone.BaixarAgregados)
         {
-    
+
             gitPrincipal.Agregados?.ForEach(async identificadorAgredado =>
             {
                 var agregado = await _repositorioJson.GetByIdAsync(identificadorAgredado);
@@ -76,14 +81,19 @@ public class CloneService
                 comando
                     .Append($"cd {diretorioCompleto.ToString()}; ")
                     .Append($"git clone {agregado.Url}; ")
-                    .Append($"cd {nomeGit}; ")
-                    .Append($"git checkout {clone.Branch}; ");
+                    .Append($"cd {nomeGit}; ");
 
                 if (clone.CriarBranchRemoto)
+                {
                     if (clone.Tipo == "nenhum")
                         comando.Append($" git checkout -b {clone.Codigo};");
                     else
                         comando.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
+                }
+                else
+                {
+                    comando.Append($" git checkout {clone.Branch};");
+                }
 
                 ShellExecute.ExecutarComando(comando.ToString());
             });
