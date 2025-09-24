@@ -84,6 +84,7 @@ import { onMounted, reactive, ref } from "vue";
 import { useConfiguracaoStore } from "@/stores/configuracao";
 import RepositoriosService from "@/services/RepositoriosService";
 import RepositorioModel from "@/models/RepositorioModel";
+import { atualizarListaPastas, carregando, notificar } from "@/utils/eventBus";
 
 const clone = reactive(new CloneModel());
 const repositorios = reactive([]);
@@ -122,8 +123,18 @@ const clonar = async () => {
     exibirModalClone.value = false;
     Object.assign(clone, new CloneModel());
     clone.diretorioRaiz = configuracaoStore.diretorioRaiz + "\\";
+    
+    carregando(true, "Clonando...");
+    setTimeout(() => {
+      carregando(false);
+      notificar("sucesso", "Clone iniciado");
+      atualizarListaPastas();
+    }, 2000);
   } catch (error) {
     console.error("Falha ao clonar:", error);
+    notificar("erro", "Falha ao clonar");
+  } finally {
+    carregando(false);
   }
 };
 
