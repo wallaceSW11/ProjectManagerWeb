@@ -147,16 +147,31 @@
                       </div>
 
                       <div>
-                        <v-tooltip text="Desmarcar todos">
+                        <v-menu location="bottom">
                           <template #activator="{ props }">
-                            <v-icon
+                            <v-btn
                               v-bind="props"
-                              size="16px"
-                              @click="projeto.comandosSelecionados = []"
-                              >mdi-close-box-multiple-outline</v-icon
+                              icon
+                              size="small"
+                              variant="flat"
                             >
+                              <v-icon small>mdi-dots-vertical</v-icon>
+                            </v-btn>
                           </template>
-                        </v-tooltip>
+
+                          <v-list dense>
+                            <v-list-item
+                              v-for="menu in menusProjetos"
+                              :key="menu.identificador"
+                              @click="menu.acao(projeto)"
+                            >
+                              <v-list-item-title>
+                                <v-icon class="pr-1">{{ menu.icone }}</v-icon>
+                                {{ menu.titulo }}
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </v-menu>
                       </div>
                     </div>
                   </v-card-title>
@@ -406,6 +421,45 @@ const executarMenu = async (pasta, menuId) => {
 const exibirCadastroPasta = (pasta) => {
   exibirModalPasta.value = true;
   Object.assign(pastaSelecionada, pasta);
+};
+
+const menusProjetos = [
+  {
+    identificador: 1,
+    titulo: "Desmarcar todos",
+    icone: "mdi-close-box-multiple-outline",
+    acao: (projeto) => {
+      projeto.comandosSelecionados = [];
+    },
+  },
+  {
+    identificador: 2,
+    titulo: "Abrir no Explorer",
+    icone: "mdi-folder-open",
+    acao: (projeto) => {
+      const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.nome}; explorer .; Exit;`;
+      executarComandoAvulso(comando);
+    },
+  },
+  {
+    identificador: 3,
+    titulo: "Abrir no PowerShell",
+    icone: "mdi-console",
+    acao: (projeto) => {
+      const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.nome}; pwsh.exe;`;
+      executarComandoAvulso(comando);
+    },
+  },
+];
+
+const executarComandoAvulso = (comando) => {
+  try {
+    ComandosService.executarComandoAvulso({
+      comando,
+    });
+  } catch (error) {
+    console.error("Falha ao executar o comando avulso: ", error);
+  }
 };
 </script>
 

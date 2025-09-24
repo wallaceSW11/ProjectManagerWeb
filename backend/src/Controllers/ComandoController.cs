@@ -17,9 +17,9 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
   }
 
   [HttpPost("avulso")]
-  public IActionResult ExecutarComandoAvulso(string comando)
+  public IActionResult ExecutarComandoAvulso([FromBody] ComandoAvulsoRequestDTO comando)
   {
-    var comandos = comandoService.ExecutarComandoAvulso(comando);
+    var comandos = comandoService.ExecutarComandoAvulso(comando.Comando);
     return Ok(comandos);
   }
 

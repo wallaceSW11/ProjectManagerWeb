@@ -67,7 +67,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         if (projeto.Comandos.AbrirNoVSCode)
           comandos.Add("AbrirNoVSCode");
 
-        projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Identificador, projeto.Nome, [.. comandos]));
+        projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Identificador, projeto.Nome, repositorio.Nome, [.. comandos]));
       });
 
       repositorio.Agregados?.ForEach(identificadorAgregado =>
@@ -102,6 +102,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           projetosDisponiveis.Add(new ProjetoDisponivelDTO(
             projeto.Identificador,
             nomeProjetoFormatado,
+            repositorioAgregado.Nome,
             [.. comandos],
             repositorioAgregado.Identificador
           ));

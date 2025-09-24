@@ -8,6 +8,10 @@ class ComandosService extends BaseApiService {
   async executarComandoMenu(comando) {
     return await this.post("comandos/menu", comando);
   }
+
+  async executarComandoAvulso(comando) {
+    return await this.post("comandos/avulso", comando);
+  }
 }
 
 export default new ComandosService();
