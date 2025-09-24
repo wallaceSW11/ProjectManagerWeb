@@ -64,7 +64,7 @@
                   {{ descricaoPasta(pasta) }}
                 </div>
 
-                <div v-if="!pasta.pastaId">
+                <div v-if="!pasta.identificador">
                   <v-tooltip text="Cadastrar pasta">
                     <template #activator="{ props }">
                       <v-btn
