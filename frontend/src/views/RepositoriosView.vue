@@ -45,7 +45,7 @@
 
               <v-tabs-window v-model="paginaCadastro">
                 <v-tabs-window-item>
-                  <CadastroRepositorio v-model="repositorioSelecionado" :repositorios="repositorios"/>
+                  <CadastroRepositorio v-model="repositorioSelecionado" :repositorios="repositorios" class="pt-4"/>
                 </v-tabs-window-item>
                 <v-tabs-window-item>
                   <CadastroProjeto v-model="repositorioSelecionado" />
@@ -147,7 +147,10 @@ const irParaListagem = () => {
   pagina.value = 0;
   modoOperacao.value = MODO_OPERACAO.INICIAL.valor;
 };
-const irParaCadastro = () => (pagina.value = 1);
+const irParaCadastro = () => {
+  paginaCadastro.value = 0;
+  pagina.value = 1;
+};
 
 const mudarParaEdicao = (identificador) => {
   let repo = repositorios.find((r) => r.identificador === identificador);
