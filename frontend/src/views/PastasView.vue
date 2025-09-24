@@ -64,7 +64,23 @@
                   {{ descricaoPasta(pasta) }}
                 </div>
 
-                <div>
+                <div v-if="!pasta.identificador">
+                  <v-tooltip text="Cadastrar pasta">
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        icon
+                        size="small"
+                        variant="flat"
+                        @click="exibirCadastroPasta(pasta)"
+                      >
+                        <v-icon small>mdi-plus</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-tooltip>
+                </div>
+
+                <div v-if="pasta.menus.length > 0">
                   <v-menu location="bottom">
                     <template #activator="{ props }">
                       <v-btn v-bind="props" icon size="small" variant="flat">
@@ -72,16 +88,7 @@
                       </v-btn>
                     </template>
 
-                    <div v-if="pasta.menus.length === 0">
-                      <v-card>
-                        <v-card-title
-                          >Nenhum menu foi adicionado no
-                          repositório</v-card-title
-                        >
-                      </v-card>
-                    </div>
-
-                    <v-list v-else dense>
+                    <v-list dense>
                       <v-list-item
                         v-for="menu in pasta.menus"
                         :key="menu.identificador"
@@ -190,26 +197,44 @@
       </v-row>
     </div>
   </v-container>
+
+  <CadastroPasta v-model="exibirModalPasta" :pasta="pastaSelecionada" />
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue";
-import PastasService from "../services/PastasService";
+import { onMounted, onUnmounted, reactive, ref } from "vue";
+import PastasService from "@/services/PastasService.js";
 import { useRouter } from "vue-router";
-import PastaModel from "../models/PastaModel";
-import ComandosService from "../services/ComandosService";
-import { carregandoAsync, notificar } from "@/utils/eventBus";
+import PastaModel from "@/models/PastaModel";
+import ComandosService from "@/services/ComandosService";
+import emitter, {
+  carregandoAsync,
+  notificar,
+  atualizarListaPastas,
+} from "@/utils/eventBus";
+import CadastroPasta from "@/components/pastas/PastaCadastro.vue";
 
 const pastas = reactive([]);
 const router = useRouter();
 const pastaSelecionada = reactive(new PastaModel());
+const exibirModalPasta = ref(false);
 
 import { useConfiguracaoStore } from "@/stores/configuracao";
 
 const configuracaoStore = useConfiguracaoStore();
 
+const carregarPastasListener = () => {
+  carregarPastas();
+};
+
 onMounted(async () => {
   await inicializarPagina();
+
+  emitter.on("atualizarListaPastas", carregarPastasListener);
+});
+
+onUnmounted(() => {
+  emitter.off("atualizarListaPastas", carregarPastasListener);
 });
 
 const inicializarPagina = async () => {
@@ -255,6 +280,7 @@ const selecionarPastaSalva = () => {
 };
 
 const carregarPastas = async () => {
+  Object.assign(pastas, []);
   try {
     const resposta = await carregandoAsync(async () => {
       return await PastasService.getPastas();
@@ -262,6 +288,7 @@ const carregarPastas = async () => {
     Object.assign(pastas, resposta);
   } catch (error) {
     console.error("Falha ao obter as pastas", error);
+    notificar("erro", "Falha ao obter as pastas");
   }
 };
 
@@ -374,6 +401,11 @@ const executarMenu = async (pasta, menuId) => {
   } catch (error) {
     console.error("Falha ao executar o menu: ", error);
   }
+};
+
+const exibirCadastroPasta = (pasta) => {
+  exibirModalPasta.value = true;
+  Object.assign(pastaSelecionada, pasta);
 };
 </script>
 

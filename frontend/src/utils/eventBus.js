@@ -27,5 +27,9 @@ function notificar(tipo, titulo, mensagem = "") {
   emitter.emit("notificar", { tipo, titulo, mensagem });
 }
 
+function atualizarListaPastas() {
+  emitter.emit("atualizarListaPastas");
+}
+
 export default emitter;
-export { carregando, carregandoAsync, notificar };
+export { carregando, carregandoAsync, notificar, atualizarListaPastas };

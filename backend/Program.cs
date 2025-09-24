@@ -29,6 +29,7 @@ builder.Services.AddSingleton<ConfiguracaoService>();
 builder.Services.AddSingleton<CloneService>();
 builder.Services.AddSingleton<PastaService>();
 builder.Services.AddSingleton<ComandoService>();
+builder.Services.AddSingleton<PastaJsonService>();
 
 var app = builder.Build();
 

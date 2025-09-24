@@ -15,4 +15,14 @@ public class PastaController(PastaService pastaService) : ControllerBase
     var pastas = await pastaService.ObterTodas();
     return Ok(pastas);
   }
+
+  [HttpPost]
+  public async Task<IActionResult> Cadastrar([FromBody] PastaCadastroRequestDTO pastaCadastro)
+  {
+    if (!ModelState.IsValid)
+      return BadRequest(ModelState);
+
+    var pasta = await pastaService.Cadastrar(pastaCadastro);
+    return CreatedAtAction(nameof(ObterTodas), new { id = pasta.Identificador }, pasta);
+  }
 }

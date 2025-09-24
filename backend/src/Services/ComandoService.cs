@@ -1,5 +1,3 @@
-using System.ComponentModel;
-using System.Text;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Utils;
 
@@ -12,7 +10,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
     var comandos = new List<string>();
 
-    var diretorio = pasta.Diretorio + "\\";
+    var diretorio = pasta.Diretorio + "\\" + RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url) + "\\";
 
     // Projetos originais do repositório
     pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null).ToList().ForEach(projeto =>
@@ -35,10 +33,10 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
         }
 
         if (comando.Equals("Instalar"))
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Instalar}; ");
+          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; ");
 
         if (comando.Equals("Buildar"))
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Nome}; {projetoCadastrado.Comandos.Buildar}; ");
+          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Buildar}; ");
 
         if (comando.Equals("AbrirNoVSCode"))
         {
@@ -141,10 +139,10 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
       if (a.IgnorarGit)
         comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; cd {menu.Diretorio}\\{a.Destino}; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{nomeRepositorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; cd {menu.Diretorio}\\{nomeRepositorio}\\{a.Destino}; git update-index --no-assume-unchanged {nomeArquivo}; Exit");
       else
         comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force;");
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{nomeRepositorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force;");
     });
 
     try
