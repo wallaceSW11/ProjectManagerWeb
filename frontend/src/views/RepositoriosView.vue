@@ -51,7 +51,7 @@
                   <CadastroProjeto v-model="repositorioSelecionado" />
                 </v-tabs-window-item>
                 <v-tabs-window-item>
-                  <CadastroMenu v-model="repositorioSelecionado" />
+                  <CadastroMenu v-model="repositorioSelecionado" class="pt-4"/>
                 </v-tabs-window-item>
               </v-tabs-window>
             </v-tabs-window-item>
@@ -59,7 +59,7 @@
         </div>
       </v-col>
 
-      <v-col cols="12">
+      <v-col cols="12" v-if="!emModoInicial">
         <div class="d-flex align-center justify-end">
           <div>
             <v-btn @click="salvarAlteracoes()">
@@ -67,7 +67,7 @@
               Salvar
             </v-btn>
 
-            <v-btn variant="plain" class="ml-2" @click="descartarAlteracoes">
+            <v-btn variant="plain" class="ml-2" @click="descartarAlteracoes()">
               <v-icon>mdi-cancel</v-icon>
               Cancelar
             </v-btn>

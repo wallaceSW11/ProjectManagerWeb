@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="exibirModal" max-width="600px">
+  <v-dialog v-model="exibirModal" :min-width="larguraMinima">
     <v-card>
       <v-card-title class="text-h5">{{ titulo }}</v-card-title>
       <v-card-text>
@@ -7,8 +7,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="acaoBotaoPrimario"> {{ textoBotaoPrimario }}</v-btn>
-        <v-btn color="primary" @click="acaoBotaoSecundario"> {{ textoBotaoSecundario }}</v-btn>
+        <v-btn text @click="acaoBotaoPrimario" :disabled="desabilitarBotaoPrimario"> {{ textoBotaoPrimario }}</v-btn>
+        <v-btn color="primary" @click="acaoBotaoSecundario" :disabled="desabilitarBotaoSecundario "> {{ textoBotaoSecundario }}</v-btn>
       </v-card-actions>
 
     </v-card>
@@ -39,6 +39,14 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  desabilitarBotaoPrimario: {
+    type: Boolean,
+    default: false,
+  },
+  desabilitarBotaoSecundario: {
+    type: Boolean,
+    default: false,
+  },
   acaoBotaoPrimario: {
     type: Function,
     default: null,
@@ -46,6 +54,10 @@ const props = defineProps({
   acaoBotaoSecundario: {
     type: Function,
     default: null,
+  },
+  larguraMinima: {
+    type: String,
+    default: '600px',
   },
 });
 </script>
