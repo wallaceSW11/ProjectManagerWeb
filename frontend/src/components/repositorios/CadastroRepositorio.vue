@@ -45,8 +45,8 @@ const props = defineProps({
 });
 
 const repositorio = defineModel(new RepositorioModel());
-
 const obrigatorio = [(v) => !!v || "Obrigatório"];
+
 
 
 const repositoriosDisponiveis = computed(() => {

@@ -1,54 +1,40 @@
 <template>
   <v-row no-gutters>
     <v-col cols="12">
-      <div
-        :class="[
-          'd-flex align-center',
-          emModoInicial ? 'justify-space-between' : 'justify-end',
-        ]"
-        style="height: 70px"
-      >
-        <div>
-          <v-btn
-            @click="
-              () => (emModoInicial ? mudarParaCadastro() : salvarAlteracoes())
-            "
-          >
-            <v-icon>{{ emModoInicial ? "mdi-plus" : "mdi-check" }}</v-icon>
-            {{ emModoInicial ? "Adicionar" : "Salvar" }}
-          </v-btn>
-
-          <v-btn
-            v-if="emModoCadastroEdicao"
-            variant="plain"
-            class="ml-2"
-            @click="descartarAlteracoes"
-          >
-            <v-icon>mdi-cancel</v-icon>
-            Cancelar
-          </v-btn>
-        </div>
+      <div>
+        <v-btn @click="prepararParaCadastro()" class="mb-4">
+          <v-icon>mdi-plus</v-icon>
+          Adicionar
+        </v-btn>
       </div>
 
-      <v-tabs-window v-model="pagina">
-        <v-tabs-window-item>
-          <v-data-table
-            :headers="colunas"
-            :items="repositorio.menus"
-            hide-default-footer
-          >
-            <template #[`item.actions`]="{ item }">
-              <v-btn icon @click="mudarParaEdicao(item)"
-                ><v-icon>mdi-pencil</v-icon></v-btn
-              >
-              <v-btn icon @click="excluirProjeto(item)"
-                ><v-icon>mdi-delete</v-icon></v-btn
-              >
-            </template>
-          </v-data-table>
-        </v-tabs-window-item>
+      <div>
+        <v-data-table
+          :headers="colunas"
+          :items="repositorio.menus"
+          hide-default-footer
+        >
+          <template #[`item.actions`]="{ item }">
+            <v-btn icon @click="mudarParaEdicao(item)"
+              ><v-icon>mdi-pencil</v-icon></v-btn
+            >
+            <v-btn icon @click="excluirProjeto(item)"
+              ><v-icon>mdi-delete</v-icon></v-btn
+            >
+          </template>
+        </v-data-table>
+      </div>
 
-        <v-tabs-window-item>
+      <div>
+        <ModalPadrao
+          v-model="exibirModalCadastroMenu"
+          titulo="Cadastro de Menu de Contexto"
+          :textoBotaoPrimario="emModoCadastro ? 'Adicionar' : 'Salvar'"
+          textoBotaoSecundario="Cancelar"
+          :acaoBotaoPrimario="salvarAlteracoes"
+          :acaoBotaoSecundario="descartarAlteracoes"
+          larguraMinima="800px"
+        >
           <v-form ref="formProjeto">
             <v-text-field
               label="Título"
@@ -57,48 +43,54 @@
             />
             <v-select
               label="Tipo"
-              :items="[{ titulo: 'Aplicar arquivos', valor: 'APLICAR_ARQUIVO'}]"
+              :items="TIPOS_MENU"
               v-model="menuSelecionado.tipo"
               item-value="valor"
               item-title="titulo"
             />
-          </v-form>
 
-          <CadastroMenuItem v-model="menuSelecionado" />
-        </v-tabs-window-item>
-      </v-tabs-window>
+            <CadastroMenuItemArquivo v-model="menuSelecionado" v-if="menuSelecionado.tipo === 'APLICAR_ARQUIVO'" />
+            <CadastroMenuItemComandoAvulso v-if="menuSelecionado.tipo === 'COMANDO_AVULSO'" v-model="menuSelecionado" />
+          </v-form>
+        </ModalPadrao>
+      </div>
     </v-col>
   </v-row>
 </template>
 
 <script setup>
 import { computed, reactive, ref } from "vue";
-import RepositorioModel from "../../models/RepositorioModel";
-import ProjetoModel from "../../models/ProjetoModel";
-import MenuModel from "../../models/MenuModal";
-import CadastroMenuItem from "./CadastroMenuItem.vue";
+import RepositorioModel from "@/models/RepositorioModel";
+import MenuModel from "@/models/MenuModel";
+import ModalPadrao from "@/components/comum/ModalPadrao.vue";
+import CadastroMenuItemArquivo from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemArquivo.vue";
+import CadastroMenuItemComandoAvulso from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemComandoAvulso.vue";
 
 const repositorio = defineModel(new RepositorioModel());
 
 const obrigatorio = [(v) => !!v || "Obrigatório"];
 
-const pagina = ref(0);
+const exibirModalCadastroMenu = ref(false);
 
 const colunas = reactive([
   { title: "Título", key: "titulo", align: "start" },
-  { title: "Tipo", key: "tipo.titulo", align: "start" },
+  { title: "Tipo", key: "tipo", align: "start" },
   { title: "Actions", key: "actions", align: "center", width: "200px" },
+]);
+
+const TIPOS_MENU = reactive([
+  { titulo: "Aplicar arquivos", valor: "APLICAR_ARQUIVO" },
+  { titulo: "Comando avulso", valor: "COMANDO_AVULSO" }
 ]);
 
 const menuSelecionado = reactive(new MenuModel());
 
-const irParaCadastro = () => (pagina.value = 1);
+const abrirModalCadastroMenu = () => (exibirModalCadastroMenu.value = true);
 
 const mudarParaEdicao = (item) => {
-  console.log(". ~ item:", item);
   Object.assign(menuSelecionado, item);
   modoOperacao.value = MODO_OPERACAO.EDICAO.valor;
-  irParaCadastro();
+  abrirModalCadastroMenu();
 };
 
 const MODO_OPERACAO = {
@@ -139,19 +131,17 @@ const formularioProjetoValido = async () => {
   return resposta.valid;
 };
 
-
-
-const mudarParaCadastro = () => {
+const prepararParaCadastro = () => {
   modoOperacao.value = MODO_OPERACAO.NOVO.valor;
   limparCampos();
-  irParaCadastro();
+  abrirModalCadastroMenu();
 };
 const salvarAlteracoes = async () => {
   if (!(await formularioProjetoValido())) return;
 
   try {
     emModoCadastro.value ? adicionarMenu() : atualizarProjeto();
-    irParaListagem();
+    descartarAlteracoes();
   } catch (error) {
     console.error("Falha ao salvar alteracoes do cadastro:", error);
   }
@@ -181,17 +171,13 @@ const excluirProjeto = (item) => {
 };
 
 const limparCampos = () => {
-  Object.assign(menuSelecionado, new ProjetoModel());
+  Object.assign(menuSelecionado, new MenuModel());
 };
 
 const descartarAlteracoes = () => {
   // Perguntar sobre perder alteracoes
   limparCampos();
-  irParaListagem();
-};
-
-const irParaListagem = () => {
-  pagina.value = 0;
   modoOperacao.value = MODO_OPERACAO.INICIAL.valor;
+  exibirModalCadastroMenu.value = false;
 };
 </script>

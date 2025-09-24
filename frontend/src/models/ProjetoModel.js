@@ -8,6 +8,7 @@ export default class ProjetoModel {
     this.subdiretorio = obj.subdiretorio || null;
     this.perfilVSCode = obj.perfilVSCode || null;
     this.comandos = new ComandosModel(obj.comandos);
+    this.arquivoCoverage = obj.arquivoCoverage || null;
   }
 }
 

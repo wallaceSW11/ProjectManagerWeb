@@ -18,5 +18,6 @@ public sealed record ProjetoDisponivelDTO(
     string Nome,
     string NomeRepositorio,
     List<string> Comandos,
-    Guid? IdentificadorRepositorioAgregado = null
+    Guid? IdentificadorRepositorioAgregado = null,
+    string? ArquivoCoverage = ""
 );

@@ -70,8 +70,8 @@
 
 <script setup>
 import { computed, reactive, ref } from "vue";
-import ProjetoModel from "../../models/ProjetoModel";
-import MenuModel from "../../models/MenuModal";
+import ProjetoModel from "../../../models/ProjetoModel";
+import MenuModel from "../../../models/MenuModel";
 import ArquivoModel from "@/models/ArquivoModel";
 
 const menu = defineModel(new MenuModel());

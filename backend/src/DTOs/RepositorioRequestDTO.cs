@@ -44,7 +44,8 @@ namespace ProjectManagerWeb.src.DTOs
         string Nome,
         string? Subdiretorio,
         string? PerfilVSCode,
-        ComandoDTO Comandos
+        ComandoDTO Comandos,
+        string? ArquivoCoverage
     );
 
     /// <summary>
@@ -66,7 +67,8 @@ namespace ProjectManagerWeb.src.DTOs
         Guid Identificador,
         string Titulo,
         string Tipo,
-        List<ArquivosDTO>? Arquivos
+        List<ArquivosDTO>? Arquivos,
+        List<string>? Comandos
     );
 
     public sealed record ArquivosDTO(
