@@ -10,7 +10,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
     var comandos = new List<string>();
 
-    var diretorio = pasta.Diretorio + "\\" + RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url) + "\\";
+    var diretorio = pasta.Diretorio + "\\" + repositorio.Nome + "\\";
 
     // Projetos originais do repositório
     pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null).ToList().ForEach(projeto =>
@@ -59,7 +59,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
       var projetoAgregadoCadastrado = repositorioAgregado.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto agregado não encontrado com o identificador {projeto.Identificador}");
 
-      var diretorioAgregado = diretorio.Replace(RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url), RepositorioRequestDTO.ObterNomeRepositorio(repositorioAgregado.Url)) + "\\";
+      var diretorioAgregado = diretorio.Replace(repositorio.Nome, repositorioAgregado.Nome) + "\\";
 
       projeto.Comandos.ForEach(comando =>
       {
@@ -128,14 +128,12 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
   {
     var repositorio = await repositorioJsonService.GetByIdAsync(menu.RepositorioId) ?? throw new Exception("Repositório não encontrado");
     var menuRepositorio = repositorio.Menus?.FirstOrDefault(m => m.Identificador == menu.ComandoId) ?? throw new Exception("Comando não encontrado");
-    var nomeRepositorio = RepositorioRequestDTO.ObterNomeRepositorio(repositorio.Url);
 
     var comandos = new List<string>();
 
     menuRepositorio.Arquivos?.ForEach(a =>
     {
       var nomeArquivo = Path.GetFileName(a.Arquivo);
-
 
       if (a.IgnorarGit)
         comandos
@@ -147,7 +145,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
     try
     {
-      comandos.ForEach(ShellExecute.ExecutarComando);
+      comandos.ForEach(ShellExecute.ExecutarComando); 
     }
     catch
     {

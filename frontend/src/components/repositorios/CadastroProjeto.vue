@@ -1,53 +1,38 @@
 <template>
   <v-col cols="12">
-    <div
-      :class="[
-        'd-flex align-center',
-        emModoInicial ? 'justify-space-between' : 'justify-end',
-      ]"
-      style="height: 70px"
-    >
-      <div>
-        <v-btn
-          @click="
-            () => (emModoInicial ? mudarParaCadastro() : salvarAlteracoes())
-          "
-        >
-          <v-icon>{{ emModoInicial ? "mdi-plus" : "mdi-check" }}</v-icon>
-          {{ emModoInicial ? "Adicionar" : "Salvar" }}
-        </v-btn>
-
-        <v-btn
-          v-if="emModoCadastroEdicao"
-          variant="plain"
-          class="ml-2"
-          @click="descartarAlteracoes"
-        >
-          <v-icon>mdi-cancel</v-icon>
-          Cancelar
-        </v-btn>
-      </div>
+    <div>
+      <v-btn @click="prepararParaCadastro()" class="mb-4">
+        <v-icon>mdi-plus</v-icon>
+        Adicionar
+      </v-btn>
     </div>
 
-    <v-tabs-window v-model="pagina">
-      <v-tabs-window-item>
-        <v-data-table
-          :headers="colunas"
-          :items="repositorio.projetos"
-          hide-default-footer
-        >
-          <template #[`item.actions`]="{ item }">
-            <v-btn icon @click="mudarParaEdicao(item)"
-              ><v-icon>mdi-pencil</v-icon></v-btn
-            >
-            <v-btn icon @click="excluirProjeto(item)"
-              ><v-icon>mdi-delete</v-icon></v-btn
-            >
-          </template>
-        </v-data-table>
-      </v-tabs-window-item>
+    <div>
+      <v-data-table
+        :headers="colunas"
+        :items="repositorio.projetos"
+        hide-default-footer
+      >
+        <template #[`item.actions`]="{ item }">
+          <v-btn icon @click="mudarParaEdicao(item)"
+            ><v-icon>mdi-pencil</v-icon></v-btn
+          >
+          <v-btn icon @click="excluirProjeto(item)"
+            ><v-icon>mdi-delete</v-icon></v-btn
+          >
+        </template>
+      </v-data-table>
+    </div>
 
-      <v-tabs-window-item>
+    <div>
+      <ModalPadrao
+        v-model="exibirModalCadastroProjeto"
+        titulo="Cadastro de Projeto"
+        :textoBotaoPrimario="emModoCadastro ? 'Adicionar' : 'Salvar'"
+        textoBotaoSecundario="Cancelar"
+        :acaoBotaoPrimario="salvarAlteracoes"
+        :acaoBotaoSecundario="descartarAlteracoes"
+      >
         <v-form ref="formProjeto">
           <v-text-field
             label="Nome"
@@ -64,6 +49,11 @@
             v-model="projetoSelecionado.perfilVSCode"
             item-title="nome"
             item-value="nome"
+          />
+
+          <v-text-field
+            label="Comando para abrir o arquivo coverage"
+            v-model="projetoSelecionado.arquivoCoverage"
           />
 
           <h2>Comandos:</h2>
@@ -86,8 +76,8 @@
             v-model="projetoSelecionado.comandos.abrirNoVSCode"
           />
         </v-form>
-      </v-tabs-window-item>
-    </v-tabs-window>
+      </ModalPadrao>
+    </div>
   </v-col>
 </template>
 
@@ -96,10 +86,12 @@ import { computed, reactive, ref } from "vue";
 import RepositorioModel from "../../models/RepositorioModel";
 import ProjetoModel from "../../models/ProjetoModel";
 import { useConfiguracaoStore } from "@/stores/configuracao";
+import ModalPadrao from "@/components/comum/ModalPadrao.vue";
 
 const repositorio = defineModel(new RepositorioModel());
 const configuracaoStore = useConfiguracaoStore();
 const obrigatorio = [(v) => !!v || "Obrigatório"];
+const exibirModalCadastroProjeto = ref(false);
 
 const pagina = ref(0);
 
@@ -110,15 +102,15 @@ const colunas = reactive([
   { title: "Actions", key: "actions", align: "center", width: "200px" },
 ]);
 
-
 const projetoSelecionado = reactive(new ProjetoModel());
 
-const irParaCadastro = () => (pagina.value = 1);
+const abrirModalCadastroProjeto = () =>
+  (exibirModalCadastroProjeto.value = true);
 
 const mudarParaEdicao = (item) => {
   Object.assign(projetoSelecionado, item);
   modoOperacao.value = MODO_OPERACAO.EDICAO.valor;
-  irParaCadastro();
+  abrirModalCadastroProjeto();
 };
 
 const MODO_OPERACAO = {
@@ -163,17 +155,18 @@ const adicionarProjeto = () => {
   repositorio.value.projetos.push(new ProjetoModel(projetoSelecionado));
 };
 
-const mudarParaCadastro = () => {
+const prepararParaCadastro = () => {
   modoOperacao.value = MODO_OPERACAO.NOVO.valor;
   limparCampos();
-  irParaCadastro();
+  abrirModalCadastroProjeto();
 };
+
 const salvarAlteracoes = async () => {
   if (!(await formularioProjetoValido())) return;
 
   try {
     emModoCadastro.value ? adicionarProjeto() : atualizarProjeto();
-    irParaListagem();
+    descartarAlteracoes();
   } catch (error) {
     console.error("Falha ao salvar alteracoes do cadastro:", error);
   }
@@ -205,11 +198,7 @@ const limparCampos = () => {
 const descartarAlteracoes = () => {
   // Perguntar sobre perder alteracoes
   limparCampos();
-  irParaListagem();
-};
-
-const irParaListagem = () => {
-  pagina.value = 0;
   modoOperacao.value = MODO_OPERACAO.INICIAL.valor;
+  exibirModalCadastroProjeto.value = false;
 };
 </script>

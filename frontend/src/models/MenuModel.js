@@ -6,7 +6,8 @@ export default class MenuModel {
 
     this.identificador = obj.identificador || crypto.randomUUID();
     this.titulo = obj.titulo;
-    this.tipo = obj.tipo;
+    this.tipo = obj.tipo || "APLICAR_ARQUIVO"; // APLICAR_ARQUIVO, COMANDO_AVULSO
     this.arquivos = obj.arquivos?.map(a => new ArquivoModel(a)) || [];
+    this.comandos = obj.comandos || [];
   }
 }

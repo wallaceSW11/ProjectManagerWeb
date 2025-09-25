@@ -140,29 +140,44 @@
                 :key="projeto.identificador"
               >
                 <v-card class="mb-2" style="background-color: #2d2d30">
-                  <v-card-title>
-                    <div class="d-flex justify-space-between">
+                  <v-card-title class="pb-0 d-flex flex-grow-1 justify-space-between">
+                    <div class="d-flex flex-grow-1 justify-space-between align-center">
                       <div>
                         {{ projeto.nome }}
                       </div>
 
                       <div>
-                        <v-tooltip text="Desmarcar todos">
+                        <v-menu location="bottom">
                           <template #activator="{ props }">
-                            <v-icon
+                            <v-btn
                               v-bind="props"
-                              size="16px"
-                              @click="projeto.comandosSelecionados = []"
-                              >mdi-close-box-multiple-outline</v-icon
+                              icon
+                              size="small"
+                              variant="text"
                             >
+                              <v-icon small>mdi-dots-vertical</v-icon>
+                            </v-btn>
                           </template>
-                        </v-tooltip>
+
+                          <v-list dense>
+                            <v-list-item
+                              v-for="menu in menusProjetoDisponiveis(projeto)"
+                              :key="menu.identificador"
+                              @click="menu.acao(projeto)"
+                            >
+                              <v-list-item-title>
+                                <v-icon class="pr-1">{{ menu.icone }}</v-icon>
+                                {{ menu.titulo }}
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </v-menu>
                       </div>
                     </div>
                   </v-card-title>
 
-                  <v-card-text>
-                    <v-checkbox
+                  <v-card-text class="ml-4">
+                    <v-switch
                       v-for="(comando, indice) in projeto.comandos"
                       :key="indice"
                       :label="comando"
@@ -170,6 +185,8 @@
                       v-model="projeto.comandosSelecionados"
                       hide-details
                       height="40px"
+                      color="primary"
+                      density="compact"
                     />
                   </v-card-text>
                 </v-card>
@@ -345,6 +362,7 @@ const executarAcoes = async () => {
           nome: p.nome,
           comandos: p.comandosSelecionados,
           identificadorRepositorioAgregado: p.identificadorRepositorioAgregado,
+          nomeRepositorio: p.nomeRepositorio,
         };
       }),
   };
@@ -407,6 +425,74 @@ const exibirCadastroPasta = (pasta) => {
   exibirModalPasta.value = true;
   Object.assign(pastaSelecionada, pasta);
 };
+
+const menusProjetos = [
+  {
+    identificador: 1,
+    titulo: "Desmarcar todos",
+    icone: "mdi-close-box-multiple-outline",
+    acao: (projeto) => {
+      projeto.comandosSelecionados = [];
+    },
+  },
+  {
+    identificador: 2,
+    titulo: "Abrir no Explorer",
+    icone: "mdi-folder-open",
+    acao: (projeto) => {
+      let comando = "";
+
+      if (projeto.identificadorRepositorioAgregado)
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
+      
+      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
+      executarComandoAvulso(comando);
+    },
+  },
+  {
+    identificador: 3,
+    titulo: "Abrir no PowerShell",
+    icone: "mdi-console",
+    acao: (projeto) => {
+      let comando = "";
+
+      if (projeto.identificadorRepositorioAgregado)
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
+      
+      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
+      executarComandoAvulso(comando);
+    },
+  },
+];
+
+const menusProjetoDisponiveis = (projeto) => {
+  let menus = [...menusProjetos];
+
+  if (projeto.arquivoCoverage) {
+    menus.push({
+      identificador: 5,
+      titulo: "Abrir coverage",
+      icone: "mdi-file-chart",
+      acao: (projeto) => {
+        const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.arquivoCoverage}`;
+        executarComandoAvulso(comando);
+      },
+    });
+  }
+  
+
+  return menus;
+};
+
+const executarComandoAvulso = (comando) => {
+  try {
+    ComandosService.executarComandoAvulso({
+      comando,
+    });
+  } catch (error) {
+    console.error("Falha ao executar o comando avulso: ", error);
+  }
+};
 </script>
 
 <style scoped>
@@ -416,7 +502,7 @@ const exibirCadastroPasta = (pasta) => {
 }
 
 .card-selecionado {
-  border: 1px solid orange;
+  border: 1px solid rgb(var(--v-theme-primary));
 }
 
 :deep(.v-checkbox .v-selection-control) {
@@ -429,5 +515,9 @@ const exibirCadastroPasta = (pasta) => {
 
 .corpo-acoes {
   overflow: auto;
+}
+
+:deep(.v-switch .v-label) {
+  padding-left: 16px;
 }
 </style>

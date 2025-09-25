@@ -67,7 +67,15 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         if (projeto.Comandos.AbrirNoVSCode)
           comandos.Add("AbrirNoVSCode");
 
-        projetosDisponiveis.Add(new ProjetoDisponivelDTO(projeto.Identificador, projeto.Nome, [.. comandos]));
+        projetosDisponiveis.Add(new ProjetoDisponivelDTO(
+          projeto.Identificador,
+          projeto.Nome,
+          repositorio.Nome,
+          [.. comandos],
+          null,
+          projeto.ArquivoCoverage,
+          projeto.Subdiretorio
+        ));
       });
 
       repositorio.Agregados?.ForEach(identificadorAgregado =>
@@ -76,9 +84,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
         if (repositorioAgregado == null) return;
 
-        var nomeRepositorioAgregado = RepositorioRequestDTO.ObterNomeRepositorio(repositorioAgregado.Url);
-
-        if (!Directory.Exists(pastaNoDisco + "\\" + nomeRepositorioAgregado) || string.IsNullOrWhiteSpace(nomeRepositorioAgregado))
+        if (!Directory.Exists(pastaNoDisco + "\\" + repositorioAgregado.Nome) || string.IsNullOrWhiteSpace(repositorioAgregado.Nome))
           return;
 
         repositorioAgregado.Projetos.ForEach(projeto =>
@@ -102,8 +108,11 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           projetosDisponiveis.Add(new ProjetoDisponivelDTO(
             projeto.Identificador,
             nomeProjetoFormatado,
+            repositorioAgregado.Nome,
             [.. comandos],
-            repositorioAgregado.Identificador
+            repositorioAgregado.Identificador,
+            projeto.ArquivoCoverage,
+            projeto.Subdiretorio
           ));
         }); 
       });
