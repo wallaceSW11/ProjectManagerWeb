@@ -60,12 +60,10 @@ namespace ProjectManagerWeb.src.Services
                 if (repositorios.Exists(repo => repo.Url.Equals(novoRepositorio.Url, StringComparison.OrdinalIgnoreCase)))
                     throw new Exception("Já existe um repositório com essa URL");
 
-                var repositorioParaAdicionar = novoRepositorio with { Identificador = Guid.NewGuid() };
-
-                repositorios.Add(repositorioParaAdicionar);
+                repositorios.Add(novoRepositorio);
                 await GravarListaNoArquivoAsync(repositorios, locked: true);
 
-                return repositorioParaAdicionar;
+                return novoRepositorio;
             }
             finally
             {

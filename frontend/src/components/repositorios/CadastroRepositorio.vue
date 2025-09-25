@@ -3,6 +3,14 @@
     <v-row no-gutters>
       <v-col cols="12">
         <v-text-field
+          label="Url"
+          v-model="repositorio.url"
+          :rules="obrigatorio"
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <v-text-field
           label="Nome"
           v-model="repositorio.nome"
           :rules="obrigatorio"
@@ -11,11 +19,13 @@
 
       <v-col cols="12">
         <v-text-field
-          label="Url"
-          v-model="repositorio.url"
+          label="Título"
+          v-model="repositorio.titulo"
           :rules="obrigatorio"
         />
       </v-col>
+
+      
 
       <v-col cols="12">
         <v-select

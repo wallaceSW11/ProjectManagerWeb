@@ -45,12 +45,10 @@ public class CloneService
             throw new Exception("Git não encontrado");
         }
 
-        var nomeGit = RepositorioRequestDTO.ObterNomeRepositorio(gitPrincipal.Url) ?? throw new Exception("Nome do repositório git não encontrado");
-
         comando
             .Append($"cd {diretorioCompleto.ToString()}; ")
             .Append($"git clone {gitPrincipal.Url}; ")
-            .Append($"cd {nomeGit}; ");
+            .Append($"cd {gitPrincipal.Nome}; ");
 
         if (clone.CriarBranchRemoto)
         {
@@ -77,11 +75,10 @@ public class CloneService
 
                 comando.Clear();
 
-                nomeGit = RepositorioRequestDTO.ObterNomeRepositorio(agregado.Url) ?? throw new Exception("Nome do repositório git não encontrado");
                 comando
                     .Append($"cd {diretorioCompleto.ToString()}; ")
                     .Append($"git clone {agregado.Url}; ")
-                    .Append($"cd {nomeGit}; ");
+                    .Append($"cd {agregado.Nome}; ");
 
                 if (clone.CriarBranchRemoto)
                 {
