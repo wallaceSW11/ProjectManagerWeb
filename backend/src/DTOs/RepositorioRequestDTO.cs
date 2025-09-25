@@ -22,17 +22,6 @@ namespace ProjectManagerWeb.src.DTOs
         List<Guid>? Agregados,
         List<MenuDTO>? Menus
     );
-    // {
-    //     public static string ObterNomeRepositorio(string url)
-    //     {
-    //         var regexPattern = @"/([^/]+)\.git$";
-    //         var regex = new Regex(regexPattern);
-
-    //         Match match = regex.Match(url);
-
-    //         return match.Success ? match.Groups[1].Value : string.Empty;
-    //     }
-    // }
 
     /// <summary>
     /// Representa um projeto específico dentro de um repositório.

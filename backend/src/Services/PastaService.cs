@@ -111,7 +111,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
             repositorioAgregado.Nome,
             [.. comandos],
             repositorioAgregado.Identificador,
-            projeto.ArquivoCoverage
+            projeto.ArquivoCoverage,
+            projeto.Subdiretorio
           ));
         }); 
       });

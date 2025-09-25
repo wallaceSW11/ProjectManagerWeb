@@ -362,6 +362,7 @@ const executarAcoes = async () => {
           nome: p.nome,
           comandos: p.comandosSelecionados,
           identificadorRepositorioAgregado: p.identificadorRepositorioAgregado,
+          nomeRepositorio: p.nomeRepositorio,
         };
       }),
   };
@@ -439,7 +440,12 @@ const menusProjetos = [
     titulo: "Abrir no Explorer",
     icone: "mdi-folder-open",
     acao: (projeto) => {
-      const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.nome}; explorer .; Exit;`;
+      let comando = "";
+
+      if (projeto.identificadorRepositorioAgregado)
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
+      
+      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
       executarComandoAvulso(comando);
     },
   },
@@ -448,7 +454,12 @@ const menusProjetos = [
     titulo: "Abrir no PowerShell",
     icone: "mdi-console",
     acao: (projeto) => {
-      const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.nome}; pwsh.exe;`;
+      let comando = "";
+
+      if (projeto.identificadorRepositorioAgregado)
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
+      
+      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
       executarComandoAvulso(comando);
     },
   },
@@ -456,8 +467,6 @@ const menusProjetos = [
 
 const menusProjetoDisponiveis = (projeto) => {
   let menus = [...menusProjetos];
-
-  console.log(projeto);
 
   if (projeto.arquivoCoverage) {
     menus.push({
