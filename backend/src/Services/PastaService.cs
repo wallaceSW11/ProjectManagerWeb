@@ -73,7 +73,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           repositorio.Nome,
           [.. comandos],
           null,
-          projeto.ArquivoCoverage
+          projeto.ArquivoCoverage,
+          projeto.Subdiretorio
         ));
       });
 
@@ -83,9 +84,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
         if (repositorioAgregado == null) return;
 
-        var nomeRepositorioAgregado = RepositorioRequestDTO.ObterNomeRepositorio(repositorioAgregado.Url);
-
-        if (!Directory.Exists(pastaNoDisco + "\\" + nomeRepositorioAgregado) || string.IsNullOrWhiteSpace(nomeRepositorioAgregado))
+        if (!Directory.Exists(pastaNoDisco + "\\" + repositorioAgregado.Nome) || string.IsNullOrWhiteSpace(repositorioAgregado.Nome))
           return;
 
         repositorioAgregado.Projetos.ForEach(projeto =>

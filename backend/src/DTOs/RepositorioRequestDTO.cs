@@ -17,21 +17,22 @@ namespace ProjectManagerWeb.src.DTOs
         Guid Identificador,
         string Url,
         string Nome,
+        string Titulo,
         List<ProjetoDTO> Projetos,
         List<Guid>? Agregados,
         List<MenuDTO>? Menus
-    )
-    {
-        public static string ObterNomeRepositorio(string url)
-        {
-            var regexPattern = @"/([^/]+)\.git$";
-            var regex = new Regex(regexPattern);
+    );
+    // {
+    //     public static string ObterNomeRepositorio(string url)
+    //     {
+    //         var regexPattern = @"/([^/]+)\.git$";
+    //         var regex = new Regex(regexPattern);
 
-            Match match = regex.Match(url);
+    //         Match match = regex.Match(url);
 
-            return match.Success ? match.Groups[1].Value : string.Empty;
-        }
-    }
+    //         return match.Success ? match.Groups[1].Value : string.Empty;
+    //     }
+    // }
 
     /// <summary>
     /// Representa um projeto específico dentro de um repositório.
