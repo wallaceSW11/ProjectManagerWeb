@@ -3,10 +3,10 @@ export default class ProjetoModel {
     obj = obj || {};
 
     this.identificador = obj.identificador || crypto.randomUUID();
-    this.nome = obj.nome || null;
-    this.nomeRepositorio = obj.nomeRepositorio || null;
-    this.subdiretorio = obj.subdiretorio || null;
-    this.perfilVSCode = obj.perfilVSCode || null;
+    this.nome = obj.nome || "";
+    this.nomeRepositorio = obj.nomeRepositorio || "";
+    this.subdiretorio = obj.subdiretorio || "";
+    this.perfilVSCode = obj.perfilVSCode || "";
     this.comandos = new ComandosModel(obj.comandos);
     this.arquivoCoverage = obj.arquivoCoverage || null;
   }

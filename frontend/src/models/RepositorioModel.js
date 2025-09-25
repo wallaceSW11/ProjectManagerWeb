@@ -7,8 +7,8 @@ export default class RepositorioModel {
 
     this.identificador = obj.identificador || crypto.randomUUID();
     this.url = obj.url || null;
-    this.titulo = obj.titulo || null;
-    this.nome = obj.nome || null;
+    this.titulo = obj.titulo || "";
+    this.nome = obj.nome || "";
     this.projetos = Array.isArray(obj.projetos)
       ? obj.projetos.map(p => new ProjetoModel(p))
       : [];
