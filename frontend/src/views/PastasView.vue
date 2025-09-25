@@ -140,8 +140,8 @@
                 :key="projeto.identificador"
               >
                 <v-card class="mb-2" style="background-color: #2d2d30">
-                  <v-card-title>
-                    <div class="d-flex justify-space-between">
+                  <v-card-title class="pb-0 d-flex flex-grow-1 justify-space-between">
+                    <div class="d-flex flex-grow-1 justify-space-between align-center">
                       <div>
                         {{ projeto.nome }}
                       </div>
@@ -153,7 +153,7 @@
                               v-bind="props"
                               icon
                               size="small"
-                              variant="flat"
+                              variant="text"
                             >
                               <v-icon small>mdi-dots-vertical</v-icon>
                             </v-btn>
@@ -176,8 +176,8 @@
                     </div>
                   </v-card-title>
 
-                  <v-card-text>
-                    <v-checkbox
+                  <v-card-text class="ml-4">
+                    <v-switch
                       v-for="(comando, indice) in projeto.comandos"
                       :key="indice"
                       :label="comando"
@@ -185,6 +185,8 @@
                       v-model="projeto.comandosSelecionados"
                       hide-details
                       height="40px"
+                      color="primary"
+                      density="compact"
                     />
                   </v-card-text>
                 </v-card>
@@ -491,7 +493,7 @@ const executarComandoAvulso = (comando) => {
 }
 
 .card-selecionado {
-  border: 1px solid orange;
+  border: 1px solid rgb(var(--v-theme-primary));
 }
 
 :deep(.v-checkbox .v-selection-control) {
@@ -504,5 +506,9 @@ const executarComandoAvulso = (comando) => {
 
 .corpo-acoes {
   overflow: auto;
+}
+
+:deep(.v-switch .v-label) {
+  padding-left: 16px;
 }
 </style>
