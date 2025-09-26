@@ -2,7 +2,7 @@
   <v-row no-gutters>
     <v-col cols="12">
       <div>
-        <BotaoPrimario
+        <BotaoTerciario
           texto="Adicionar"
           icone="mdi-plus"
           @click="abrirModalCadastroMenu"
@@ -77,6 +77,7 @@ import RepositorioModel from "@/models/RepositorioModel";
 import MenuModel from "@/models/MenuModel";
 import CadastroMenuItemArquivo from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemArquivo.vue";
 import CadastroMenuItemComandoAvulso from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemComandoAvulso.vue";
+import BotaoTerciario from "../comum/botao/BotaoTerciario.vue";
 
 const repositorio = defineModel(new RepositorioModel());
 

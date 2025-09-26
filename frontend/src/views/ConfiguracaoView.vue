@@ -48,8 +48,18 @@
                   hide-default-footer
                 >
                   <template #[`item.actions`]="{ item }">
-                    <v-icon @click="editarPerfil(item)">mdi-pencil</v-icon>
-                    <v-icon @click="removerPerfil(item)">mdi-delete</v-icon>
+                    <IconeComTooltip
+                      icone="mdi-pencil"
+                      texto="Editar"
+                      :acao="() => editarPerfil(item)"
+                      top
+                    />
+                    <IconeComTooltip
+                      icone="mdi-delete"
+                      texto="Excluir"
+                      :acao="() => removerPerfil(item)"
+                      top
+                    />
                   </template>
                 </v-data-table>
               </div>
