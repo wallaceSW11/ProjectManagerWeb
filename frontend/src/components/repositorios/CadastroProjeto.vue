@@ -1,7 +1,7 @@
 <template>
   <v-col cols="12">
     <div>
-      <BotaoPrimario texto="Adicionar" icone="mdi-plus" @click="abrirModalCadastroProjeto"  class="my-2"/>
+      <BotaoTerciario texto="Adicionar" icone="mdi-plus" @click="abrirModalCadastroProjeto"  class="my-2"/>
     </div>
 
     <div>
@@ -89,6 +89,7 @@ import { computed, reactive, ref } from "vue";
 import RepositorioModel from "../../models/RepositorioModel";
 import ProjetoModel from "../../models/ProjetoModel";
 import { useConfiguracaoStore } from "@/stores/configuracao";
+import BotaoTerciario from "../comum/botao/BotaoTerciario.vue";
 
 const repositorio = defineModel(new RepositorioModel());
 const configuracaoStore = useConfiguracaoStore();
