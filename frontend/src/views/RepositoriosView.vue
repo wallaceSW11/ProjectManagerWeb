@@ -79,7 +79,7 @@ import RepositorioModel from "../models/RepositorioModel";
 import RepositoriosService from "../services/RepositoriosService";
 import CadastroMenu from "@/components/repositorios/CadastroMenu.vue";
 import CadastroProjeto from "../components/repositorios/CadastroProjeto.vue";
-import { carregandoAsync } from "@/utils/eventBus";
+import { carregandoAsync, notificar } from "@/utils/eventBus";
 
 let repositorios = reactive([]);
 const repositorioSelecionado = reactive(new RepositorioModel());
@@ -185,8 +185,10 @@ const criarRepositorio = async () => {
     await RepositoriosService.adicionarRepositorio(repositorioSelecionado);
     repositorios.push(new RepositorioModel(repositorioSelecionado));
     limparCampos();
+    notificar("sucesso", "Repositorio criado");
   } catch (error) {
     console.error("Falha ao criar repositorio: " + error);
+    notificar("erro", "Falha ao criar repositorio");
   }
 };
 
@@ -199,8 +201,11 @@ const atualizarRepositorio = async () => {
     );
     indice !== -1 &&
       Object.assign(repositorios[indice], repositorioSelecionado);
+
+    notificar("sucesso", "Repositorio atualizado");
   } catch (error) {
     console.error("Falha ao criar repositorio" + error);
+    notificar("erro", "Falha ao criar repositorio");
   }
 };
 
@@ -213,8 +218,11 @@ const excluirRepositorio = async (item) => {
     await RepositoriosService.excluirRepositorio(item);
     const indice = repositorios.findIndex((r) => r.identificador === item.identificador);
     indice !== -1 && repositorios.splice(indice, 1);
+
+    notificar("sucesso", "Repositorio excluido");
   } catch (error) {
     console.error("Falha ao excluir repositorio" + error);
+    notificar("erro", "Falha ao excluir repositorio");
   }
 };
 

@@ -13,13 +13,15 @@
         <v-spacer></v-spacer>
         <BotaoPrimario
           @click="acaoBotaoPrimario"
-          :text="textoBotaoPrimario"
+          :texto="textoBotaoPrimario"
           :desabilitar="desabilitarBotaoPrimario"
+          :icone="iconeBotaoPrimario"
         />
         <BotaoSecundario
           @click="acaoBotaoSecundario"
-          :text="textoBotaoSecundario"
+          :texto="textoBotaoSecundario"
           :desabilitar="desabilitarBotaoSecundario"
+          :icone="iconeBotaoSecundario"
         />
       </v-card-actions>
     </v-card>
@@ -73,6 +75,14 @@ const props = defineProps({
   persistent: {
     type: Boolean,
     default: true,
+  },
+  iconeBotaoPrimario: {
+    type: String,
+    default: 'mdi-plus',
+  },
+  iconeBotaoSecundario: {
+    type: String,
+    default: 'mdi-cancel',
   },
 });
 </script>

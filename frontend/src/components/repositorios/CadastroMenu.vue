@@ -30,7 +30,6 @@
           v-model="exibirModalCadastroMenu"
           titulo="Cadastro de Menu de Contexto"
           :textoBotaoPrimario="emModoCadastro ? 'Adicionar' : 'Salvar'"
-          textoBotaoSecundario="Cancelar"
           :acaoBotaoPrimario="salvarAlteracoes"
           :acaoBotaoSecundario="descartarAlteracoes"
           larguraMinima="800px"
