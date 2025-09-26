@@ -9,6 +9,7 @@ import { useConfiguracaoStore } from './stores/configuracao'
 import BotaoPrimario from './components/comum/botao/BotaoPrimario.vue'
 import BotaoSecundario from './components/comum/botao/BotaoSecundario.vue'
 import ModalPadrao from './components/comum/ModalPadrao.vue'
+import IconeComTooltip from './components/comum/botao/IconeComTooltip.vue'
 
 async function initApp() {
   const app = createApp(App)
@@ -21,6 +22,7 @@ async function initApp() {
   app.component('BotaoPrimario', BotaoPrimario)
   app.component('BotaoSecundario', BotaoSecundario)
   app.component('ModalPadrao', ModalPadrao)
+  app.component('IconeComTooltip', IconeComTooltip)
 
   // Carregar configuração antes de montar a aplicação
   const configuracaoStore = useConfiguracaoStore()

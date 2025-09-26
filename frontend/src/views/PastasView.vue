@@ -65,7 +65,13 @@
                 </div>
 
                 <div v-if="!pasta.identificador">
-                  <v-tooltip text="Cadastrar pasta">
+                  <IconeComTooltip
+                    icone="mdi-plus"
+                    texto="Cadastrar pasta"
+                    :acao="() => exibirCadastroPasta(pasta)"
+                    top
+                  />
+                  <!-- <v-tooltip text="Cadastrar pasta">
                     <template #activator="{ props }">
                       <v-btn
                         v-bind="props"
@@ -77,7 +83,7 @@
                         <v-icon small>mdi-plus</v-icon>
                       </v-btn>
                     </template>
-                  </v-tooltip>
+                  </v-tooltip> -->
                 </div>
 
                 <div v-if="pasta.menus.length > 0">

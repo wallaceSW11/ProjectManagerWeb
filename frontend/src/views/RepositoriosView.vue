@@ -11,10 +11,7 @@
 
       <v-col cols="12">
         <div class="d-flex justify-space-between align-center">
-          <v-btn v-if="!emModoCadastroEdicao" @click="mudarParaCadastro()">
-            <v-icon>mdi-plus</v-icon>
-            Adicionar
-          </v-btn>
+          <BotaoPrimario v-if="!emModoCadastroEdicao" @click="mudarParaCadastro()" texto="Adicionar" icone="mdi-plus" />
 
           <div v-if="emModoInicial" style="width: 300px">
             <v-text-field
