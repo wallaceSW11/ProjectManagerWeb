@@ -62,15 +62,8 @@
       <v-col cols="12" v-if="!emModoInicial">
         <div class="d-flex align-center justify-end">
           <div>
-            <v-btn @click="salvarAlteracoes()">
-              <v-icon>mdi-check</v-icon>
-              Salvar
-            </v-btn>
-
-            <v-btn variant="plain" class="ml-2" @click="descartarAlteracoes()">
-              <v-icon>mdi-cancel</v-icon>
-              Cancelar
-            </v-btn>
+            <BotaoPrimario @click="salvarAlteracoes" texto="Salvar" icone="mdi-check" />
+            <BotaoSecundario @click="descartarAlteracoes" texto="Cancelar" icone="mdi-cancel" />
           </div>
         </div>
       </v-col>

@@ -86,7 +86,6 @@ import { computed, reactive, ref } from "vue";
 import RepositorioModel from "../../models/RepositorioModel";
 import ProjetoModel from "../../models/ProjetoModel";
 import { useConfiguracaoStore } from "@/stores/configuracao";
-import ModalPadrao from "@/components/comum/ModalPadrao.vue";
 
 const repositorio = defineModel(new RepositorioModel());
 const configuracaoStore = useConfiguracaoStore();

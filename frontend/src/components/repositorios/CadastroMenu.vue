@@ -62,7 +62,6 @@
 import { computed, reactive, ref } from "vue";
 import RepositorioModel from "@/models/RepositorioModel";
 import MenuModel from "@/models/MenuModel";
-import ModalPadrao from "@/components/comum/ModalPadrao.vue";
 import CadastroMenuItemArquivo from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemArquivo.vue";
 import CadastroMenuItemComandoAvulso from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemComandoAvulso.vue";
 
