@@ -1,16 +1,29 @@
 <template>
-  <v-dialog v-model="exibirModal" :min-width="larguraMinima">
+  <v-dialog
+    v-model="exibirModal"
+    :min-width="larguraMinima"
+    :persistent="persistent"
+  >
     <v-card>
       <v-card-title class="text-h5">{{ titulo }}</v-card-title>
       <v-card-text>
         <slot />
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="pr-4 pb-4">
         <v-spacer></v-spacer>
-        <v-btn text @click="acaoBotaoPrimario" :disabled="desabilitarBotaoPrimario"> {{ textoBotaoPrimario }}</v-btn>
-        <v-btn color="primary" @click="acaoBotaoSecundario" :disabled="desabilitarBotaoSecundario "> {{ textoBotaoSecundario }}</v-btn>
+        <BotaoPrimario
+          @click="acaoBotaoPrimario"
+          :texto="textoBotaoPrimario"
+          :desabilitar="desabilitarBotaoPrimario"
+          :icone="iconeBotaoPrimario"
+        />
+        <BotaoSecundario
+          @click="acaoBotaoSecundario"
+          :texto="textoBotaoSecundario"
+          :desabilitar="desabilitarBotaoSecundario"
+          :icone="iconeBotaoSecundario"
+        />
       </v-card-actions>
-
     </v-card>
   </v-dialog>
 </template>
@@ -25,11 +38,11 @@ const props = defineProps({
   },
   textoBotaoPrimario: {
     type: String,
-    default: 'Salvar',
+    default: "Salvar",
   },
   textoBotaoSecundario: {
     type: String,
-    default: 'Cancelar',
+    default: "Cancelar",
   },
   exibirBotaoPrimario: {
     type: Boolean,
@@ -57,7 +70,19 @@ const props = defineProps({
   },
   larguraMinima: {
     type: String,
-    default: '600px',
+    default: "600px",
+  },
+  persistent: {
+    type: Boolean,
+    default: true,
+  },
+  iconeBotaoPrimario: {
+    type: String,
+    default: 'mdi-plus',
+  },
+  iconeBotaoSecundario: {
+    type: String,
+    default: 'mdi-cancel',
   },
 });
 </script>

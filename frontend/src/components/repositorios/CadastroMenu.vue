@@ -2,10 +2,12 @@
   <v-row no-gutters>
     <v-col cols="12">
       <div>
-        <v-btn @click="prepararParaCadastro()" class="mb-4">
-          <v-icon>mdi-plus</v-icon>
-          Adicionar
-        </v-btn>
+        <BotaoPrimario
+          texto="Adicionar"
+          icone="mdi-plus"
+          @click="abrirModalCadastroMenu"
+          class="my-2"
+        />
       </div>
 
       <div>
@@ -15,12 +17,18 @@
           hide-default-footer
         >
           <template #[`item.actions`]="{ item }">
-            <v-btn icon @click="mudarParaEdicao(item)"
-              ><v-icon>mdi-pencil</v-icon></v-btn
-            >
-            <v-btn icon @click="excluirProjeto(item)"
-              ><v-icon>mdi-delete</v-icon></v-btn
-            >
+            <IconeComTooltip
+              icone="mdi-pencil"
+              texto="Editar"
+              :acao="() => mudarParaEdicao(item)"
+              top
+            />
+            <IconeComTooltip
+              icone="mdi-delete"
+              texto="Excluir"
+              :acao="() => excluirProjeto(item)"
+              top
+            />
           </template>
         </v-data-table>
       </div>
@@ -30,7 +38,6 @@
           v-model="exibirModalCadastroMenu"
           titulo="Cadastro de Menu de Contexto"
           :textoBotaoPrimario="emModoCadastro ? 'Adicionar' : 'Salvar'"
-          textoBotaoSecundario="Cancelar"
           :acaoBotaoPrimario="salvarAlteracoes"
           :acaoBotaoSecundario="descartarAlteracoes"
           larguraMinima="800px"
@@ -49,8 +56,14 @@
               item-title="titulo"
             />
 
-            <CadastroMenuItemArquivo v-model="menuSelecionado" v-if="menuSelecionado.tipo === 'APLICAR_ARQUIVO'" />
-            <CadastroMenuItemComandoAvulso v-if="menuSelecionado.tipo === 'COMANDO_AVULSO'" v-model="menuSelecionado" />
+            <CadastroMenuItemArquivo
+              v-model="menuSelecionado"
+              v-if="menuSelecionado.tipo === 'APLICAR_ARQUIVO'"
+            />
+            <CadastroMenuItemComandoAvulso
+              v-if="menuSelecionado.tipo === 'COMANDO_AVULSO'"
+              v-model="menuSelecionado"
+            />
           </v-form>
         </ModalPadrao>
       </div>
@@ -62,7 +75,6 @@
 import { computed, reactive, ref } from "vue";
 import RepositorioModel from "@/models/RepositorioModel";
 import MenuModel from "@/models/MenuModel";
-import ModalPadrao from "@/components/comum/ModalPadrao.vue";
 import CadastroMenuItemArquivo from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemArquivo.vue";
 import CadastroMenuItemComandoAvulso from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemComandoAvulso.vue";
 
@@ -80,7 +92,7 @@ const colunas = reactive([
 
 const TIPOS_MENU = reactive([
   { titulo: "Aplicar arquivos", valor: "APLICAR_ARQUIVO" },
-  { titulo: "Comando avulso", valor: "COMANDO_AVULSO" }
+  { titulo: "Comando avulso", valor: "COMANDO_AVULSO" },
 ]);
 
 const menuSelecionado = reactive(new MenuModel());

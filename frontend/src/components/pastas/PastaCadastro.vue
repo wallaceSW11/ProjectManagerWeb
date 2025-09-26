@@ -50,14 +50,8 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" variant="outlined" @click="criar()">
-          <v-icon>mdi-plus</v-icon>
-          Criar
-        </v-btn>
-        <v-btn @click="fecharPasta">
-          <v-icon>mdi-close</v-icon>
-          Fechar
-        </v-btn>
+        <BotaoPrimario @click="criar" texto="Criar" />
+        <BotaoSecundario @click="fecharPasta" texto="Fechar" />
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -71,6 +65,7 @@ import { useConfiguracaoStore } from "@/stores/configuracao";
 import RepositoriosService from "@/services/RepositoriosService";
 import RepositorioModel from "@/models/RepositorioModel";
 import { notificar, atualizarListaPastas } from "@/utils/eventBus";
+import BotaoSecundario from "../comum/botao/BotaoSecundario.vue";
 
 const pasta = reactive(new PastaModel());
 const repositorios = reactive([]);
@@ -155,6 +150,10 @@ const formularioValido = async () => {
   return form.valid;
 };
 
+const limparCampos = () => {
+  Object.assign(pasta, new PastaModel());
+};
+
 const criar = async () => {
   if (!(await formularioValido())) return;
 
@@ -164,6 +163,7 @@ const criar = async () => {
     Object.assign(pasta, new PastaModel());
     notificar("sucesso", "Pasta cadastrada");
     atualizarListaPastas();
+    limparCampos();
   } catch (error) {
     console.error("Falha ao criar pasta:", error);
     notificar("erro", "Falha ao criar pasta");
@@ -172,7 +172,7 @@ const criar = async () => {
 
 const fecharPasta = () => {
   exibirModalPasta.value = false;
-  Object.assign(pasta, new PastaModel());
+  limparCampos();
 };
 </script>
 

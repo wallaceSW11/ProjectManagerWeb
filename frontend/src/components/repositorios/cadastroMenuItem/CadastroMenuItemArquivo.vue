@@ -37,12 +37,18 @@
           hide-default-footer
         >
           <template #[`item.actions`]="{ item }">
-            <v-btn icon @click="mudarParaEdicao(item)"
-              ><v-icon>mdi-pencil</v-icon></v-btn
-            >
-            <v-btn icon @click="excluirProjeto(item)"
-              ><v-icon>mdi-delete</v-icon></v-btn
-            >
+            <IconeComTooltip
+              icone="mdi-pencil"
+              texto="Editar"
+              :acao="() => mudarParaEdicao(item)"
+              top
+            />
+            <IconeComTooltip
+              icone="mdi-delete"
+              texto="Excluir"
+              :acao="() => excluirProjeto(item)"
+              top
+            />
           </template>
         </v-data-table>
       </v-tabs-window-item>
