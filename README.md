@@ -1,3 +1,4 @@
+
 # ProjectManagerWeb
 
 **Gerenciador de projetos web desenvolvido em Vue 3 (frontend) e .NET 9 (backend).**
@@ -70,6 +71,32 @@ Este projeto foi feito no modo *“go horse” / “vibe coding”* — ou seja:
 
 ---
 
+## ⚙️ Publicação local (workflow interno)
+
+Para facilitar meu uso diário, configurei uma estrutura de publicação local em:  
+
+```
+C:\inetpub\wwwroot\PMW
+```
+
+- No **frontend**, ao rodar:  
+  ```bash
+  npm run publish:all
+  ```  
+  o projeto é publicado diretamente na pasta acima.  
+
+- No **backend**, existe o arquivo `Iniciar_PMW.bat`.  
+  - Ele abre o backend usando a conta do usuário local, garantindo o acesso correto ao PowerShell.  
+  - Roda sem interface gráfica (fica em segundo plano no Gerenciador de Tarefas do Windows).  
+
+- Além disso, há outros dois scripts `.bat` no backend:  
+  - Um responsável por atualizar o repositório (fazendo o `git clone`/`pull`),  
+  - Outro que executa novamente o processo de publicação.  
+
+👉 Com isso, consigo atualizar e rodar todo o ambiente local com poucos cliques, sem precisar abrir manualmente cada pasta e terminal.  
+
+---
+
 ## 🔍 Estrutura do projeto
 
 ```
@@ -79,13 +106,14 @@ ProjectManagerWeb/
 │   ├── src/
 │   ├── public/
 │   ├── package.json
-│   └── dist/             # gerado após build
+│   └── dist/             # gerado após build/publish
 │
 ├── backend/              # .NET 9
 │   ├── Controllers/
 │   ├── Models/
 │   ├── Program.cs
-│   └── (outros arquivos de configuração)
+│   ├── Iniciar_PMW.bat
+│   └── (outros scripts e configs)
 │
 └── README.md
 ```
