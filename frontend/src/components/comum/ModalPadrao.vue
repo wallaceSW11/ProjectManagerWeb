@@ -2,6 +2,7 @@
   <v-dialog
     v-model="exibirModal"
     :min-width="larguraMinima"
+    :max-width="larguraMaxima"
     :persistent="persistent"
   >
     <v-card>
@@ -12,12 +13,14 @@
       <v-card-actions class="pr-4 pb-4">
         <v-spacer></v-spacer>
         <BotaoPrimario
+          v-if="exibirBotaoPrimario"
           @click="acaoBotaoPrimario"
           :texto="textoBotaoPrimario"
           :desabilitar="desabilitarBotaoPrimario"
           :icone="iconeBotaoPrimario"
         />
         <BotaoSecundario
+          v-if="exibirBotaoSecundario"
           @click="acaoBotaoSecundario"
           :texto="textoBotaoSecundario"
           :desabilitar="desabilitarBotaoSecundario"
@@ -71,6 +74,10 @@ const props = defineProps({
   larguraMinima: {
     type: String,
     default: "600px",
+  },
+  larguraMaxima: {
+    type: String,
+    default: "800px",
   },
   persistent: {
     type: Boolean,

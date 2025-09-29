@@ -38,8 +38,8 @@
           v-model="exibirModalCadastroMenu"
           titulo="Cadastro de Menu de Contexto"
           :textoBotaoPrimario="emModoCadastro ? 'Adicionar' : 'Salvar'"
-          :acaoBotaoPrimario="salvarAlteracoes"
-          :acaoBotaoSecundario="descartarAlteracoes"
+          :acaoBotaoPrimario="() => salvarAlteracoes()"
+          :acaoBotaoSecundario="() => descartarAlteracoes()"
           larguraMinima="800px"
         >
           <v-form ref="formProjeto">
@@ -98,7 +98,10 @@ const TIPOS_MENU = reactive([
 
 const menuSelecionado = reactive(new MenuModel());
 
-const abrirModalCadastroMenu = () => (exibirModalCadastroMenu.value = true);
+const abrirModalCadastroMenu = () => {
+  modoOperacao.value = MODO_OPERACAO.NOVO.valor;
+  exibirModalCadastroMenu.value = true
+};
 
 const mudarParaEdicao = (item) => {
   Object.assign(menuSelecionado, item);
