@@ -1,7 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import PastasView from '../views/PastasView.vue'
-import ConfiguracaoView from '../views/ConfiguracaoView.vue'
-import RepositoriosView from '../views/RepositoriosView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,17 +6,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'pastas',
-      component: PastasView
+      component: () => import('../views/PastasView.vue')
     },
     {
       path: '/configuracao',
       name: 'configuracao',
-      component: ConfiguracaoView
+      component: () => import('../views/ConfiguracaoView.vue')
     },
     {
       path: '/repositorios',
       name: 'repositorios',
-      component: RepositoriosView
+      component: () => import('../views/RepositoriosView.vue')
     }
   ]
 })

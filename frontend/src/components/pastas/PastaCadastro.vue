@@ -78,11 +78,7 @@ const props = defineProps({
   },
 });
 
-onMounted(async () => {
-  await consultarRepositorios();
-});
-
-watch(exibirModalPasta, (novoValor) => {
+watch(exibirModalPasta, async (novoValor) => {
   if (!novoValor) return;
 
   pasta.diretorio = props.pasta.diretorio;
@@ -90,6 +86,8 @@ watch(exibirModalPasta, (novoValor) => {
   const { codigo, descricao } = obterCodigoDescricao();
   pasta.codigo = codigo;
   pasta.descricao = descricao;
+
+  await consultarRepositorios();
 });
 
 const obterCodigoDescricao = () => {

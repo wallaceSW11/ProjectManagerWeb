@@ -100,6 +100,10 @@ onMounted(async () => {
   obterRepositorios();
 });
 
+// watch(exibirModalClone, async (novoValor) => {
+//   if (novoValor)  await consultarRepositorios();
+// });
+
 const pagina = ref(0);
 const paginaCadastro = ref(0);
 

@@ -82,7 +82,7 @@
 <script setup>
 import CloneModel from "@/models/CloneModel";
 import CloneService from "@/services/CloneService";
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import { useConfiguracaoStore } from "@/stores/configuracao";
 import RepositoriosService from "@/services/RepositoriosService";
 import RepositorioModel from "@/models/RepositorioModel";
@@ -94,9 +94,12 @@ const configuracaoStore = useConfiguracaoStore();
 const exibirModalClone = defineModel(false);
 
 
-onMounted(async () => {
+onMounted(() => {
   clone.diretorioRaiz = configuracaoStore.diretorioRaiz + "\\";
-  await consultarRepositorios();
+});
+
+watch(exibirModalClone, async (novoValor) => {
+  if (novoValor)  await consultarRepositorios();
 });
 
 const consultarRepositorios = async () => {
