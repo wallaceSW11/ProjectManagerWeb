@@ -50,6 +50,10 @@
           <v-icon class="pr-2" color="primary">mdi-source-repository</v-icon>
           Repositórios
         </v-btn>
+        <v-btn class="text-none" @click="exibirModalSites = true">
+          <v-icon class="pr-2" color="primary">mdi-web</v-icon>
+          Sites IIS
+        </v-btn>
         <v-btn icon :to="{ name: 'configuracao' }">
           <v-icon class="pr-2" color="primary">mdi-cog</v-icon>
         </v-btn>
@@ -69,6 +73,7 @@
   </v-app>
 
   <CloneGit v-model="exibirModalClone"/>
+  <SitesGerenciamento v-model="exibirModalSites"/>
 </template>
 
 <script setup>
@@ -78,9 +83,11 @@ import VersaoService from "./services/VersaoService";
 import SnackbarNotificacao from "@/components/comum/SnackbarNotificacao.vue";
 import CloneGit from "@/components/clone/CloneGit.vue";
 import eventBus, { carregandoAsync } from "@/utils/eventBus";
+import SitesGerenciamento from "@/components/sites/SitesGerenciamento.vue";
 
 const compiladoEm = ref();
 const exibirModalClone = ref(false);
+const exibirModalSites = ref(false);
 
 onMounted(async () => {
   await consultarVersao();

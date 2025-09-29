@@ -1,7 +1,7 @@
 <template>
   <v-tooltip :text="texto" :location="getLocation()">
     <template #activator="{ props }">
-      <v-btn v-bind="props" icon size="small" variant="flat" @click="acao()">
+      <v-btn v-bind="props" icon size="small" variant="flat" @click="acao()" :disabled="desabilitado">
         <v-icon small>{{ icone }}</v-icon>
       </v-btn>
     </template>
@@ -35,6 +35,10 @@ const props = defineProps({
     default: false,
   },
   right: {
+    type: Boolean,
+    default: false,
+  },
+  desabilitado: {
     type: Boolean,
     default: false,
   },
