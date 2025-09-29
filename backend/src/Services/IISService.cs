@@ -6,70 +6,52 @@ namespace ProjectManagerWeb.src.Services;
 
 public class IISService
 {
+    private static readonly object _lockCache = new object();
+    private static List<SiteIISResponseDTO>? _cacheSites;
+    private static DateTime _ultimaConsulta = DateTime.MinValue;
+    private static readonly TimeSpan _tempoCache = TimeSpan.FromSeconds(5); // Cache por 5 segundos
+    
     /// <summary>
     /// Lista todos os sites do IIS com suas informações básicas
     /// </summary>
     /// <returns>Lista de sites do IIS</returns>
     public async Task<List<SiteIISResponseDTO>> ListarSitesAsync()
     {
+        // Verifica cache primeiro
+        lock (_lockCache)
+        {
+            if (_cacheSites != null && DateTime.Now - _ultimaConsulta < _tempoCache)
+            {
+                return _cacheSites;
+            }
+        }
+        
         try
         {
             var sites = new List<SiteIISResponseDTO>();
             
-            // Usa estratégia similar ao Delphi - salva em arquivo temporário
-            var arquivoTemporario = Path.Combine(Path.GetTempPath(), $"sites_{Guid.NewGuid()}.txt");
-            
+            // Primeiro tenta método direto (mais rápido)
             try
             {
-                // Comando para salvar lista de sites em arquivo
-                var comando = $"/C C:\\Windows\\System32\\inetsrv\\appcmd.exe list site > \"{arquivoTemporario}\"";
-                
-                // Executa com runas (como administrador) similar ao Delphi
-                var psi = new ProcessStartInfo
+                sites = await ListarSitesMetodoRapidoAsync();
+                if (sites.Count > 0 && !sites[0].Nome.Contains("Erro") && !sites[0].Nome.Contains("Inacessível"))
                 {
-                    FileName = "cmd.exe",
-                    Arguments = comando,
-                    UseShellExecute = true,
-                    Verb = "runas", // Equivalente ao 'runas' do Delphi
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true
-                };
-
-                using var process = Process.Start(psi);
-                if (process != null)
-                {
-                    await process.WaitForExitAsync();
-                    
-                    // Aguarda um pouco para garantir que o arquivo foi criado
-                    await Task.Delay(1000);
-                    
-                    if (File.Exists(arquivoTemporario))
+                    // Atualiza cache
+                    lock (_lockCache)
                     {
-                        var linhas = await File.ReadAllLinesAsync(arquivoTemporario);
-                        sites = ProcessarLinhasSitesAppcmd(linhas);
+                        _cacheSites = sites;
+                        _ultimaConsulta = DateTime.Now;
                     }
+                    return sites;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                // Se falhar com runas, tenta método alternativo sem privilégios
-                if (ex.Message.Contains("canceled") || ex.Message.Contains("UAC"))
-                {
-                    sites = await ListarSitesMetodoAlternativoAsync();
-                }
-                else
-                {
-                    throw;
-                }
+                // Se falhar, continua para método com arquivo
             }
-            finally
-            {
-                // Limpa arquivo temporário
-                if (File.Exists(arquivoTemporario))
-                {
-                    try { File.Delete(arquivoTemporario); } catch { }
-                }
-            }
+            
+            // Fallback para método com arquivo temporário (mais lento mas mais confiável)
+            sites = await ListarSitesComArquivoAsync();
             
             // Se não conseguiu obter sites, retorna lista com informação
             if (sites.Count == 0)
@@ -81,11 +63,136 @@ public class IISService
                 ));
             }
             
+            // Atualiza cache
+            lock (_lockCache)
+            {
+                _cacheSites = sites;
+                _ultimaConsulta = DateTime.Now;
+            }
+            
             return sites;
         }
         catch (Exception ex)
         {
             throw new Exception($"Erro ao listar sites do IIS: {ex.Message}", ex);
+        }
+    }
+    
+    /// <summary>
+    /// Método rápido para listar sites usando saída direta
+    /// </summary>
+    /// <returns>Lista de sites</returns>
+    private async Task<List<SiteIISResponseDTO>> ListarSitesMetodoRapidoAsync()
+    {
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "C:\\Windows\\System32\\inetsrv\\appcmd.exe",
+                Arguments = "list site",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                Verb = "runas"
+            };
+
+            using var process = new Process { StartInfo = psi };
+            process.Start();
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
+
+            // Timeout de 3 segundos para não travar
+            var timeoutTask = Task.Delay(3000);
+            var processTask = process.WaitForExitAsync();
+            
+            if (await Task.WhenAny(processTask, timeoutTask) == timeoutTask)
+            {
+                try { process.Kill(); } catch { }
+                throw new TimeoutException("Comando demorou mais que 3 segundos");
+            }
+
+            if (process.ExitCode == 0 && !string.IsNullOrEmpty(output))
+            {
+                var linhas = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                return ProcessarLinhasSitesAppcmd(linhas);
+            }
+            
+            throw new Exception($"Falha no appcmd: {error}");
+        }
+        catch
+        {
+            // Se falhar, retorna lista vazia para tentar próximo método
+            return new List<SiteIISResponseDTO>();
+        }
+    }
+    
+    /// <summary>
+    /// Método com arquivo temporário (fallback)
+    /// </summary>
+    /// <returns>Lista de sites</returns>
+    private async Task<List<SiteIISResponseDTO>> ListarSitesComArquivoAsync()
+    {
+        var arquivoTemporario = Path.Combine(Path.GetTempPath(), $"sites_{Guid.NewGuid()}.txt");
+        
+        try
+        {
+            // Comando para salvar lista de sites em arquivo
+            var comando = $"/C C:\\Windows\\System32\\inetsrv\\appcmd.exe list site > \"{arquivoTemporario}\"";
+            
+            // Executa com runas (como administrador) similar ao Delphi
+            var psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = comando,
+                UseShellExecute = true,
+                Verb = "runas", // Equivalente ao 'runas' do Delphi
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(psi);
+            if (process != null)
+            {
+                // Timeout reduzido para 5 segundos
+                var timeoutTask = Task.Delay(5000);
+                var processTask = process.WaitForExitAsync();
+                
+                if (await Task.WhenAny(processTask, timeoutTask) == timeoutTask)
+                {
+                    try { process.Kill(); } catch { }
+                    throw new TimeoutException("Comando demorou mais que 5 segundos");
+                }
+                
+                // Aguarda menos tempo - apenas 300ms
+                await Task.Delay(300);
+                
+                if (File.Exists(arquivoTemporario))
+                {
+                    var linhas = await File.ReadAllLinesAsync(arquivoTemporario);
+                    return ProcessarLinhasSitesAppcmd(linhas);
+                }
+            }
+            
+            return new List<SiteIISResponseDTO>();
+        }
+        catch (Exception ex)
+        {
+            // Se falhar com runas, tenta método alternativo sem privilégios
+            if (ex.Message.Contains("canceled") || ex.Message.Contains("UAC"))
+            {
+                return await ListarSitesMetodoAlternativoAsync();
+            }
+            return new List<SiteIISResponseDTO>();
+        }
+        finally
+        {
+            // Limpa arquivo temporário
+            if (File.Exists(arquivoTemporario))
+            {
+                try { File.Delete(arquivoTemporario); } catch { }
+            }
         }
     }
     
@@ -336,10 +443,24 @@ public class IISService
             using var process = Process.Start(psi);
             if (process != null)
             {
-                await process.WaitForExitAsync();
+                // Timeout de 10 segundos para start
+                var timeoutTask = Task.Delay(10000);
+                var processTask = process.WaitForExitAsync();
                 
-                // Aguarda um pouco para o IIS processar
-                await Task.Delay(2000);
+                if (await Task.WhenAny(processTask, timeoutTask) == timeoutTask)
+                {
+                    try { process.Kill(); } catch { }
+                    throw new TimeoutException("Comando demorou mais que 10 segundos");
+                }
+                
+                // Invalida cache para forçar atualização na próxima consulta
+                lock (_lockCache)
+                {
+                    _cacheSites = null;
+                }
+                
+                // Aguarda apenas 500ms para o IIS processar
+                await Task.Delay(500);
                 
                 // Verifica se funcionou
                 return await VerificarStatusSiteAsync(nomeSite, "Started");
@@ -381,10 +502,24 @@ public class IISService
             using var process = Process.Start(psi);
             if (process != null)
             {
-                await process.WaitForExitAsync();
+                // Timeout de 10 segundos para stop
+                var timeoutTask = Task.Delay(10000);
+                var processTask = process.WaitForExitAsync();
                 
-                // Aguarda um pouco para o IIS processar
-                await Task.Delay(2000);
+                if (await Task.WhenAny(processTask, timeoutTask) == timeoutTask)
+                {
+                    try { process.Kill(); } catch { }
+                    throw new TimeoutException("Comando demorou mais que 10 segundos");
+                }
+                
+                // Invalida cache para forçar atualização na próxima consulta
+                lock (_lockCache)
+                {
+                    _cacheSites = null;
+                }
+                
+                // Aguarda apenas 500ms para o IIS processar
+                await Task.Delay(500);
                 
                 // Verifica se funcionou
                 return await VerificarStatusSiteAsync(nomeSite, "Stopped");

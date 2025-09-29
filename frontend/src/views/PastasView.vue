@@ -330,7 +330,7 @@ const selecionarPasta = (pasta) => {
     pastaSelecionada.projetos.forEach((projeto) => {
       const comandos = acoes
         ?.find((a) => a.diretorio === pasta.diretorio)
-        ?.projetos.find((p) => p.nome === projeto.nome)?.comandos;
+        ?.projetos.find((p) => p.identificador === projeto.identificador)?.comandos;
 
       projeto.comandosSelecionados = comandos || [];
     });

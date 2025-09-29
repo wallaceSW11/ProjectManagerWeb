@@ -93,8 +93,10 @@ const iniciarSite = async (site) => {
       await IISService.iniciarSite(site.nome);
     }, `Iniciando site ${site.nome}...`);
 
-    notificar("sucesso", `Site ${site.nome} iniciado com sucesso.`);
-    await consultarSites();
+    notificar("sucesso", `Site ${site.nome} iniciado.`);
+    sites.value = sites.value.map((s) =>
+      s.nome === site.nome ? { ...s, status: INICIADO } : s
+    );
   } catch (error) {
     console.error(`Erro ao iniciar site ${site.nome}:`, error);
     notificar("erro", `Erro ao iniciar site ${site.nome}.`);
@@ -107,8 +109,10 @@ const pararSite = async (site) => {
       await IISService.pararSite(site.nome);
     }, `Parando site ${site.nome}...`);
 
-    notificar("sucesso", `Site ${site.nome} parado com sucesso.`);
-    await consultarSites();
+    notificar("sucesso", `Site ${site.nome} parado.`);
+    sites.value = sites.value.map((s) =>
+      s.nome === site.nome ? { ...s, status: PARADO } : s
+    );
   } catch (error) {
     console.error(`Erro ao parar site ${site.nome}:`, error);
     notificar("erro", `Erro ao parar site ${site.nome}.`);
@@ -121,8 +125,10 @@ const reiniciarSite = async (site) => {
       await IISService.reiniciarSite(site.nome);
     }, `Reiniciando site ${site.nome}...`);
 
-    notificar("sucesso", `Site ${site.nome} reiniciado com sucesso.`);
-    await consultarSites();
+    notificar("sucesso", `Site ${site.nome} reiniciado.`);
+    sites.value = sites.value.map((s) =>
+      s.nome === site.nome ? { ...s, status: REINICIANDO } : s
+    );
   } catch (error) {
     console.error(`Erro ao reiniciar site ${site.nome}:`, error);
     notificar("erro", `Erro ao reiniciar site ${site.nome}.`);
