@@ -2,9 +2,10 @@
   <ModalPadrao
     v-model="exibir"
     titulo="Sites IIS"
-    :exibir-botao-secundario="false"
-    texto-botao-primario="Fechar"
-    :acao-botao-primario="() => (exibir = false)"
+    :exibir-botao-primario="false"
+    texto-botao-secundario="Fechar"
+    icone-botao-secundario="mdi-close"
+    :acao-botao-secundario="() => (exibir = false)"
   >
     <v-card v-for="site in sites" :key="site.nome" class="mb-4">
       <v-card-title>
