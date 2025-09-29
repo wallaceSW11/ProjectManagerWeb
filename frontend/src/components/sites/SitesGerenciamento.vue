@@ -6,20 +6,25 @@
     texto-botao-primario="Fechar"
     :acao-botao-primario="() => (exibir = false)"
   >
-    <v-card
-      v-for="site in sites"
-      :key="site.nome"
-      class="mb-4"
-    >
+    <v-card v-for="site in sites" :key="site.nome" class="mb-4">
       <v-card-title>
         <v-icon>mdi-web</v-icon>
         <span class="pl-2">{{ site.nome }}</span>
       </v-card-title>
 
       <v-card-text class="pt-2">
-        <v-icon>mdi-gate</v-icon>
-        <span class="pl-2">Porta: </span>
-        <span>{{ site.porta }}</span>
+        <div>
+          <div>
+            <v-icon>mdi-gate</v-icon>
+            <span class="titulo pl-2">Porta: </span>
+            <span>{{ site.porta }}</span>
+          </div>
+
+          <div class="pt-2">
+            <span class="titulo">status: </span>
+            <span>{{ site.status }}</span>
+          </div>
+        </div>
       </v-card-text>
 
       <v-card-actions class="d-flex justify-end">
@@ -27,7 +32,9 @@
           icone="mdi-play"
           texto="Iniciar"
           :acao="() => iniciarSite(site)"
-          :desabilitado="site.status === INICIADO || site.status === REINICIANDO"
+          :desabilitado="
+            site.status === INICIADO || site.status === REINICIANDO
+          "
         />
 
         <IconeComTooltip
@@ -73,7 +80,7 @@ const consultarSites = async () => {
       return res;
     }, "Consultando sites IIS...");
 
-    sites.value = resposta.map(site => new SiteModel(site));
+    sites.value = resposta.map((site) => new SiteModel(site));
   } catch (error) {
     console.error("Erro ao consultar sites:", error);
     notificar("erro", "Erro ao consultar sites IIS.");
@@ -121,6 +128,10 @@ const reiniciarSite = async (site) => {
     notificar("erro", `Erro ao reiniciar site ${site.nome}.`);
   }
 };
-
-
 </script>
+
+<style scoped>
+.titulo {
+  font-weight: bold;
+} 
+</style>
