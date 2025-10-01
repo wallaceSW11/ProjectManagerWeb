@@ -46,13 +46,13 @@
           </div>
 
           <div v-else>
-            <draggable 
-              v-model="pastas" 
+            <draggable
+              v-model="pastas"
               item-key="diretorio"
-              :animation="200" 
+              :animation="200"
               group="pastas"
               class="drag-area"
-              @change="onDragChange"
+              @end="atualizarIndicesPastas"
             >
               <template #item="{ element }">
                 <CardPasta
@@ -441,10 +441,20 @@ const executarComandoAvulso = (comando) => {
   }
 };
 
-const  onDragChange = (evt) => {
-  console.log("Drag change event:", evt);
-  // Aqui você pode adicionar lógica para salvar a nova ordem no backend
-  // Por enquanto, vamos só verificar se a mudança está sendo detectada
+const atualizarIndicesPastas = async () => {
+  try {
+    await PastasService.atualizarIndices(
+      pastas.value
+        .filter((p) => p.identificador)
+        .map((p, index) => ({
+          identificador: p.identificador,
+          indice: index,
+        }))
+    );
+  } catch (error) {
+    console.error("Falha ao atualizar a ordem das pastas: ", error);
+    notificar("erro", "Falha ao atualizar a ordem das pastas");
+  }
 };
 </script>
 

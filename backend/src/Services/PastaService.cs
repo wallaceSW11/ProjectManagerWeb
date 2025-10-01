@@ -27,6 +27,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
       if (pasta == null)
       {
+        var indice = new Random().Next(1000, 2000);
+
         var pastaResponse1 = new PastaResponseDTO
         (
           pastaNoDisco,
@@ -38,7 +40,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           new Guid(),
           null,
           [],
-          []
+          [],
+          indice
         );
 
         pastaResponseList.Add(pastaResponse1);
@@ -130,13 +133,13 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         pasta.Identificador,
         projetosDisponiveis,
         repositorio.Menus ?? [],
-        pasta.Index
+        pasta.Indice
       );
 
       pastaResponseList.Add(pastaResponse);
     }
 
-    return pastaResponseList.OrderBy(p => p.Index).ToList();
+    return pastaResponseList.OrderBy(p => p.Indice).ToList();
   }
 
 
@@ -169,7 +172,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
       
       if (pastaParaAtualizar != null)
       {
-        var pastaAtualizada = pastaParaAtualizar with { Index = indice.Index };
+        var pastaAtualizada = pastaParaAtualizar with { Indice = indice.Indice };
         await pastaJsonService.UpdateAsync(pastaParaAtualizar.Diretorio, pastaAtualizada);
       }
     }

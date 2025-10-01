@@ -9,5 +9,5 @@ public sealed record PastaCadastroRequestDTO(
     string Branch,
     string Git,
     Guid RepositorioId,
-    int Index = 0
+    int? Indice = null
 );

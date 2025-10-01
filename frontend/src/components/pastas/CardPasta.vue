@@ -56,8 +56,9 @@
         </v-col>
 
         <v-col cols="12" class="pt-1">
-          <v-icon>mdi-git</v-icon>
-          {{ pasta.branch }}
+          <span class="pr-2">Tipo:</span>
+          <v-icon :color="dadosTipo.cor">{{ dadosTipo.icone }}</v-icon>
+          {{ dadosTipo.titulo }}
         </v-col>
       </v-row>
     </v-card-text>
@@ -65,6 +66,8 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+
 
 const props = defineProps({
   pasta: {
@@ -97,6 +100,34 @@ const descricaoPasta = (pasta) => {
     : pasta.descricao;
 };
 
+
+const TIPOS = {
+  NENHUM: {
+    icone: "mdi-set-none",
+    titulo: "Nenhum",
+    cor: "grey",
+  },
+  FEATURE: {
+    icone: "mdi-creation",
+    titulo: "Melhoria",
+    cor: "green",
+  },
+  BUG: {
+    icone: "mdi-bug",
+    titulo: "Erro",
+    cor: "red",
+  },
+  HOTFIX: {
+    icone: "mdi-ambulance",
+    titulo: "Hotfix",
+    cor: "purple",
+  },
+}
+
+const dadosTipo = computed(() => {
+  console.log("Tipo da pasta:", props.pasta.tipo);
+  return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM;
+});
 
 </script>
 

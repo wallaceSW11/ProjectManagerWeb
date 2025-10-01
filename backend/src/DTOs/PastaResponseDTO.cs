@@ -11,7 +11,7 @@ public sealed record PastaResponseDTO(
     Guid? Identificador,
     List<ProjetoDisponivelDTO> Projetos,
     List<MenuDTO>? Menus,
-    int Index = 0
+    int? Indice = null
 );
 
 public sealed record ProjetoDisponivelDTO(
