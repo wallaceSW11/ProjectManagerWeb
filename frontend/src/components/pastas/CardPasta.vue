@@ -56,9 +56,14 @@
         </v-col>
 
         <v-col cols="12" class="pt-1">
-          <span class="pr-2">Tipo:</span>
+          <IconeComTooltip
+            :icone="dadosTipo.icone"
+            :texto="dadosTipo.titulo"
+            :cor="dadosTipo.cor"
+          />
+          <!-- <span class="pr-2">Tipo:</span>
           <v-icon :color="dadosTipo.cor">{{ dadosTipo.icone }}</v-icon>
-          {{ dadosTipo.titulo }}
+          {{ dadosTipo.titulo }} -->
         </v-col>
       </v-row>
     </v-card-text>
