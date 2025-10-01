@@ -4,6 +4,7 @@
     :min-width="larguraMinima"
     :max-width="larguraMaxima"
     :persistent="persistent"
+    scrollable
   >
     <v-card>
       <v-card-title class="text-h5">{{ titulo }}</v-card-title>
