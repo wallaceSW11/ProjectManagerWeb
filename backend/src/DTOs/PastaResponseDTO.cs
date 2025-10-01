@@ -10,7 +10,8 @@ public sealed record PastaResponseDTO(
     Guid RepositorioId,
     Guid? Identificador,
     List<ProjetoDisponivelDTO> Projetos,
-    List<MenuDTO>? Menus
+    List<MenuDTO>? Menus,
+    int? Indice = null
 );
 
 public sealed record ProjetoDisponivelDTO(
