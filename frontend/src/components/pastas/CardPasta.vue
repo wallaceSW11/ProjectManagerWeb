@@ -125,7 +125,6 @@ const TIPOS = {
 }
 
 const dadosTipo = computed(() => {
-  console.log("Tipo da pasta:", props.pasta.tipo);
   return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM;
 });
 
