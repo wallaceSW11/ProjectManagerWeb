@@ -126,17 +126,8 @@ const MODO_OPERACAO = {
 
 let modoOperacao = ref(MODO_OPERACAO.INICIAL.valor);
 
-const emModoInicial = computed(
-  () => modoOperacao.value === MODO_OPERACAO.INICIAL.valor
-);
 const emModoCadastro = computed(
   () => modoOperacao.value === MODO_OPERACAO.NOVO.valor
-);
-const emModoEdicao = computed(
-  () => modoOperacao.value === MODO_OPERACAO.EDICAO.valor
-);
-const emModoCadastroEdicao = computed(
-  () => emModoCadastro.value || emModoEdicao.value
 );
 
 const formProjeto = ref(null);
@@ -147,11 +138,7 @@ const formularioProjetoValido = async () => {
   return resposta.valid;
 };
 
-const prepararParaCadastro = () => {
-  modoOperacao.value = MODO_OPERACAO.NOVO.valor;
-  limparCampos();
-  abrirModalCadastroMenu();
-};
+
 const salvarAlteracoes = async () => {
   if (!(await formularioProjetoValido())) return;
 

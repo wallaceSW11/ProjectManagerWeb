@@ -11,14 +11,7 @@
             :rules="obrigatorio"
           />
 
-          <v-select
-            label="Repositório"
-            :items="repositorios"
-            item-title="nome"
-            item-value="identificador"
-            v-model="clone.repositorioId"
-            :rules="obrigatorio"
-          />
+          <SelectRepositorio v-model="clone.repositorio" obrigatorio/>
 
           <v-text-field
             label="Branch"
@@ -30,10 +23,7 @@
             label="Clonar agregados"
             hide-details
             v-model="clone.baixarAgregados"
-            :disabled="
-              !repositorios.find((r) => r.identificador === clone.repositorioId)
-                ?.agregados?.length
-            "
+            :disabled="!clone.repositorio.agregados?.length"
           />
           <v-checkbox
             label="Criar branch remoto"
@@ -84,12 +74,10 @@ import CloneModel from "@/models/CloneModel";
 import CloneService from "@/services/CloneService";
 import { onMounted, reactive, ref, watch } from "vue";
 import { useConfiguracaoStore } from "@/stores/configuracao";
-import RepositoriosService from "@/services/RepositoriosService";
-import RepositorioModel from "@/models/RepositorioModel";
 import { atualizarListaPastas, carregando, notificar } from "@/utils/eventBus";
+import SelectRepositorio from "@/components/repositorios/SelectRepositorio.vue";
 
 const clone = reactive(new CloneModel());
-const repositorios = reactive([]);
 const configuracaoStore = useConfiguracaoStore();
 const exibirModalClone = defineModel(false);
 
@@ -97,19 +85,6 @@ const exibirModalClone = defineModel(false);
 onMounted(() => {
   clone.diretorioRaiz = configuracaoStore.diretorioRaiz + "\\";
 });
-
-watch(exibirModalClone, async (novoValor) => {
-  if (novoValor)  await consultarRepositorios();
-});
-
-const consultarRepositorios = async () => {
-  try {
-    const resposta = await RepositoriosService.getRepositorios();
-    Object.assign(repositorios, resposta.map(r => new RepositorioModel(r)))
-  } catch (error) {
-    console.error('falha')
-  }
-}
 
 const formClone = ref(null);
 const obrigatorio = [(v) => !!v || "Obrigatório"];
@@ -124,8 +99,10 @@ const clonar = async () => {
   if (!(await formularioValido())) return;
 
   try {
-    clone.codigo = clone.codigo.toUpperCase();
-    await CloneService.clonar(clone);
+    const payload = { ...clone, repositorioId: clone.repositorio.identificador };
+
+    payload.codigo = clone.codigo.toUpperCase();
+    await CloneService.clonar(payload);
     exibirModalClone.value = false;
     Object.assign(clone, new CloneModel());
     clone.diretorioRaiz = configuracaoStore.diretorioRaiz + "\\";
@@ -147,6 +124,7 @@ const clonar = async () => {
 const fecharClone = () => {
   exibirModalClone.value = false;
   Object.assign(clone, new CloneModel());
+  clone.diretorioRaiz = configuracaoStore.diretorioRaiz + "\\";
 };
 </script>
 
