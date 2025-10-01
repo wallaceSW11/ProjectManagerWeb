@@ -25,4 +25,14 @@ public class PastaController(PastaService pastaService) : ControllerBase
     var pasta = await pastaService.Cadastrar(pastaCadastro);
     return CreatedAtAction(nameof(ObterTodas), new { id = pasta.Identificador }, pasta);
   }
+
+  [HttpPut("indices")]
+  public async Task<IActionResult> AtualizarIndices([FromBody] List<PastaIndiceRequestDTO> indices)
+  {
+    if (!ModelState.IsValid)
+      return BadRequest(ModelState);
+
+    await pastaService.AtualizarIndices(indices);
+    return Ok();
+  }
 }
