@@ -45,86 +45,26 @@
             <p>{{ configuracaoStore.diretorioRaiz }}</p>
           </div>
 
-          <v-card
-            v-else
-            v-for="pasta in pastas"
-            :key="pasta.diretorio"
-            :class="[
-              'mb-4 mr-2',
-              {
-                'card-selecionado':
-                  pastaSelecionada.diretorio === pasta.diretorio,
-              },
-            ]"
-            @click="selecionarPasta(pasta)"
-          >
-            <v-card-title>
-              <div class="d-flex justify-space-between">
-                <div>
-                  {{ descricaoPasta(pasta) }}
-                </div>
-
-                <div v-if="!pasta.identificador">
-                  <IconeComTooltip
-                    icone="mdi-plus"
-                    texto="Cadastrar pasta"
-                    :acao="() => exibirCadastroPasta(pasta)"
-                    top
-                  />
-                  <!-- <v-tooltip text="Cadastrar pasta">
-                    <template #activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        icon
-                        size="small"
-                        variant="flat"
-                        @click="exibirCadastroPasta(pasta)"
-                      >
-                        <v-icon small>mdi-plus</v-icon>
-                      </v-btn>
-                    </template>
-                  </v-tooltip> -->
-                </div>
-
-                <div v-if="pasta.menus.length > 0">
-                  <v-menu location="bottom">
-                    <template #activator="{ props }">
-                      <v-btn v-bind="props" icon size="small" variant="flat">
-                        <v-icon small>mdi-dots-vertical</v-icon>
-                      </v-btn>
-                    </template>
-
-                    <v-list dense>
-                      <v-list-item
-                        v-for="menu in pasta.menus"
-                        :key="menu.identificador"
-                        @click="executarMenu(pasta, menu.identificador)"
-                      >
-                        <v-list-item-title>
-                          <v-icon>mdi-folder</v-icon>
-                          {{ menu.titulo }}
-                        </v-list-item-title>
-                      </v-list-item>
-                    </v-list>
-                  </v-menu>
-                </div>
-              </div>
-            </v-card-title>
-
-            <v-card-text>
-              <v-row no-gutters>
-                <v-col cols="12" class="pb-1">
-                  <v-icon>mdi-folder</v-icon>
-                  {{ pasta.diretorio }}
-                </v-col>
-
-                <v-col cols="12" class="pt-1">
-                  <v-icon>mdi-git</v-icon>
-                  {{ pasta.branch }}
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
+          <div v-else>
+            <draggable 
+              v-model="pastas" 
+              item-key="diretorio"
+              :animation="200" 
+              group="pastas"
+              class="drag-area"
+              @change="onDragChange"
+            >
+              <template #item="{ element }">
+                <CardPasta
+                  :pasta="element"
+                  :pasta-selecionada="pastaSelecionada"
+                  @selecionarPasta="selecionarPasta"
+                  @exibir-cadastro-pasta="exibirCadastroPasta"
+                  @executar-menu="executarMenu"
+                />
+              </template>
+            </draggable>
+          </div>
         </v-col>
 
         <v-col>
@@ -146,8 +86,12 @@
                 :key="projeto.identificador"
               >
                 <v-card class="mb-2" style="background-color: #2d2d30">
-                  <v-card-title class="pb-0 d-flex flex-grow-1 justify-space-between">
-                    <div class="d-flex flex-grow-1 justify-space-between align-center">
+                  <v-card-title
+                    class="pb-0 d-flex flex-grow-1 justify-space-between"
+                  >
+                    <div
+                      class="d-flex flex-grow-1 justify-space-between align-center"
+                    >
                       <div>
                         {{ projeto.nome }}
                       </div>
@@ -225,7 +169,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, reactive, ref } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import PastasService from "@/services/PastasService.js";
 import { useRouter } from "vue-router";
 import PastaModel from "@/models/PastaModel";
@@ -236,8 +180,10 @@ import emitter, {
   atualizarListaPastas,
 } from "@/utils/eventBus";
 import CadastroPasta from "@/components/pastas/PastaCadastro.vue";
+import CardPasta from "@/components/pastas/CardPasta.vue";
+import draggable from "vuedraggable";
 
-const pastas = reactive([]);
+const pastas = ref([]);
 const router = useRouter();
 const pastaSelecionada = reactive(new PastaModel());
 const exibirModalPasta = ref(false);
@@ -283,42 +229,36 @@ const redirecionarParaConfiguracaoInicial = () => {
 };
 
 const selecionarPastaSalva = () => {
-  if (!pastas.length) return;
+  if (!pastas.value.length) return;
 
   const diretorioSalvo = consultarPastaSelecionadaDoStorage();
 
   if (!diretorioSalvo) {
-    selecionarPasta(pastas[0]);
+    selecionarPasta(pastas.value[0]);
 
     return;
   }
 
-  const selecionada = pastas.find((p) => p.diretorio === diretorioSalvo);
+  const selecionada = pastas.value.find((p) => p.diretorio === diretorioSalvo);
 
   if (!selecionada) return;
 
-  const indice = pastas.findIndex((p) => p.diretorio === diretorioSalvo);
+  const indice = pastas.value.findIndex((p) => p.diretorio === diretorioSalvo);
 
-  indice !== -1 && selecionarPasta(pastas[indice]);
+  indice !== -1 && selecionarPasta(pastas.value[indice]);
 };
 
 const carregarPastas = async () => {
-  Object.assign(pastas, []);
+  pastas.value = [];
   try {
     const resposta = await carregandoAsync(async () => {
       return await PastasService.getPastas();
     });
-    Object.assign(pastas, resposta);
+    pastas.value = resposta;
   } catch (error) {
     console.error("Falha ao obter as pastas", error);
     notificar("erro", "Falha ao obter as pastas");
   }
-};
-
-const descricaoPasta = (pasta) => {
-  return pasta.codigo
-    ? `${pasta.codigo} - ${pasta.descricao}`
-    : pasta.descricao;
 };
 
 const selecionarPasta = (pasta) => {
@@ -330,7 +270,9 @@ const selecionarPasta = (pasta) => {
     pastaSelecionada.projetos.forEach((projeto) => {
       const comandos = acoes
         ?.find((a) => a.diretorio === pasta.diretorio)
-        ?.projetos.find((p) => p.identificador === projeto.identificador)?.comandos;
+        ?.projetos.find(
+          (p) => p.identificador === projeto.identificador
+        )?.comandos;
 
       projeto.comandosSelecionados = comandos || [];
     });
@@ -450,7 +392,7 @@ const menusProjetos = [
 
       if (projeto.identificadorRepositorioAgregado)
         comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
-      
+
       comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
       executarComandoAvulso(comando);
     },
@@ -464,7 +406,7 @@ const menusProjetos = [
 
       if (projeto.identificadorRepositorioAgregado)
         comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
-      
+
       comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
       executarComandoAvulso(comando);
     },
@@ -485,7 +427,6 @@ const menusProjetoDisponiveis = (projeto) => {
       },
     });
   }
-  
 
   return menus;
 };
@@ -499,16 +440,18 @@ const executarComandoAvulso = (comando) => {
     console.error("Falha ao executar o comando avulso: ", error);
   }
 };
+
+const  onDragChange = (evt) => {
+  console.log("Drag change event:", evt);
+  // Aqui você pode adicionar lógica para salvar a nova ordem no backend
+  // Por enquanto, vamos só verificar se a mudança está sendo detectada
+};
 </script>
 
 <style scoped>
 .altura-limitada {
   height: calc(100dvh - 140px);
   overflow: auto;
-}
-
-.card-selecionado {
-  border: 1px solid rgb(var(--v-theme-primary));
 }
 
 :deep(.v-checkbox .v-selection-control) {
@@ -525,5 +468,9 @@ const executarComandoAvulso = (comando) => {
 
 :deep(.v-switch .v-label) {
   padding-left: 16px;
+}
+
+.drag-area {
+  min-height: 50px;
 }
 </style>
