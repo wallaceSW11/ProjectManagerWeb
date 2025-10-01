@@ -1,3 +1,5 @@
+import RepositorioModel from "./RepositorioModel";
+
 export default class CloneModel {
   constructor(obj) {
     obj = obj || {};
@@ -7,7 +9,7 @@ export default class CloneModel {
     this.descricao = obj.descricao;
     this.tipo = obj.tipo || "nenhum";
     this.branch = obj.branch;
-    this.repositorioId = obj.repositorioId;
+    this.repositorio = new RepositorioModel(obj.repositorio);
     this.criarBranchRemoto = obj.criarBranchRemoto;
     this.baixarAgregados = obj.baixarAgregados;
   }
