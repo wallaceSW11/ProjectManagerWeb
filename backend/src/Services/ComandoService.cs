@@ -77,10 +77,10 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
         }
 
         if (comando.Equals("Instalar"))
-          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Nome}; {projetoAgregadoCadastrado.Comandos.Instalar}; ");
+          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; ");
 
         if (comando.Equals("Buildar"))
-          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Nome}; {projetoAgregadoCadastrado.Comandos.Buildar}; ");
+          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Buildar}; ");
 
         if (comando.Equals("AbrirNoVSCode"))
         {
