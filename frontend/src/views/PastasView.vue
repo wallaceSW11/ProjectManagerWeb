@@ -344,7 +344,7 @@ const salvarAcoesSelecionadas = (payload) => {
 
   const indice = acoes.findIndex((a) => a.diretorio === payload.diretorio);
 
-  indice === -1 ? acoes.push(payload) : acoes.splice(indice, payload);
+  indice === -1 ? acoes.push(payload) : acoes.splice(indice, 1, payload);
 
   salvarNoLocalStorage(acoes);
 };
