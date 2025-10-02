@@ -16,6 +16,26 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
+        // Verifica se o comando contém "Exit;" para decidir qual método usar
+        if (command.Contains("Exit;", StringComparison.OrdinalIgnoreCase))
+        {
+            ExecutarComandoSemInterface(command);
+        }
+        else
+        {
+            ExecutarComandoComInterface(command);
+        }
+    }
+
+    /// <summary>
+    /// Executa um comando PowerShell com interface visível, mantendo o console aberto.
+    /// </summary>
+    /// <param name="command">O comando a ser executado.</param>
+    public static void ExecutarComandoComInterface(string command)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+            throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
+
         // Log assíncrono sem bloquear
         _ = Task.Run(() => LogComandoAsync(command));
 
@@ -26,6 +46,39 @@ public class ShellExecute
                 FileName = "pwsh.exe",
                 Arguments = $"-NoExit -Command \"{command}\"",
                 UseShellExecute = true
+            };
+
+            Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            // Log de erro
+            _ = Task.Run(() => LogComandoAsync(command, $"ERRO: {ex.Message}"));
+            throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Executa um comando PowerShell sem interface visível (em background).
+    /// </summary>
+    /// <param name="command">O comando a ser executado.</param>
+    public static void ExecutarComandoSemInterface(string command)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+            throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
+
+        // Log assíncrono sem bloquear
+        _ = Task.Run(() => LogComandoAsync(command));
+
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "pwsh.exe",
+                Arguments = $"-WindowStyle Hidden -Command \"{command}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
             };
 
             Process.Start(psi);
