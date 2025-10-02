@@ -28,15 +28,18 @@
 
         <v-card-actions class="d-flex justify-end">
           <div>
-            <v-btn icon @click="emit('editar', repositorio.identificador)">
-              <v-icon>mdi-pencil</v-icon>
-              <v-tooltip activator="parent" location="top">Editar</v-tooltip>
-            </v-btn>
-
-            <v-btn icon @click="emit('excluir', repositorio)">
-              <v-icon>mdi-delete</v-icon>
-              <v-tooltip activator="parent" location="top">Excluir</v-tooltip>
-            </v-btn>
+            <IconeComTooltip
+              icone="mdi-pencil"
+              texto="Editar"
+              :acao="() => emit('editar', repositorio.identificador)"
+              top
+            />
+            <IconeComTooltip
+              icone="mdi-delete"
+              texto="Excluir"
+              :acao="() => emit('excluir', repositorio)"
+              top
+            />
           </div>
         </v-card-actions>
       </v-card>

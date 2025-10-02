@@ -26,7 +26,9 @@ namespace ProjectManagerWeb.src.Services
 
         public async Task<List<PastaCadastroRequestDTO>> GetAllAsync()
         {
-            return await LerListaDoArquivoAsync();
+            var pastas = await LerListaDoArquivoAsync();
+
+            return [.. pastas.OrderBy(p => p.Indice)];
         }
 
         public async Task<PastaCadastroRequestDTO?> GetByDiretorioAsync(string diretorio)

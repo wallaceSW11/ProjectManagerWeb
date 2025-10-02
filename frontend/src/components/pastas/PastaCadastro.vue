@@ -12,14 +12,7 @@
             disabled
           />
 
-          <v-select
-            label="Repositório"
-            :items="repositorios"
-            item-title="nome"
-            item-value="identificador"
-            v-model="pasta.repositorioId"
-            :rules="obrigatorio"
-          />
+          <SelectRepositorio v-model="repositorio" obrigatorio/>
 
           <v-text-field
             label="Branch"
@@ -50,14 +43,8 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" variant="outlined" @click="criar()">
-          <v-icon>mdi-plus</v-icon>
-          Criar
-        </v-btn>
-        <v-btn @click="fecharPasta">
-          <v-icon>mdi-close</v-icon>
-          Fechar
-        </v-btn>
+        <BotaoPrimario @click="criar" texto="Criar" />
+        <BotaoSecundario @click="fecharPasta" texto="Fechar" />
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -66,14 +53,14 @@
 <script setup>
 import PastaModel from "@/models/PastaModel";
 import PastaService from "@/services/PastasService";
-import { onMounted, reactive, ref, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import { useConfiguracaoStore } from "@/stores/configuracao";
-import RepositoriosService from "@/services/RepositoriosService";
 import RepositorioModel from "@/models/RepositorioModel";
 import { notificar, atualizarListaPastas } from "@/utils/eventBus";
+import BotaoSecundario from "@/components/comum/botao/BotaoSecundario.vue";
+import SelectRepositorio from "@/components/repositorios/SelectRepositorio.vue";
 
 const pasta = reactive(new PastaModel());
-const repositorios = reactive([]);
 const configuracaoStore = useConfiguracaoStore();
 const exibirModalPasta = defineModel(false);
 const props = defineProps({
@@ -83,11 +70,9 @@ const props = defineProps({
   },
 });
 
-onMounted(async () => {
-  await consultarRepositorios();
-});
+const repositorio = reactive(new RepositorioModel());
 
-watch(exibirModalPasta, (novoValor) => {
+watch(exibirModalPasta, async (novoValor) => {
   if (!novoValor) return;
 
   pasta.diretorio = props.pasta.diretorio;
@@ -134,17 +119,6 @@ const obterCodigoDescricao = () => {
   };
 };
 
-const consultarRepositorios = async () => {
-  try {
-    const resposta = await RepositoriosService.getRepositorios();
-    Object.assign(
-      repositorios,
-      resposta.map((r) => new RepositorioModel(r))
-    );
-  } catch (error) {
-    console.error("falha");
-  }
-};
 
 const formPasta = ref(null);
 const obrigatorio = [(v) => !!v || "Obrigatório"];
@@ -155,15 +129,21 @@ const formularioValido = async () => {
   return form.valid;
 };
 
+const limparCampos = () => {
+  Object.assign(pasta, new PastaModel());
+};
+
 const criar = async () => {
   if (!(await formularioValido())) return;
 
   try {
+    pasta.repositorioId = repositorio.identificador;
     await PastaService.criar(pasta);
     exibirModalPasta.value = false;
     Object.assign(pasta, new PastaModel());
     notificar("sucesso", "Pasta cadastrada");
     atualizarListaPastas();
+    limparCampos();
   } catch (error) {
     console.error("Falha ao criar pasta:", error);
     notificar("erro", "Falha ao criar pasta");
@@ -172,7 +152,7 @@ const criar = async () => {
 
 const fecharPasta = () => {
   exibirModalPasta.value = false;
-  Object.assign(pasta, new PastaModel());
+  limparCampos();
 };
 </script>
 

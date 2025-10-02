@@ -18,6 +18,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
     var pastasNoDisco = Directory.GetDirectories(diretorioRaiz);
 
+    await LimparPastasInexistentes(pastasCadastradas, pastasNoDisco);
+
     if (pastasNoDisco.Length == 0)
       return [];
 
@@ -27,6 +29,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
       if (pasta == null)
       {
+        var indice = new Random().Next(1000, 2000);
+
         var pastaResponse1 = new PastaResponseDTO
         (
           pastaNoDisco,
@@ -38,7 +42,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           new Guid(),
           null,
           [],
-          []
+          [],
+          indice
         );
 
         pastaResponseList.Add(pastaResponse1);
@@ -129,13 +134,14 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.Identificador,
         pasta.Identificador,
         projetosDisponiveis,
-        repositorio.Menus ?? []
+        repositorio.Menus ?? [],
+        pasta.Indice
       );
 
       pastaResponseList.Add(pastaResponse);
     }
 
-    return pastaResponseList;
+    return [.. pastaResponseList.OrderBy(p => p.Indice)];
   }
 
 
@@ -156,5 +162,42 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
   public async Task<List<PastaCadastroRequestDTO>> ObterTodasAsPastas()
   {
     return await pastaJsonService.GetAllAsync();
+  }
+
+  public async Task AtualizarIndices(List<PastaIndiceRequestDTO> indices)
+  {
+    var pastasExistentes = await pastaJsonService.GetAllAsync();
+
+    foreach (var indice in indices)
+    {
+      var pastaParaAtualizar = pastasExistentes.FirstOrDefault(p => p.Identificador == indice.Identificador);
+      
+      if (pastaParaAtualizar != null)
+      {
+        var pastaAtualizada = pastaParaAtualizar with { Indice = indice.Indice };
+        await pastaJsonService.UpdateAsync(pastaParaAtualizar.Diretorio, pastaAtualizada);
+      }
+    }
+  }
+
+  private async Task LimparPastasInexistentes(List<PastaCadastroRequestDTO> pastasCadastradas, string[] pastasNoDisco)
+  {
+    var pastasParaRemover = new List<PastaCadastroRequestDTO>();
+
+    foreach (var pastaCadastrada in pastasCadastradas)
+    {
+      var existeNoDisco = pastasNoDisco.Any(pasta => pasta.Equals(pastaCadastrada.Diretorio, StringComparison.OrdinalIgnoreCase));
+      
+      if (!existeNoDisco)
+      {
+        pastasParaRemover.Add(pastaCadastrada);
+      }
+    }
+
+    // Remover pastas que não existem mais no disco
+    foreach (var pastaParaRemover in pastasParaRemover)
+    {
+      await pastaJsonService.DeleteAsync(pastaParaRemover.Diretorio);
+    }
   }
 }

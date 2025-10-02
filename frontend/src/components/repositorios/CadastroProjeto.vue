@@ -1,10 +1,7 @@
 <template>
   <v-col cols="12">
     <div>
-      <v-btn @click="prepararParaCadastro()" class="mb-4">
-        <v-icon>mdi-plus</v-icon>
-        Adicionar
-      </v-btn>
+      <BotaoTerciario texto="Adicionar" icone="mdi-plus" @click="abrirModalCadastroProjeto"  class="my-2"/>
     </div>
 
     <div>
@@ -14,12 +11,18 @@
         hide-default-footer
       >
         <template #[`item.actions`]="{ item }">
-          <v-btn icon @click="mudarParaEdicao(item)"
-            ><v-icon>mdi-pencil</v-icon></v-btn
-          >
-          <v-btn icon @click="excluirProjeto(item)"
-            ><v-icon>mdi-delete</v-icon></v-btn
-          >
+          <IconeComTooltip
+            icone="mdi-pencil"
+            texto="Editar"
+            :acao="() => mudarParaEdicao(item)"
+            top
+          />
+          <IconeComTooltip
+            icone="mdi-delete"
+            texto="Excluir"
+            :acao="() => excluirProjeto(item)"
+            top
+          />
         </template>
       </v-data-table>
     </div>
@@ -86,7 +89,7 @@ import { computed, reactive, ref } from "vue";
 import RepositorioModel from "../../models/RepositorioModel";
 import ProjetoModel from "../../models/ProjetoModel";
 import { useConfiguracaoStore } from "@/stores/configuracao";
-import ModalPadrao from "@/components/comum/ModalPadrao.vue";
+import BotaoTerciario from "../comum/botao/BotaoTerciario.vue";
 
 const repositorio = defineModel(new RepositorioModel());
 const configuracaoStore = useConfiguracaoStore();

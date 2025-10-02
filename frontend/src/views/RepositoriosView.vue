@@ -11,10 +11,7 @@
 
       <v-col cols="12">
         <div class="d-flex justify-space-between align-center">
-          <v-btn v-if="!emModoCadastroEdicao" @click="mudarParaCadastro()">
-            <v-icon>mdi-plus</v-icon>
-            Adicionar
-          </v-btn>
+          <BotaoTerciario v-if="!emModoCadastroEdicao" @click="mudarParaCadastro()" texto="Adicionar" icone="mdi-plus" />
 
           <div v-if="emModoInicial" style="width: 300px">
             <v-text-field
@@ -62,15 +59,8 @@
       <v-col cols="12" v-if="!emModoInicial">
         <div class="d-flex align-center justify-end">
           <div>
-            <v-btn @click="salvarAlteracoes()">
-              <v-icon>mdi-check</v-icon>
-              Salvar
-            </v-btn>
-
-            <v-btn variant="plain" class="ml-2" @click="descartarAlteracoes()">
-              <v-icon>mdi-cancel</v-icon>
-              Cancelar
-            </v-btn>
+            <BotaoPrimario @click="salvarAlteracoes" texto="Salvar" icone="mdi-check" />
+            <BotaoSecundario @click="descartarAlteracoes" texto="Cancelar" icone="mdi-cancel" />
           </div>
         </div>
       </v-col>
@@ -86,7 +76,7 @@ import RepositorioModel from "../models/RepositorioModel";
 import RepositoriosService from "../services/RepositoriosService";
 import CadastroMenu from "@/components/repositorios/CadastroMenu.vue";
 import CadastroProjeto from "../components/repositorios/CadastroProjeto.vue";
-import { carregandoAsync } from "@/utils/eventBus";
+import { carregandoAsync, notificar } from "@/utils/eventBus";
 
 let repositorios = reactive([]);
 const repositorioSelecionado = reactive(new RepositorioModel());
@@ -109,6 +99,10 @@ const obterRepositorios = async () => {
 onMounted(async () => {
   obterRepositorios();
 });
+
+// watch(exibirModalClone, async (novoValor) => {
+//   if (novoValor)  await consultarRepositorios();
+// });
 
 const pagina = ref(0);
 const paginaCadastro = ref(0);
@@ -192,8 +186,10 @@ const criarRepositorio = async () => {
     await RepositoriosService.adicionarRepositorio(repositorioSelecionado);
     repositorios.push(new RepositorioModel(repositorioSelecionado));
     limparCampos();
+    notificar("sucesso", "Repositorio criado");
   } catch (error) {
     console.error("Falha ao criar repositorio: " + error);
+    notificar("erro", "Falha ao criar repositorio");
   }
 };
 
@@ -206,8 +202,11 @@ const atualizarRepositorio = async () => {
     );
     indice !== -1 &&
       Object.assign(repositorios[indice], repositorioSelecionado);
+
+    notificar("sucesso", "Repositorio atualizado");
   } catch (error) {
     console.error("Falha ao criar repositorio" + error);
+    notificar("erro", "Falha ao criar repositorio");
   }
 };
 
@@ -220,8 +219,11 @@ const excluirRepositorio = async (item) => {
     await RepositoriosService.excluirRepositorio(item);
     const indice = repositorios.findIndex((r) => r.identificador === item.identificador);
     indice !== -1 && repositorios.splice(indice, 1);
+
+    notificar("sucesso", "Repositorio excluido");
   } catch (error) {
     console.error("Falha ao excluir repositorio" + error);
+    notificar("erro", "Falha ao excluir repositorio");
   }
 };
 

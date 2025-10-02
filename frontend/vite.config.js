@@ -27,5 +27,22 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separar Vue e bibliotecas relacionadas
+          'vue-vendor': ['vue', 'vue-router'],
+          // Separar Vuetify
+          'vuetify-vendor': ['vuetify'],
+          // Separar Axios
+          'http-vendor': ['axios'],
+          // Separar outras bibliotecas grandes se houver
+          'vendor': ['@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity']
+        }
+      }
+    }
   }
 })

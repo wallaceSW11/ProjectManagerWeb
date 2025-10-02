@@ -6,6 +6,7 @@
           label="Url"
           v-model="repositorio.url"
           :rules="obrigatorio"
+          @change="atualizarNomeRepositorio()"
         />
       </v-col>
 
@@ -24,8 +25,6 @@
           :rules="obrigatorio"
         />
       </v-col>
-
-      
 
       <v-col cols="12">
         <v-select
@@ -57,9 +56,25 @@ const props = defineProps({
 const repositorio = defineModel(new RepositorioModel());
 const obrigatorio = [(v) => !!v || "Obrigatório"];
 
-
-
 const repositoriosDisponiveis = computed(() => {
-  return props.repositorios.filter((r) => r.identificador !== repositorio.value.identificador);
+  return props.repositorios.filter(
+    (r) => r.identificador !== repositorio.value.identificador
+  );
 });
+
+const atualizarNomeRepositorio = () => {
+  if (!repositorio.value.url) {
+    repositorio.value.nome = "";
+    return;
+  }
+
+  const partesUrl = repositorio.value.url.split("/");
+  let nomeExtraido = partesUrl.pop();
+
+  if (nomeExtraido.endsWith(".git")) {
+    nomeExtraido = nomeExtraido.slice(0, -4);
+  }
+
+  repositorio.value.nome = nomeExtraido;
+};
 </script>

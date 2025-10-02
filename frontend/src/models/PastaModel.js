@@ -14,5 +14,6 @@ export default class PastaModel {
     this.repositorioId = obj.repositorioId;
     this.projetos = (obj.projetos || []).map((p) => new ProjetoModel(p));
     this.menus = obj.menus || [];
+    this.index = obj.index || 999;
   }
 }
