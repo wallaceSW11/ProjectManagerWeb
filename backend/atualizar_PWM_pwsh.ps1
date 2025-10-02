@@ -13,6 +13,7 @@ git pull
 
 # Equivalente a "cd frontend"
 Set-Location "frontend"
+npm i
 npm run publish:all
 
 # Equivalente a "cd C:\inetpub\wwwroot\PMW"
