@@ -1,7 +1,16 @@
 <template>
   <v-tooltip :text="texto" :location="getLocation()">
     <template #activator="{ props }">
-      <v-btn v-bind="props" icon size="small" variant="flat" @click="acao()" :disabled="desabilitado">
+      <v-icon v-if="semBotao" small :color="cor"  v-bind="props">{{ icone }}</v-icon>
+      <v-btn
+        v-else
+        v-bind="props"
+        icon
+        size="small"
+        variant="flat"
+        @click="acao()"
+        :disabled="desabilitado"
+      >
         <v-icon small :color="cor">{{ icone }}</v-icon>
       </v-btn>
     </template>
@@ -46,13 +55,17 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  semBotao: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const getLocation = () => {
-  if (props.top) return 'top';
-  if (props.bottom) return 'bottom';
-  if (props.left) return 'start';
-  if (props.right) return 'end';
-  return 'top';
+  if (props.top) return "top";
+  if (props.bottom) return "bottom";
+  if (props.left) return "start";
+  if (props.right) return "end";
+  return "top";
 };
 </script>

@@ -211,7 +211,7 @@ const atualizarRepositorio = async () => {
 };
 
 const excluirRepositorio = async (item) => {
-  const confirmDelete = confirm(`Deseja excluir o repositorio "${item.nome}"?`);
+  const confirmDelete = confirm(`Deseja excluir o repositorio "${item.titulo}"?`);
 
   if (!confirmDelete) return;
 

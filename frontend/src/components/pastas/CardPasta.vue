@@ -10,8 +10,18 @@
   >
     <v-card-title>
       <div class="d-flex justify-space-between">
-        <div>
-          {{ descricaoPasta(pasta) }}
+        <div class="d-flex align-center">
+          <div>
+            <IconeComTooltip
+              :icone="dadosTipo.icone"
+              :texto="dadosTipo.titulo"
+              :cor="dadosTipo.cor"
+              sem-botao
+            />
+          </div>
+          <div class="ml-2">
+            {{ descricaoPasta(pasta) }}
+          </div>
         </div>
 
         <div v-if="!pasta.identificador">
@@ -55,24 +65,14 @@
           {{ pasta.diretorio }}
         </v-col>
 
-        <v-col cols="12" class="pt-1">
-          <IconeComTooltip
-            :icone="dadosTipo.icone"
-            :texto="dadosTipo.titulo"
-            :cor="dadosTipo.cor"
-          />
-          <!-- <span class="pr-2">Tipo:</span>
-          <v-icon :color="dadosTipo.cor">{{ dadosTipo.icone }}</v-icon>
-          {{ dadosTipo.titulo }} -->
-        </v-col>
+        <v-col cols="12" class="pt-1"> </v-col>
       </v-row>
     </v-card-text>
   </v-card>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-
+import { computed } from "vue";
 
 const props = defineProps({
   pasta: {
@@ -85,7 +85,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["selecionarPasta", "exibirCadastroPasta", "executarMenu"]);
+const emit = defineEmits([
+  "selecionarPasta",
+  "exibirCadastroPasta",
+  "executarMenu",
+]);
 
 const selecionarPasta = (pasta) => {
   emit("selecionarPasta", pasta);
@@ -104,7 +108,6 @@ const descricaoPasta = (pasta) => {
     ? `${pasta.codigo} - ${pasta.descricao}`
     : pasta.descricao;
 };
-
 
 const TIPOS = {
   NENHUM: {
@@ -127,12 +130,11 @@ const TIPOS = {
     titulo: "Hotfix",
     cor: "purple",
   },
-}
+};
 
 const dadosTipo = computed(() => {
   return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM;
 });
-
 </script>
 
 <style scoped>

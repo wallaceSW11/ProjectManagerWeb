@@ -9,7 +9,7 @@
         class="mb-2"
       >
         <v-card-title>
-          {{ repositorio.nome }}
+          {{ repositorio.titulo }}
           <v-divider />
         </v-card-title>
 
