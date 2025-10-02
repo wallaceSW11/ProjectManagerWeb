@@ -137,10 +137,10 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
       if (a.IgnorarGit)
         comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; cd {menu.Diretorio}\\{a.Destino}; git update-index --assume-unchanged {nomeArquivo}; Exit");
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; cd {menu.Diretorio}\\{a.Destino}; git update-index --assume-unchanged {nomeArquivo}; Exit;");
       else
         comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force;");
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
     });
 
     try
