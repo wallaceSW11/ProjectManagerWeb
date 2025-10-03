@@ -177,7 +177,6 @@ import ComandosService from "@/services/ComandosService";
 import emitter, {
   carregandoAsync,
   notificar,
-  atualizarListaPastas,
 } from "@/utils/eventBus";
 import CadastroPasta from "@/components/pastas/PastaCadastro.vue";
 import CardPasta from "@/components/pastas/CardPasta.vue";
@@ -207,25 +206,9 @@ onUnmounted(() => {
 });
 
 const inicializarPagina = async () => {
-  // if (redirecionarParaConfiguracaoInicial()) return;
-
   await carregarPastas();
 
   selecionarPastaSalva();
-};
-
-const redirecionarParaConfiguracaoInicial = () => {
-  if (!configuracaoStore.diretorioRaiz) {
-    alert(
-      "O diretório raiz não foi informado, será redirecionado para a tela de configurações"
-    );
-
-    router.push({ name: "configuracao" });
-
-    return true;
-  }
-
-  return false;
 };
 
 const selecionarPastaSalva = () => {
@@ -405,9 +388,9 @@ const menusProjetos = [
       let comando = "";
 
       if (projeto.identificadorRepositorioAgregado)
-        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe;`;
 
-      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
+      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe;`;
       executarComandoAvulso(comando);
     },
   },
