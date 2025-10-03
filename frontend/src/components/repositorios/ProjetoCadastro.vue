@@ -1,7 +1,7 @@
 <template>
   <v-col cols="12">
     <div>
-      <BotaoTerciario texto="Adicionar" icone="mdi-plus" @click="abrirModalCadastroProjeto"  class="my-2"/>
+      <BotaoTerciario texto="Adicionar" icone="mdi-plus" @click="prepararParaCadastro"  class="my-2"/>
     </div>
 
     <div>
@@ -85,18 +85,24 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import RepositorioModel from "../../models/RepositorioModel";
 import ProjetoModel from "../../models/ProjetoModel";
 import { useConfiguracaoStore } from "@/stores/configuracao";
 import BotaoTerciario from "../comum/botao/BotaoTerciario.vue";
+import { useModoOperacao } from "@/composables/useModoOperacao";
 
 const repositorio = defineModel(new RepositorioModel());
 const configuracaoStore = useConfiguracaoStore();
 const obrigatorio = [(v) => !!v || "Obrigatório"];
 const exibirModalCadastroProjeto = ref(false);
 
-const pagina = ref(0);
+const {
+  emModoCadastro,
+  definirModoInicial,
+  definirModoCadastro,
+  definirModoEdicao
+} = useModoOperacao();
 
 const colunas = reactive([
   { title: "Nome", key: "nome", align: "start" },
@@ -107,44 +113,13 @@ const colunas = reactive([
 
 const projetoSelecionado = reactive(new ProjetoModel());
 
-const abrirModalCadastroProjeto = () =>
-  (exibirModalCadastroProjeto.value = true);
+const abrirModalCadastroProjeto = () => (exibirModalCadastroProjeto.value = true);
 
 const mudarParaEdicao = (item) => {
   Object.assign(projetoSelecionado, item);
-  modoOperacao.value = MODO_OPERACAO.EDICAO.valor;
+  definirModoEdicao();
   abrirModalCadastroProjeto();
 };
-
-const MODO_OPERACAO = {
-  INICIAL: {
-    titulo: "Adicionar",
-    valor: "ADICIONAR",
-  },
-  NOVO: {
-    titulo: "Novo",
-    valor: "NOVO",
-  },
-  EDICAO: {
-    titulo: "Editar",
-    valor: "EDITAR",
-  },
-};
-
-let modoOperacao = ref(MODO_OPERACAO.INICIAL.valor);
-
-const emModoInicial = computed(
-  () => modoOperacao.value === MODO_OPERACAO.INICIAL.valor
-);
-const emModoCadastro = computed(
-  () => modoOperacao.value === MODO_OPERACAO.NOVO.valor
-);
-const emModoEdicao = computed(
-  () => modoOperacao.value === MODO_OPERACAO.EDICAO.valor
-);
-const emModoCadastroEdicao = computed(
-  () => emModoCadastro.value || emModoEdicao.value
-);
 
 const formProjeto = ref(null);
 
@@ -159,7 +134,7 @@ const adicionarProjeto = () => {
 };
 
 const prepararParaCadastro = () => {
-  modoOperacao.value = MODO_OPERACAO.NOVO.valor;
+  definirModoCadastro();
   limparCampos();
   abrirModalCadastroProjeto();
 };
@@ -201,7 +176,7 @@ const limparCampos = () => {
 const descartarAlteracoes = () => {
   // Perguntar sobre perder alteracoes
   limparCampos();
-  modoOperacao.value = MODO_OPERACAO.INICIAL.valor;
+  definirModoInicial();
   exibirModalCadastroProjeto.value = false;
 };
 </script>
