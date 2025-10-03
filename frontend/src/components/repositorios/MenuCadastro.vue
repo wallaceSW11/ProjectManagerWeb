@@ -5,7 +5,7 @@
         <BotaoTerciario
           texto="Adicionar"
           icone="mdi-plus"
-          @click="abrirModalCadastroMenu"
+          @click="prepararParaCadastro"
           class="my-2"
         />
       </div>
@@ -35,7 +35,7 @@
 
       <div>
         <ModalPadrao
-          v-model="exibirModalCadastroMenu"
+          v-model="exibirModalMenuCadastro"
           titulo="Cadastro de Menu de Contexto"
           :textoBotaoPrimario="emModoCadastro ? 'Adicionar' : 'Salvar'"
           :acaoBotaoPrimario="() => salvarAlteracoes()"
@@ -56,11 +56,11 @@
               item-title="titulo"
             />
 
-            <CadastroMenuItemArquivo
+            <MenuItemArquivoCadastro
               v-model="menuSelecionado"
               v-if="menuSelecionado.tipo === 'APLICAR_ARQUIVO'"
             />
-            <CadastroMenuItemComandoAvulso
+            <MenuItemComandoAvulsoCadastro
               v-if="menuSelecionado.tipo === 'COMANDO_AVULSO'"
               v-model="menuSelecionado"
             />
@@ -75,15 +75,23 @@
 import { computed, reactive, ref } from "vue";
 import RepositorioModel from "@/models/RepositorioModel";
 import MenuModel from "@/models/MenuModel";
-import CadastroMenuItemArquivo from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemArquivo.vue";
-import CadastroMenuItemComandoAvulso from "@/components/repositorios/cadastroMenuItem/CadastroMenuItemComandoAvulso.vue";
+import MenuItemArquivoCadastro from "@/components/repositorios/menuItemCadastro/MenuItemArquivoCadastro.vue";
+import MenuItemComandoAvulsoCadastro from "@/components/repositorios/menuItemCadastro/MenuItemComandoAvulsoCadastro.vue";
 import BotaoTerciario from "../comum/botao/BotaoTerciario.vue";
+import { useModoOperacao } from "@/composables/useModoOperacao";
+
+const {
+  emModoCadastro,
+  definirModoCadastro,
+  definirModoEdicao,
+  definirModoInicial,
+} = useModoOperacao();
 
 const repositorio = defineModel(new RepositorioModel());
 
 const obrigatorio = [(v) => !!v || "Obrigatório"];
 
-const exibirModalCadastroMenu = ref(false);
+const exibirModalMenuCadastro = ref(false);
 
 const colunas = reactive([
   { title: "Título", key: "titulo", align: "start" },
@@ -98,37 +106,21 @@ const TIPOS_MENU = reactive([
 
 const menuSelecionado = reactive(new MenuModel());
 
-const abrirModalCadastroMenu = () => {
-  modoOperacao.value = MODO_OPERACAO.NOVO.valor;
-  exibirModalCadastroMenu.value = true
+const prepararParaCadastro = () => {
+  definirModoCadastro();
+  limparCampos();
+  abrirModalMenuCadastro();
+};
+
+const abrirModalMenuCadastro = () => {
+  exibirModalMenuCadastro.value = true;
 };
 
 const mudarParaEdicao = (item) => {
   Object.assign(menuSelecionado, item);
-  modoOperacao.value = MODO_OPERACAO.EDICAO.valor;
-  abrirModalCadastroMenu();
+  definirModoEdicao();
+  abrirModalMenuCadastro();
 };
-
-const MODO_OPERACAO = {
-  INICIAL: {
-    titulo: "Adicionar",
-    valor: "ADICIONAR",
-  },
-  NOVO: {
-    titulo: "Novo",
-    valor: "NOVO",
-  },
-  EDICAO: {
-    titulo: "Editar",
-    valor: "EDITAR",
-  },
-};
-
-let modoOperacao = ref(MODO_OPERACAO.INICIAL.valor);
-
-const emModoCadastro = computed(
-  () => modoOperacao.value === MODO_OPERACAO.NOVO.valor
-);
 
 const formProjeto = ref(null);
 
@@ -137,7 +129,6 @@ const formularioProjetoValido = async () => {
 
   return resposta.valid;
 };
-
 
 const salvarAlteracoes = async () => {
   if (!(await formularioProjetoValido())) return;
@@ -180,7 +171,7 @@ const limparCampos = () => {
 const descartarAlteracoes = () => {
   // Perguntar sobre perder alteracoes
   limparCampos();
-  modoOperacao.value = MODO_OPERACAO.INICIAL.valor;
-  exibirModalCadastroMenu.value = false;
+  definirModoInicial();
+  exibirModalMenuCadastro.value = false;
 };
 </script>

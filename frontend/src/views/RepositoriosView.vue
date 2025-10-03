@@ -50,7 +50,7 @@
                   <ProjetoCadastro v-model="repositorioSelecionado" />
                 </v-tabs-window-item>
                 <v-tabs-window-item>
-                  <CadastroMenu v-model="repositorioSelecionado" class="pt-4" />
+                  <MenuCadastro v-model="repositorioSelecionado" class="pt-4" />
                 </v-tabs-window-item>
               </v-tabs-window>
             </v-tabs-window-item>
@@ -84,7 +84,7 @@ import ListaRepositorios from "../components/repositorios/ListaRepositorios.vue"
 import RepositorioCadastro from "../components/repositorios/RepositorioCadastro.vue";
 import RepositorioModel from "../models/RepositorioModel";
 import RepositoriosService from "../services/RepositoriosService";
-import CadastroMenu from "@/components/repositorios/CadastroMenu.vue";
+import MenuCadastro from "@/components/repositorios/MenuCadastro.vue";
 import ProjetoCadastro from "../components/repositorios/ProjetoCadastro.vue";
 import { carregandoAsync, notificar } from "@/utils/eventBus";
 import { MODO_OPERACAO } from "@/constants/geral-constants";
