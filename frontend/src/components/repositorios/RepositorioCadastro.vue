@@ -44,7 +44,7 @@
 
 <script setup>
 import { computed } from "vue";
-import RepositorioModel from "../../models/RepositorioModel";
+import RepositorioModel from "@/models/RepositorioModel";
 
 const props = defineProps({
   repositorios: {
