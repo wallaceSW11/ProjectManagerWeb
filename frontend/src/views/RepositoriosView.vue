@@ -10,21 +10,19 @@
       </v-col>
 
       <v-col cols="12">
-        <div class="d-flex justify-space-between align-center">
-          <BotaoTerciario v-if="!emModoCadastroEdicao" @click="mudarParaCadastro()" texto="Adicionar" icone="mdi-plus" />
-
-          <div v-if="emModoInicial" style="width: 300px">
-            <v-text-field
-              placeholder="Pesquise pelo nome"
-              append-inner-icon="mdi-magnify"
-            />
-          </div>
+        <div class="d-flex justify-space-between align-center py-2">
+          <BotaoTerciario
+            v-if="!emModoCadastroEdicao"
+            @click="prepararParaCadastro()"
+            texto="Adicionar"
+            icone="mdi-plus"
+          />
         </div>
       </v-col>
 
       <v-col cols="12">
         <div>
-          <v-tabs-window v-model="pagina" class="altura-limitada">
+          <v-tabs-window v-model="paginaPrincipal" class="altura-limitada">
             <v-tabs-window-item>
               <ListaRepositorios
                 :itens="repositorios"
@@ -42,13 +40,17 @@
 
               <v-tabs-window v-model="paginaCadastro">
                 <v-tabs-window-item>
-                  <CadastroRepositorio v-model="repositorioSelecionado" :repositorios="repositorios" class="pt-4"/>
+                  <RepositorioCadastro
+                    v-model="repositorioSelecionado"
+                    :repositorios="repositorios"
+                    class="pt-4"
+                  />
                 </v-tabs-window-item>
                 <v-tabs-window-item>
                   <CadastroProjeto v-model="repositorioSelecionado" />
                 </v-tabs-window-item>
                 <v-tabs-window-item>
-                  <CadastroMenu v-model="repositorioSelecionado" class="pt-4"/>
+                  <CadastroMenu v-model="repositorioSelecionado" class="pt-4" />
                 </v-tabs-window-item>
               </v-tabs-window>
             </v-tabs-window-item>
@@ -59,8 +61,16 @@
       <v-col cols="12" v-if="!emModoInicial">
         <div class="d-flex align-center justify-end">
           <div>
-            <BotaoPrimario @click="salvarAlteracoes" texto="Salvar" icone="mdi-check" />
-            <BotaoSecundario @click="descartarAlteracoes" texto="Cancelar" icone="mdi-cancel" />
+            <BotaoPrimario
+              @click="salvarAlteracoes"
+              texto="Salvar"
+              icone="mdi-check"
+            />
+            <BotaoSecundario
+              @click="descartarAlteracoes"
+              texto="Cancelar"
+              icone="mdi-cancel"
+            />
           </div>
         </div>
       </v-col>
@@ -71,21 +81,29 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import ListaRepositorios from "../components/repositorios/ListaRepositorios.vue";
-import CadastroRepositorio from "../components/repositorios/CadastroRepositorio.vue";
+import RepositorioCadastro from "../components/repositorios/RepositorioCadastro.vue";
 import RepositorioModel from "../models/RepositorioModel";
 import RepositoriosService from "../services/RepositoriosService";
 import CadastroMenu from "@/components/repositorios/CadastroMenu.vue";
 import CadastroProjeto from "../components/repositorios/CadastroProjeto.vue";
 import { carregandoAsync, notificar } from "@/utils/eventBus";
+import { MODO_OPERACAO } from "@/constants/geral-constants";
 
-let repositorios = reactive([]);
+const repositorios = reactive([]);
 const repositorioSelecionado = reactive(new RepositorioModel());
+const paginaPrincipal = ref(0);
+const paginaCadastro = ref(0);
+const camposObrigatoriosPreenchidos = ref(true);
 
-const obterRepositorios = async () => {
+onMounted(async () => {
+  await preencherRepositorios();
+});
+
+const preencherRepositorios = async () => {
   try {
     const resposta = await carregandoAsync(async () => {
       return await RepositoriosService.getRepositorios();
-    })
+    });
 
     Object.assign(
       repositorios,
@@ -94,32 +112,6 @@ const obterRepositorios = async () => {
   } catch (error) {
     console.error("Falha ao obter os relatorios:", error);
   }
-};
-
-onMounted(async () => {
-  obterRepositorios();
-});
-
-// watch(exibirModalClone, async (novoValor) => {
-//   if (novoValor)  await consultarRepositorios();
-// });
-
-const pagina = ref(0);
-const paginaCadastro = ref(0);
-
-const MODO_OPERACAO = {
-  INICIAL: {
-    titulo: "Adicionar",
-    valor: "ADICIONAR",
-  },
-  NOVO: {
-    titulo: "Novo",
-    valor: "NOVO",
-  },
-  EDICAO: {
-    titulo: "Editar",
-    valor: "EDITAR",
-  },
 };
 
 let modoOperacao = ref(MODO_OPERACAO.INICIAL.valor);
@@ -138,19 +130,19 @@ const emModoCadastroEdicao = computed(
 );
 
 const irParaListagem = () => {
-  pagina.value = 0;
+  paginaPrincipal.value = 0;
   modoOperacao.value = MODO_OPERACAO.INICIAL.valor;
 };
 const irParaCadastro = () => {
   paginaCadastro.value = 0;
-  pagina.value = 1;
+  paginaPrincipal.value = 1;
 };
 
 const mudarParaEdicao = (identificador) => {
   let repo = repositorios.find((r) => r.identificador === identificador);
 
   if (!repo) {
-    alert("Repositorio nao encontrado");
+    notificar("erro", "Repositorio nao encontrado");
 
     return;
   }
@@ -160,24 +152,27 @@ const mudarParaEdicao = (identificador) => {
   irParaCadastro();
 };
 
-const mudarParaCadastro = () => {
+const prepararParaCadastro = () => {
   modoOperacao.value = MODO_OPERACAO.NOVO.valor;
   limparCampos();
   irParaCadastro();
 };
 
 const formularioValido = () => {
-  return true;
+  return camposObrigatoriosPreenchidos.value;
 };
 
-const salvarAlteracoes = () => {
+const salvarAlteracoes = async () => {
   if (!formularioValido()) return;
 
   try {
-    emModoCadastro.value ? criarRepositorio() : atualizarRepositorio();
+    emModoCadastro.value
+      ? await criarRepositorio()
+      : await atualizarRepositorio();
     irParaListagem();
   } catch (error) {
     console.error("Falha ao salvar alteracoes: ", error);
+    notificar("erro", "Falha ao salvar alteracoes");
   }
 };
 
@@ -196,13 +191,15 @@ const criarRepositorio = async () => {
 const atualizarRepositorio = async () => {
   try {
     await RepositoriosService.atualizarRepositorio(repositorioSelecionado);
-    
+
     const indice = repositorios.findIndex(
       (r) => r.identificador === repositorioSelecionado.identificador
     );
+
     indice !== -1 &&
       Object.assign(repositorios[indice], repositorioSelecionado);
 
+    limparCampos();
     notificar("sucesso", "Repositorio atualizado");
   } catch (error) {
     console.error("Falha ao criar repositorio" + error);
@@ -211,13 +208,17 @@ const atualizarRepositorio = async () => {
 };
 
 const excluirRepositorio = async (item) => {
-  const confirmDelete = confirm(`Deseja excluir o repositorio "${item.titulo}"?`);
+  const confirmDelete = confirm(
+    `Deseja excluir o repositorio "${item.titulo}"?`
+  );
 
   if (!confirmDelete) return;
 
   try {
     await RepositoriosService.excluirRepositorio(item);
-    const indice = repositorios.findIndex((r) => r.identificador === item.identificador);
+    const indice = repositorios.findIndex(
+      (r) => r.identificador === item.identificador
+    );
     indice !== -1 && repositorios.splice(indice, 1);
 
     notificar("sucesso", "Repositorio excluido");
@@ -228,7 +229,6 @@ const excluirRepositorio = async (item) => {
 };
 
 const descartarAlteracoes = () => {
-  // Perguntar sobre perder alteracoes
   limparCampos();
   irParaListagem();
 };
