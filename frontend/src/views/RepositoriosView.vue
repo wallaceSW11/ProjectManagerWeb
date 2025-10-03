@@ -169,7 +169,6 @@ const salvarAlteracoes = async () => {
     emModoCadastro.value
       ? await criarRepositorio()
       : await atualizarRepositorio();
-    irParaListagem();
   } catch (error) {
     console.error("Falha ao salvar alteracoes: ", error);
     notificar("erro", "Falha ao salvar alteracoes");
@@ -182,6 +181,7 @@ const criarRepositorio = async () => {
     repositorios.push(new RepositorioModel(repositorioSelecionado));
     limparCampos();
     notificar("sucesso", "Repositorio criado");
+    irParaListagem();
   } catch (error) {
     console.error("Falha ao criar repositorio: " + error);
     notificar("erro", "Falha ao criar repositorio");
@@ -201,6 +201,7 @@ const atualizarRepositorio = async () => {
 
     limparCampos();
     notificar("sucesso", "Repositorio atualizado");
+    irParaListagem();
   } catch (error) {
     console.error("Falha ao criar repositorio" + error);
     notificar("erro", "Falha ao criar repositorio");

@@ -38,33 +38,72 @@
           v-model="exibirModalMenuCadastro"
           titulo="Cadastro de Menu de Contexto"
           :textoBotaoPrimario="emModoCadastro ? 'Adicionar' : 'Salvar'"
-          :acaoBotaoPrimario="() => salvarAlteracoes()"
-          :acaoBotaoSecundario="() => descartarAlteracoes()"
+          :acaoBotaoPrimario="() => metodoBotaoPrimario()"
+          :acaoBotaoSecundario="() => metodoBotaoSecundario()"
           larguraMinima="800px"
         >
-          <v-form ref="formProjeto">
-            <v-text-field
-              label="Título"
-              v-model="menuSelecionado.titulo"
-              :rules="obrigatorio"
-            />
-            <v-select
-              label="Tipo"
-              :items="TIPOS_MENU"
-              v-model="menuSelecionado.tipo"
-              item-value="valor"
-              item-title="titulo"
-            />
+          <v-tabs-window v-model="paginaMenu">
+            <v-tabs-window-item>
+              <v-form ref="formProjeto">
+                <v-text-field
+                  label="Título"
+                  v-model="menuSelecionado.titulo"
+                  :rules="obrigatorio"
+                />
 
-            <MenuItemArquivoCadastro
-              v-model="menuSelecionado"
-              v-if="menuSelecionado.tipo === 'APLICAR_ARQUIVO'"
-            />
-            <MenuItemComandoAvulsoCadastro
-              v-if="menuSelecionado.tipo === 'COMANDO_AVULSO'"
-              v-model="menuSelecionado"
-            />
-          </v-form>
+                <div>
+                  <div>
+                    <BotaoTerciario
+                      texto="Adicionar"
+                      icone="mdi-plus"
+                      @click="prepararParaCadastroArquivos"
+                      class="my-2"
+                    />
+                  </div>
+                  <div>
+                    <v-data-table
+                      :headers="colunasMenuArquivos"
+                      :items="menuSelecionado.arquivos"
+                      hide-default-footer
+                    >
+                      <template #[`item.actions`]="{ item }">
+                        <IconeComTooltip
+                          icone="mdi-pencil"
+                          texto="Editar"
+                          :acao="() => mudarParaEdicaoArquivo(item)"
+                          top
+                        />
+                        <IconeComTooltip
+                          icone="mdi-delete"
+                          texto="Excluir"
+                          :acao="() => excluirArquivo(item)"
+                          top
+                        />
+                      </template>
+                    </v-data-table>
+                  </div>
+                </div>
+              </v-form>
+            </v-tabs-window-item>
+
+            <v-tabs-window-item>
+              <v-form ref="formArquivo">
+                <v-text-field
+                  label="Arquivo"
+                  v-model="arquivoSelecionado.arquivo"
+                  :rules="obrigatorio"
+                />
+                <v-text-field
+                  label="Destino"
+                  v-model="arquivoSelecionado.destino"
+                />
+                <v-checkbox
+                  label="Ignorar no git diff"
+                  v-model="arquivoSelecionado.ignorarGit"
+                />
+              </v-form>
+            </v-tabs-window-item>
+          </v-tabs-window>
         </ModalPadrao>
       </div>
     </v-col>
@@ -75,10 +114,9 @@
 import { computed, reactive, ref } from "vue";
 import RepositorioModel from "@/models/RepositorioModel";
 import MenuModel from "@/models/MenuModel";
-import MenuItemArquivoCadastro from "@/components/repositorios/menuItemCadastro/MenuItemArquivoCadastro.vue";
-import MenuItemComandoAvulsoCadastro from "@/components/repositorios/menuItemCadastro/MenuItemComandoAvulsoCadastro.vue";
 import BotaoTerciario from "../comum/botao/BotaoTerciario.vue";
 import { useModoOperacao } from "@/composables/useModoOperacao";
+import ArquivoModel from "@/models/ArquivoModel";
 
 const {
   emModoCadastro,
@@ -88,10 +126,14 @@ const {
 } = useModoOperacao();
 
 const repositorio = defineModel(new RepositorioModel());
+const menuSelecionado = reactive(new MenuModel());
+const arquivoSelecionado = reactive(new ArquivoModel());
+const arquivoEmEdicao = ref(false);
 
 const obrigatorio = [(v) => !!v || "Obrigatório"];
 
 const exibirModalMenuCadastro = ref(false);
+const paginaMenu = ref(0);
 
 const colunas = reactive([
   { title: "Título", key: "titulo", align: "start" },
@@ -99,12 +141,29 @@ const colunas = reactive([
   { title: "Actions", key: "actions", align: "center", width: "200px" },
 ]);
 
-const TIPOS_MENU = reactive([
-  { titulo: "Aplicar arquivos", valor: "APLICAR_ARQUIVO" },
-  { titulo: "Comando avulso", valor: "COMANDO_AVULSO" },
+const colunasMenuArquivos = reactive([
+  { title: "Arquivo", key: "arquivo", align: "start" },
+  { title: "Destino", key: "destino", align: "start" },
+  { title: "Ignorar Git Diff", key: "ignorarGit", align: "start" },
+  { title: "Actions", key: "actions", align: "center", width: "200px" },
 ]);
 
-const menuSelecionado = reactive(new MenuModel());
+const paginaTabela = computed(() => paginaMenu.value === 0);
+
+const metodoBotaoPrimario = computed(() => {
+  return paginaTabela.value ? salvarAlteracoes : salvarAlteracoesArquivos;
+});
+
+const metodoBotaoSecundario = computed(() => {
+  return paginaTabela.value ? descartarAlteracoes : descartarAlteracoesArquivos;
+});
+
+const mudarParaPaginaTabela = () => (paginaMenu.value = 0);
+
+const descartarAlteracoesArquivos = () => {
+  mudarParaPaginaTabela();
+  limparCamposArquivos();
+};
 
 const prepararParaCadastro = () => {
   definirModoCadastro();
@@ -112,8 +171,23 @@ const prepararParaCadastro = () => {
   abrirModalMenuCadastro();
 };
 
+const prepararParaCadastroArquivos = () => {
+  paginaMenu.value = 1;
+  limparCamposArquivos();
+};
+
+const limparCamposArquivos = () => {
+  Object.assign(arquivoSelecionado, new ArquivoModel());
+};
+
 const abrirModalMenuCadastro = () => {
   exibirModalMenuCadastro.value = true;
+};
+
+const mudarParaEdicaoArquivo = (item) => {
+  Object.assign(arquivoSelecionado, item);
+  arquivoEmEdicao.value = true;
+  paginaMenu.value = 1;
 };
 
 const mudarParaEdicao = (item) => {
@@ -123,9 +197,16 @@ const mudarParaEdicao = (item) => {
 };
 
 const formProjeto = ref(null);
+const formArquivo = ref(null);
 
 const formularioProjetoValido = async () => {
   const resposta = await formProjeto.value.validate();
+
+  return resposta.valid;
+};
+
+const formularioArquivoValido = async () => {
+  const resposta = await formArquivo.value.validate();
 
   return resposta.valid;
 };
@@ -139,6 +220,29 @@ const salvarAlteracoes = async () => {
   } catch (error) {
     console.error("Falha ao salvar alteracoes do cadastro:", error);
   }
+};
+
+const salvarAlteracoesArquivos = async () => {
+  if (!(await formularioArquivoValido())) return;
+
+  if (arquivoEmEdicao.value) {
+    const indice = menuSelecionado.arquivos.findIndex(
+      (a) => a.identificador === arquivoSelecionado.identificador
+    );
+
+    if (indice !== -1) {
+      Object.assign(menuSelecionado.arquivos[indice], arquivoSelecionado);
+    }
+
+    arquivoEmEdicao.value = false;
+    limparCamposArquivos();
+    mudarParaPaginaTabela();
+    return;
+  }
+
+  menuSelecionado.arquivos.push(new ArquivoModel(arquivoSelecionado));  
+  
+  mudarParaPaginaTabela();
 };
 
 const adicionarMenu = () => {
