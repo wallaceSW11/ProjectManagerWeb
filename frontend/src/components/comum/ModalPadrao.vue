@@ -32,65 +32,39 @@
   </v-dialog>
 </template>
 
-<script setup>
-const exibirModal = defineModel(false);
+<script setup lang="ts">
+  interface Props {
+    titulo: string;
+    textoBotaoPrimario?: string;
+    textoBotaoSecundario?: string;
+    exibirBotaoPrimario?: boolean;
+    exibirBotaoSecundario?: boolean;
+    desabilitarBotaoPrimario?: boolean;
+    desabilitarBotaoSecundario?: boolean;
+    acaoBotaoPrimario?: (() => void) | null;
+    acaoBotaoSecundario?: (() => void) | null;
+    larguraMinima?: string;
+    larguraMaxima?: string;
+    persistent?: boolean;
+    iconeBotaoPrimario?: string;
+    iconeBotaoSecundario?: string;
+  }
 
-const props = defineProps({
-  titulo: {
-    type: String,
-    required: true,
-  },
-  textoBotaoPrimario: {
-    type: String,
-    default: "Salvar",
-  },
-  textoBotaoSecundario: {
-    type: String,
-    default: "Cancelar",
-  },
-  exibirBotaoPrimario: {
-    type: Boolean,
-    default: true,
-  },
-  exibirBotaoSecundario: {
-    type: Boolean,
-    default: true,
-  },
-  desabilitarBotaoPrimario: {
-    type: Boolean,
-    default: false,
-  },
-  desabilitarBotaoSecundario: {
-    type: Boolean,
-    default: false,
-  },
-  acaoBotaoPrimario: {
-    type: Function,
-    default: null,
-  },
-  acaoBotaoSecundario: {
-    type: Function,
-    default: null,
-  },
-  larguraMinima: {
-    type: String,
-    default: "600px",
-  },
-  larguraMaxima: {
-    type: String,
-    default: "800px",
-  },
-  persistent: {
-    type: Boolean,
-    default: true,
-  },
-  iconeBotaoPrimario: {
-    type: String,
-    default: 'mdi-plus',
-  },
-  iconeBotaoSecundario: {
-    type: String,
-    default: 'mdi-cancel',
-  },
-});
+  const exibirModal = defineModel<boolean>({ default: false });
+
+  withDefaults(defineProps<Props>(), {
+    textoBotaoPrimario: 'Salvar',
+    textoBotaoSecundario: 'Cancelar',
+    exibirBotaoPrimario: true,
+    exibirBotaoSecundario: true,
+    desabilitarBotaoPrimario: false,
+    desabilitarBotaoSecundario: false,
+    acaoBotaoPrimario: null,
+    acaoBotaoSecundario: null,
+    larguraMinima: '600px',
+    larguraMaxima: '800px',
+    persistent: true,
+    iconeBotaoPrimario: 'mdi-plus',
+    iconeBotaoSecundario: 'mdi-cancel',
+  });
 </script>

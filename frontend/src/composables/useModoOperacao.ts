@@ -1,16 +1,22 @@
-import { computed, ref } from 'vue';
+import { computed, ref, type ComputedRef, type Ref } from 'vue';
 import { MODO_OPERACAO } from '@/constants/geral-constants';
 
-/**
- * Composable para gerenciar modos de operação (Inicial, Cadastro, Edição)
- * @param {*} modoInicial - Modo inicial (opcional, padrão: MODO_OPERACAO.INICIAL.valor)
- * @returns {Object} Objeto com reactive references e computed properties para modos de operação
- */
-export function useModoOperacao(modoInicial = MODO_OPERACAO.INICIAL.valor) {
-  // Estado reativo do modo de operação
+interface UseModoOperacaoReturn {
+  modoOperacao: Ref<string>;
+  emModoInicial: ComputedRef<boolean>;
+  emModoCadastro: ComputedRef<boolean>;
+  emModoEdicao: ComputedRef<boolean>;
+  emModoCadastroEdicao: ComputedRef<boolean>;
+  definirModoInicial: () => void;
+  definirModoCadastro: () => void;
+  definirModoEdicao: () => void;
+}
+
+export function useModoOperacao(
+  modoInicial = MODO_OPERACAO.INICIAL.valor
+): UseModoOperacaoReturn {
   const modoOperacao = ref(modoInicial);
 
-  // Computed properties para verificar o modo atual
   const emModoInicial = computed(
     () => modoOperacao.value === MODO_OPERACAO.INICIAL.valor
   );
@@ -27,32 +33,26 @@ export function useModoOperacao(modoInicial = MODO_OPERACAO.INICIAL.valor) {
     () => emModoCadastro.value || emModoEdicao.value
   );
 
-  // Métodos auxiliares para mudança de modo
-  const definirModoInicial = () => {
+  const definirModoInicial = (): void => {
     modoOperacao.value = MODO_OPERACAO.INICIAL.valor;
   };
 
-  const definirModoCadastro = () => {
+  const definirModoCadastro = (): void => {
     modoOperacao.value = MODO_OPERACAO.NOVO.valor;
   };
 
-  const definirModoEdicao = () => {
+  const definirModoEdicao = (): void => {
     modoOperacao.value = MODO_OPERACAO.EDICAO.valor;
   };
 
   return {
-    // Estado
     modoOperacao,
-    
-    // Computed properties
     emModoInicial,
     emModoCadastro,
     emModoEdicao,
     emModoCadastroEdicao,
-    
-    // Métodos auxiliares
     definirModoInicial,
     definirModoCadastro,
-    definirModoEdicao
+    definirModoEdicao,
   };
 }

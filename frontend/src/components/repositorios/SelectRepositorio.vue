@@ -9,41 +9,47 @@
     return-object
   >
     <template #item="{ item, props }">
-      <v-list-item v-bind="props" class="pb-2">
+      <v-list-item
+        v-bind="props"
+        class="pb-2"
+      >
         <v-list-item-subtitle>{{ item.raw.url }}</v-list-item-subtitle>
       </v-list-item>
     </template>
   </v-select>
 </template>
 
-<script setup>
-const repositorios = ref([]);
-import RepositorioModel from "@/models/RepositorioModel";
-import RepositoriosService from "@/services/RepositoriosService";
-import { computed, onMounted, ref } from "vue";
+<script setup lang="ts">
+  import { computed, onMounted, ref } from 'vue';
+  import type { IRepositorio } from '@/types';
+  import RepositoriosService from '@/services/RepositoriosService';
 
-const props = defineProps({
-  obrigatorio: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const regras = computed(() => {
-  return props.obrigatorio ? [(v) => (!!v?.titulo && !!v?.url) || "Obrigatório"] : [];
-});
-
-const repositorio = defineModel();
-const carregando = ref(false)
-
-onMounted(async () => {
-  try {
-    carregando.value = true
-    repositorios.value = await RepositoriosService.getRepositorios();
-  } catch (error) {
-    console.error("Falha ao obter os repositórios", error);
-  } finally {
-    carregando.value = false
+  interface Props {
+    obrigatorio?: boolean;
   }
-});
+
+  const props = withDefaults(defineProps<Props>(), {
+    obrigatorio: false,
+  });
+
+  const repositorios = ref<IRepositorio[]>([]);
+  const repositorio = defineModel<IRepositorio>();
+  const carregando = ref<boolean>(false);
+
+  const regras = computed(() => {
+    return props.obrigatorio
+      ? [(v: IRepositorio) => (!!v?.titulo && !!v?.url) || 'Obrigatório']
+      : [];
+  });
+
+  onMounted(async () => {
+    try {
+      carregando.value = true;
+      repositorios.value = await RepositoriosService.getRepositorios();
+    } catch (error) {
+      console.error('Falha ao obter os repositórios', error);
+    } finally {
+      carregando.value = false;
+    }
+  });
 </script>
