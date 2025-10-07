@@ -30,6 +30,7 @@ export interface IProjeto {
   arquivoCoverage: string;
   comandosSelecionados?: string[];
   identificadorRepositorioAgregado?: string;
+  expandido: boolean;
 }
 
 export interface IRepositorio {

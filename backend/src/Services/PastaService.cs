@@ -79,7 +79,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           [.. comandos],
           null,
           projeto.ArquivoCoverage,
-          projeto.Subdiretorio
+          projeto.Subdiretorio,
+          projeto.Expandido
         ));
       });
 
@@ -117,7 +118,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
             [.. comandos],
             repositorioAgregado.Identificador,
             projeto.ArquivoCoverage,
-            projeto.Subdiretorio
+            projeto.Subdiretorio,
+            projeto.Expandido
           ));
         }); 
       });
@@ -178,6 +180,64 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         await pastaJsonService.UpdateAsync(pastaParaAtualizar.Diretorio, pastaAtualizada);
       }
     }
+  }
+
+  public async Task AtualizarExpandidoProjeto(Guid pastaId, Guid projetoId, bool expandido)
+  {
+    // Obter a pasta pelo ID
+    var pastasExistentes = await pastaJsonService.GetAllAsync();
+    var pasta = pastasExistentes.FirstOrDefault(p => p.Identificador == pastaId);
+    
+    if (pasta == null)
+      throw new Exception($"Pasta não encontrada com o identificador {pastaId}");
+
+    // Obter o repositório associado à pasta
+    var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId);
+    
+    if (repositorio == null)
+      throw new Exception($"Repositório não encontrado com o identificador {pasta.RepositorioId}");
+
+    // Encontrar o projeto no repositório principal
+    var projetoEncontrado = repositorio.Projetos.FirstOrDefault(p => p.Identificador == projetoId);
+    
+    if (projetoEncontrado != null)
+    {
+      // Atualizar o projeto no repositório principal
+      var projetoAtualizado = projetoEncontrado with { Expandido = expandido };
+      var projetosAtualizados = repositorio.Projetos.Select(p => 
+        p.Identificador == projetoId ? projetoAtualizado : p).ToList();
+      
+      var repositorioAtualizado = repositorio with { Projetos = projetosAtualizados };
+      await repositorioJsonService.UpdateAsync(repositorio.Identificador, repositorioAtualizado);
+      return;
+    }
+
+    // Se não encontrou no repositório principal, procurar nos agregados
+    if (repositorio.Agregados != null)
+    {
+      foreach (var agregadoId in repositorio.Agregados)
+      {
+        var repositorioAgregado = await repositorioJsonService.GetByIdAsync(agregadoId);
+        
+        if (repositorioAgregado == null) continue;
+
+        var projetoAgregado = repositorioAgregado.Projetos.FirstOrDefault(p => p.Identificador == projetoId);
+        
+        if (projetoAgregado != null)
+        {
+          // Atualizar o projeto no repositório agregado
+          var projetoAtualizado = projetoAgregado with { Expandido = expandido };
+          var projetosAtualizados = repositorioAgregado.Projetos.Select(p => 
+            p.Identificador == projetoId ? projetoAtualizado : p).ToList();
+          
+          var repositorioAgregadoAtualizado = repositorioAgregado with { Projetos = projetosAtualizados };
+          await repositorioJsonService.UpdateAsync(repositorioAgregado.Identificador, repositorioAgregadoAtualizado);
+          return;
+        }
+      }
+    }
+
+    throw new Exception($"Projeto não encontrado com o identificador {projetoId}");
   }
 
   private async Task LimparPastasInexistentes(List<PastaCadastroRequestDTO> pastasCadastradas, string[] pastasNoDisco)

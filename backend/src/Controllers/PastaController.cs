@@ -35,4 +35,21 @@ public class PastaController(PastaService pastaService) : ControllerBase
     await pastaService.AtualizarIndices(indices);
     return Ok();
   }
+
+  [HttpPatch("projetos/expandido")]
+  public async Task<IActionResult> AtualizarExpandidoProjeto([FromBody] AtualizarExpandidoRequestDTO request)
+  {
+    if (!ModelState.IsValid)
+      return BadRequest(ModelState);
+
+    try
+    {
+      await pastaService.AtualizarExpandidoProjeto(request.PastaId, request.ProjetoId, request.Expandido);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return BadRequest(ex.Message);
+    }
+  }
 }

@@ -58,6 +58,20 @@ class BaseApiService {
     }
   }
 
+  async patch<T = any>(endpoint: string, body: any, config = {}): Promise<T> {
+    try {
+      const response: AxiosResponse<T> = await this.api.patch(
+        endpoint,
+        body,
+        config
+      );
+      return response.data;
+    } catch (error) {
+      console.error('PATCH request error:', error);
+      throw error;
+    }
+  }
+
   async delete<T = any>(endpoint: string, config = {}): Promise<T> {
     try {
       const response: AxiosResponse<T> = await this.api.delete(

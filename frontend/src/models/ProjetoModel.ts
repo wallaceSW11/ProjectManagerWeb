@@ -22,6 +22,7 @@ export default class ProjetoModel implements IProjeto {
   perfilVSCode: string;
   comandos: IComandos;
   arquivoCoverage: string;
+  expandido: boolean;
 
   constructor(obj: Partial<IProjeto> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -31,5 +32,6 @@ export default class ProjetoModel implements IProjeto {
     this.perfilVSCode = obj.perfilVSCode || '';
     this.comandos = new ComandosModel(obj.comandos);
     this.arquivoCoverage = obj.arquivoCoverage || '';
+    this.expandido = false;
   }
 }

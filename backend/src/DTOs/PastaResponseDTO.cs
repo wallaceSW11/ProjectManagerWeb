@@ -21,5 +21,6 @@ public sealed record ProjetoDisponivelDTO(
     List<string> Comandos,
     Guid? IdentificadorRepositorioAgregado = null,
     string? ArquivoCoverage = "",
-    string? Subdiretorio = ""
+    string? Subdiretorio = "",
+    bool Expandido = true
 );

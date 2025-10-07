@@ -6,6 +6,12 @@ interface IndiceAtualizar {
   indice: number;
 }
 
+interface ExpandidoAtualizar {
+  pastaId: string;
+  projetoId: string;
+  expandido: boolean;
+}
+
 class PastasService extends BaseApiService {
   async getPastas(): Promise<IPasta[]> {
     return await this.get<IPasta[]>('pastas');
@@ -17,6 +23,10 @@ class PastasService extends BaseApiService {
 
   async atualizarIndices(indices: IndiceAtualizar[]): Promise<void> {
     return await this.put('pastas/indices', indices);
+  }
+
+  async atualizarExpandido(payload: ExpandidoAtualizar): Promise<void> {
+    return await this.patch(`pastas/projetos/expandido`, payload);
   }
 }
 
