@@ -96,6 +96,8 @@
                 <v-text-field
                   label="Destino"
                   v-model="arquivoSelecionado.destino"
+                  hint="Caminho relativo ao repositório"
+                  persistent-hint
                 />
                 <v-checkbox
                   label="Ignorar no git diff"
