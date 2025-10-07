@@ -100,7 +100,7 @@
   import { MODO_OPERACAO } from '@/constants/geral-constants';
 
   const repositorios = reactive<IRepositorio[]>([]);
-  const repositorioSelecionado = reactive<IRepositorio>(new RepositorioModel());
+  const repositorioSelecionado = ref<IRepositorio>(new RepositorioModel());
   const paginaPrincipal = ref<number>(0);
   const paginaCadastro = ref<number>(0);
   const camposObrigatoriosPreenchidos = ref<boolean>(true);
@@ -158,7 +158,7 @@
     }
 
     modoOperacao.value = MODO_OPERACAO.EDICAO.valor;
-    Object.assign(repositorioSelecionado, repo);
+    Object.assign(repositorioSelecionado.value, repo);
     irParaCadastro();
   };
 
@@ -187,8 +187,8 @@
 
   const criarRepositorio = async (): Promise<void> => {
     try {
-      await RepositoriosService.adicionarRepositorio(repositorioSelecionado);
-      repositorios.push(new RepositorioModel(repositorioSelecionado));
+      await RepositoriosService.adicionarRepositorio(repositorioSelecionado.value);
+      repositorios.push(new RepositorioModel(repositorioSelecionado.value));
       limparCampos();
       notificar('sucesso', 'Repositorio criado');
       irParaListagem();
@@ -200,14 +200,14 @@
 
   const atualizarRepositorio = async (): Promise<void> => {
     try {
-      await RepositoriosService.atualizarRepositorio(repositorioSelecionado);
+      await RepositoriosService.atualizarRepositorio(repositorioSelecionado.value);
 
       const indice = repositorios.findIndex(
-        r => r.identificador === repositorioSelecionado.identificador
+        r => r.identificador === repositorioSelecionado.value.identificador
       );
 
       indice !== -1 &&
-        Object.assign(repositorios[indice], repositorioSelecionado);
+        Object.assign(repositorios[indice], repositorioSelecionado.value);
 
       limparCampos();
       notificar('sucesso', 'Repositorio atualizado');
@@ -245,7 +245,7 @@
   };
 
   const limparCampos = (): void => {
-    Object.assign(repositorioSelecionado, new RepositorioModel());
+    Object.assign(repositorioSelecionado.value, new RepositorioModel());
   };
 </script>
 

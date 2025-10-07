@@ -100,7 +100,7 @@
   const pasta = reactive<IPasta>(new PastaModel());
   const configuracaoStore = useConfiguracaoStore();
   const exibirModalPasta = defineModel<boolean>({ default: false });
-  const repositorio = reactive<IRepositorio>(new RepositorioModel());
+  const repositorio = ref<IRepositorio>(new RepositorioModel());
   const formPasta = ref<any>(null);
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
@@ -162,7 +162,7 @@
     if (!(await formularioValido())) return;
 
     try {
-      pasta.repositorioId = repositorio.identificador;
+      pasta.repositorioId = repositorio.value.identificador;
       await PastaService.criar(pasta);
       exibirModalPasta.value = false;
       Object.assign(pasta, new PastaModel());
