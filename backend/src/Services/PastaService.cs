@@ -1,5 +1,6 @@
 using System.Net;
 using ProjectManagerWeb.src.DTOs;
+using ProjectManagerWeb.src.Enuns;
 
 namespace ProjectManagerWeb.src.Services;
 
@@ -58,25 +59,25 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
       repositorio.Projetos.ForEach(projeto =>
       {
-        var comandos = new List<string>();
+        var comandos = new List<ETipoComando>();
 
         if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
-          comandos.Add("Instalar");
+          comandos.Add(ETipoComando.INSTALAR);
 
         if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
-          comandos.Add("Iniciar");
+          comandos.Add(ETipoComando.INICIAR);
 
         if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
-          comandos.Add("Buildar");
+          comandos.Add(ETipoComando.BUILDAR);
 
         if (projeto.Comandos.AbrirNoVSCode)
-          comandos.Add("AbrirNoVSCode");
+          comandos.Add(ETipoComando.ABRIR_NO_VSCODE);
 
         projetosDisponiveis.Add(new ProjetoDisponivelDTO(
           projeto.Identificador,
           projeto.Nome,
           repositorio.Nome,
-          [.. comandos],
+          comandos,
           null,
           projeto.ArquivoCoverage,
           projeto.Subdiretorio,
@@ -95,19 +96,19 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
         repositorioAgregado.Projetos.ForEach(projeto =>
         {
-          var comandos = new List<string>();
+          var comandos = new List<ETipoComando>();
 
           if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
-            comandos.Add("Instalar");
+            comandos.Add(ETipoComando.INSTALAR);
 
           if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
-            comandos.Add("Iniciar");
+            comandos.Add(ETipoComando.INICIAR);
 
           if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
-            comandos.Add("Buildar");
+            comandos.Add(ETipoComando.BUILDAR);
 
           if (projeto.Comandos.AbrirNoVSCode)
-            comandos.Add("AbrirNoVSCode");
+            comandos.Add(ETipoComando.ABRIR_NO_VSCODE);
 
           var nomeProjetoFormatado = $"{projeto.Nome} ({repositorioAgregado.Nome})";
 
@@ -115,7 +116,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
             projeto.Identificador,
             nomeProjetoFormatado,
             repositorioAgregado.Nome,
-            [.. comandos],
+            comandos,
             repositorioAgregado.Identificador,
             projeto.ArquivoCoverage,
             projeto.Subdiretorio,

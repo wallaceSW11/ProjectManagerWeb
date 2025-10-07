@@ -170,10 +170,10 @@
                     <v-expand-transition>
                       <div v-if="projeto.expandido">
                         <v-switch
-                          v-for="(comando, indice) in projeto.comandos"
-                          :key="indice"
-                          :label="comando?.toString() || ''"
-                          :value="comando"
+                          v-for="comando in projeto.getComandosDisponiveis?.()"
+                          :key="comando.valor"
+                          :label="comando.titulo"
+                          :value="comando.valor"
                           v-model="projeto.comandosSelecionados"
                           hide-details
                           height="40px"
@@ -222,6 +222,7 @@
   import type { IPasta } from '@/types';
   import PastasService from '@/services/PastasService';
   import PastaModel from '@/models/PastaModel';
+  import ProjetoModel from '@/models/ProjetoModel';
   import ComandosService from '@/services/ComandosService';
   import emitter, { carregandoAsync, notificar } from '@/utils/eventBus';
   import CadastroPasta from '@/components/pastas/PastaCadastro.vue';
@@ -306,7 +307,13 @@
       const resposta = await carregandoAsync(async () => {
         return await PastasService.getPastas();
       });
-      pastas.value = resposta;
+      
+      // Garantir que os projetos sejam instâncias de ProjetoModel
+      pastas.value = resposta.map((pasta: any) => {
+        const pastaModel = new PastaModel(pasta);
+        pastaModel.projetos = pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) || [];
+        return pastaModel;
+      });
     } catch (error) {
       console.error('Falha ao obter as pastas', error);
       notificar('erro', 'Falha ao obter as pastas');
@@ -314,7 +321,11 @@
   };
 
   const selecionarPasta = (pasta: IPasta): void => {
-    Object.assign(pastaSelecionada, pasta);
+    // Garantir que a pasta selecionada tenha projetos como instâncias de ProjetoModel
+    const pastaComProjetosModels = new PastaModel(pasta);
+    pastaComProjetosModels.projetos = pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) || [];
+    
+    Object.assign(pastaSelecionada, pastaComProjetosModels);
 
     const acoes = consultarAcoesSelecionadas();
 

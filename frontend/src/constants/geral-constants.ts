@@ -23,3 +23,39 @@ export const MODO_OPERACAO: ModoOperacaoConstants = {
     valor: 'EDITAR',
   },
 };
+
+interface TipoComandoItem {
+  titulo: string;
+  valor: string;
+}
+
+interface TipoComandoConstants {
+  INSTALAR: TipoComandoItem;
+  INICIAR: TipoComandoItem;
+  BUILDAR: TipoComandoItem;
+  ABRIR_NO_VSCODE: TipoComandoItem;
+}
+
+export const TIPO_COMANDO: TipoComandoConstants = {
+  INSTALAR: {
+    titulo: 'Instalar',
+    valor: 'INSTALAR',
+  },
+  INICIAR: {
+    titulo: 'Iniciar',
+    valor: 'INICIAR',
+  },
+  BUILDAR: {
+    titulo: 'Buildar',
+    valor: 'BUILDAR',
+  },
+  ABRIR_NO_VSCODE: {
+    titulo: 'Abrir no VS Code',
+    valor: 'ABRIR_NO_VSCODE',
+  },
+};
+
+// Configurações de UX
+export const UX_CONFIG = {
+  DELAY_LOADING_MS: 300, // Delay para exibir conteúdo de carregamento
+} as const;

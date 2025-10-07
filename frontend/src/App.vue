@@ -7,6 +7,7 @@
     opacity=".9"
   >
     <div
+      v-if="exibirConteudoCarregando"
       class="bg-surface rounded-xl px-8 py-6 d-flex flex-column align-center"
     >
       <div class="d-flex align-center mb-3">
@@ -128,20 +129,16 @@
   import CloneGit from '@/components/clone/CloneGit.vue';
   import eventBus, { carregandoAsync } from '@/utils/eventBus';
   import SitesGerenciamento from '@/components/sites/SitesGerenciamento.vue';
+  import { UX_CONFIG } from '@/constants/geral-constants';
 
   const compiladoEm = ref();
   const exibirModalClone = ref(false);
   const exibirModalSites = ref(false);
 
-  onMounted(async () => {
-    await consultarVersao();
-  });
-
   const consultarVersao = async () => {
     try {
       const response = await carregandoAsync(async () => {
         const res = await VersaoService.obterVersao();
-
         return res;
       }, 'Consultando a versão...');
 
@@ -152,18 +149,46 @@
   };
 
   const exibirCarregando = ref(true);
+  const exibirConteudoCarregando = ref(false);
   const mensagem = ref('Carregando...');
+  let timeoutDelayCarregando = null;
 
   const handleCarregando = ({ exibir, texto }) => {
     exibirCarregando.value = exibir;
     mensagem.value = texto;
+
+    if (exibir) {
+      // Inicia o delay para mostrar o conteúdo
+      timeoutDelayCarregando = setTimeout(() => {
+        if (exibirCarregando.value) {
+          exibirConteudoCarregando.value = true;
+        }
+      }, UX_CONFIG.DELAY_LOADING_MS);
+    } else {
+      // Cancela o timeout se o loading terminar antes do delay
+      if (timeoutDelayCarregando) {
+        clearTimeout(timeoutDelayCarregando);
+        timeoutDelayCarregando = null;
+      }
+      exibirConteudoCarregando.value = false;
+    }
   };
 
-  onMounted(() => {
+  onMounted(async () => {
+    // Configura o listener do evento de carregamento
     eventBus.on('carregando', handleCarregando);
+    
+    // Inicia a consulta da versão e aplica o delay inicial
+    await consultarVersao();
   });
 
   onBeforeUnmount(() => {
     eventBus.off('carregando', handleCarregando);
+    
+    // Limpa o timeout se ainda estiver ativo
+    if (timeoutDelayCarregando) {
+      clearTimeout(timeoutDelayCarregando);
+      timeoutDelayCarregando = null;
+    }
   });
 </script>
