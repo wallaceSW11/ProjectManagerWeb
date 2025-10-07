@@ -7,11 +7,7 @@
 
           <v-btn @click="carregarPastas" size="small">
             <v-icon>mdi-refresh</v-icon>
-            <v-tooltip
-              location="top"
-              text="Atualizar listagem"
-              activator="parent"
-            />
+            <v-tooltip location="top" text="Atualizar listagem" activator="parent" />
           </v-btn>
         </v-col>
 
@@ -22,16 +18,11 @@
           <div class="pr-3">
             <v-tooltip text="Desmarcar todos">
               <template #activator="{ props }">
-                <v-icon
-                  v-bind="props"
-                  size="16px"
-                  @click="
-                    pastaSelecionada.projetos.forEach(
-                      (projeto) => (projeto.comandosSelecionados = [])
-                    )
-                  "
-                  >mdi-close-box-multiple-outline</v-icon
-                >
+                <v-icon v-bind="props" size="16px" @click="
+                  pastaSelecionada.projetos.forEach(
+                    (projeto) => (projeto.comandosSelecionados = [])
+                  )
+                  ">mdi-close-box-multiple-outline</v-icon>
               </template>
             </v-tooltip>
           </div>
@@ -46,52 +37,27 @@
           </div>
 
           <div v-else>
-            <draggable
-              v-model="pastas"
-              item-key="diretorio"
-              :animation="200"
-              group="pastas"
-              class="drag-area"
-              @end="atualizarIndicesPastas"
-            >
+            <draggable v-model="pastas" item-key="diretorio" :animation="200" group="pastas" class="drag-area"
+              @end="atualizarIndicesPastas">
               <template #item="{ element }">
-                <CardPasta
-                  :pasta="element"
-                  :pasta-selecionada="pastaSelecionada"
-                  @selecionarPasta="selecionarPasta"
-                  @exibir-cadastro-pasta="exibirCadastroPasta"
-                  @executar-menu="executarMenu"
-                />
+                <CardPasta :pasta="element" :pasta-selecionada="pastaSelecionada" @selecionarPasta="selecionarPasta"
+                  @exibir-cadastro-pasta="exibirCadastroPasta" @executar-menu="executarMenu" />
               </template>
             </draggable>
           </div>
         </v-col>
 
         <v-col>
-          <div
-            class="d-flex flex-column ml-2"
-            style="height: calc(100dvh - 140px)"
-          >
-            <div
-              class="d-flex flex-grow-1 flex-column pr-2"
-              style="overflow: auto"
-            >
+          <div class="d-flex flex-column ml-2" style="height: calc(100dvh - 140px)">
+            <div class="d-flex flex-grow-1 flex-column pr-2" style="overflow: auto">
               <div v-if="pastaSelecionada?.projetos.length === 0">
                 Não há projetos disponíveis.
               </div>
 
-              <div
-                v-else
-                v-for="projeto in pastaSelecionada.projetos"
-                :key="projeto.identificador"
-              >
+              <div v-else v-for="projeto in pastaSelecionada.projetos" :key="projeto.identificador">
                 <v-card class="mb-2" style="background-color: #2d2d30">
-                  <v-card-title
-                    class="pb-0 d-flex flex-grow-1 justify-space-between"
-                  >
-                    <div
-                      class="d-flex flex-grow-1 justify-space-between align-center"
-                    >
+                  <v-card-title class="pb-0 d-flex flex-grow-1 justify-space-between">
+                    <div class="d-flex flex-grow-1 justify-space-between align-center">
                       <div>
                         {{ projeto.nome }}
                       </div>
@@ -99,22 +65,14 @@
                       <div>
                         <v-menu location="bottom">
                           <template #activator="{ props }">
-                            <v-btn
-                              v-bind="props"
-                              icon
-                              size="small"
-                              variant="text"
-                            >
+                            <v-btn v-bind="props" icon size="small" variant="text">
                               <v-icon small>mdi-dots-vertical</v-icon>
                             </v-btn>
                           </template>
 
                           <v-list dense>
-                            <v-list-item
-                              v-for="menu in menusProjetoDisponiveis(projeto)"
-                              :key="menu.identificador"
-                              @click="menu.acao(projeto)"
-                            >
+                            <v-list-item v-for="menu in menusProjetoDisponiveis(projeto)" :key="menu.identificador"
+                              @click="menu.acao(projeto)">
                               <v-list-item-title>
                                 <v-icon class="pr-1">{{ menu.icone }}</v-icon>
                                 {{ menu.titulo }}
@@ -127,34 +85,19 @@
                   </v-card-title>
 
                   <v-card-text class="ml-4">
-                    <v-switch
-                      v-for="(comando, indice) in projeto.comandos"
-                      :key="indice"
-                      :label="comando?.toString() || ''"
-                      :value="comando"
-                      v-model="projeto.comandosSelecionados"
-                      hide-details
-                      height="40px"
-                      color="primary"
-                      density="compact"
-                    />
+                    <v-switch v-for="(comando, indice) in projeto.comandos" :key="indice"
+                      :label="comando?.toString() || ''" :value="comando" v-model="projeto.comandosSelecionados"
+                      hide-details height="40px" color="primary" density="compact" />
                   </v-card-text>
                 </v-card>
               </div>
             </div>
 
             <div class="d-flex shrink mt-1">
-              <v-btn
-                size="large"
-                color="primary"
-                width="100%"
-                @click="executarAcoes"
-                :disabled="
-                  !pastaSelecionada.projetos.some(
-                    (p) => p.comandosSelecionados && p.comandosSelecionados.length > 0
-                  )
-                "
-              >
+              <v-btn size="large" color="primary" width="100%" @click="executarAcoes" :disabled="!pastaSelecionada.projetos.some(
+                (p) => p.comandosSelecionados && p.comandosSelecionados.length > 0
+              )
+                ">
                 <v-icon>mdi-lightning-bolt</v-icon>
                 Executar
               </v-btn>
@@ -256,11 +199,11 @@ const selecionarPastaSalva = (): void => {
     return
   }
 
-  const selecionada = pastas.value.find((p) => p.diretorio === diretorioSalvo)
+  const selecionada = pastas.value.find((p: IPasta) => p.diretorio === diretorioSalvo)
 
   if (!selecionada) return
 
-  const indice = pastas.value.findIndex((p) => p.diretorio === diretorioSalvo)
+  const indice = pastas.value.findIndex((p: IPasta) => p.diretorio === diretorioSalvo)
 
   indice !== -1 && selecionarPasta(pastas.value[indice])
 }
@@ -284,7 +227,7 @@ const selecionarPasta = (pasta: IPasta): void => {
   const acoes = consultarAcoesSelecionadas()
 
   if (pastaSelecionada.projetos) {
-    pastaSelecionada.projetos.forEach((projeto) => {
+    pastaSelecionada.projetos.forEach((projeto: any) => {
       const comandos = acoes
         ?.find((a: any) => a.diretorio === pasta.diretorio)
         ?.projetos.find(
@@ -320,8 +263,8 @@ const executarAcoes = async (): Promise<void> => {
     diretorio: pastaSelecionada.diretorio,
     repositorioId: pastaSelecionada.repositorioId || '',
     projetos: pastaSelecionada.projetos
-      .filter((p) => p.comandosSelecionados && p.comandosSelecionados.length > 0)
-      .map((p) => {
+      .filter((p: any) => p.comandosSelecionados && p.comandosSelecionados.length > 0)
+      .map((p: any) => {
         return {
           identificador: p.identificador,
           nome: p.nome,
@@ -461,8 +404,8 @@ const atualizarIndicesPastas = async (): Promise<void> => {
   try {
     await PastasService.atualizarIndices(
       pastas.value
-        .filter((p) => p.identificador)
-        .map((p, index) => ({
+        .filter((p: IPasta) => p.identificador)
+        .map((p: IPasta, index: number) => ({
           identificador: p.identificador,
           indice: index,
         }))
