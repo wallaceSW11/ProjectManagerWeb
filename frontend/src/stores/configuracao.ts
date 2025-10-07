@@ -1,19 +1,24 @@
 import { defineStore } from 'pinia'
 import ConfiguracaoService from '../services/ConfiguracaoService'
 import ConfiguracaoModel from '../models/ConfiguracaoModel'
+import type { IConfiguracao } from '@/types'
+
+interface ConfiguracaoState {
+  configuracao: IConfiguracao
+}
 
 export const useConfiguracaoStore = defineStore('configuracao', {
-  state: () => ({
+  state: (): ConfiguracaoState => ({
     configuracao: new ConfiguracaoModel()
   }),
   
   getters: {
-    diretorioRaiz: (state) => state.configuracao.diretorioRaiz,
-    perfisVSCode: (state) => state.configuracao.perfisVSCode
+    diretorioRaiz: (state): string => state.configuracao.diretorioRaiz,
+    perfisVSCode: (state): Array<{ nome: string }> => state.configuracao.perfisVSCode
   },
   
   actions: {
-    async carregarConfiguracao() {
+    async carregarConfiguracao(): Promise<void> {
       try {
         const response = await ConfiguracaoService.getConfiguracao()
         this.configuracao = new ConfiguracaoModel(response)
@@ -22,13 +27,13 @@ export const useConfiguracaoStore = defineStore('configuracao', {
       }
     },
 
-    async salvarConfiguracao(novaConfiguracao) {
+    async salvarConfiguracao(novaConfiguracao: IConfiguracao): Promise<void> {
       try {
         await ConfiguracaoService.postConfiguracao(novaConfiguracao)
         this.configuracao = new ConfiguracaoModel(novaConfiguracao)
       } catch (error) {
         console.error('Falha ao salvar configurações:', error)
-        throw error // Propaga o erro para tratamento no componente se necessário
+        throw error
       }
     }
   }

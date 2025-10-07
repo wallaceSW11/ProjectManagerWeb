@@ -12,7 +12,7 @@ import BotaoTerciario from './components/comum/botao/BotaoTerciario.vue'
 import ModalPadrao from './components/comum/ModalPadrao.vue'
 import IconeComTooltip from './components/comum/botao/IconeComTooltip.vue'
 
-async function initApp() {
+async function initApp(): Promise<void> {
   const app = createApp(App)
   const pinia = createPinia()
 
@@ -26,7 +26,6 @@ async function initApp() {
   app.component('ModalPadrao', ModalPadrao)
   app.component('IconeComTooltip', IconeComTooltip)
 
-  // Carregar configuração antes de montar a aplicação
   const configuracaoStore = useConfiguracaoStore()
   await configuracaoStore.carregarConfiguracao()
 
