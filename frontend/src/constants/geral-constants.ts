@@ -50,7 +50,7 @@ export const TIPO_COMANDO: TipoComandoConstants = {
     valor: 'BUILDAR',
   },
   ABRIR_NO_VSCODE: {
-    titulo: 'Abrir no VSCode',
+    titulo: 'Abrir no VS Code',
     valor: 'ABRIR_NO_VSCODE',
   },
 };
