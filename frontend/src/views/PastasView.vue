@@ -122,8 +122,17 @@
                       <div
                         class="d-flex flex-grow-1 justify-space-between align-center"
                       >
-                        <div>
+                        <div class="d-flex align-center">
                           {{ projeto.nome }}
+                          <v-chip
+                            v-if="!projeto.expandido && projeto.comandosSelecionados && projeto.comandosSelecionados.length > 0"
+                            color="primary"
+                            size="x-small"
+                            class="ml-2"
+                            variant="elevated"
+                          >
+                            {{ projeto.comandosSelecionados?.length || 0 }}
+                          </v-chip>
                         </div>
 
                         <div>
