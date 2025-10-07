@@ -75,33 +75,33 @@
 </template>
 
 <script setup>
-  import { computed, reactive, ref } from 'vue'
-  import ProjetoModel from '../../../models/ProjetoModel'
-  import MenuModel from '../../../models/MenuModel'
-  import ArquivoModel from '@/models/ArquivoModel'
+  import { computed, reactive, ref } from 'vue';
+  import ProjetoModel from '../../../models/ProjetoModel';
+  import MenuModel from '../../../models/MenuModel';
+  import ArquivoModel from '@/models/ArquivoModel';
 
-  const menu = defineModel(new MenuModel())
+  const menu = defineModel(new MenuModel());
 
-  const obrigatorio = [v => !!v || 'Obrigatório']
+  const obrigatorio = [v => !!v || 'Obrigatório'];
 
-  const pagina = ref(0)
+  const pagina = ref(0);
 
   const colunas = reactive([
     { title: 'Arquivo', key: 'arquivo', align: 'start' },
     { title: 'Destino', key: 'destino', align: 'start' },
     { title: 'Ignorar Git Diff', key: 'ignorarGit', align: 'start' },
     { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
-  ])
+  ]);
 
-  const arquivoSelecionado = reactive(new ArquivoModel())
+  const arquivoSelecionado = reactive(new ArquivoModel());
 
-  const irParaCadastro = () => (pagina.value = 1)
+  const irParaCadastro = () => (pagina.value = 1);
 
   const mudarParaEdicao = item => {
-    Object.assign(arquivoSelecionado, item)
-    modoOperacao.value = MODO_OPERACAO.EDICAO.valor
-    irParaCadastro()
-  }
+    Object.assign(arquivoSelecionado, item);
+    modoOperacao.value = MODO_OPERACAO.EDICAO.valor;
+    irParaCadastro();
+  };
 
   const MODO_OPERACAO = {
     INICIAL: {
@@ -116,85 +116,85 @@
       titulo: 'Editar',
       valor: 'EDITAR',
     },
-  }
+  };
 
-  let modoOperacao = ref(MODO_OPERACAO.INICIAL.valor)
+  let modoOperacao = ref(MODO_OPERACAO.INICIAL.valor);
 
   const emModoInicial = computed(
     () => modoOperacao.value === MODO_OPERACAO.INICIAL.valor
-  )
+  );
   const emModoCadastro = computed(
     () => modoOperacao.value === MODO_OPERACAO.NOVO.valor
-  )
+  );
   const emModoEdicao = computed(
     () => modoOperacao.value === MODO_OPERACAO.EDICAO.valor
-  )
+  );
   const emModoCadastroEdicao = computed(
     () => emModoCadastro.value || emModoEdicao.value
-  )
+  );
 
-  const formProjeto = ref(null)
+  const formProjeto = ref(null);
 
   const formularioProjetoValido = async () => {
-    const resposta = await formProjeto.value.validate()
+    const resposta = await formProjeto.value.validate();
 
-    return resposta.valid
-  }
+    return resposta.valid;
+  };
 
   const mudarParaCadastro = () => {
-    modoOperacao.value = MODO_OPERACAO.NOVO.valor
-    limparCampos()
-    irParaCadastro()
-  }
+    modoOperacao.value = MODO_OPERACAO.NOVO.valor;
+    limparCampos();
+    irParaCadastro();
+  };
   const salvarAlteracoes = async () => {
-    if (!(await formularioProjetoValido())) return
+    if (!(await formularioProjetoValido())) return;
 
     try {
-      emModoCadastro.value ? adicionarMenuItem() : atualizarMenuItem()
-      irParaListagem()
+      emModoCadastro.value ? adicionarMenuItem() : atualizarMenuItem();
+      irParaListagem();
     } catch (error) {
-      console.error('Falha ao salvar alteracoes do cadastro:', error)
+      console.error('Falha ao salvar alteracoes do cadastro:', error);
     }
-  }
+  };
 
   const adicionarMenuItem = () => {
-    menu.value.arquivos.push(new ArquivoModel(arquivoSelecionado))
-  }
+    menu.value.arquivos.push(new ArquivoModel(arquivoSelecionado));
+  };
 
   const atualizarMenuItem = () => {
     const indice = menu.value.arquivos.findIndex(
       p => p.identificador === arquivoSelecionado.identificador
-    )
+    );
 
     indice !== -1 &&
       Object.assign(
         menu.value.arquivos[indice],
         new ArquivoModel(arquivoSelecionado)
-      )
-  }
+      );
+  };
 
   const excluirProjeto = item => {
-    const confirmDelete = confirm(`Deseja remover o projeto "${item.nome}"?`)
+    const confirmDelete = confirm(`Deseja remover o projeto "${item.nome}"?`);
 
-    if (!confirmDelete) return
+    if (!confirmDelete) return;
 
     menu.value.arquivos = menu.value.arquivos.filter(
       p => p.identificador !== item.identificador
-    )
-  }
+    );
+  };
 
   const limparCampos = () => {
-    Object.assign(arquivoSelecionado, new ProjetoModel())
-  }
+    Object.assign(arquivoSelecionado, new ProjetoModel());
+  };
 
   const descartarAlteracoes = () => {
     // Perguntar sobre perder alteracoes
-    limparCampos()
-    irParaListagem()
-  }
+    limparCampos();
+    irParaListagem();
+  };
 
   const irParaListagem = () => {
-    pagina.value = 0
-    modoOperacao.value = MODO_OPERACAO.INICIAL.valor
-  }
+    pagina.value = 0;
+    modoOperacao.value = MODO_OPERACAO.INICIAL.valor;
+  };
 </script>

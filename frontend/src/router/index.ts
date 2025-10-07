@@ -1,4 +1,8 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteRecordRaw,
+} from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -16,11 +20,11 @@ const routes: RouteRecordRaw[] = [
     name: 'repositorios',
     component: () => import('../views/RepositoriosView.vue'),
   },
-]
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-})
+});
 
-export default router
+export default router;

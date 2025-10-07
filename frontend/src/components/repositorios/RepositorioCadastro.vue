@@ -43,37 +43,37 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import type { IRepositorio } from '@/types'
+  import { computed } from 'vue';
+  import type { IRepositorio } from '@/types';
 
   interface Props {
-    repositorios: IRepositorio[]
+    repositorios: IRepositorio[];
   }
 
-  const props = defineProps<Props>()
-  const repositorio = defineModel<IRepositorio>({ required: true })
+  const props = defineProps<Props>();
+  const repositorio = defineModel<IRepositorio>({ required: true });
 
-  const obrigatorio = [(v: string) => !!v || 'Obrigatório']
+  const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 
   const repositoriosDisponiveis = computed(() => {
     return props.repositorios.filter(
       r => r.identificador !== repositorio.value.identificador
-    )
-  })
+    );
+  });
 
   const atualizarNomeRepositorio = (): void => {
     if (!repositorio.value.url) {
-      repositorio.value.nome = ''
-      return
+      repositorio.value.nome = '';
+      return;
     }
 
-    const partesUrl = repositorio.value.url.split('/')
-    let nomeExtraido = partesUrl.pop() || ''
+    const partesUrl = repositorio.value.url.split('/');
+    let nomeExtraido = partesUrl.pop() || '';
 
     if (nomeExtraido.endsWith('.git')) {
-      nomeExtraido = nomeExtraido.slice(0, -4)
+      nomeExtraido = nomeExtraido.slice(0, -4);
     }
 
-    repositorio.value.nome = nomeExtraido
-  }
+    repositorio.value.nome = nomeExtraido;
+  };
 </script>

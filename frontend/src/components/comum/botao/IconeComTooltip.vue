@@ -31,19 +31,19 @@
 </template>
 
 <script setup lang="ts">
-  type LocationType = 'top' | 'bottom' | 'start' | 'end'
+  type LocationType = 'top' | 'bottom' | 'start' | 'end';
 
   interface Props {
-    icone: string
-    texto: string
-    acao?: () => void
-    top?: boolean
-    bottom?: boolean
-    left?: boolean
-    right?: boolean
-    desabilitado?: boolean
-    cor?: string
-    semBotao?: boolean
+    icone: string;
+    texto: string;
+    acao?: () => void;
+    top?: boolean;
+    bottom?: boolean;
+    left?: boolean;
+    right?: boolean;
+    desabilitado?: boolean;
+    cor?: string;
+    semBotao?: boolean;
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -55,13 +55,13 @@
     desabilitado: false,
     cor: undefined,
     semBotao: false,
-  })
+  });
 
   const getLocation = (): LocationType => {
-    if (props.top) return 'top'
-    if (props.bottom) return 'bottom'
-    if (props.left) return 'start'
-    if (props.right) return 'end'
-    return 'top'
-  }
+    if (props.top) return 'top';
+    if (props.bottom) return 'bottom';
+    if (props.left) return 'start';
+    if (props.right) return 'end';
+    return 'top';
+  };
 </script>

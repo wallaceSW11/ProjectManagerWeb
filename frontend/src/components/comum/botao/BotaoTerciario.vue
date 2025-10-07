@@ -16,10 +16,10 @@
 
 <script setup lang="ts">
   interface Props {
-    texto?: string
-    icone?: string | null
-    desabilitar?: boolean
-    acao?: (() => void) | null
+    texto?: string;
+    icone?: string | null;
+    desabilitar?: boolean;
+    acao?: (() => void) | null;
   }
 
   withDefaults(defineProps<Props>(), {
@@ -27,5 +27,5 @@
     icone: null,
     desabilitar: false,
     acao: null,
-  })
+  });
 </script>

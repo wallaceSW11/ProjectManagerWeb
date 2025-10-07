@@ -75,84 +75,84 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from 'vue'
-  import type { IConfiguracao, IPerfilVSCode } from '@/types'
-  import ConfiguracaoModel from '../models/ConfiguracaoModel'
-  import ConfiguracaoService from '../services/ConfiguracaoService'
-  import { useConfiguracaoStore } from '@/stores/configuracao'
-  import { notificar } from '@/utils/eventBus'
+  import { onMounted, reactive, ref } from 'vue';
+  import type { IConfiguracao, IPerfilVSCode } from '@/types';
+  import ConfiguracaoModel from '../models/ConfiguracaoModel';
+  import ConfiguracaoService from '../services/ConfiguracaoService';
+  import { useConfiguracaoStore } from '@/stores/configuracao';
+  import { notificar } from '@/utils/eventBus';
 
-  const configuracaoStore = useConfiguracaoStore()
+  const configuracaoStore = useConfiguracaoStore();
 
   // --- STATE ---
-  const nomePerfil = ref<string>('') // input do perfil
-  const configuracao = reactive<IConfiguracao>(new ConfiguracaoModel())
+  const nomePerfil = ref<string>(''); // input do perfil
+  const configuracao = reactive<IConfiguracao>(new ConfiguracaoModel());
 
   onMounted(() => {
-    Object.assign(configuracao, new ConfiguracaoModel(configuracaoStore))
-  })
+    Object.assign(configuracao, new ConfiguracaoModel(configuracaoStore));
+  });
 
   const colunas = reactive([
     { title: 'Perfil', key: 'nome', align: 'start' },
     { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
-  ] as const)
+  ] as const);
 
   const salvarConfiguracao = async (): Promise<void> => {
     try {
-      await ConfiguracaoService.postConfiguracao(configuracao)
-      configuracaoStore.salvarConfiguracao(configuracao)
-      notificar('sucesso', 'Configurações atualizadas')
+      await ConfiguracaoService.postConfiguracao(configuracao);
+      configuracaoStore.salvarConfiguracao(configuracao);
+      notificar('sucesso', 'Configurações atualizadas');
     } catch (error: any) {
-      notificar('erro', 'Falha ao salvar configuração', error.message)
+      notificar('erro', 'Falha ao salvar configuração', error.message);
     }
-  }
+  };
 
   // Valida nome do perfil
   const perfilValido = (): boolean => {
     if (!nomePerfil.value.trim()) {
-      alert('O nome do perfil é obrigatório')
-      return false
+      alert('O nome do perfil é obrigatório');
+      return false;
     }
 
     const jaInformado = configuracao.perfisVSCode?.some(
       p => p.nome === nomePerfil.value
-    )
+    );
 
     if (jaInformado) {
-      alert('Já existe um perfil com esse nome')
-      return false
+      alert('Já existe um perfil com esse nome');
+      return false;
     }
 
-    return true
-  }
+    return true;
+  };
 
   // Adiciona perfil
   const adicionarPerfil = (): void => {
-    if (!perfilValido()) return
+    if (!perfilValido()) return;
 
-    configuracao.perfisVSCode.push({ nome: nomePerfil.value })
-    nomePerfil.value = '' // limpa input
+    configuracao.perfisVSCode.push({ nome: nomePerfil.value });
+    nomePerfil.value = ''; // limpa input
 
-    salvarConfiguracao() // opcional, salva direto
-  }
+    salvarConfiguracao(); // opcional, salva direto
+  };
 
   // Editar perfil (exemplo)
   const editarPerfil = (item: IPerfilVSCode): void => {
-    const novoNome = prompt('Editar nome do perfil:', item.nome)
+    const novoNome = prompt('Editar nome do perfil:', item.nome);
     if (novoNome && novoNome.trim()) {
-      item.nome = novoNome.trim()
-      salvarConfiguracao()
+      item.nome = novoNome.trim();
+      salvarConfiguracao();
     }
-  }
+  };
 
   // Remover perfil
   const removerPerfil = (item: IPerfilVSCode): void => {
-    const confirmDelete = confirm(`Deseja remover o perfil "${item.nome}"?`)
+    const confirmDelete = confirm(`Deseja remover o perfil "${item.nome}"?`);
     if (confirmDelete) {
       configuracao.perfisVSCode = configuracao.perfisVSCode.filter(
         p => p !== item
-      )
-      salvarConfiguracao()
+      );
+      salvarConfiguracao();
     }
-  }
+  };
 </script>

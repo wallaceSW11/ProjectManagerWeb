@@ -51,16 +51,16 @@
 </template>
 
 <script setup lang="ts">
-  import type { IRepositorio } from '@/types'
+  import type { IRepositorio } from '@/types';
 
   interface Props {
-    itens: IRepositorio[]
+    itens: IRepositorio[];
   }
 
-  defineProps<Props>()
+  defineProps<Props>();
 
   const emit = defineEmits<{
-    editar: [identificador: string]
-    excluir: [repositorio: IRepositorio]
-  }>()
+    editar: [identificador: string];
+    excluir: [repositorio: IRepositorio];
+  }>();
 </script>

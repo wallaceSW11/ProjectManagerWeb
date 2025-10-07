@@ -37,35 +37,35 @@
 </template>
 
 <script setup>
-  import MenuModel from '@/models/MenuModel'
-  import { reactive, ref } from 'vue'
+  import MenuModel from '@/models/MenuModel';
+  import { reactive, ref } from 'vue';
 
   const colunas = reactive([
     { title: 'Comando', value: 'comando' },
     { title: 'Actions', key: 'actions', align: 'center', width: '100px' },
-  ])
+  ]);
 
-  const menuSelecionado = defineModel(new MenuModel())
+  const menuSelecionado = defineModel(new MenuModel());
 
-  const comando = ref('') // input do comando
-  const comandos = ref([]) // lista de comandos
+  const comando = ref(''); // input do comando
+  const comandos = ref([]); // lista de comandos
 
   const adicionarComando = () => {
     if (comando.value && comando.value.trim() !== '') {
-      menuSelecionado.value.comandos.push({ comando: comando.value.trim() })
-      comando.value = ''
+      menuSelecionado.value.comandos.push({ comando: comando.value.trim() });
+      comando.value = '';
     }
-  }
+  };
 
   const editarComando = item => {
-    comando.value = item.comando
-    removerComando(item)
-  }
+    comando.value = item.comando;
+    removerComando(item);
+  };
 
   const removerComando = item => {
-    const index = menuSelecionado.value.comandos.indexOf(item)
+    const index = menuSelecionado.value.comandos.indexOf(item);
     if (index > -1) {
-      menuSelecionado.value.comandos.splice(index, 1)
+      menuSelecionado.value.comandos.splice(index, 1);
     }
-  }
+  };
 </script>

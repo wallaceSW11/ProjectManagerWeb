@@ -84,44 +84,44 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import type { IPasta } from '@/types'
+  import { computed } from 'vue';
+  import type { IPasta } from '@/types';
 
   interface Props {
-    pasta: IPasta
-    pastaSelecionada: IPasta
+    pasta: IPasta;
+    pastaSelecionada: IPasta;
   }
 
-  const props = defineProps<Props>()
+  const props = defineProps<Props>();
 
   const emit = defineEmits<{
-    selecionarPasta: [pasta: IPasta]
-    exibirCadastroPasta: [pasta: IPasta]
-    executarMenu: [pasta: IPasta, menuId: string]
-  }>()
+    selecionarPasta: [pasta: IPasta];
+    exibirCadastroPasta: [pasta: IPasta];
+    executarMenu: [pasta: IPasta, menuId: string];
+  }>();
 
   const selecionarPasta = (pasta: IPasta): void => {
-    emit('selecionarPasta', pasta)
-  }
+    emit('selecionarPasta', pasta);
+  };
 
   const exibirCadastroPasta = (pasta: IPasta): void => {
-    emit('exibirCadastroPasta', pasta)
-  }
+    emit('exibirCadastroPasta', pasta);
+  };
 
   const executarMenu = (pasta: IPasta, menuId: string): void => {
-    emit('executarMenu', pasta, menuId)
-  }
+    emit('executarMenu', pasta, menuId);
+  };
 
   const descricaoPasta = (pasta: IPasta): string => {
     return pasta.codigo
       ? `${pasta.codigo} - ${pasta.descricao}`
-      : pasta.descricao
-  }
+      : pasta.descricao;
+  };
 
   interface TipoInfo {
-    icone: string
-    titulo: string
-    cor: string
+    icone: string;
+    titulo: string;
+    cor: string;
   }
 
   const TIPOS: Record<string, TipoInfo> = {
@@ -145,11 +145,11 @@
       titulo: 'Hotfix',
       cor: 'purple',
     },
-  }
+  };
 
   const dadosTipo = computed((): TipoInfo => {
-    return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM
-  })
+    return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM;
+  });
 </script>
 
 <style scoped>

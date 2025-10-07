@@ -113,185 +113,187 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, reactive, ref } from 'vue'
-  import type { IRepositorio, IMenu, IArquivo } from '@/types'
-  import RepositorioModel from '@/models/RepositorioModel'
-  import MenuModel from '@/models/MenuModel'
-  import BotaoTerciario from '../comum/botao/BotaoTerciario.vue'
-  import { useModoOperacao } from '@/composables/useModoOperacao'
-  import ArquivoModel from '@/models/ArquivoModel'
+  import { computed, reactive, ref } from 'vue';
+  import type { IRepositorio, IMenu, IArquivo } from '@/types';
+  import RepositorioModel from '@/models/RepositorioModel';
+  import MenuModel from '@/models/MenuModel';
+  import BotaoTerciario from '../comum/botao/BotaoTerciario.vue';
+  import { useModoOperacao } from '@/composables/useModoOperacao';
+  import ArquivoModel from '@/models/ArquivoModel';
 
   const {
     emModoCadastro,
     definirModoCadastro,
     definirModoEdicao,
     definirModoInicial,
-  } = useModoOperacao()
+  } = useModoOperacao();
 
   const repositorio = defineModel<IRepositorio>({
     default: () => new RepositorioModel(),
-  })
-  const menuSelecionado = reactive<IMenu>(new MenuModel())
-  const arquivoSelecionado = reactive<IArquivo>(new ArquivoModel())
-  const arquivoEmEdicao = ref<boolean>(false)
+  });
+  const menuSelecionado = reactive<IMenu>(new MenuModel());
+  const arquivoSelecionado = reactive<IArquivo>(new ArquivoModel());
+  const arquivoEmEdicao = ref<boolean>(false);
 
-  const obrigatorio = [(v: string) => !!v || 'Obrigatório']
+  const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 
-  const exibirModalMenuCadastro = ref<boolean>(false)
-  const paginaMenu = ref<number>(0)
+  const exibirModalMenuCadastro = ref<boolean>(false);
+  const paginaMenu = ref<number>(0);
 
   const colunas = reactive([
     { title: 'Título', key: 'titulo', align: 'start' },
     { title: 'Tipo', key: 'tipo', align: 'start' },
     { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
-  ] as const)
+  ] as const);
 
   const colunasMenuArquivos = reactive([
     { title: 'Arquivo', key: 'arquivo', align: 'start' },
     { title: 'Destino', key: 'destino', align: 'start' },
     { title: 'Ignorar Git Diff', key: 'ignorarGit', align: 'start' },
     { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
-  ] as const)
+  ] as const);
 
-  const paginaTabela = computed(() => paginaMenu.value === 0)
+  const paginaTabela = computed(() => paginaMenu.value === 0);
 
   const metodoBotaoPrimario = computed(() => {
-    return paginaTabela.value ? salvarAlteracoes : salvarAlteracoesArquivos
-  })
+    return paginaTabela.value ? salvarAlteracoes : salvarAlteracoesArquivos;
+  });
 
   const metodoBotaoSecundario = computed(() => {
     return paginaTabela.value
       ? descartarAlteracoes
-      : descartarAlteracoesArquivos
-  })
+      : descartarAlteracoesArquivos;
+  });
 
   const mudarParaPaginaTabela = (): void => {
-    paginaMenu.value = 0
-  }
+    paginaMenu.value = 0;
+  };
 
   const descartarAlteracoesArquivos = (): void => {
-    mudarParaPaginaTabela()
-    limparCamposArquivos()
-  }
+    mudarParaPaginaTabela();
+    limparCamposArquivos();
+  };
 
   const prepararParaCadastro = (): void => {
-    definirModoCadastro()
-    limparCampos()
-    abrirModalMenuCadastro()
-  }
+    definirModoCadastro();
+    limparCampos();
+    abrirModalMenuCadastro();
+  };
 
   const prepararParaCadastroArquivos = (): void => {
-    paginaMenu.value = 1
-    limparCamposArquivos()
-  }
+    paginaMenu.value = 1;
+    limparCamposArquivos();
+  };
 
   const limparCamposArquivos = (): void => {
-    Object.assign(arquivoSelecionado, new ArquivoModel())
-  }
+    Object.assign(arquivoSelecionado, new ArquivoModel());
+  };
 
   const abrirModalMenuCadastro = (): void => {
-    exibirModalMenuCadastro.value = true
-  }
+    exibirModalMenuCadastro.value = true;
+  };
 
   const mudarParaEdicaoArquivo = (item: IArquivo): void => {
-    Object.assign(arquivoSelecionado, item)
-    arquivoEmEdicao.value = true
-    paginaMenu.value = 1
-  }
+    Object.assign(arquivoSelecionado, item);
+    arquivoEmEdicao.value = true;
+    paginaMenu.value = 1;
+  };
 
   const mudarParaEdicao = (item: IMenu): void => {
-    Object.assign(menuSelecionado, item)
-    definirModoEdicao()
-    abrirModalMenuCadastro()
-  }
+    Object.assign(menuSelecionado, item);
+    definirModoEdicao();
+    abrirModalMenuCadastro();
+  };
 
-  const formProjeto = ref<any>(null)
-  const formArquivo = ref<any>(null)
+  const formProjeto = ref<any>(null);
+  const formArquivo = ref<any>(null);
 
   const formularioProjetoValido = async (): Promise<boolean> => {
-    const resposta = await formProjeto.value.validate()
-    return resposta.valid
-  }
+    const resposta = await formProjeto.value.validate();
+    return resposta.valid;
+  };
 
   const formularioArquivoValido = async (): Promise<boolean> => {
-    const resposta = await formArquivo.value.validate()
-    return resposta.valid
-  }
+    const resposta = await formArquivo.value.validate();
+    return resposta.valid;
+  };
 
   const salvarAlteracoes = async (): Promise<void> => {
-    if (!(await formularioProjetoValido())) return
+    if (!(await formularioProjetoValido())) return;
 
     try {
-      emModoCadastro.value ? adicionarMenu() : atualizarProjeto()
-      descartarAlteracoes()
+      emModoCadastro.value ? adicionarMenu() : atualizarProjeto();
+      descartarAlteracoes();
     } catch (error) {
-      console.error('Falha ao salvar alteracoes do cadastro:', error)
+      console.error('Falha ao salvar alteracoes do cadastro:', error);
     }
-  }
+  };
 
   const salvarAlteracoesArquivos = async (): Promise<void> => {
-    if (!(await formularioArquivoValido())) return
+    if (!(await formularioArquivoValido())) return;
 
     if (arquivoEmEdicao.value) {
       const indice = menuSelecionado.arquivos.findIndex(
         a => a.identificador === arquivoSelecionado.identificador
-      )
+      );
 
       if (indice !== -1) {
-        Object.assign(menuSelecionado.arquivos[indice], arquivoSelecionado)
+        Object.assign(menuSelecionado.arquivos[indice], arquivoSelecionado);
       }
 
-      arquivoEmEdicao.value = false
-      limparCamposArquivos()
-      mudarParaPaginaTabela()
-      return
+      arquivoEmEdicao.value = false;
+      limparCamposArquivos();
+      mudarParaPaginaTabela();
+      return;
     }
 
-    menuSelecionado.arquivos.push(new ArquivoModel(arquivoSelecionado))
-    mudarParaPaginaTabela()
-  }
+    menuSelecionado.arquivos.push(new ArquivoModel(arquivoSelecionado));
+    mudarParaPaginaTabela();
+  };
 
   const adicionarMenu = (): void => {
-    repositorio.value.menus.push(new MenuModel(menuSelecionado))
-  }
+    repositorio.value.menus.push(new MenuModel(menuSelecionado));
+  };
 
   const atualizarProjeto = (): void => {
     const indice = repositorio.value.menus.findIndex(
       p => p.identificador === menuSelecionado.identificador
-    )
+    );
 
     indice !== -1 &&
-      Object.assign(repositorio.value.menus[indice], menuSelecionado)
-  }
+      Object.assign(repositorio.value.menus[indice], menuSelecionado);
+  };
 
   const excluirProjeto = (item: IMenu): void => {
-    const confirmDelete = confirm(`Deseja remover o projeto "${item.titulo}"?`)
+    const confirmDelete = confirm(`Deseja remover o projeto "${item.titulo}"?`);
 
-    if (!confirmDelete) return
+    if (!confirmDelete) return;
 
     repositorio.value.menus = repositorio.value.menus.filter(
       p => p.identificador !== item.identificador
-    )
-  }
+    );
+  };
 
   const excluirArquivo = (item: IArquivo): void => {
-    const confirmDelete = confirm(`Deseja remover o arquivo "${item.arquivo}"?`)
+    const confirmDelete = confirm(
+      `Deseja remover o arquivo "${item.arquivo}"?`
+    );
 
-    if (!confirmDelete) return
+    if (!confirmDelete) return;
 
     menuSelecionado.arquivos = menuSelecionado.arquivos.filter(
       a => a.identificador !== item.identificador
-    )
-  }
+    );
+  };
 
   const limparCampos = (): void => {
-    Object.assign(menuSelecionado, new MenuModel())
-  }
+    Object.assign(menuSelecionado, new MenuModel());
+  };
 
   const descartarAlteracoes = (): void => {
     // Perguntar sobre perder alteracoes
-    limparCampos()
-    definirModoInicial()
-    exibirModalMenuCadastro.value = false
-  }
+    limparCampos();
+    definirModoInicial();
+    exibirModalMenuCadastro.value = false;
+  };
 </script>

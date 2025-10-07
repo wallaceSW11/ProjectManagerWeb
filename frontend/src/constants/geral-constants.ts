@@ -1,12 +1,12 @@
 interface ModoOperacaoItem {
-  titulo: string
-  valor: string
+  titulo: string;
+  valor: string;
 }
 
 interface ModoOperacaoConstants {
-  INICIAL: ModoOperacaoItem
-  NOVO: ModoOperacaoItem
-  EDICAO: ModoOperacaoItem
+  INICIAL: ModoOperacaoItem;
+  NOVO: ModoOperacaoItem;
+  EDICAO: ModoOperacaoItem;
 }
 
 export const MODO_OPERACAO: ModoOperacaoConstants = {
@@ -22,4 +22,4 @@ export const MODO_OPERACAO: ModoOperacaoConstants = {
     titulo: 'Editar',
     valor: 'EDITAR',
   },
-}
+};

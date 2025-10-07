@@ -96,64 +96,68 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from 'vue'
-  import type { IClone } from '@/types'
-  import CloneModel from '@/models/CloneModel'
-  import CloneService from '@/services/CloneService'
-  import { useConfiguracaoStore } from '@/stores/configuracao'
-  import { atualizarListaPastas, carregando, notificar } from '@/utils/eventBus'
-  import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue'
+  import { onMounted, reactive, ref } from 'vue';
+  import type { IClone } from '@/types';
+  import CloneModel from '@/models/CloneModel';
+  import CloneService from '@/services/CloneService';
+  import { useConfiguracaoStore } from '@/stores/configuracao';
+  import {
+    atualizarListaPastas,
+    carregando,
+    notificar,
+  } from '@/utils/eventBus';
+  import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
 
-  const clone = reactive<IClone>(new CloneModel())
-  const configuracaoStore = useConfiguracaoStore()
-  const exibirModalClone = defineModel<boolean>({ default: false })
-  const formClone = ref<any>(null)
+  const clone = reactive<IClone>(new CloneModel());
+  const configuracaoStore = useConfiguracaoStore();
+  const exibirModalClone = defineModel<boolean>({ default: false });
+  const formClone = ref<any>(null);
 
-  const obrigatorio = [(v: string) => !!v || 'Obrigatório']
+  const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 
   onMounted(() => {
-    clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\'
-  })
+    clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
+  });
 
   const formularioValido = async (): Promise<boolean> => {
-    const form = await formClone.value.validate()
-    return form.valid
-  }
+    const form = await formClone.value.validate();
+    return form.valid;
+  };
 
   const clonar = async (): Promise<void> => {
-    if (!(await formularioValido())) return
+    if (!(await formularioValido())) return;
 
     try {
       const payload = {
         ...clone,
         repositorioId: clone.repositorio.identificador,
-      }
+      };
 
-      payload.codigo = clone.codigo.toUpperCase()
-      await CloneService.clonar(payload)
-      exibirModalClone.value = false
-      Object.assign(clone, new CloneModel())
-      clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\'
+      payload.codigo = clone.codigo.toUpperCase();
+      await CloneService.clonar(payload);
+      exibirModalClone.value = false;
+      Object.assign(clone, new CloneModel());
+      clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
 
-      carregando(true, 'Clonando...')
+      carregando(true, 'Clonando...');
       setTimeout(() => {
-        carregando(false)
-        notificar('sucesso', 'Clone iniciado')
-        atualizarListaPastas()
-      }, 2000)
+        carregando(false);
+        notificar('sucesso', 'Clone iniciado');
+        atualizarListaPastas();
+      }, 2000);
     } catch (error) {
-      console.error('Falha ao clonar:', error)
-      notificar('erro', 'Falha ao clonar')
+      console.error('Falha ao clonar:', error);
+      notificar('erro', 'Falha ao clonar');
     } finally {
-      carregando(false)
+      carregando(false);
     }
-  }
+  };
 
   const fecharClone = (): void => {
-    exibirModalClone.value = false
-    Object.assign(clone, new CloneModel())
-    clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\'
-  }
+    exibirModalClone.value = false;
+    Object.assign(clone, new CloneModel());
+    clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
+  };
 </script>
 
 <style scoped>

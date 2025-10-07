@@ -189,123 +189,105 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
-  import type { IPasta } from '@/types'
-  import PastasService from '@/services/PastasService'
-  import { useRouter } from 'vue-router'
-  import PastaModel from '@/models/PastaModel'
-  import ComandosService from '@/services/ComandosService'
-  import emitter, {
-    carregandoAsync,
-    notificar,
-    atualizarListaPastas,
-  } from '@/utils/eventBus'
-  import CadastroPasta from '@/components/pastas/PastaCadastro.vue'
-  import CardPasta from '@/components/pastas/CardPasta.vue'
-  import draggable from 'vuedraggable'
-  import { useConfiguracaoStore } from '@/stores/configuracao'
+  import { onMounted, onUnmounted, reactive, ref } from 'vue';
+  import type { IPasta } from '@/types';
+  import PastasService from '@/services/PastasService';
+  import PastaModel from '@/models/PastaModel';
+  import ComandosService from '@/services/ComandosService';
+  import emitter, { carregandoAsync, notificar } from '@/utils/eventBus';
+  import CadastroPasta from '@/components/pastas/PastaCadastro.vue';
+  import CardPasta from '@/components/pastas/CardPasta.vue';
+  import draggable from 'vuedraggable';
+  import { useConfiguracaoStore } from '@/stores/configuracao';
 
   interface MenuProjeto {
-    identificador: number
-    titulo: string
-    icone: string
-    acao: (projeto: any) => void
+    identificador: number;
+    titulo: string;
+    icone: string;
+    acao: (projeto: any) => void;
   }
 
   interface PayloadComando {
-    diretorio: string
-    repositorioId: string
+    diretorio: string;
+    repositorioId: string;
     projetos: {
-      identificador: string
-      nome: string
-      comandos: any[]
-      identificadorRepositorioAgregado?: string
-      nomeRepositorio: string
-    }[]
+      identificador: string;
+      nome: string;
+      comandos: any[];
+      identificadorRepositorioAgregado?: string;
+      nomeRepositorio: string;
+    }[];
   }
 
   interface PayloadMenuComando {
-    diretorio: string
-    repositorioId: string
-    comandoId: string
+    diretorio: string;
+    repositorioId: string;
+    comandoId: string;
   }
 
-  const pastas = ref<IPasta[]>([])
-  const router = useRouter()
-  const pastaSelecionada = reactive<IPasta>(new PastaModel())
-  const exibirModalPasta = ref<boolean>(false)
-  const configuracaoStore = useConfiguracaoStore()
+  const pastas = ref<IPasta[]>([]);
+  const pastaSelecionada = reactive<IPasta>(new PastaModel());
+  const exibirModalPasta = ref<boolean>(false);
+  const configuracaoStore = useConfiguracaoStore();
 
   const carregarPastasListener = (): void => {
-    carregarPastas()
-  }
+    carregarPastas();
+  };
 
   onMounted(async () => {
-    await inicializarPagina()
-    emitter.on('atualizarListaPastas', carregarPastasListener)
-  })
+    await inicializarPagina();
+    emitter.on('atualizarListaPastas', carregarPastasListener);
+  });
 
   onUnmounted(() => {
-    emitter.off('atualizarListaPastas', carregarPastasListener)
-  })
+    emitter.off('atualizarListaPastas', carregarPastasListener);
+  });
 
   const inicializarPagina = async (): Promise<void> => {
-    // if (redirecionarParaConfiguracaoInicial()) return;
-    await carregarPastas()
-    selecionarPastaSalva()
-  }
-
-  const redirecionarParaConfiguracaoInicial = (): boolean => {
-    if (!configuracaoStore.diretorioRaiz) {
-      alert(
-        'O diretório raiz não foi informado, será redirecionado para a tela de configurações'
-      )
-      router.push({ name: 'configuracao' })
-      return true
-    }
-    return false
-  }
+    await carregarPastas();
+    selecionarPastaSalva();
+  };
 
   const selecionarPastaSalva = (): void => {
-    if (!pastas.value.length) return
+    if (!pastas.value.length) return;
 
-    const diretorioSalvo = consultarPastaSelecionadaDoStorage()
+    const diretorioSalvo = consultarPastaSelecionadaDoStorage();
 
     if (!diretorioSalvo) {
-      selecionarPasta(pastas.value[0])
-      return
+      selecionarPasta(pastas.value[0]);
+      return;
     }
 
     const selecionada = pastas.value.find(
       (p: IPasta) => p.diretorio === diretorioSalvo
-    )
+    );
 
-    if (!selecionada) return
+    if (!selecionada) return;
 
     const indice = pastas.value.findIndex(
       (p: IPasta) => p.diretorio === diretorioSalvo
-    )
+    );
 
-    indice !== -1 && selecionarPasta(pastas.value[indice])
-  }
+    indice !== -1 && selecionarPasta(pastas.value[indice]);
+  };
 
   const carregarPastas = async (): Promise<void> => {
-    pastas.value = []
+    pastas.value = [];
     try {
       const resposta = await carregandoAsync(async () => {
-        return await PastasService.getPastas()
-      })
-      pastas.value = resposta
+        return await PastasService.getPastas();
+      });
+      pastas.value = resposta;
     } catch (error) {
-      console.error('Falha ao obter as pastas', error)
-      notificar('erro', 'Falha ao obter as pastas')
+      console.error('Falha ao obter as pastas', error);
+      notificar('erro', 'Falha ao obter as pastas');
     }
-  }
+  };
 
   const selecionarPasta = (pasta: IPasta): void => {
-    Object.assign(pastaSelecionada, pasta)
+    Object.assign(pastaSelecionada, pasta);
 
-    const acoes = consultarAcoesSelecionadas()
+    const acoes = consultarAcoesSelecionadas();
 
     if (pastaSelecionada.projetos) {
       pastaSelecionada.projetos.forEach((projeto: any) => {
@@ -313,31 +295,31 @@
           ?.find((a: any) => a.diretorio === pasta.diretorio)
           ?.projetos.find(
             (p: any) => p.identificador === projeto.identificador
-          )?.comandos
+          )?.comandos;
 
-        projeto.comandosSelecionados = comandos || []
-      })
+        projeto.comandosSelecionados = comandos || [];
+      });
     }
 
-    salvarPastaSelecionadaNoStorage()
-  }
+    salvarPastaSelecionadaNoStorage();
+  };
 
-  const CHAVE_PASTA_SELECIONADA = 'PastaSelecionada'
+  const CHAVE_PASTA_SELECIONADA = 'PastaSelecionada';
 
   const salvarPastaSelecionadaNoStorage = (): void => {
     localStorage.setItem(
       CHAVE_PASTA_SELECIONADA,
       JSON.stringify(pastaSelecionada.diretorio)
-    )
-  }
+    );
+  };
 
   const consultarPastaSelecionadaDoStorage = (): string | null => {
-    const pasta = localStorage.getItem(CHAVE_PASTA_SELECIONADA)
+    const pasta = localStorage.getItem(CHAVE_PASTA_SELECIONADA);
 
-    if (!pasta) return null
+    if (!pasta) return null;
 
-    return JSON.parse(pasta)
-  }
+    return JSON.parse(pasta);
+  };
 
   const executarAcoes = async (): Promise<void> => {
     const payload: PayloadComando = {
@@ -356,69 +338,69 @@
             identificadorRepositorioAgregado:
               p.identificadorRepositorioAgregado,
             nomeRepositorio: p.nomeRepositorio,
-          }
+          };
         }),
-    }
+    };
 
     try {
       await carregandoAsync(async () => {
-        await ComandosService.executarComando(payload)
-      })
-      salvarAcoesSelecionadas(payload)
-      notificar('sucesso', 'Comando solicitado')
+        await ComandosService.executarComando(payload);
+      });
+      salvarAcoesSelecionadas(payload);
+      notificar('sucesso', 'Comando solicitado');
     } catch (error) {
-      console.error('Falha ao executar as acoes: ', error)
-      notificar('erro', 'Falha ao executar a ação', String(error))
+      console.error('Falha ao executar as acoes: ', error);
+      notificar('erro', 'Falha ao executar a ação', String(error));
     }
-  }
+  };
 
-  const CHAVE_ACOES_SELECIONADAS = 'AcoesSelecionadas'
+  const CHAVE_ACOES_SELECIONADAS = 'AcoesSelecionadas';
 
   const salvarAcoesSelecionadas = (payload: PayloadComando): void => {
     const salvarNoLocalStorage = (valor: PayloadComando[]): void => {
-      localStorage.setItem(CHAVE_ACOES_SELECIONADAS, JSON.stringify(valor))
-    }
+      localStorage.setItem(CHAVE_ACOES_SELECIONADAS, JSON.stringify(valor));
+    };
 
-    let acoes = consultarAcoesSelecionadas()
+    let acoes = consultarAcoesSelecionadas();
 
     if (!acoes?.length) {
-      salvarNoLocalStorage([payload])
-      return
+      salvarNoLocalStorage([payload]);
+      return;
     }
 
     const indice = acoes.findIndex(
       (a: any) => a.diretorio === payload.diretorio
-    )
+    );
 
-    indice === -1 ? acoes.push(payload) : acoes.splice(indice, 1, payload)
+    indice === -1 ? acoes.push(payload) : acoes.splice(indice, 1, payload);
 
-    salvarNoLocalStorage(acoes)
-  }
+    salvarNoLocalStorage(acoes);
+  };
 
   const consultarAcoesSelecionadas = (): any[] | null => {
-    const acoes = localStorage.getItem(CHAVE_ACOES_SELECIONADAS)
+    const acoes = localStorage.getItem(CHAVE_ACOES_SELECIONADAS);
 
-    return acoes ? JSON.parse(acoes) : null
-  }
+    return acoes ? JSON.parse(acoes) : null;
+  };
 
   const executarMenu = async (pasta: IPasta, menuId: string): Promise<void> => {
     const payload: PayloadMenuComando = {
       diretorio: pasta.diretorio,
       repositorioId: pasta.repositorioId || '',
       comandoId: menuId,
-    }
+    };
 
     try {
-      await ComandosService.executarComandoMenu(payload)
+      await ComandosService.executarComandoMenu(payload);
     } catch (error) {
-      console.error('Falha ao executar o menu: ', error)
+      console.error('Falha ao executar o menu: ', error);
     }
-  }
+  };
 
   const exibirCadastroPasta = (pasta: IPasta): void => {
-    exibirModalPasta.value = true
-    Object.assign(pastaSelecionada, pasta)
-  }
+    exibirModalPasta.value = true;
+    Object.assign(pastaSelecionada, pasta);
+  };
 
   const menusProjetos: MenuProjeto[] = [
     {
@@ -426,7 +408,7 @@
       titulo: 'Desmarcar todos',
       icone: 'mdi-close-box-multiple-outline',
       acao: (projeto: any) => {
-        projeto.comandosSelecionados = []
+        projeto.comandosSelecionados = [];
       },
     },
     {
@@ -434,13 +416,13 @@
       titulo: 'Abrir no Explorer',
       icone: 'mdi-folder-open',
       acao: (projeto: any) => {
-        let comando = ''
+        let comando = '';
 
         if (projeto.identificadorRepositorioAgregado)
-          comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`
+          comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
 
-        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`
-        executarComandoAvulso(comando)
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
+        executarComandoAvulso(comando);
       },
     },
     {
@@ -448,19 +430,19 @@
       titulo: 'Abrir no PowerShell',
       icone: 'mdi-console',
       acao: (projeto: any) => {
-        let comando = ''
+        let comando = '';
 
         if (projeto.identificadorRepositorioAgregado)
-          comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`
+          comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
 
-        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`
-        executarComandoAvulso(comando)
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
+        executarComandoAvulso(comando);
       },
     },
-  ]
+  ];
 
   const menusProjetoDisponiveis = (projeto: any): MenuProjeto[] => {
-    let menus = [...menusProjetos]
+    let menus = [...menusProjetos];
 
     if (projeto.arquivoCoverage) {
       menus.push({
@@ -468,24 +450,24 @@
         titulo: 'Abrir coverage',
         icone: 'mdi-file-chart',
         acao: (projeto: any) => {
-          const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.arquivoCoverage}`
-          executarComandoAvulso(comando)
+          const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.arquivoCoverage}`;
+          executarComandoAvulso(comando);
         },
-      })
+      });
     }
 
-    return menus
-  }
+    return menus;
+  };
 
   const executarComandoAvulso = (comando: string): void => {
     try {
       ComandosService.executarComandoAvulso({
         comando,
-      })
+      });
     } catch (error) {
-      console.error('Falha ao executar o comando avulso: ', error)
+      console.error('Falha ao executar o comando avulso: ', error);
     }
-  }
+  };
 
   const atualizarIndicesPastas = async (): Promise<void> => {
     try {
@@ -496,12 +478,12 @@
             identificador: p.identificador,
             indice: index,
           }))
-      )
+      );
     } catch (error) {
-      console.error('Falha ao atualizar a ordem das pastas: ', error)
-      notificar('erro', 'Falha ao atualizar a ordem das pastas')
+      console.error('Falha ao atualizar a ordem das pastas: ', error);
+      notificar('erro', 'Falha ao atualizar a ordem das pastas');
     }
-  }
+  };
 </script>
 
 <style scoped>

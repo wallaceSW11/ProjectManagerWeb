@@ -18,16 +18,16 @@
 </template>
 
 <script lang="ts">
-  import { ref, onMounted, onBeforeUnmount, defineComponent } from 'vue'
-  import eventBus from '@/utils/eventBus'
-  import type { NotificacaoTipo } from '@/types'
+  import { ref, onMounted, onBeforeUnmount, defineComponent } from 'vue';
+  import eventBus from '@/utils/eventBus';
+  import type { NotificacaoTipo } from '@/types';
 
   interface Toast extends NotificacaoTipo {
-    id: number
+    id: number;
   }
 
-  const toasts = ref<Toast[]>([])
-  let idCounter = 0
+  const toasts = ref<Toast[]>([]);
+  let idCounter = 0;
 
   export default defineComponent({
     name: 'ToastNotificacao',
@@ -37,21 +37,21 @@
         titulo,
         mensagem,
       }: NotificacaoTipo): void => {
-        const id = idCounter++
-        toasts.value.push({ id, tipo, titulo, mensagem })
+        const id = idCounter++;
+        toasts.value.push({ id, tipo, titulo, mensagem });
 
         setTimeout(() => {
-          const index = toasts.value.findIndex(t => t.id === id)
-          if (index !== -1) toasts.value.splice(index, 1)
-        }, 2000)
-      }
+          const index = toasts.value.findIndex(t => t.id === id);
+          if (index !== -1) toasts.value.splice(index, 1);
+        }, 2000);
+      };
 
-      onMounted(() => eventBus.on('notificar', handleNotificar))
-      onBeforeUnmount(() => eventBus.off('notificar', handleNotificar))
+      onMounted(() => eventBus.on('notificar', handleNotificar));
+      onBeforeUnmount(() => eventBus.off('notificar', handleNotificar));
 
-      return { toasts }
+      return { toasts };
     },
-  })
+  });
 </script>
 
 <style scoped>

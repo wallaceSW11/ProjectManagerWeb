@@ -121,49 +121,49 @@
 </template>
 
 <script setup>
-  import { onBeforeUnmount, onMounted, ref } from 'vue'
-  import logo from '@/assets/logo.svg'
-  import VersaoService from './services/VersaoService'
-  import SnackbarNotificacao from '@/components/comum/SnackbarNotificacao.vue'
-  import CloneGit from '@/components/clone/CloneGit.vue'
-  import eventBus, { carregandoAsync } from '@/utils/eventBus'
-  import SitesGerenciamento from '@/components/sites/SitesGerenciamento.vue'
+  import { onBeforeUnmount, onMounted, ref } from 'vue';
+  import logo from '@/assets/logo.svg';
+  import VersaoService from './services/VersaoService';
+  import SnackbarNotificacao from '@/components/comum/SnackbarNotificacao.vue';
+  import CloneGit from '@/components/clone/CloneGit.vue';
+  import eventBus, { carregandoAsync } from '@/utils/eventBus';
+  import SitesGerenciamento from '@/components/sites/SitesGerenciamento.vue';
 
-  const compiladoEm = ref()
-  const exibirModalClone = ref(false)
-  const exibirModalSites = ref(false)
+  const compiladoEm = ref();
+  const exibirModalClone = ref(false);
+  const exibirModalSites = ref(false);
 
   onMounted(async () => {
-    await consultarVersao()
-  })
+    await consultarVersao();
+  });
 
   const consultarVersao = async () => {
     try {
       const response = await carregandoAsync(async () => {
-        const res = await VersaoService.obterVersao()
+        const res = await VersaoService.obterVersao();
 
-        return res
-      }, 'Consultando a versão...')
+        return res;
+      }, 'Consultando a versão...');
 
-      compiladoEm.value = response
+      compiladoEm.value = response;
     } catch (error) {
-      console.error('Falha ao consultar a versão:', error)
+      console.error('Falha ao consultar a versão:', error);
     }
-  }
+  };
 
-  const exibirCarregando = ref(true)
-  const mensagem = ref('Carregando...')
+  const exibirCarregando = ref(true);
+  const mensagem = ref('Carregando...');
 
   const handleCarregando = ({ exibir, texto }) => {
-    exibirCarregando.value = exibir
-    mensagem.value = texto
-  }
+    exibirCarregando.value = exibir;
+    mensagem.value = texto;
+  };
 
   onMounted(() => {
-    eventBus.on('carregando', handleCarregando)
-  })
+    eventBus.on('carregando', handleCarregando);
+  });
 
   onBeforeUnmount(() => {
-    eventBus.off('carregando', handleCarregando)
-  })
+    eventBus.off('carregando', handleCarregando);
+  });
 </script>

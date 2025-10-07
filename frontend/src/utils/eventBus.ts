@@ -1,16 +1,16 @@
-import mitt, { Emitter } from 'mitt'
-import type { NotificacaoTipo, CarregandoInfo } from '@/types'
+import mitt, { Emitter } from 'mitt';
+import type { NotificacaoTipo, CarregandoInfo } from '@/types';
 
 type Events = {
-  carregando: CarregandoInfo
-  notificar: NotificacaoTipo
-  atualizarListaPastas: void
-}
+  carregando: CarregandoInfo;
+  notificar: NotificacaoTipo;
+  atualizarListaPastas: void;
+};
 
-const emitter: Emitter<Events> = mitt<Events>()
+const emitter: Emitter<Events> = mitt<Events>();
 
 function carregando(exibir: boolean, texto = 'Carregando...'): void {
-  emitter.emit('carregando', { exibir, texto })
+  emitter.emit('carregando', { exibir, texto });
 }
 
 async function carregandoAsync<T>(
@@ -18,16 +18,16 @@ async function carregandoAsync<T>(
   texto = 'Carregando...'
 ): Promise<T> {
   try {
-    carregando(true, texto)
-    let result: T
+    carregando(true, texto);
+    let result: T;
     if (typeof promiseOrFn === 'function') {
-      result = await promiseOrFn()
+      result = await promiseOrFn();
     } else {
-      result = await promiseOrFn
+      result = await promiseOrFn;
     }
-    return result
+    return result;
   } finally {
-    carregando(false)
+    carregando(false);
   }
 }
 
@@ -36,12 +36,12 @@ function notificar(
   titulo: string,
   mensagem = ''
 ): void {
-  emitter.emit('notificar', { tipo, titulo, mensagem })
+  emitter.emit('notificar', { tipo, titulo, mensagem });
 }
 
 function atualizarListaPastas(): void {
-  emitter.emit('atualizarListaPastas')
+  emitter.emit('atualizarListaPastas');
 }
 
-export default emitter
-export { carregando, carregandoAsync, notificar, atualizarListaPastas }
+export default emitter;
+export { carregando, carregandoAsync, notificar, atualizarListaPastas };
