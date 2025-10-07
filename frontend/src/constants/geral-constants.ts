@@ -54,3 +54,8 @@ export const TIPO_COMANDO: TipoComandoConstants = {
     valor: 'ABRIR_NO_VSCODE',
   },
 };
+
+// Configurações de UX
+export const UX_CONFIG = {
+  DELAY_LOADING_MS: 300, // Delay para exibir conteúdo de carregamento
+} as const;
