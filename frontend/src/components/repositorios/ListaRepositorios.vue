@@ -19,9 +19,12 @@
               {{ repositorio.url }}
             </v-col>
 
-            <v-col cols="12" class="pt-3">
+            <v-col
+              cols="12"
+              class="pt-3"
+            >
               <h3>Projetos</h3>
-              {{ repositorio.projetos.map((p) => p.nome).join(", ") }}
+              {{ repositorio.projetos.map(p => p.nome).join(', ') }}
             </v-col>
           </v-row>
         </v-card-text>
@@ -48,16 +51,16 @@
 </template>
 
 <script setup lang="ts">
-import type { IRepositorio } from '@/types'
+  import type { IRepositorio } from '@/types'
 
-interface Props {
-  itens: IRepositorio[]
-}
+  interface Props {
+    itens: IRepositorio[]
+  }
 
-defineProps<Props>()
+  defineProps<Props>()
 
-const emit = defineEmits<{
-  editar: [identificador: string]
-  excluir: [repositorio: IRepositorio]
-}>()
+  const emit = defineEmits<{
+    editar: [identificador: string]
+    excluir: [repositorio: IRepositorio]
+  }>()
 </script>

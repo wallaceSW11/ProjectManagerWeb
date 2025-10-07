@@ -9,9 +9,12 @@ class RepositoriosService extends BaseApiService {
   async adicionarRepositorio(repositorio: IRepositorio): Promise<void> {
     return await this.post('repositorios', repositorio)
   }
-  
+
   async atualizarRepositorio(repositorio: IRepositorio): Promise<void> {
-    return await this.put(`repositorios/${repositorio.identificador}`, repositorio)
+    return await this.put(
+      `repositorios/${repositorio.identificador}`,
+      repositorio
+    )
   }
 
   async excluirRepositorio(repositorio: IRepositorio): Promise<void> {

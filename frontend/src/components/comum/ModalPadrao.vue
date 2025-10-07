@@ -33,38 +33,38 @@
 </template>
 
 <script setup lang="ts">
-interface Props {
-  titulo: string
-  textoBotaoPrimario?: string
-  textoBotaoSecundario?: string
-  exibirBotaoPrimario?: boolean
-  exibirBotaoSecundario?: boolean
-  desabilitarBotaoPrimario?: boolean
-  desabilitarBotaoSecundario?: boolean
-  acaoBotaoPrimario?: (() => void) | null
-  acaoBotaoSecundario?: (() => void) | null
-  larguraMinima?: string
-  larguraMaxima?: string
-  persistent?: boolean
-  iconeBotaoPrimario?: string
-  iconeBotaoSecundario?: string
-}
+  interface Props {
+    titulo: string
+    textoBotaoPrimario?: string
+    textoBotaoSecundario?: string
+    exibirBotaoPrimario?: boolean
+    exibirBotaoSecundario?: boolean
+    desabilitarBotaoPrimario?: boolean
+    desabilitarBotaoSecundario?: boolean
+    acaoBotaoPrimario?: (() => void) | null
+    acaoBotaoSecundario?: (() => void) | null
+    larguraMinima?: string
+    larguraMaxima?: string
+    persistent?: boolean
+    iconeBotaoPrimario?: string
+    iconeBotaoSecundario?: string
+  }
 
-const exibirModal = defineModel<boolean>({ default: false })
+  const exibirModal = defineModel<boolean>({ default: false })
 
-withDefaults(defineProps<Props>(), {
-  textoBotaoPrimario: 'Salvar',
-  textoBotaoSecundario: 'Cancelar',
-  exibirBotaoPrimario: true,
-  exibirBotaoSecundario: true,
-  desabilitarBotaoPrimario: false,
-  desabilitarBotaoSecundario: false,
-  acaoBotaoPrimario: null,
-  acaoBotaoSecundario: null,
-  larguraMinima: '600px',
-  larguraMaxima: '800px',
-  persistent: true,
-  iconeBotaoPrimario: 'mdi-plus',
-  iconeBotaoSecundario: 'mdi-cancel',
-})
+  withDefaults(defineProps<Props>(), {
+    textoBotaoPrimario: 'Salvar',
+    textoBotaoSecundario: 'Cancelar',
+    exibirBotaoPrimario: true,
+    exibirBotaoSecundario: true,
+    desabilitarBotaoPrimario: false,
+    desabilitarBotaoSecundario: false,
+    acaoBotaoPrimario: null,
+    acaoBotaoSecundario: null,
+    larguraMinima: '600px',
+    larguraMaxima: '800px',
+    persistent: true,
+    iconeBotaoPrimario: 'mdi-plus',
+    iconeBotaoSecundario: 'mdi-cancel',
+  })
 </script>

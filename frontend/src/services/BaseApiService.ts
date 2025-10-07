@@ -32,7 +32,11 @@ class BaseApiService {
 
   async post<T = any>(endpoint: string, body: any, config = {}): Promise<T> {
     try {
-      const response: AxiosResponse<T> = await this.api.post(endpoint, body, config)
+      const response: AxiosResponse<T> = await this.api.post(
+        endpoint,
+        body,
+        config
+      )
       return response.data
     } catch (error) {
       console.error('POST request error:', error)
@@ -42,7 +46,11 @@ class BaseApiService {
 
   async put<T = any>(endpoint: string, body: any, config = {}): Promise<T> {
     try {
-      const response: AxiosResponse<T> = await this.api.put(endpoint, body, config)
+      const response: AxiosResponse<T> = await this.api.put(
+        endpoint,
+        body,
+        config
+      )
       return response.data
     } catch (error) {
       console.error('PUT request error:', error)

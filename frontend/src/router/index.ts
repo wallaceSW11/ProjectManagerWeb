@@ -4,23 +4,23 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'pastas',
-    component: () => import('../views/PastasView.vue')
+    component: () => import('../views/PastasView.vue'),
   },
   {
     path: '/configuracao',
     name: 'configuracao',
-    component: () => import('../views/ConfiguracaoView.vue')
+    component: () => import('../views/ConfiguracaoView.vue'),
   },
   {
     path: '/repositorios',
     name: 'repositorios',
-    component: () => import('../views/RepositoriosView.vue')
-  }
+    component: () => import('../views/RepositoriosView.vue'),
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
 })
 
 export default router

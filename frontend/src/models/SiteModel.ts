@@ -19,7 +19,7 @@ export default class SiteModel implements ISite {
     return {
       nome: this.nome,
       porta: this.porta,
-      status: this.status
+      status: this.status,
     }
   }
 }

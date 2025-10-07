@@ -12,7 +12,9 @@ interface UseModoOperacaoReturn {
   definirModoEdicao: () => void
 }
 
-export function useModoOperacao(modoInicial = MODO_OPERACAO.INICIAL.valor): UseModoOperacaoReturn {
+export function useModoOperacao(
+  modoInicial = MODO_OPERACAO.INICIAL.valor
+): UseModoOperacaoReturn {
   const modoOperacao = ref(modoInicial)
 
   const emModoInicial = computed(
@@ -51,6 +53,6 @@ export function useModoOperacao(modoInicial = MODO_OPERACAO.INICIAL.valor): UseM
     emModoCadastroEdicao,
     definirModoInicial,
     definirModoCadastro,
-    definirModoEdicao
+    definirModoEdicao,
   }
 }

@@ -9,14 +9,15 @@ interface ConfiguracaoState {
 
 export const useConfiguracaoStore = defineStore('configuracao', {
   state: (): ConfiguracaoState => ({
-    configuracao: new ConfiguracaoModel()
+    configuracao: new ConfiguracaoModel(),
   }),
-  
+
   getters: {
     diretorioRaiz: (state): string => state.configuracao.diretorioRaiz,
-    perfisVSCode: (state): Array<{ nome: string }> => state.configuracao.perfisVSCode
+    perfisVSCode: (state): Array<{ nome: string }> =>
+      state.configuracao.perfisVSCode,
   },
-  
+
   actions: {
     async carregarConfiguracao(): Promise<void> {
       try {
@@ -35,6 +36,6 @@ export const useConfiguracaoStore = defineStore('configuracao', {
         console.error('Falha ao salvar configurações:', error)
         throw error
       }
-    }
-  }
+    },
+  },
 })

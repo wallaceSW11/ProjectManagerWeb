@@ -14,7 +14,7 @@ function carregando(exibir: boolean, texto = 'Carregando...'): void {
 }
 
 async function carregandoAsync<T>(
-  promiseOrFn: Promise<T> | (() => Promise<T>), 
+  promiseOrFn: Promise<T> | (() => Promise<T>),
   texto = 'Carregando...'
 ): Promise<T> {
   try {
@@ -32,8 +32,8 @@ async function carregandoAsync<T>(
 }
 
 function notificar(
-  tipo: 'sucesso' | 'erro' | 'aviso', 
-  titulo: string, 
+  tipo: 'sucesso' | 'erro' | 'aviso',
+  titulo: string,
   mensagem = ''
 ): void {
   emitter.emit('notificar', { tipo, titulo, mensagem })

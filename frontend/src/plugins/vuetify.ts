@@ -12,8 +12,8 @@ export const vuetify = createVuetify({
     defaultSet: 'mdi',
     aliases,
     sets: {
-      mdi
-    }
+      mdi,
+    },
   },
   defaults: {
     VTextField: {
@@ -40,8 +40,8 @@ export const vuetify = createVuetify({
           error: '#FF5252',
           info: '#2196F3',
           success: '#4CAF50',
-          warning: '#FFC107'
-        }
+          warning: '#FFC107',
+        },
       },
       dark: {
         colors: {
@@ -52,9 +52,9 @@ export const vuetify = createVuetify({
           error: '#FF5252',
           info: '#2196F3',
           success: '#4CAF50',
-          warning: '#FB8C00'
-        }
-      }
-    }
-  }
+          warning: '#FB8C00',
+        },
+      },
+    },
+  },
 })
