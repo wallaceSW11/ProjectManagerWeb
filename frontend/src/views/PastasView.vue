@@ -101,58 +101,87 @@
                   class="mb-2"
                   style="background-color: #2d2d30"
                 >
-                  <v-card-title
-                    class="pb-0 d-flex flex-grow-1 justify-space-between"
-                  >
+                  <v-card-title class="pb-0 d-flex align-center">
                     <div
                       class="d-flex flex-grow-1 justify-space-between align-center"
                     >
                       <div>
-                        {{ projeto.nome }}
+                        <v-icon
+                          @click="toggleExpandirProjeto(projeto)"
+                          size="small"
+                          class="mr-2"
+                        >
+                          {{
+                            projeto.expandido
+                              ? 'mdi-chevron-down'
+                              : 'mdi-chevron-right'
+                          }}
+                        </v-icon>
                       </div>
 
-                      <div>
-                        <v-menu location="bottom">
-                          <template #activator="{ props }">
-                            <v-btn
-                              v-bind="props"
-                              icon
-                              size="small"
-                              variant="text"
-                            >
-                              <v-icon small>mdi-dots-vertical</v-icon>
-                            </v-btn>
-                          </template>
+                      <div
+                        class="d-flex flex-grow-1 justify-space-between align-center"
+                      >
+                        <div class="d-flex align-center">
+                          {{ projeto.nome }}
+                          <v-chip
+                            v-if="!projeto.expandido && projeto.comandosSelecionados && projeto.comandosSelecionados.length > 0"
+                            color="primary"
+                            size="x-small"
+                            class="ml-2"
+                            variant="elevated"
+                          >
+                            {{ projeto.comandosSelecionados?.length || 0 }}
+                          </v-chip>
+                        </div>
 
-                          <v-list dense>
-                            <v-list-item
-                              v-for="menu in menusProjetoDisponiveis(projeto)"
-                              :key="menu.identificador"
-                              @click="menu.acao(projeto)"
-                            >
-                              <v-list-item-title>
-                                <v-icon class="pr-1">{{ menu.icone }}</v-icon>
-                                {{ menu.titulo }}
-                              </v-list-item-title>
-                            </v-list-item>
-                          </v-list>
-                        </v-menu>
+                        <div>
+                          <v-menu location="bottom">
+                            <template #activator="{ props }">
+                              <v-btn
+                                v-bind="props"
+                                icon
+                                size="small"
+                                variant="text"
+                              >
+                                <v-icon small>mdi-dots-vertical</v-icon>
+                              </v-btn>
+                            </template>
+
+                            <v-list dense>
+                              <v-list-item
+                                v-for="menu in menusProjetoDisponiveis(projeto)"
+                                :key="menu.identificador"
+                                @click="menu.acao(projeto)"
+                              >
+                                <v-list-item-title>
+                                  <v-icon class="pr-1">{{ menu.icone }}</v-icon>
+                                  {{ menu.titulo }}
+                                </v-list-item-title>
+                              </v-list-item>
+                            </v-list>
+                          </v-menu>
+                        </div>
                       </div>
                     </div>
                   </v-card-title>
 
-                  <v-card-text class="ml-4">
-                    <v-switch
-                      v-for="(comando, indice) in projeto.comandos"
-                      :key="indice"
-                      :label="comando?.toString() || ''"
-                      :value="comando"
-                      v-model="projeto.comandosSelecionados"
-                      hide-details
-                      height="40px"
-                      color="primary"
-                      density="compact"
-                    />
+                  <v-card-text class="pa-0 ma-0 ml-4">
+                    <v-expand-transition>
+                      <div v-if="projeto.expandido">
+                        <v-switch
+                          v-for="(comando, indice) in projeto.comandos"
+                          :key="indice"
+                          :label="comando?.toString() || ''"
+                          :value="comando"
+                          v-model="projeto.comandosSelecionados"
+                          hide-details
+                          height="40px"
+                          color="primary"
+                          density="compact"
+                        />
+                      </div>
+                    </v-expand-transition>
                   </v-card-text>
                 </v-card>
               </div>
@@ -337,7 +366,7 @@
             comandos: p.comandosSelecionados || [],
             identificadorRepositorioAgregado:
               p.identificadorRepositorioAgregado,
-            nomeRepositorio: p.nomeRepositorio,
+            nomeRepositorio: p.nomeRepositorio
           };
         }),
     };
@@ -484,6 +513,23 @@
       notificar('erro', 'Falha ao atualizar a ordem das pastas');
     }
   };
+
+  const toggleExpandirProjeto = async (projeto: any): Promise<void> => {
+    const novoEstado = !projeto.expandido;
+    
+    try {
+      await PastasService.atualizarExpandido({
+        pastaId: pastaSelecionada.identificador || '',
+        projetoId: projeto.identificador,
+        expandido: novoEstado,
+      });
+      
+      projeto.expandido = novoEstado;
+    } catch (error) {
+      console.error('Falha ao atualizar o estado expandido do projeto: ', error);
+      notificar('erro', 'Falha ao atualizar o estado do projeto');
+    }
+  };
 </script>
 
 <style scoped>
@@ -492,9 +538,9 @@
     overflow: auto;
   }
 
-  :deep(.v-checkbox .v-selection-control) {
+  /* :deep(.v-checkbox .v-selection-control) {
     min-height: 40px;
-  }
+  } */
 
   .altura-acoes {
     height: calc(100dvh - 140px);
