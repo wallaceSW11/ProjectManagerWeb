@@ -36,7 +36,7 @@ namespace ProjectManagerWeb.src.DTOs
         string? PerfilVSCode,
         ComandoDTO Comandos,
         string? ArquivoCoverage,
-        bool Expandido = true
+        bool Expandido = false
     );
 
     /// <summary>
