@@ -24,7 +24,7 @@
           </div>
         </div>
 
-        <div v-if="!pasta.identificador">
+        <div v-if="isGuidZerado(pasta.identificador)">
           <IconeComTooltip
             icone="mdi-plus"
             texto="Cadastrar pasta"
@@ -116,6 +116,10 @@
     return pasta.codigo
       ? `${pasta.codigo} - ${pasta.descricao}`
       : pasta.descricao;
+  };
+
+  const isGuidZerado = (guid: string): boolean => {
+    return !guid || guid === '00000000-0000-0000-0000-000000000000';
   };
 
   interface TipoInfo {
