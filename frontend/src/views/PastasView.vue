@@ -157,7 +157,7 @@
                     </div>
                   </v-card-title>
 
-                  <v-card-text class="ml-4">
+                  <v-card-text class="pa-0 ma-0 ml-4">
                     <v-expand-transition>
                       <div v-if="projeto.expandido">
                         <v-switch
@@ -529,9 +529,9 @@
     overflow: auto;
   }
 
-  :deep(.v-checkbox .v-selection-control) {
+  /* :deep(.v-checkbox .v-selection-control) {
     min-height: 40px;
-  }
+  } */
 
   .altura-acoes {
     height: calc(100dvh - 140px);
