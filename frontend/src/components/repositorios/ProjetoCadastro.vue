@@ -68,20 +68,20 @@
           <v-divider />
 
           <v-text-field
-            label="Instalar"
-            v-model="projetoSelecionado.comandos.instalar"
+            :label="TIPO_COMANDO.INSTALAR.titulo"
+            v-model="projetoSelecionado.comandosObj!.instalar"
           />
           <v-text-field
-            label="Iniciar"
-            v-model="projetoSelecionado.comandos.iniciar"
+            :label="TIPO_COMANDO.INICIAR.titulo"
+            v-model="projetoSelecionado.comandosObj!.iniciar"
           />
           <v-text-field
-            label="Buildar"
-            v-model="projetoSelecionado.comandos.buildar"
+            :label="TIPO_COMANDO.BUILDAR.titulo"
+            v-model="projetoSelecionado.comandosObj!.buildar"
           />
           <v-checkbox
-            label="Abrir no VS Code"
-            v-model="projetoSelecionado.comandos.abrirNoVSCode"
+            :label="TIPO_COMANDO.ABRIR_NO_VSCODE.titulo"
+            v-model="projetoSelecionado.comandosObj!.abrirNoVSCode"
           />
         </v-form>
       </ModalPadrao>
@@ -95,6 +95,7 @@
   import ProjetoModel from '@/models/ProjetoModel';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { useModoOperacao } from '@/composables/useModoOperacao';
+  import { TIPO_COMANDO } from '@/constants/geral-constants';
 
   const repositorio = defineModel<IRepositorio>({ required: true });
   const configuracaoStore = useConfiguracaoStore();

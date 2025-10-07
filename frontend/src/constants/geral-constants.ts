@@ -23,3 +23,34 @@ export const MODO_OPERACAO: ModoOperacaoConstants = {
     valor: 'EDITAR',
   },
 };
+
+interface TipoComandoItem {
+  titulo: string;
+  valor: string;
+}
+
+interface TipoComandoConstants {
+  INSTALAR: TipoComandoItem;
+  INICIAR: TipoComandoItem;
+  BUILDAR: TipoComandoItem;
+  ABRIR_NO_VSCODE: TipoComandoItem;
+}
+
+export const TIPO_COMANDO: TipoComandoConstants = {
+  INSTALAR: {
+    titulo: 'Instalar',
+    valor: 'INSTALAR',
+  },
+  INICIAR: {
+    titulo: 'Iniciar',
+    valor: 'INICIAR',
+  },
+  BUILDAR: {
+    titulo: 'Buildar',
+    valor: 'BUILDAR',
+  },
+  ABRIR_NO_VSCODE: {
+    titulo: 'Abrir no VSCode',
+    valor: 'ABRIR_NO_VSCODE',
+  },
+};

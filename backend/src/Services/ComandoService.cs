@@ -1,5 +1,6 @@
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Utils;
+using ProjectManagerWeb.src.Enuns;
 
 namespace ProjectManagerWeb.src.Services;
 
@@ -19,7 +20,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
       projeto.Comandos.ForEach(comando =>
       {
-        if (comando.Equals("Iniciar"))
+        if (comando == ETipoComando.INICIAR)
         {
           if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && projetoCadastrado.Comandos.Instalar.Contains("npm i"))
           {
@@ -32,13 +33,13 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
             comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ");
         }
 
-        if (comando.Equals("Instalar"))
+        if (comando == ETipoComando.INSTALAR)
           comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; ");
 
-        if (comando.Equals("Buildar"))
+        if (comando == ETipoComando.BUILDAR)
           comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Buildar}; ");
 
-        if (comando.Equals("AbrirNoVSCode"))
+        if (comando == ETipoComando.ABRIR_NO_VSCODE)
         {
           var texto = "code . ";
 
@@ -63,7 +64,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
       projeto.Comandos.ForEach(comando =>
       {
-        if (comando.Equals("Iniciar"))
+        if (comando == ETipoComando.INICIAR)
         {
           if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && projetoAgregadoCadastrado.Comandos.Instalar.Contains("npm i"))
           {
@@ -76,13 +77,13 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
             comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ");
         }
 
-        if (comando.Equals("Instalar"))
+        if (comando == ETipoComando.INSTALAR)
           comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; ");
 
-        if (comando.Equals("Buildar"))
+        if (comando == ETipoComando.BUILDAR)
           comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Buildar}; ");
 
-        if (comando.Equals("AbrirNoVSCode"))
+        if (comando == ETipoComando.ABRIR_NO_VSCODE)
         {
           var texto = "code . ";
 

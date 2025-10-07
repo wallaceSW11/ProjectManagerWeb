@@ -35,7 +35,7 @@
       <v-card-actions class="d-flex justify-end">
         <IconeComTooltip
           icone="mdi-play"
-          texto="Iniciar"
+          :texto="TIPO_COMANDO.INICIAR.titulo"
           :acao="() => iniciarSite(site)"
           :desabilitado="
             site.status === INICIADO || site.status === REINICIANDO
@@ -66,6 +66,7 @@
   import IISService from '@/services/IISService';
   import { carregandoAsync, notificar } from '@/utils/eventBus';
   import type { ISite } from '@/types';
+  import { TIPO_COMANDO } from '@/constants/geral-constants';
 
   const INICIADO = 'Iniciado';
   const PARADO = 'Parado';
