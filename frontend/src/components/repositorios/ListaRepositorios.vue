@@ -47,13 +47,17 @@
   </div>
 </template>
 
-<script setup>
-const emit = defineEmits(["editar", "excluir"]);
+<script setup lang="ts">
+import type { IRepositorio } from '@/types'
 
-const props = defineProps({
-  itens: {
-    type: Array,
-    required: true,
-  },
-});
+interface Props {
+  itens: IRepositorio[]
+}
+
+defineProps<Props>()
+
+const emit = defineEmits<{
+  editar: [identificador: string]
+  excluir: [repositorio: IRepositorio]
+}>()
 </script>

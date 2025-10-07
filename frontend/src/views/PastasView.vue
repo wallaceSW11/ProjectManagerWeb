@@ -130,7 +130,7 @@
                     <v-switch
                       v-for="(comando, indice) in projeto.comandos"
                       :key="indice"
-                      :label="comando"
+                      :label="comando?.toString() || ''"
                       :value="comando"
                       v-model="projeto.comandosSelecionados"
                       hide-details
@@ -151,7 +151,7 @@
                 @click="executarAcoes"
                 :disabled="
                   !pastaSelecionada.projetos.some(
-                    (p) => p.comandosSelecionados.length > 0
+                    (p) => p.comandosSelecionados && p.comandosSelecionados.length > 0
                   )
                 "
               >
@@ -168,280 +168,296 @@
   <CadastroPasta v-model="exibirModalPasta" :pasta="pastaSelecionada" />
 </template>
 
-<script setup>
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
-import PastasService from "@/services/PastasService.js";
-import { useRouter } from "vue-router";
-import PastaModel from "@/models/PastaModel";
-import ComandosService from "@/services/ComandosService";
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import type { IPasta } from '@/types'
+import PastasService from '@/services/PastasService'
+import { useRouter } from 'vue-router'
+import PastaModel from '@/models/PastaModel'
+import ComandosService from '@/services/ComandosService'
 import emitter, {
   carregandoAsync,
   notificar,
   atualizarListaPastas,
-} from "@/utils/eventBus";
-import CadastroPasta from "@/components/pastas/PastaCadastro.vue";
-import CardPasta from "@/components/pastas/CardPasta.vue";
-import draggable from "vuedraggable";
+} from '@/utils/eventBus'
+import CadastroPasta from '@/components/pastas/PastaCadastro.vue'
+import CardPasta from '@/components/pastas/CardPasta.vue'
+import draggable from 'vuedraggable'
+import { useConfiguracaoStore } from '@/stores/configuracao'
 
-const pastas = ref([]);
-const router = useRouter();
-const pastaSelecionada = reactive(new PastaModel());
-const exibirModalPasta = ref(false);
+interface MenuProjeto {
+  identificador: number
+  titulo: string
+  icone: string
+  acao: (projeto: any) => void
+}
 
-import { useConfiguracaoStore } from "@/stores/configuracao";
+interface PayloadComando {
+  diretorio: string
+  repositorioId: string
+  projetos: {
+    identificador: string
+    nome: string
+    comandos: any[]
+    identificadorRepositorioAgregado?: string
+    nomeRepositorio: string
+  }[]
+}
 
-const configuracaoStore = useConfiguracaoStore();
+interface PayloadMenuComando {
+  diretorio: string
+  repositorioId: string
+  comandoId: string
+}
 
-const carregarPastasListener = () => {
-  carregarPastas();
-};
+const pastas = ref<IPasta[]>([])
+const router = useRouter()
+const pastaSelecionada = reactive<IPasta>(new PastaModel())
+const exibirModalPasta = ref<boolean>(false)
+const configuracaoStore = useConfiguracaoStore()
+
+const carregarPastasListener = (): void => {
+  carregarPastas()
+}
 
 onMounted(async () => {
-  await inicializarPagina();
-
-  emitter.on("atualizarListaPastas", carregarPastasListener);
-});
+  await inicializarPagina()
+  emitter.on('atualizarListaPastas', carregarPastasListener)
+})
 
 onUnmounted(() => {
-  emitter.off("atualizarListaPastas", carregarPastasListener);
-});
+  emitter.off('atualizarListaPastas', carregarPastasListener)
+})
 
-const inicializarPagina = async () => {
+const inicializarPagina = async (): Promise<void> => {
   // if (redirecionarParaConfiguracaoInicial()) return;
+  await carregarPastas()
+  selecionarPastaSalva()
+}
 
-  await carregarPastas();
-
-  selecionarPastaSalva();
-};
-
-const redirecionarParaConfiguracaoInicial = () => {
+const redirecionarParaConfiguracaoInicial = (): boolean => {
   if (!configuracaoStore.diretorioRaiz) {
     alert(
-      "O diretório raiz não foi informado, será redirecionado para a tela de configurações"
-    );
-
-    router.push({ name: "configuracao" });
-
-    return true;
+      'O diretório raiz não foi informado, será redirecionado para a tela de configurações'
+    )
+    router.push({ name: 'configuracao' })
+    return true
   }
+  return false
+}
 
-  return false;
-};
+const selecionarPastaSalva = (): void => {
+  if (!pastas.value.length) return
 
-const selecionarPastaSalva = () => {
-  if (!pastas.value.length) return;
-
-  const diretorioSalvo = consultarPastaSelecionadaDoStorage();
+  const diretorioSalvo = consultarPastaSelecionadaDoStorage()
 
   if (!diretorioSalvo) {
-    selecionarPasta(pastas.value[0]);
-
-    return;
+    selecionarPasta(pastas.value[0])
+    return
   }
 
-  const selecionada = pastas.value.find((p) => p.diretorio === diretorioSalvo);
+  const selecionada = pastas.value.find((p) => p.diretorio === diretorioSalvo)
 
-  if (!selecionada) return;
+  if (!selecionada) return
 
-  const indice = pastas.value.findIndex((p) => p.diretorio === diretorioSalvo);
+  const indice = pastas.value.findIndex((p) => p.diretorio === diretorioSalvo)
 
-  indice !== -1 && selecionarPasta(pastas.value[indice]);
-};
+  indice !== -1 && selecionarPasta(pastas.value[indice])
+}
 
-const carregarPastas = async () => {
-  pastas.value = [];
+const carregarPastas = async (): Promise<void> => {
+  pastas.value = []
   try {
     const resposta = await carregandoAsync(async () => {
-      return await PastasService.getPastas();
-    });
-    pastas.value = resposta;
+      return await PastasService.getPastas()
+    })
+    pastas.value = resposta
   } catch (error) {
-    console.error("Falha ao obter as pastas", error);
-    notificar("erro", "Falha ao obter as pastas");
+    console.error('Falha ao obter as pastas', error)
+    notificar('erro', 'Falha ao obter as pastas')
   }
-};
+}
 
-const selecionarPasta = (pasta) => {
-  Object.assign(pastaSelecionada, pasta);
+const selecionarPasta = (pasta: IPasta): void => {
+  Object.assign(pastaSelecionada, pasta)
 
-  const acoes = consultarAcoesSelecionadas();
+  const acoes = consultarAcoesSelecionadas()
 
   if (pastaSelecionada.projetos) {
     pastaSelecionada.projetos.forEach((projeto) => {
       const comandos = acoes
-        ?.find((a) => a.diretorio === pasta.diretorio)
+        ?.find((a: any) => a.diretorio === pasta.diretorio)
         ?.projetos.find(
-          (p) => p.identificador === projeto.identificador
-        )?.comandos;
+          (p: any) => p.identificador === projeto.identificador
+        )?.comandos
 
-      projeto.comandosSelecionados = comandos || [];
-    });
+      projeto.comandosSelecionados = comandos || []
+    })
   }
 
-  salvarPastaSelecionadaNoStorage();
-};
+  salvarPastaSelecionadaNoStorage()
+}
 
-const CHAVE_PASTA_SELECIONADA = "PastaSelecionada";
+const CHAVE_PASTA_SELECIONADA = 'PastaSelecionada'
 
-const salvarPastaSelecionadaNoStorage = () => {
+const salvarPastaSelecionadaNoStorage = (): void => {
   localStorage.setItem(
     CHAVE_PASTA_SELECIONADA,
     JSON.stringify(pastaSelecionada.diretorio)
-  );
-};
+  )
+}
 
-const consultarPastaSelecionadaDoStorage = () => {
-  const pasta = localStorage.getItem(CHAVE_PASTA_SELECIONADA);
+const consultarPastaSelecionadaDoStorage = (): string | null => {
+  const pasta = localStorage.getItem(CHAVE_PASTA_SELECIONADA)
 
-  if (!pasta) return;
+  if (!pasta) return null
 
-  return JSON.parse(pasta);
-};
+  return JSON.parse(pasta)
+}
 
-const executarAcoes = async () => {
-  const payload = {
+const executarAcoes = async (): Promise<void> => {
+  const payload: PayloadComando = {
     diretorio: pastaSelecionada.diretorio,
-    repositorioId: pastaSelecionada.repositorioId,
+    repositorioId: pastaSelecionada.repositorioId || '',
     projetos: pastaSelecionada.projetos
-      .filter((p) => p.comandosSelecionados.length > 0)
+      .filter((p) => p.comandosSelecionados && p.comandosSelecionados.length > 0)
       .map((p) => {
         return {
           identificador: p.identificador,
           nome: p.nome,
-          comandos: p.comandosSelecionados,
+          comandos: p.comandosSelecionados || [],
           identificadorRepositorioAgregado: p.identificadorRepositorioAgregado,
           nomeRepositorio: p.nomeRepositorio,
-        };
+        }
       }),
-  };
+  }
 
   try {
     await carregandoAsync(async () => {
-      await ComandosService.executarComando(payload);
-    });
-    salvarAcoesSelecionadas(payload);
-    notificar("sucesso", "Comando solicitado");
+      await ComandosService.executarComando(payload)
+    })
+    salvarAcoesSelecionadas(payload)
+    notificar('sucesso', 'Comando solicitado')
   } catch (error) {
-    console.error("Falha ao executar as acoes: ", error);
-    notificar("erro", "Falha ao executar a ação", error);
+    console.error('Falha ao executar as acoes: ', error)
+    notificar('erro', 'Falha ao executar a ação', String(error))
   }
-};
+}
 
-const CHAVE_ACOES_SELECIONADAS = "AcoesSelecionadas";
+const CHAVE_ACOES_SELECIONADAS = 'AcoesSelecionadas'
 
-const salvarAcoesSelecionadas = (payload) => {
-  const salvarNoLocalStorage = (valor) => {
-    localStorage.setItem(CHAVE_ACOES_SELECIONADAS, JSON.stringify(valor));
-  };
+const salvarAcoesSelecionadas = (payload: PayloadComando): void => {
+  const salvarNoLocalStorage = (valor: PayloadComando[]): void => {
+    localStorage.setItem(CHAVE_ACOES_SELECIONADAS, JSON.stringify(valor))
+  }
 
-  let acoes = consultarAcoesSelecionadas();
+  let acoes = consultarAcoesSelecionadas()
 
   if (!acoes?.length) {
-    salvarNoLocalStorage([payload]);
-
-    return;
+    salvarNoLocalStorage([payload])
+    return
   }
 
-  const indice = acoes.findIndex((a) => a.diretorio === payload.diretorio);
+  const indice = acoes.findIndex((a: any) => a.diretorio === payload.diretorio)
 
-  indice === -1 ? acoes.push(payload) : acoes.splice(indice, 1, payload);
+  indice === -1 ? acoes.push(payload) : acoes.splice(indice, 1, payload)
 
-  salvarNoLocalStorage(acoes);
-};
+  salvarNoLocalStorage(acoes)
+}
 
-const consultarAcoesSelecionadas = () => {
-  const acoes = localStorage.getItem(CHAVE_ACOES_SELECIONADAS);
+const consultarAcoesSelecionadas = (): any[] | null => {
+  const acoes = localStorage.getItem(CHAVE_ACOES_SELECIONADAS)
 
-  return acoes ? JSON.parse(acoes) : null;
-};
+  return acoes ? JSON.parse(acoes) : null
+}
 
-const executarMenu = async (pasta, menuId) => {
-  const payload = {
+const executarMenu = async (pasta: IPasta, menuId: string): Promise<void> => {
+  const payload: PayloadMenuComando = {
     diretorio: pasta.diretorio,
-    repositorioId: pasta.repositorioId,
+    repositorioId: pasta.repositorioId || '',
     comandoId: menuId,
-  };
+  }
 
   try {
-    await ComandosService.executarComandoMenu(payload);
+    await ComandosService.executarComandoMenu(payload)
   } catch (error) {
-    console.error("Falha ao executar o menu: ", error);
+    console.error('Falha ao executar o menu: ', error)
   }
-};
+}
 
-const exibirCadastroPasta = (pasta) => {
-  exibirModalPasta.value = true;
-  Object.assign(pastaSelecionada, pasta);
-};
+const exibirCadastroPasta = (pasta: IPasta): void => {
+  exibirModalPasta.value = true
+  Object.assign(pastaSelecionada, pasta)
+}
 
-const menusProjetos = [
+const menusProjetos: MenuProjeto[] = [
   {
     identificador: 1,
-    titulo: "Desmarcar todos",
-    icone: "mdi-close-box-multiple-outline",
-    acao: (projeto) => {
-      projeto.comandosSelecionados = [];
+    titulo: 'Desmarcar todos',
+    icone: 'mdi-close-box-multiple-outline',
+    acao: (projeto: any) => {
+      projeto.comandosSelecionados = []
     },
   },
   {
     identificador: 2,
-    titulo: "Abrir no Explorer",
-    icone: "mdi-folder-open",
-    acao: (projeto) => {
-      let comando = "";
+    titulo: 'Abrir no Explorer',
+    icone: 'mdi-folder-open',
+    acao: (projeto: any) => {
+      let comando = ''
 
       if (projeto.identificadorRepositorioAgregado)
-        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`
 
-      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
-      executarComandoAvulso(comando);
+      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`
+      executarComandoAvulso(comando)
     },
   },
   {
     identificador: 3,
-    titulo: "Abrir no PowerShell",
-    icone: "mdi-console",
-    acao: (projeto) => {
-      let comando = "";
+    titulo: 'Abrir no PowerShell',
+    icone: 'mdi-console',
+    acao: (projeto: any) => {
+      let comando = ''
 
       if (projeto.identificadorRepositorioAgregado)
-        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
+        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`
 
-      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`;
-      executarComandoAvulso(comando);
+      comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe; Exit;`
+      executarComandoAvulso(comando)
     },
   },
-];
+]
 
-const menusProjetoDisponiveis = (projeto) => {
-  let menus = [...menusProjetos];
+const menusProjetoDisponiveis = (projeto: any): MenuProjeto[] => {
+  let menus = [...menusProjetos]
 
   if (projeto.arquivoCoverage) {
     menus.push({
       identificador: 5,
-      titulo: "Abrir coverage",
-      icone: "mdi-file-chart",
-      acao: (projeto) => {
-        const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.arquivoCoverage}`;
-        executarComandoAvulso(comando);
+      titulo: 'Abrir coverage',
+      icone: 'mdi-file-chart',
+      acao: (projeto: any) => {
+        const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.arquivoCoverage}`
+        executarComandoAvulso(comando)
       },
-    });
+    })
   }
 
-  return menus;
-};
+  return menus
+}
 
-const executarComandoAvulso = (comando) => {
+const executarComandoAvulso = (comando: string): void => {
   try {
     ComandosService.executarComandoAvulso({
       comando,
-    });
+    })
   } catch (error) {
-    console.error("Falha ao executar o comando avulso: ", error);
+    console.error('Falha ao executar o comando avulso: ', error)
   }
-};
+}
 
-const atualizarIndicesPastas = async () => {
+const atualizarIndicesPastas = async (): Promise<void> => {
   try {
     await PastasService.atualizarIndices(
       pastas.value
@@ -450,12 +466,12 @@ const atualizarIndicesPastas = async () => {
           identificador: p.identificador,
           indice: index,
         }))
-    );
+    )
   } catch (error) {
-    console.error("Falha ao atualizar a ordem das pastas: ", error);
-    notificar("erro", "Falha ao atualizar a ordem das pastas");
+    console.error('Falha ao atualizar a ordem das pastas: ', error)
+    notificar('erro', 'Falha ao atualizar a ordem das pastas')
   }
-};
+}
 </script>
 
 <style scoped>

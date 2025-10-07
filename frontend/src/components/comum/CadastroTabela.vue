@@ -53,7 +53,7 @@
             :key="i"
             :is="field.component"
             :model-value="getModel(field.model).value"
-            @update:model-value="(val) => (getModel(field.model).value = val)"
+            @update:model-value="updateFieldValue(field.model, $event)"
             v-bind="field.props"
           />
         </v-form>
@@ -62,77 +62,94 @@
   </v-col>
 </template>
 
-<script setup>
-import { ref, reactive } from "vue";
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
 
-const props = defineProps({
-  titulo: { type: String, required: true },
-  headers: { type: Array, required: true },
-  items: { type: Array, required: true },
-  formFields: { type: Array, required: true }, // [{ model: 'nome', component: 'v-text-field', props: {...} }]
-  // initialForm: { type: Object, required: true },
-});
+interface FormField {
+  model: string
+  component: string
+  props: Record<string, any>
+}
 
-const emit = defineEmits(["save", "delete"]);
+interface Props {
+  titulo: string
+  headers: readonly any[]
+  items: any[]
+  formFields: FormField[]
+  initialForm?: Record<string, any>
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialForm: () => ({})
+})
+
+const emit = defineEmits<{
+  save: [data: any]
+  delete: [item: any]
+}>()
 
 // Estados
-const pagina = ref(0);
-const formRef = ref(null);
-const formData = reactive({ ...props.initialForm });
+const pagina = ref<number>(0)
+const formRef = ref<any>(null)
+const formData = reactive<Record<string, any>>({ ...props.initialForm })
 
-const emModoInicial = ref(true);
-const emModoCadastroEdicao = ref(false);
+const emModoInicial = ref<boolean>(true)
+const emModoCadastroEdicao = ref<boolean>(false)
 
 // Métodos
-function iniciarCadastro() {
-  Object.assign(formData, props.initialForm); // reset
-  emModoInicial.value = false;
-  emModoCadastroEdicao.value = true;
-  pagina.value = 1;
+function iniciarCadastro(): void {
+  Object.assign(formData, props.initialForm) // reset
+  emModoInicial.value = false
+  emModoCadastroEdicao.value = true
+  pagina.value = 1
 }
 
-function editar(item) {
-  Object.assign(formData, JSON.parse(JSON.stringify(item)));
-  emModoInicial.value = false;
-  emModoCadastroEdicao.value = true;
-  pagina.value = 1;
+function editar(item: any): void {
+  Object.assign(formData, JSON.parse(JSON.stringify(item)))
+  emModoInicial.value = false
+  emModoCadastroEdicao.value = true
+  pagina.value = 1
 }
 
-async function salvar() {
-  const valido = await formRef.value?.validate();
+async function salvar(): Promise<void> {
+  const valido = await formRef.value?.validate()
   if (valido) {
-    emit("save", { ...formData });
-    reset();
+    emit('save', { ...formData })
+    reset()
   }
 }
 
-function cancelar() {
-  reset();
+function cancelar(): void {
+  reset()
 }
 
-function reset() {
-  emModoInicial.value = true;
-  emModoCadastroEdicao.value = false;
-  pagina.value = 0;
-  Object.assign(formData, props.initialForm);
+function reset(): void {
+  emModoInicial.value = true
+  emModoCadastroEdicao.value = false
+  pagina.value = 0
+  Object.assign(formData, props.initialForm)
+}
+
+function updateFieldValue(path: string, value: any): void {
+  getModel(path).value = value
 }
 
 /**
  * Permite acessar propriedades aninhadas no formData (ex: comandos.instalar)
  */
-function getModel(path) {
+function getModel(path: string) {
   return {
     get value() {
-      return path.split(".").reduce((acc, key) => acc?.[key], formData);
+      return path.split('.').reduce((acc: any, key: string) => acc?.[key], formData)
     },
-    set value(val) {
-      const keys = path.split(".");
-      let target = formData;
+    set value(val: any) {
+      const keys = path.split('.')
+      let target = formData
       for (let i = 0; i < keys.length - 1; i++) {
-        target = target[keys[i]];
+        target = target[keys[i]]
       }
-      target[keys[keys.length - 1]] = val;
+      target[keys[keys.length - 1]] = val
     },
-  };
+  }
 }
 </script>

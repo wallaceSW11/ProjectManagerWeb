@@ -84,99 +84,99 @@
   </v-col>
 </template>
 
-<script setup>
-import { reactive, ref } from "vue";
-import RepositorioModel from "../../models/RepositorioModel";
-import ProjetoModel from "../../models/ProjetoModel";
-import { useConfiguracaoStore } from "@/stores/configuracao";
-import BotaoTerciario from "../comum/botao/BotaoTerciario.vue";
-import { useModoOperacao } from "@/composables/useModoOperacao";
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+import type { IRepositorio, IProjeto } from '@/types'
+import ProjetoModel from '@/models/ProjetoModel'
+import { useConfiguracaoStore } from '@/stores/configuracao'
+import { useModoOperacao } from '@/composables/useModoOperacao'
 
-const repositorio = defineModel(new RepositorioModel());
-const configuracaoStore = useConfiguracaoStore();
-const obrigatorio = [(v) => !!v || "Obrigatório"];
-const exibirModalCadastroProjeto = ref(false);
+const repositorio = defineModel<IRepositorio>({ required: true })
+const configuracaoStore = useConfiguracaoStore()
+
+const obrigatorio = [(v: string) => !!v || 'Obrigatório']
+const exibirModalCadastroProjeto = ref<boolean>(false)
 
 const {
   emModoCadastro,
   definirModoInicial,
   definirModoCadastro,
   definirModoEdicao
-} = useModoOperacao();
+} = useModoOperacao()
 
-const colunas = reactive([
-  { title: "Nome", key: "nome", align: "start" },
-  { title: "Subdiretorio", key: "subdiretorio", align: "start" },
-  { title: "Perfil VS Code", key: "perfilVSCode", align: "start" },
-  { title: "Actions", key: "actions", align: "center", width: "200px" },
-]);
+const colunas = [
+  { title: 'Nome', key: 'nome', align: 'start' },
+  { title: 'Subdiretorio', key: 'subdiretorio', align: 'start' },
+  { title: 'Perfil VS Code', key: 'perfilVSCode', align: 'start' },
+  { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+] as const
 
-const projetoSelecionado = reactive(new ProjetoModel());
+const projetoSelecionado = reactive<IProjeto>(new ProjetoModel())
+const formProjeto = ref<any>(null)
 
-const abrirModalCadastroProjeto = () => (exibirModalCadastroProjeto.value = true);
+const abrirModalCadastroProjeto = (): void => {
+  exibirModalCadastroProjeto.value = true
+}
 
-const mudarParaEdicao = (item) => {
-  Object.assign(projetoSelecionado, item);
-  definirModoEdicao();
-  abrirModalCadastroProjeto();
-};
+const mudarParaEdicao = (item: IProjeto): void => {
+  Object.assign(projetoSelecionado, item)
+  definirModoEdicao()
+  abrirModalCadastroProjeto()
+}
 
-const formProjeto = ref(null);
+const formularioProjetoValido = async (): Promise<boolean> => {
+  const resposta = await formProjeto.value.validate()
+  return resposta.valid
+}
 
-const formularioProjetoValido = async () => {
-  const resposta = await formProjeto.value.validate();
+const adicionarProjeto = (): void => {
+  repositorio.value.projetos.push(new ProjetoModel(projetoSelecionado))
+}
 
-  return resposta.valid;
-};
+const prepararParaCadastro = (): void => {
+  definirModoCadastro()
+  limparCampos()
+  abrirModalCadastroProjeto()
+}
 
-const adicionarProjeto = () => {
-  repositorio.value.projetos.push(new ProjetoModel(projetoSelecionado));
-};
-
-const prepararParaCadastro = () => {
-  definirModoCadastro();
-  limparCampos();
-  abrirModalCadastroProjeto();
-};
-
-const salvarAlteracoes = async () => {
-  if (!(await formularioProjetoValido())) return;
+const salvarAlteracoes = async (): Promise<void> => {
+  if (!(await formularioProjetoValido())) return
 
   try {
-    emModoCadastro.value ? adicionarProjeto() : atualizarProjeto();
-    descartarAlteracoes();
+    emModoCadastro.value ? adicionarProjeto() : atualizarProjeto()
+    descartarAlteracoes()
   } catch (error) {
-    console.error("Falha ao salvar alteracoes do cadastro:", error);
+    console.error('Falha ao salvar alteracoes do cadastro:', error)
   }
-};
+}
 
-const atualizarProjeto = () => {
+const atualizarProjeto = (): void => {
   const indice = repositorio.value.projetos.findIndex(
-    (p) => p.identificador === projetoSelecionado.identificador
-  );
+    (p: IProjeto) => p.identificador === projetoSelecionado.identificador
+  )
 
-  indice !== -1 &&
-    Object.assign(repositorio.value.projetos[indice], projetoSelecionado);
-};
+  if (indice !== -1) {
+    Object.assign(repositorio.value.projetos[indice], projetoSelecionado)
+  }
+}
 
-const excluirProjeto = (item) => {
-  const confirmDelete = confirm(`Deseja remover o projeto "${item.nome}"?`);
+const excluirProjeto = (item: IProjeto): void => {
+  const confirmDelete = confirm(`Deseja remover o projeto "${item.nome}"?`)
 
-  if (!confirmDelete) return;
+  if (!confirmDelete) return
 
   repositorio.value.projetos = repositorio.value.projetos.filter(
-    (p) => p.identificador !== item.identificador
-  );
-};
+    (p: IProjeto) => p.identificador !== item.identificador
+  )
+}
 
-const limparCampos = () => {
-  Object.assign(projetoSelecionado, new ProjetoModel());
-};
+const limparCampos = (): void => {
+  Object.assign(projetoSelecionado, new ProjetoModel())
+}
 
-const descartarAlteracoes = () => {
-  // Perguntar sobre perder alteracoes
-  limparCampos();
-  definirModoInicial();
-  exibirModalCadastroProjeto.value = false;
-};
+const descartarAlteracoes = (): void => {
+  limparCampos()
+  definirModoInicial()
+  exibirModalCadastroProjeto.value = false
+}
 </script>

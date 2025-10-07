@@ -71,70 +71,73 @@
   </v-card>
 </template>
 
-<script setup>
-import { computed } from "vue";
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { IPasta } from '@/types'
 
-const props = defineProps({
-  pasta: {
-    type: Object,
-    required: true,
-  },
-  pastaSelecionada: {
-    type: Object,
-    required: true,
-  },
-});
+interface Props {
+  pasta: IPasta
+  pastaSelecionada: IPasta
+}
 
-const emit = defineEmits([
-  "selecionarPasta",
-  "exibirCadastroPasta",
-  "executarMenu",
-]);
+const props = defineProps<Props>()
 
-const selecionarPasta = (pasta) => {
-  emit("selecionarPasta", pasta);
-};
+const emit = defineEmits<{
+  selecionarPasta: [pasta: IPasta]
+  exibirCadastroPasta: [pasta: IPasta]
+  executarMenu: [pasta: IPasta, menuId: string]
+}>()
 
-const exibirCadastroPasta = (pasta) => {
-  emit("exibirCadastroPasta", pasta);
-};
+const selecionarPasta = (pasta: IPasta): void => {
+  emit('selecionarPasta', pasta)
+}
 
-const executarMenu = (pasta, menuId) => {
-  emit("executarMenu", pasta, menuId);
-};
+const exibirCadastroPasta = (pasta: IPasta): void => {
+  emit('exibirCadastroPasta', pasta)
+}
 
-const descricaoPasta = (pasta) => {
+const executarMenu = (pasta: IPasta, menuId: string): void => {
+  emit('executarMenu', pasta, menuId)
+}
+
+const descricaoPasta = (pasta: IPasta): string => {
   return pasta.codigo
     ? `${pasta.codigo} - ${pasta.descricao}`
-    : pasta.descricao;
-};
+    : pasta.descricao
+}
 
-const TIPOS = {
+interface TipoInfo {
+  icone: string
+  titulo: string
+  cor: string
+}
+
+const TIPOS: Record<string, TipoInfo> = {
   NENHUM: {
-    icone: "mdi-set-none",
-    titulo: "Nenhum",
-    cor: "grey",
+    icone: 'mdi-set-none',
+    titulo: 'Nenhum',
+    cor: 'grey',
   },
   FEATURE: {
-    icone: "mdi-creation",
-    titulo: "Melhoria",
-    cor: "green",
+    icone: 'mdi-creation',
+    titulo: 'Melhoria',
+    cor: 'green',
   },
   BUG: {
-    icone: "mdi-bug",
-    titulo: "Erro",
-    cor: "red",
+    icone: 'mdi-bug',
+    titulo: 'Erro',
+    cor: 'red',
   },
   HOTFIX: {
-    icone: "mdi-ambulance",
-    titulo: "Hotfix",
-    cor: "purple",
+    icone: 'mdi-ambulance',
+    titulo: 'Hotfix',
+    cor: 'purple',
   },
-};
+}
 
-const dadosTipo = computed(() => {
-  return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM;
-});
+const dadosTipo = computed((): TipoInfo => {
+  return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM
+})
 </script>
 
 <style scoped>

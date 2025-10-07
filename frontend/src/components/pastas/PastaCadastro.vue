@@ -50,110 +50,106 @@
   </v-dialog>
 </template>
 
-<script setup>
-import PastaModel from "@/models/PastaModel";
-import PastaService from "@/services/PastasService";
-import { reactive, ref, watch } from "vue";
-import { useConfiguracaoStore } from "@/stores/configuracao";
-import RepositorioModel from "@/models/RepositorioModel";
-import { notificar, atualizarListaPastas } from "@/utils/eventBus";
-import BotaoSecundario from "@/components/comum/botao/BotaoSecundario.vue";
-import SelectRepositorio from "@/components/repositorios/SelectRepositorio.vue";
+<script setup lang="ts">
+import { reactive, ref, watch } from 'vue'
+import type { IPasta, IRepositorio } from '@/types'
+import PastaModel from '@/models/PastaModel'
+import PastaService from '@/services/PastasService'
+import { useConfiguracaoStore } from '@/stores/configuracao'
+import RepositorioModel from '@/models/RepositorioModel'
+import { notificar, atualizarListaPastas } from '@/utils/eventBus'
+import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue'
 
-const pasta = reactive(new PastaModel());
-const configuracaoStore = useConfiguracaoStore();
-const exibirModalPasta = defineModel(false);
-const props = defineProps({
-  pasta: {
-    type: Object,
-    default: () => new PastaModel(),
-  },
-});
+interface Props {
+  pasta?: IPasta
+}
 
-const repositorio = reactive(new RepositorioModel());
+const props = withDefaults(defineProps<Props>(), {
+  pasta: () => new PastaModel(),
+})
 
-watch(exibirModalPasta, async (novoValor) => {
-  if (!novoValor) return;
+const pasta = reactive<IPasta>(new PastaModel())
+const configuracaoStore = useConfiguracaoStore()
+const exibirModalPasta = defineModel<boolean>({ default: false })
+const repositorio = reactive<IRepositorio>(new RepositorioModel())
+const formPasta = ref<any>(null)
 
-  pasta.diretorio = props.pasta.diretorio;
+const obrigatorio = [(v: string) => !!v || 'Obrigatório']
 
-  const { codigo, descricao } = obterCodigoDescricao();
-  pasta.codigo = codigo;
-  pasta.descricao = descricao;
-});
+watch(exibirModalPasta, async (novoValor: boolean) => {
+  if (!novoValor) return
 
-const obterCodigoDescricao = () => {
+  pasta.diretorio = props.pasta.diretorio
+
+  const { codigo, descricao } = obterCodigoDescricao()
+  pasta.codigo = codigo
+  pasta.descricao = descricao
+})
+
+const obterCodigoDescricao = (): { codigo: string; descricao: string } => {
   const diretorio = pasta.diretorio.replace(
-    configuracaoStore.diretorioRaiz + "\\",
-    ""
-  );
+    configuracaoStore.diretorioRaiz + '\\',
+    ''
+  )
 
-  if (!diretorio) return { codigo: "", descricao: "" };
+  if (!diretorio) return { codigo: '', descricao: '' }
 
-  // Procura padrão: letras/números/hífen + underscore + resto
-  const comUnderscore = /^([A-Z0-9-]+)_(.+)$/i;
-  const match = diretorio.match(comUnderscore);
+  const comUnderscore = /^([A-Z0-9-]+)_(.+)$/i
+  const match = diretorio.match(comUnderscore)
 
   if (match) {
     return {
       codigo: match[1].toUpperCase(),
-      descricao: match[2].replace(/_/g, " "),
-    };
+      descricao: match[2].replace(/_/g, ' '),
+    }
   }
 
-  // Se não tiver underscore, tenta separar por padrão de código
-  const soCodigo = /^([A-Z]+\d*-?\d*)(.*)$/i;
-  const matchCodigo = texto.match(soCodigo);
+  const soCodigo = /^([A-Z]+\d*-?\d*)(.*)$/i
+    const matchCodigo = diretorio.match(soCodigo)
 
   if (matchCodigo && matchCodigo[2]) {
     return {
       codigo: matchCodigo[1].toUpperCase(),
       descricao: matchCodigo[2],
-    };
+    }
   }
 
-  // Fallback: tudo como descrição
   return {
-    codigo: "",
-    descricao: texto,
-  };
-};
+    codigo: '',
+    descricao: diretorio,
+  }
+}
 
+const formularioValido = async (): Promise<boolean> => {
+  const form = await formPasta.value.validate()
+  return form.valid
+}
 
-const formPasta = ref(null);
-const obrigatorio = [(v) => !!v || "Obrigatório"];
+const limparCampos = (): void => {
+  Object.assign(pasta, new PastaModel())
+}
 
-const formularioValido = async () => {
-  const form = await formPasta.value.validate();
-
-  return form.valid;
-};
-
-const limparCampos = () => {
-  Object.assign(pasta, new PastaModel());
-};
-
-const criar = async () => {
-  if (!(await formularioValido())) return;
+const criar = async (): Promise<void> => {
+  if (!(await formularioValido())) return
 
   try {
-    pasta.repositorioId = repositorio.identificador;
-    await PastaService.criar(pasta);
-    exibirModalPasta.value = false;
-    Object.assign(pasta, new PastaModel());
-    notificar("sucesso", "Pasta cadastrada");
-    atualizarListaPastas();
-    limparCampos();
+    pasta.repositorioId = repositorio.identificador
+    await PastaService.criar(pasta)
+    exibirModalPasta.value = false
+    Object.assign(pasta, new PastaModel())
+    notificar('sucesso', 'Pasta cadastrada')
+    atualizarListaPastas()
+    limparCampos()
   } catch (error) {
-    console.error("Falha ao criar pasta:", error);
-    notificar("erro", "Falha ao criar pasta");
+    console.error('Falha ao criar pasta:', error)
+    notificar('erro', 'Falha ao criar pasta')
   }
-};
+}
 
-const fecharPasta = () => {
-  exibirModalPasta.value = false;
-  limparCampos();
-};
+const fecharPasta = (): void => {
+  exibirModalPasta.value = false
+  limparCampos()
+}
 </script>
 
 <style scoped>

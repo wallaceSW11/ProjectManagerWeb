@@ -42,39 +42,38 @@
   </v-form>
 </template>
 
-<script setup>
-import { computed } from "vue";
-import RepositorioModel from "@/models/RepositorioModel";
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { IRepositorio } from '@/types'
 
-const props = defineProps({
-  repositorios: {
-    type: Array,
-    required: true,
-  },
-});
+interface Props {
+  repositorios: IRepositorio[]
+}
 
-const repositorio = defineModel(new RepositorioModel());
-const obrigatorio = [(v) => !!v || "Obrigatório"];
+const props = defineProps<Props>()
+const repositorio = defineModel<IRepositorio>({ required: true })
+
+const obrigatorio = [(v: string) => !!v || 'Obrigatório']
 
 const repositoriosDisponiveis = computed(() => {
   return props.repositorios.filter(
     (r) => r.identificador !== repositorio.value.identificador
-  );
-});
+  )
+})
 
-const atualizarNomeRepositorio = () => {
+const atualizarNomeRepositorio = (): void => {
   if (!repositorio.value.url) {
-    repositorio.value.nome = "";
-    return;
+    repositorio.value.nome = ''
+    return
   }
 
-  const partesUrl = repositorio.value.url.split("/");
-  let nomeExtraido = partesUrl.pop();
+  const partesUrl = repositorio.value.url.split('/')
+  let nomeExtraido = partesUrl.pop() || ''
 
-  if (nomeExtraido.endsWith(".git")) {
-    nomeExtraido = nomeExtraido.slice(0, -4);
+  if (nomeExtraido.endsWith('.git')) {
+    nomeExtraido = nomeExtraido.slice(0, -4)
   }
 
-  repositorio.value.nome = nomeExtraido;
-};
+  repositorio.value.nome = nomeExtraido
+}
 </script>

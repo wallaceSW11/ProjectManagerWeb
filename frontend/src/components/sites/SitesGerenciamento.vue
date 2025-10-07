@@ -56,85 +56,85 @@
   </ModalPadrao>
 </template>
 
-<script setup>
-import SiteModel from "@/models/SiteModel";
-import IISService from "@/services/IISService";
-import { carregandoAsync, notificar } from "@/utils/eventBus";
-import { ref, watch } from "vue";
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import SiteModel from '@/models/SiteModel'
+import IISService from '@/services/IISService'
+import { carregandoAsync, notificar } from '@/utils/eventBus'
+import type { ISite } from '@/types'
 
-const INICIADO = "Iniciado";
-const PARADO = "Parado";
-const REINICIANDO = "Reiniciando";
+const INICIADO = 'Iniciado'
+const PARADO = 'Parado'
+const REINICIANDO = 'Reiniciando'
 
-const exibir = defineModel(false);
+const exibir = defineModel<boolean>({ default: false })
+const sites = ref<ISite[]>([])
 
-const sites = ref([]);
+watch(exibir, (novoValor: boolean) => {
+  if (novoValor) consultarSites()
+})
 
-watch(exibir, (novoValor) => {
-  if (novoValor) consultarSites();
-});
-
-const consultarSites = async () => {
+const consultarSites = async (): Promise<void> => {
   try {
     const resposta = await carregandoAsync(async () => {
-      const res = await IISService.getSites();
-      return res;
-    }, "Consultando sites IIS...");
+      const res = await IISService.getSites()
+      return res
+    }, 'Consultando sites IIS...')
 
-    sites.value = resposta.map((site) => new SiteModel(site));
+    sites.value = resposta.map((site: ISite) => new SiteModel(site))
   } catch (error) {
-    console.error("Erro ao consultar sites:", error);
-    notificar("erro", "Erro ao consultar sites IIS.");
+    console.error('Erro ao consultar sites:', error)
+    notificar('erro', 'Erro ao consultar sites IIS.')
   }
-};
+}
 
-const iniciarSite = async (site) => {
+const iniciarSite = async (site: ISite): Promise<void> => {
   try {
     await carregandoAsync(async () => {
-      await IISService.iniciarSite(site.nome);
-    }, `Iniciando site ${site.nome}...`);
+      await IISService.iniciarSite(site.nome)
+    }, `Iniciando site ${site.nome}...`)
 
-    notificar("sucesso", `Site ${site.nome} iniciado.`);
-    sites.value = sites.value.map((s) =>
+    notificar('sucesso', `Site ${site.nome} iniciado.`)
+    sites.value = sites.value.map((s: ISite) =>
       s.nome === site.nome ? { ...s, status: INICIADO } : s
-    );
+    )
   } catch (error) {
-    console.error(`Erro ao iniciar site ${site.nome}:`, error);
-    notificar("erro", `Erro ao iniciar site ${site.nome}.`);
+    console.error(`Erro ao iniciar site ${site.nome}:`, error)
+    notificar('erro', `Erro ao iniciar site ${site.nome}.`)
   }
-};
+}
 
-const pararSite = async (site) => {
+const pararSite = async (site: ISite): Promise<void> => {
   try {
     await carregandoAsync(async () => {
-      await IISService.pararSite(site.nome);
-    }, `Parando site ${site.nome}...`);
+      await IISService.pararSite(site.nome)
+    }, `Parando site ${site.nome}...`)
 
-    notificar("sucesso", `Site ${site.nome} parado.`);
-    sites.value = sites.value.map((s) =>
+    notificar('sucesso', `Site ${site.nome} parado.`)
+    sites.value = sites.value.map((s: ISite) =>
       s.nome === site.nome ? { ...s, status: PARADO } : s
-    );
+    )
   } catch (error) {
-    console.error(`Erro ao parar site ${site.nome}:`, error);
-    notificar("erro", `Erro ao parar site ${site.nome}.`);
+    console.error(`Erro ao parar site ${site.nome}:`, error)
+    notificar('erro', `Erro ao parar site ${site.nome}.`)
   }
-};
+}
 
-const reiniciarSite = async (site) => {
+const reiniciarSite = async (site: ISite): Promise<void> => {
   try {
     await carregandoAsync(async () => {
-      await IISService.reiniciarSite(site.nome);
-    }, `Reiniciando site ${site.nome}...`);
+      await IISService.reiniciarSite(site.nome)
+    }, `Reiniciando site ${site.nome}...`)
 
-    notificar("sucesso", `Site ${site.nome} reiniciado.`);
-    sites.value = sites.value.map((s) =>
+    notificar('sucesso', `Site ${site.nome} reiniciado.`)
+    sites.value = sites.value.map((s: ISite) =>
       s.nome === site.nome ? { ...s, status: REINICIANDO } : s
-    );
+    )
   } catch (error) {
-    console.error(`Erro ao reiniciar site ${site.nome}:`, error);
-    notificar("erro", `Erro ao reiniciar site ${site.nome}.`);
+    console.error(`Erro ao reiniciar site ${site.nome}:`, error)
+    notificar('erro', `Erro ao reiniciar site ${site.nome}.`)
   }
-};
+}
 </script>
 
 <style scoped>

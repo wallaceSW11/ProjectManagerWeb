@@ -14,21 +14,25 @@
   </div>
 </template>
 
-<script>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+<script lang="ts">
+import { ref, onMounted, onBeforeUnmount, defineComponent } from 'vue'
 import eventBus from '@/utils/eventBus'
+import type { NotificacaoTipo } from '@/types'
 
-const toasts = ref([])
+interface Toast extends NotificacaoTipo {
+  id: number
+}
+
+const toasts = ref<Toast[]>([])
 let idCounter = 0
 
-export default {
+export default defineComponent({
   name: 'ToastNotificacao',
   setup() {
-    const handleNotificar = ({ tipo, titulo, mensagem }) => {
+    const handleNotificar = ({ tipo, titulo, mensagem }: NotificacaoTipo): void => {
       const id = idCounter++
       toasts.value.push({ id, tipo, titulo, mensagem })
 
-      // fecha automático em 2s
       setTimeout(() => {
         const index = toasts.value.findIndex(t => t.id === id)
         if (index !== -1) toasts.value.splice(index, 1)
@@ -40,7 +44,7 @@ export default {
 
     return { toasts }
   },
-}
+})
 </script>
 
 <style scoped>

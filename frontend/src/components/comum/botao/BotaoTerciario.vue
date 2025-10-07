@@ -10,23 +10,18 @@
   </v-btn>
 </template>
 
-<script setup>
-const props = defineProps({
-  texto: {
-    type: String,
-    default: "Salvar",
-  },
-  icone: {
-    type: String,
-    default: null,
-  },
-  desabilitar: {
-    type: Boolean,
-    default: false,
-  },
-  acao: {
-    type: Function,
-    default: null,
-  },
-});
+<script setup lang="ts">
+interface Props {
+  texto?: string
+  icone?: string | null
+  desabilitar?: boolean
+  acao?: (() => void) | null
+}
+
+withDefaults(defineProps<Props>(), {
+  texto: 'Salvar',
+  icone: null,
+  desabilitar: false,
+  acao: null,
+})
 </script>

@@ -67,6 +67,10 @@ export interface IClone {
   baixarAgregados: boolean
 }
 
+export interface IPerfilVSCode {
+  nome: string
+}
+
 export interface IConfiguracao {
   diretorioRaiz: string
   perfisVSCode: Array<{ nome: string }>
