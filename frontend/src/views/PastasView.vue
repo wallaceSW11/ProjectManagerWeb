@@ -36,8 +36,9 @@
                       projeto => (projeto.comandosSelecionados = [])
                     )
                   "
-                  >mdi-close-box-multiple-outline</v-icon
                 >
+                  mdi-close-box-multiple-outline
+                </v-icon>
               </template>
             </v-tooltip>
           </div>
@@ -125,7 +126,11 @@
                         <div class="d-flex align-center">
                           {{ projeto.nome }}
                           <v-chip
-                            v-if="!projeto.expandido && projeto.comandosSelecionados && projeto.comandosSelecionados.length > 0"
+                            v-if="
+                              !projeto.expandido &&
+                              projeto.comandosSelecionados &&
+                              projeto.comandosSelecionados.length > 0
+                            "
                             color="primary"
                             size="x-small"
                             class="ml-2"
@@ -307,11 +312,13 @@
       const resposta = await carregandoAsync(async () => {
         return await PastasService.getPastas();
       });
-      
+
       // Garantir que os projetos sejam instâncias de ProjetoModel
       pastas.value = resposta.map((pasta: any) => {
         const pastaModel = new PastaModel(pasta);
-        pastaModel.projetos = pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) || [];
+        pastaModel.projetos =
+          pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) ||
+          [];
         return pastaModel;
       });
     } catch (error) {
@@ -323,8 +330,9 @@
   const selecionarPasta = (pasta: IPasta): void => {
     // Garantir que a pasta selecionada tenha projetos como instâncias de ProjetoModel
     const pastaComProjetosModels = new PastaModel(pasta);
-    pastaComProjetosModels.projetos = pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) || [];
-    
+    pastaComProjetosModels.projetos =
+      pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) || [];
+
     Object.assign(pastaSelecionada, pastaComProjetosModels);
 
     const acoes = consultarAcoesSelecionadas();
@@ -377,7 +385,7 @@
             comandos: p.comandosSelecionados || [],
             identificadorRepositorioAgregado:
               p.identificadorRepositorioAgregado,
-            nomeRepositorio: p.nomeRepositorio
+            nomeRepositorio: p.nomeRepositorio,
           };
         }),
     };
@@ -527,17 +535,20 @@
 
   const toggleExpandirProjeto = async (projeto: any): Promise<void> => {
     const novoEstado = !projeto.expandido;
-    
+
     try {
       await PastasService.atualizarExpandido({
         pastaId: pastaSelecionada.identificador || '',
         projetoId: projeto.identificador,
         expandido: novoEstado,
       });
-      
+
       projeto.expandido = novoEstado;
     } catch (error) {
-      console.error('Falha ao atualizar o estado expandido do projeto: ', error);
+      console.error(
+        'Falha ao atualizar o estado expandido do projeto: ',
+        error
+      );
       notificar('erro', 'Falha ao atualizar o estado do projeto');
     }
   };

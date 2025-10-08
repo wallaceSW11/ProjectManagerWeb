@@ -9,5 +9,6 @@
   "arrowParens": "avoid",
   "endOfLine": "lf",
   "vueIndentScriptAndStyle": true,
-  "singleAttributePerLine": true
+  "singleAttributePerLine": true,
+  "htmlWhitespaceSensitivity": "ignore"
 }
