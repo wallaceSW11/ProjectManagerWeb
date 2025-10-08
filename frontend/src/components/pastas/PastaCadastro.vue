@@ -176,8 +176,8 @@
   };
 
   const fecharPasta = (): void => {
-    exibirModalPasta.value = false;
     limparCampos();
+    exibirModalPasta.value = false;
   };
 </script>
 
