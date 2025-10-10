@@ -20,10 +20,10 @@
             obrigatorio
           />
 
-          <v-text-field
-            label="Branch"
+          <SelectBranch
             v-model="pasta.branch"
-            :rules="obrigatorio"
+            obrigatorio
+            :adicionarNoLocalStorage="adicionarNoLocalStorage"
           />
 
           <v-text-field
@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref, watch } from 'vue';
+  import { nextTick, reactive, ref, watch } from 'vue';
   import type { IPasta, IRepositorio } from '@/types';
   import PastaModel from '@/models/PastaModel';
   import PastaService from '@/services/PastasService';
@@ -88,6 +88,7 @@
   import RepositorioModel from '@/models/RepositorioModel';
   import { notificar, atualizarListaPastas } from '@/utils/eventBus';
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
+  import SelectBranch from '@/components/comum/SelectBranch.vue';
 
   interface Props {
     pasta?: IPasta;
@@ -104,6 +105,7 @@
   const formPasta = ref<any>(null);
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
+  const adicionarNoLocalStorage = ref<boolean>(false);
 
   watch(exibirModalPasta, async (novoValor: boolean) => {
     if (!novoValor) return;
@@ -164,6 +166,10 @@
     try {
       pasta.repositorioId = repositorio.value.identificador;
       await PastaService.criar(pasta);
+      
+      adicionarNoLocalStorage.value = true;
+      await nextTick(() => (adicionarNoLocalStorage.value = false));
+
       exibirModalPasta.value = false;
       Object.assign(pasta, new PastaModel());
       notificar('sucesso', 'Pasta cadastrada');

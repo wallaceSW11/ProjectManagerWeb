@@ -440,8 +440,10 @@
 
     try {
       await ComandosService.executarComandoMenu(payload);
+      notificar('sucesso', 'Comando solicitado');
     } catch (error) {
       console.error('Falha ao executar o menu: ', error);
+      notificar('erro', 'Falha ao executar o menu', String(error));
     }
   };
 
