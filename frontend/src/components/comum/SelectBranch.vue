@@ -55,9 +55,10 @@
   );
 
   const branchs = ref<string[]>([]);
+  const CHAVE_BRANCHS = 'branchs';
 
   const obterBranchsLocalStorage = () => {
-    const branchsLocalStorage = localStorage.getItem('branchs');
+    const branchsLocalStorage = localStorage.getItem(CHAVE_BRANCHS);
     if (branchsLocalStorage) {
       branchs.value = JSON.parse(branchsLocalStorage);
     }
@@ -66,13 +67,13 @@
   const adicionarBranchNoLocalStorage = (branch: string) => {
     if (!branchs.value.includes(branch)) {
       branchs.value.push(branch);
-      localStorage.setItem('branchs', JSON.stringify(branchs.value));
+      localStorage.setItem(CHAVE_BRANCHS, JSON.stringify(branchs.value));
     }
   };
 
   const removerBranch = (branchParaRemover: string) => {
     branchs.value = branchs.value.filter(b => b !== branchParaRemover);
-    localStorage.setItem('branchs', JSON.stringify(branchs.value));
+    localStorage.setItem(CHAVE_BRANCHS, JSON.stringify(branchs.value));
   };
 
   onMounted(() => {
