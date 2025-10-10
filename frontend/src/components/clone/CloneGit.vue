@@ -4,7 +4,7 @@
     max-width="500"
   >
     <v-card>
-      <v-card-title> Clonar </v-card-title>
+      <v-card-title>Clonar</v-card-title>
 
       <v-card-text class="pt-0">
         <v-form ref="formClone">
@@ -19,10 +19,10 @@
             obrigatorio
           />
 
-          <v-text-field
-            label="Branch"
+          <SelectBranch
             v-model="clone.branch"
-            :rules="obrigatorio"
+            obrigatorio
+            :adicionarNoLocalStorage="adicionarNoLocalStorage"
           />
 
           <v-checkbox
@@ -81,7 +81,7 @@
         <v-btn
           color="primary"
           variant="outlined"
-          @click="clonar()"
+          @click="clonar"
         >
           <v-icon>mdi-download</v-icon>
           Clonar
@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from 'vue';
+  import { nextTick, onMounted, reactive, ref } from 'vue';
   import type { IClone } from '@/types';
   import CloneModel from '@/models/CloneModel';
   import CloneService from '@/services/CloneService';
@@ -107,11 +107,13 @@
     notificar,
   } from '@/utils/eventBus';
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
+  import SelectBranch from '@/components/comum/SelectBranch.vue';
 
   const clone = reactive<IClone>(new CloneModel());
   const configuracaoStore = useConfiguracaoStore();
   const exibirModalClone = defineModel<boolean>({ default: false });
   const formClone = ref<any>(null);
+  const adicionarNoLocalStorage = ref<boolean>(false);
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 
@@ -135,7 +137,10 @@
 
       payload.codigo = clone.codigo.toUpperCase();
       await CloneService.clonar(payload);
-      exibirModalClone.value = false;
+
+      adicionarNoLocalStorage.value = true;
+      await nextTick(() => (adicionarNoLocalStorage.value = false));
+      fecharClone();
       Object.assign(clone, new CloneModel());
       clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
 
