@@ -7,13 +7,15 @@ class RepositoriosService extends BaseApiService {
   }
 
   async adicionarRepositorio(repositorio: IRepositorio): Promise<void> {
-    return await this.post('repositorios', repositorio);
+    const dto = (repositorio as any).toDTO ? (repositorio as any).toDTO() : repositorio;
+    return await this.post('repositorios', dto);
   }
 
   async atualizarRepositorio(repositorio: IRepositorio): Promise<void> {
+    const dto = (repositorio as any).toDTO ? (repositorio as any).toDTO() : repositorio;
     return await this.put(
       `repositorios/${repositorio.identificador}`,
-      repositorio
+      dto
     );
   }
 
