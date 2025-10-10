@@ -26,13 +26,13 @@ export interface IProjeto {
   nomeRepositorio: string;
   subdiretorio: string;
   perfilVSCode: string;
-  comandos: string[]; // Array de strings com valores enum do backend
+  comandos: string[]; // Array de enums para execução
+  comandosObj: IComandos; // Objeto para cadastro de repositório
   arquivoCoverage: string;
   comandosSelecionados?: string[];
   identificadorRepositorioAgregado?: string;
   expandido: boolean;
   getComandosDisponiveis?(): Array<{ titulo: string; valor: string; ativo: boolean }>;
-  comandosObj?: IComandos; // Getter/setter para compatibilidade com formulários
 }
 
 export interface IRepositorio {

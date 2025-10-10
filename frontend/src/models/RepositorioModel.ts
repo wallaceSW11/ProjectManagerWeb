@@ -22,4 +22,19 @@ export default class RepositorioModel implements IRepositorio {
     this.agregados = obj.agregados || [];
     this.menus = obj.menus?.map((m: any) => new MenuModel(m)) || [];
   }
+
+  /**
+   * Converte para o formato DTO esperado pelo backend
+   */
+  toDTO() {
+    return {
+      identificador: this.identificador,
+      url: this.url,
+      titulo: this.titulo,
+      nome: this.nome,
+      projetos: this.projetos.map((p: any) => p.toDTO()),
+      agregados: this.agregados,
+      menus: this.menus
+    };
+  }
 }
