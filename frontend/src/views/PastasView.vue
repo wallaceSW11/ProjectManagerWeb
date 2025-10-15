@@ -320,8 +320,7 @@
       pastas.value = resposta.map((pasta: any) => {
         const pastaModel = new PastaModel(pasta);
         pastaModel.projetos =
-          pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) ||
-          [];
+          pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) || [];
         return pastaModel;
       });
     } catch (error) {

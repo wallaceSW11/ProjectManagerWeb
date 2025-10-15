@@ -11,6 +11,7 @@ export default class ProjetoModel implements IProjeto {
   arquivoCoverage: string;
   expandido: boolean;
   identificadorRepositorioAgregado?: string;
+  comandosObj: IComandos;
 
   constructor(obj: Partial<IProjeto> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -22,36 +23,42 @@ export default class ProjetoModel implements IProjeto {
     this.arquivoCoverage = obj.arquivoCoverage || '';
     this.expandido = obj.expandido || false;
     this.identificadorRepositorioAgregado = obj.identificadorRepositorioAgregado;
+    
+    // Handle comandosObj from backend or frontend
+    if (obj.comandosObj) {
+      this.comandosObj = obj.comandosObj;
+    } else if ((obj as any).comandos && typeof (obj as any).comandos === 'object' && !(obj as any).comandos.length) {
+      // Repository backend sends comandos as ComandoDTO object
+      this.comandosObj = (obj as any).comandos;
+      // Auto-sync comandos array for display
+      this.syncComandosFromObj();
+    } else {
+      // Default or pasta response (comandos already as array)
+      this.comandosObj = {
+        instalar: null,
+        iniciar: null,
+        buildar: null,
+        abrirNoVSCode: false
+      };
+    }
   }
 
   /**
-   * Converte array de comandos para objeto IComandos para compatibilidade com formulários
+   * Sincroniza comandosObj com array de comandos (para execução)
    */
-  get comandosObj(): IComandos {
-    return {
-      instalar: this.comandos.includes(TIPO_COMANDO.INSTALAR.valor) ? 'npm install' : null,
-      iniciar: this.comandos.includes(TIPO_COMANDO.INICIAR.valor) ? 'npm start' : null,
-      buildar: this.comandos.includes(TIPO_COMANDO.BUILDAR.valor) ? 'npm run build' : null,
-      abrirNoVSCode: this.comandos.includes(TIPO_COMANDO.ABRIR_NO_VSCODE.valor)
-    };
-  }
-
-  /**
-   * Converte objeto IComandos para array de strings
-   */
-  set comandosObj(comandos: IComandos) {
+  syncComandosFromObj(): void {
     this.comandos = [];
     
-    if (comandos.instalar) {
+    if (this.comandosObj.instalar) {
       this.comandos.push(TIPO_COMANDO.INSTALAR.valor);
     }
-    if (comandos.iniciar) {
+    if (this.comandosObj.iniciar) {
       this.comandos.push(TIPO_COMANDO.INICIAR.valor);
     }
-    if (comandos.buildar) {
+    if (this.comandosObj.buildar) {
       this.comandos.push(TIPO_COMANDO.BUILDAR.valor);
     }
-    if (comandos.abrirNoVSCode) {
+    if (this.comandosObj.abrirNoVSCode) {
       this.comandos.push(TIPO_COMANDO.ABRIR_NO_VSCODE.valor);
     }
   }
@@ -96,5 +103,25 @@ export default class ProjetoModel implements IProjeto {
     }
 
     return comandosDisponiveis;
+  }
+
+  /**
+   * Converte para o formato DTO esperado pelo backend
+   */
+  toDTO() {
+    return {
+      identificador: this.identificador,
+      nome: this.nome,
+      subdiretorio: this.subdiretorio || null,
+      perfilVSCode: this.perfilVSCode || null,
+      comandos: {
+        instalar: this.comandosObj.instalar,
+        iniciar: this.comandosObj.iniciar,
+        buildar: this.comandosObj.buildar,
+        abrirNoVSCode: this.comandosObj.abrirNoVSCode
+      },
+      arquivoCoverage: this.arquivoCoverage || null,
+      expandido: this.expandido
+    };
   }
 }
