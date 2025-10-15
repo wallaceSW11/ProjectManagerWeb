@@ -184,8 +184,8 @@
                           height="40px"
                           color="primary"
                           density="compact"
-                          :append-icon="iconeAbrirVSCode(comando.valor)"
-                          @click:append="() => abrirVSCode(projeto)"
+                          :append-icon="iconeAcaoMenu(comando.valor)"
+                          @click:append="() => executarAcaoMenuAvulso(projeto, comando.valor)"
                         />
                       </div>
                     </v-expand-transition>
@@ -557,16 +557,16 @@
     }
   };
 
-  const iconeAbrirVSCode = computed(() => (comando: string) => {
+  const iconeAcaoMenu = computed(() => (comando: string) => {
     return comando === TIPO_COMANDO.ABRIR_NO_VSCODE.valor
       ? 'mdi-open-in-new'
-      : '';
+      : 'mdi-flash';
   });
 
-  const abrirVSCode = async (projeto: IProjeto) => {
+  const executarAcaoMenuAvulso = async (projeto: IProjeto, comando: string) => {
     const projetoComando = Object.assign({}, projeto);
 
-    projetoComando.comandos = [TIPO_COMANDO.ABRIR_NO_VSCODE.valor];
+    projetoComando.comandos = [comando];
 
     const payload: PayloadComando = {
       diretorio: pastaSelecionada.diretorio,
