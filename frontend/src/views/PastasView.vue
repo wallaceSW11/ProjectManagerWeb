@@ -171,7 +171,7 @@
                     </div>
                   </v-card-title>
 
-                  <v-card-text class="pa-0 ma-0 ml-4">
+                  <v-card-text class="pa-0 ma-0 ml-4 pr-4">
                     <v-expand-transition>
                       <div v-if="projeto.expandido">
                         <v-switch
@@ -184,6 +184,8 @@
                           height="40px"
                           color="primary"
                           density="compact"
+                          :append-icon="iconeAcaoMenu(comando.valor)"
+                          @click:append="() => executarAcaoMenuAvulso(projeto, comando.valor)"
                         />
                       </div>
                     </v-expand-transition>
@@ -223,8 +225,8 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, onUnmounted, reactive, ref } from 'vue';
-  import type { IPasta } from '@/types';
+  import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+  import type { IPasta, IProjeto } from '@/types';
   import PastasService from '@/services/PastasService';
   import PastaModel from '@/models/PastaModel';
   import ProjetoModel from '@/models/ProjetoModel';
@@ -234,6 +236,7 @@
   import CardPasta from '@/components/pastas/CardPasta.vue';
   import draggable from 'vuedraggable';
   import { useConfiguracaoStore } from '@/stores/configuracao';
+  import { TIPO_COMANDO } from '@/constants/geral-constants';
 
   interface MenuProjeto {
     identificador: number;
@@ -553,6 +556,35 @@
       notificar('erro', 'Falha ao atualizar o estado do projeto');
     }
   };
+
+  const iconeAcaoMenu = computed(() => (comando: string) => {
+    return comando === TIPO_COMANDO.ABRIR_NO_VSCODE.valor
+      ? 'mdi-open-in-new'
+      : 'mdi-flash';
+  });
+
+  const executarAcaoMenuAvulso = async (projeto: IProjeto, comando: string) => {
+    const projetoComando = Object.assign({}, projeto);
+
+    projetoComando.comandos = [comando];
+
+    const payload: PayloadComando = {
+      diretorio: pastaSelecionada.diretorio,
+      repositorioId: pastaSelecionada.repositorioId || '',
+      projetos: [projetoComando],
+    };
+
+    try {
+      console.log(payload);
+      await carregandoAsync(async () => {
+        await ComandosService.executarComando(payload);
+      });
+      notificar('sucesso', 'Comando solicitado');
+    } catch (error) {
+      console.error('Falha ao executar a acao: ', error);
+      notificar('erro', 'Falha ao executar a ação', String(error));
+    }
+  };
 </script>
 
 <style scoped>
@@ -560,10 +592,6 @@
     height: calc(100dvh - 140px);
     overflow: auto;
   }
-
-  /* :deep(.v-checkbox .v-selection-control) {
-    min-height: 40px;
-  } */
 
   .altura-acoes {
     height: calc(100dvh - 140px);
