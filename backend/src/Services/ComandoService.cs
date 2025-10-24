@@ -135,13 +135,18 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     menuRepositorio.Arquivos?.ForEach(a =>
     {
       var nomeArquivo = Path.GetFileName(a.Arquivo);
+      var diretorioDestino = Path.Combine(menu.Diretorio, a.Destino);
+
+      // Cria o diretório de destino se não existir
+      if (!Directory.Exists(diretorioDestino))
+        Directory.CreateDirectory(diretorioDestino);
 
       if (a.IgnorarGit)
         comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; cd {menu.Diretorio}\\{a.Destino}; git update-index --assume-unchanged {nomeArquivo}; Exit;");
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; cd {diretorioDestino}; git update-index --assume-unchanged {nomeArquivo}; Exit;");
       else
         comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{menu.Diretorio}\\{a.Destino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
     });
 
     try
