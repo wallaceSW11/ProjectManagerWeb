@@ -7,6 +7,7 @@ export default class RepositorioModel implements IRepositorio {
   url: string | null;
   titulo: string;
   nome: string;
+  cor?: string | null;
   projetos: IProjeto[];
   agregados: string[];
   menus: IMenu[];
@@ -16,6 +17,7 @@ export default class RepositorioModel implements IRepositorio {
     this.url = obj.url || null;
     this.titulo = obj.titulo || '';
     this.nome = obj.nome || '';
+    this.cor = obj.cor || null;
     this.projetos = Array.isArray(obj.projetos)
       ? obj.projetos.map((p: any) => new ProjetoModel(p))
       : [];
@@ -32,6 +34,7 @@ export default class RepositorioModel implements IRepositorio {
       url: this.url,
       titulo: this.titulo,
       nome: this.nome,
+      cor: this.cor,
       projetos: this.projetos.map((p: any) => p.toDTO()),
       agregados: this.agregados,
       menus: this.menus

@@ -27,6 +27,16 @@
       </v-col>
 
       <v-col cols="12">
+        <v-text-field
+          label="Cor"
+          v-model="repositorio.cor"
+          type="color"
+          hint="Cor da borda esquerda nos cards de pasta"
+          persistent-hint
+        />
+      </v-col>
+
+      <v-col cols="12">
         <v-select
           label="Agregados"
           v-model="repositorio.agregados"

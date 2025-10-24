@@ -42,6 +42,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           "",
           new Guid(),
           null,
+          null,
           [],
           [],
           indice
@@ -136,6 +137,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.Url,
         repositorio.Identificador,
         pasta.Identificador,
+        repositorio.Cor,
         projetosDisponiveis,
         repositorio.Menus ?? [],
         pasta.Indice

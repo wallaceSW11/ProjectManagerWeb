@@ -71,6 +71,7 @@
                 <CardPasta
                   :pasta="element"
                   :pasta-selecionada="pastaSelecionada"
+                  :cor="element.cor"
                   @selecionarPasta="selecionarPasta"
                   @exibir-cadastro-pasta="exibirCadastroPasta"
                   @executar-menu="executarMenu"

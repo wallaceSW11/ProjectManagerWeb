@@ -6,6 +6,7 @@
         'card-selecionado': pastaSelecionada.diretorio === pasta.diretorio,
       },
     ]"
+    :style="estiloBorda"
     @click="selecionarPasta(pasta)"
   >
     <v-card-title>
@@ -145,6 +146,13 @@
 
   const dadosTipo = computed((): TipoInfo => {
     return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM;
+  });
+
+  const estiloBorda = computed(() => {
+    const cor = props.pasta.cor || 'rgb(var(--v-theme-primary))';
+    return {
+      borderLeft: `4px solid ${cor}`
+    };
   });
 
   const abrirDiretorio = (diretorio: string): void => {
