@@ -94,18 +94,6 @@
           </v-icon>
           Sites IIS
         </v-btn>
-        <v-btn
-          class="text-none"
-          :to="{ name: 'sites-iis' }"
-        >
-          <v-icon
-            class="pr-2"
-            color="primary"
-          >
-            mdi-cog-box
-          </v-icon>
-          Sites
-        </v-btn>
         <v-menu>
           <template v-slot:activator="{ props }">
             <v-btn
@@ -123,6 +111,19 @@
             </v-btn>
           </template>
           <v-list>
+            <v-list-item :to="{ name: 'sites-iis' }">
+              <v-list-item-title>
+                <v-icon
+                  size="small"
+                  class="mr-2"
+                  color="primary"
+                >
+                  mdi-cog-box
+                </v-icon>
+                Gerenciar sites
+              </v-list-item-title>
+            </v-list-item>
+            <v-divider v-if="sitesParaDeploy.length > 0" class="my-1" />
             <v-list-item
               v-for="site in sitesParaDeploy"
               :key="site.identificador"
