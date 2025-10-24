@@ -150,8 +150,15 @@
 
   const estiloBorda = computed(() => {
     const cor = props.pasta.cor || 'rgb(var(--v-theme-primary))';
+    const isSelected = props.pastaSelecionada.diretorio === props.pasta.diretorio;
+    
     return {
-      borderLeft: `4px solid ${cor}`
+      borderLeft: `6px solid ${cor}`,
+      ...(isSelected && { 
+        borderTop: `1px solid ${cor}`,
+        borderRight: `1px solid ${cor}`,
+        borderBottom: `1px solid ${cor}`
+      })
     };
   });
 
@@ -161,7 +168,5 @@
 </script>
 
 <style scoped>
-  .card-selecionado {
-    border: 1px solid rgb(var(--v-theme-primary));
-  }
+  /* Removido - agora é aplicado dinamicamente via computed */
 </style>
