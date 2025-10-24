@@ -143,11 +143,11 @@
       fecharClone();
       Object.assign(clone, new CloneModel());
       clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
-
+      notificar('sucesso', 'Clone iniciado');
+      
       carregando(true, 'Clonando...');
       setTimeout(() => {
-        carregando(false);
-        notificar('sucesso', 'Clone iniciado');
+        carregando(false);        
         atualizarListaPastas();
       }, 2000);
     } catch (error) {

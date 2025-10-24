@@ -74,6 +74,7 @@
                   @selecionarPasta="selecionarPasta"
                   @exibir-cadastro-pasta="exibirCadastroPasta"
                   @executar-menu="executarMenu"
+                  @abrirDiretorio="abrirDiretorio"
                 />
               </template>
             </draggable>
@@ -583,6 +584,17 @@
     } catch (error) {
       console.error('Falha ao executar a acao: ', error);
       notificar('erro', 'Falha ao executar a ação', String(error));
+    }
+  };
+
+  const abrirDiretorio = (diretorio: string): void => {
+    try {
+      const comando = `cd ${diretorio}; explorer .; Exit;`;
+      ComandosService.executarComandoAvulso({ comando });
+      notificar('sucesso', 'Comando solicitado');
+    } catch (error) {
+      console.error('Falha ao abrir o diretório: ', error);
+      notificar('erro', 'Falha ao abrir o diretório', String(error));
     }
   };
 </script>
