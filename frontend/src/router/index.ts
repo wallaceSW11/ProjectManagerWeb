@@ -20,6 +20,11 @@ const routes: RouteRecordRaw[] = [
     name: 'repositorios',
     component: () => import('../views/RepositoriosView.vue'),
   },
+  {
+    path: '/sites-iis',
+    name: 'sites-iis',
+    component: () => import('../views/SitesIISView.vue'),
+  },
 ];
 
 const router = createRouter({

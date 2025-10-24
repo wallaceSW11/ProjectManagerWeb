@@ -53,8 +53,9 @@
           <v-icon
             class="pr-2"
             color="primary"
-            >mdi-git</v-icon
           >
+            mdi-git
+          </v-icon>
           Clonar
         </v-btn>
         <v-btn
@@ -64,8 +65,9 @@
           <v-icon
             class="pr-2"
             color="primary"
-            >mdi-folder</v-icon
           >
+            mdi-folder
+          </v-icon>
           Pastas
         </v-btn>
         <v-btn
@@ -75,8 +77,9 @@
           <v-icon
             class="pr-2"
             color="primary"
-            >mdi-source-repository</v-icon
           >
+            mdi-source-repository
+          </v-icon>
           Repositórios
         </v-btn>
         <v-btn
@@ -86,10 +89,65 @@
           <v-icon
             class="pr-2"
             color="primary"
-            >mdi-web</v-icon
           >
+            mdi-web
+          </v-icon>
           Sites IIS
         </v-btn>
+        <v-btn
+          class="text-none"
+          :to="{ name: 'sites-iis' }"
+        >
+          <v-icon
+            class="pr-2"
+            color="primary"
+          >
+            mdi-cog-box
+          </v-icon>
+          Sites
+        </v-btn>
+        <v-menu>
+          <template v-slot:activator="{ props }">
+            <v-btn
+              class="text-none"
+              v-bind="props"
+            >
+              <v-icon
+                class="pr-2"
+                color="success"
+              >
+                mdi-cloud-upload
+              </v-icon>
+              Deploy
+              <v-icon>mdi-menu-down</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="site in sitesParaDeploy"
+              :key="site.identificador"
+              @click="dispararDeploy(site)"
+            >
+              <v-list-item-title>
+                <v-icon
+                  size="small"
+                  class="mr-2"
+                >
+                  mdi-rocket-launch
+                </v-icon>
+                Atualizar {{ site.titulo }}
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item
+              v-if="sitesParaDeploy.length === 0"
+              disabled
+            >
+              <v-list-item-title class="text-grey">
+                Nenhum site cadastrado
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
         <v-btn
           icon
           :to="{ name: 'configuracao' }"
@@ -97,8 +155,9 @@
           <v-icon
             class="pr-2"
             color="primary"
-            >mdi-cog</v-icon
           >
+            mdi-cog
+          </v-icon>
         </v-btn>
 
         <v-btn>
@@ -106,8 +165,9 @@
           <v-tooltip
             activator="parent"
             location="left"
-            >{{ `Compilado em: ${compiladoEm}` }}</v-tooltip
           >
+            {{ `Compilado em: ${compiladoEm}` }}
+          </v-tooltip>
         </v-btn>
       </div>
     </v-app-bar>
@@ -130,10 +190,35 @@
   import eventBus, { carregandoAsync } from '@/utils/eventBus';
   import SitesGerenciamento from '@/components/sites/SitesGerenciamento.vue';
   import { UX_CONFIG } from '@/constants/geral-constants';
+  import { useSiteIISStore } from '@/stores/siteIIS';
 
   const compiladoEm = ref();
   const exibirModalClone = ref(false);
   const exibirModalSites = ref(false);
+
+  const siteIISStore = useSiteIISStore();
+  const sitesParaDeploy = ref([]);
+
+  const carregarSitesParaDeploy = async () => {
+    try {
+      await siteIISStore.carregarSites();
+      sitesParaDeploy.value = siteIISStore.sites;
+    } catch (error) {
+      console.error('Erro ao carregar sites:', error);
+    }
+  };
+
+  // Expor função para recarregar sites (para ser chamada após salvar)
+  window.recarregarSitesParaDeploy = carregarSitesParaDeploy;
+
+  const dispararDeploy = async site => {
+    try {
+      await siteIISStore.dispararDeploy(site.identificador);
+      // O acompanhamento será feito via janela do PowerShell
+    } catch (error) {
+      console.error('Erro ao disparar deploy:', error);
+    }
+  };
 
   const consultarVersao = async () => {
     try {
@@ -177,14 +262,15 @@
   onMounted(async () => {
     // Configura o listener do evento de carregamento
     eventBus.on('carregando', handleCarregando);
-    
+
     // Inicia a consulta da versão e aplica o delay inicial
     await consultarVersao();
+    await carregarSitesParaDeploy();
   });
 
   onBeforeUnmount(() => {
     eventBus.off('carregando', handleCarregando);
-    
+
     // Limpa o timeout se ainda estiver ativo
     if (timeoutDelayCarregando) {
       clearTimeout(timeoutDelayCarregando);

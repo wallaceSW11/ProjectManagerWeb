@@ -59,6 +59,38 @@ public class ShellExecute
     }
 
     /// <summary>
+    /// Executa um comando PowerShell com privilégios de administrador, mantendo o console aberto.
+    /// </summary>
+    /// <param name="command">O comando a ser executado.</param>
+    public static void ExecutarComandoComoAdministrador(string command)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+            throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
+
+        // Log assíncrono sem bloquear
+        _ = Task.Run(() => LogComandoAsync(command, "ADMIN SOLICITADO"));
+
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "pwsh.exe",
+                Arguments = $"-NoExit -Command \"{command}\"",
+                UseShellExecute = true,
+                Verb = "runas" // Solicita elevação de privilégios
+            };
+
+            Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            // Log de erro
+            _ = Task.Run(() => LogComandoAsync(command, $"ADMIN ERRO: {ex.Message}"));
+            throw new Exception($"Erro ao executar o comando como administrador: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
     /// Executa um comando PowerShell sem interface visível (em background).
     /// </summary>
     /// <param name="command">O comando a ser executado.</param>

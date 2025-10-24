@@ -1,0 +1,117 @@
+### Listar todos os sites IIS
+GET http://localhost:2025/api/sites-iis
+Content-Type: application/json
+
+###
+
+### Buscar site por ID
+GET http://localhost:2025/api/sites-iis/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+
+### Cadastrar novo site
+POST http://localhost:2025/api/sites-iis
+Content-Type: application/json
+
+{
+  "identificador": "{{$guid}}",
+  "nome": "BimerUp_m",
+  "pastaRaiz": "C:\\inetpub\\wwwroot\\BimerUP_m",
+  "pastas": [
+    {
+      "identificador": "{{$guid}}",
+      "diretorioTrabalho": "C:\\git\\bimerup\\frontend",
+      "comandoPublish": "npm run publish",
+      "caminhoOrigem": "C:\\git\\bimerup\\frontend\\dist",
+      "caminhoDestino": "C:\\inetpub\\wwwroot\\BimerUP_m\\bimerup",
+      "nomePastaDestino": "bimerup"
+    }
+  ],
+  "poolsAplicacao": [
+    "BimerUp_m",
+    "BimerUp_m_WS"
+  ]
+}
+
+###
+
+### Atualizar site existente
+PUT http://localhost:2025/api/sites-iis/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "identificador": "00000000-0000-0000-0000-000000000000",
+  "nome": "BimerUp_m",
+  "pastaRaiz": "C:\\inetpub\\wwwroot\\BimerUP_m",
+  "pastas": [
+    {
+      "identificador": "{{$guid}}",
+      "diretorioTrabalho": "C:\\git\\bimerup\\frontend",
+      "comandoPublish": "npm run build",
+      "caminhoOrigem": "C:\\git\\bimerup\\frontend\\dist",
+      "caminhoDestino": "C:\\inetpub\\wwwroot\\BimerUP_m\\bimerup",
+      "nomePastaDestino": "bimerup"
+    }
+  ],
+  "poolsAplicacao": [
+    "BimerUp_m",
+    "BimerUp_m_WS"
+  ]
+}
+
+###
+
+### Excluir site
+DELETE http://localhost:2025/api/sites-iis/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+
+### Disparar atualização do site (DEPLOY)
+POST http://localhost:2025/api/sites-iis/00000000-0000-0000-0000-000000000000/atualizar
+Content-Type: application/json
+
+###
+
+### Exemplo de site com múltiplas pastas (micro frontends)
+POST http://localhost:2025/api/sites-iis
+Content-Type: application/json
+
+{
+  "identificador": "{{$guid}}",
+  "nome": "MeuSite_Principal",
+  "pastaRaiz": "C:\\inetpub\\wwwroot\\MeuSite",
+  "pastas": [
+    {
+      "identificador": "{{$guid}}",
+      "diretorioTrabalho": "C:\\git\\meusite\\frontend-admin",
+      "comandoPublish": "npm run build",
+      "caminhoOrigem": "C:\\git\\meusite\\frontend-admin\\dist",
+      "caminhoDestino": "C:\\inetpub\\wwwroot\\MeuSite\\admin",
+      "nomePastaDestino": "admin"
+    },
+    {
+      "identificador": "{{$guid}}",
+      "diretorioTrabalho": "C:\\git\\meusite\\frontend-portal",
+      "comandoPublish": "npm run publish",
+      "caminhoOrigem": "C:\\git\\meusite\\frontend-portal\\dist",
+      "caminhoDestino": "C:\\inetpub\\wwwroot\\MeuSite\\portal",
+      "nomePastaDestino": "portal"
+    },
+    {
+      "identificador": "{{$guid}}",
+      "diretorioTrabalho": "C:\\git\\meusite\\backend",
+      "comandoPublish": "dotnet publish -c Release -o ./publish",
+      "caminhoOrigem": "C:\\git\\meusite\\backend\\publish",
+      "caminhoDestino": "C:\\inetpub\\wwwroot\\MeuSite\\api",
+      "nomePastaDestino": "api"
+    }
+  ],
+  "poolsAplicacao": [
+    "MeuSite_AppPool",
+    "MeuSite_API_Pool"
+  ]
+}
+
+###

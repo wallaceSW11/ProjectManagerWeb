@@ -31,6 +31,8 @@ builder.Services.AddSingleton<PastaService>();
 builder.Services.AddSingleton<ComandoService>();
 builder.Services.AddSingleton<PastaJsonService>();
 builder.Services.AddSingleton<IISService>();
+builder.Services.AddSingleton<SiteIISJsonService>();
+builder.Services.AddSingleton<DeployIISService>();
 
 var app = builder.Build();
 
