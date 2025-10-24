@@ -4,7 +4,7 @@
       <v-text-field
         v-model="novoPool"
         label="Nome do Pool de Aplicação"
-        placeholder="seu-site"
+        placeholder=""
         @keyup.enter="adicionarPool"
         hide-details
       />

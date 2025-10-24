@@ -44,50 +44,63 @@
         larguraMaxima="900px"
       >
         <v-form ref="formPasta">
-          <v-text-field
-            label="Nome da Pasta Destino"
-            v-model="pastaEmEdicao.nomePastaDestino"
-            :rules="obrigatorio"
-            placeholder="seu-micro-frontend"
-            hint="Nome da pasta para backup (timestamp será adicionado)"
-            persistent-hint
-          />
-          
-          <v-text-field
-            label="Diretório de Trabalho"
-            v-model="pastaEmEdicao.diretorioTrabalho"
-            :rules="obrigatorio"
-            placeholder="C:\git\seu-projeto\frontend"
-            hint="Onde o comando de build será executado"
-            persistent-hint
-          />
-          
-          <v-text-field
-            label="Comando de Publish"
-            v-model="pastaEmEdicao.comandoPublish"
-            :rules="obrigatorio"
-            placeholder="npm run build"
-            hint="Comando para fazer build/publish do projeto"
-            persistent-hint
-          />
-          
-          <v-text-field
-            label="Caminho Origem"
-            v-model="pastaEmEdicao.caminhoOrigem"
-            :rules="obrigatorio"
-            placeholder="C:\git\seu-projeto\frontend\dist"
-            hint="Pasta gerada após o build"
-            persistent-hint
-          />
-          
-          <v-text-field
-            label="Caminho Destino"
-            v-model="pastaEmEdicao.caminhoDestino"
-            :rules="obrigatorio"
-            placeholder="C:\inetpub\wwwroot\seu-site\seu-micro-frontend"
-            hint="Destino no IIS"
-            persistent-hint
-          />
+          <v-row no-gutters>
+            <v-col cols="12" class="mb-4">
+              <v-text-field
+                label="Nome da Pasta Destino"
+                v-model="pastaEmEdicao.nomePastaDestino"
+                :rules="obrigatorio"
+                hint="Nome da pasta para backup (timestamp será adicionado)"
+                persistent-hint
+                @blur="sugerirCaminhosComBaseNaPasta"
+              />
+            </v-col>
+            
+            <v-col cols="12" class="mb-4">
+              <v-text-field
+                label="Diretório de Trabalho"
+                v-model="pastaEmEdicao.diretorioTrabalho"
+                :rules="obrigatorio"
+                placeholder="C:\git\seu-projeto\frontend"
+                hint="Onde o comando de build será executado"
+                persistent-hint
+                @blur="sugerirCaminhoOrigem"
+              />
+            </v-col>
+            
+            <v-col cols="12" class="mb-4">
+              <v-text-field
+                label="Comando de Publish"
+                v-model="pastaEmEdicao.comandoPublish"
+                :rules="obrigatorio"
+                placeholder="npm run build"
+                hint="Comando para fazer build/publish do projeto"
+                persistent-hint
+              />
+            </v-col>
+            
+            <v-col cols="12" class="mb-4">
+              <v-text-field
+                label="Caminho Origem"
+                v-model="pastaEmEdicao.caminhoOrigem"
+                :rules="obrigatorio"
+                placeholder="C:\git\seu-projeto\frontend\dist"
+                hint="Pasta gerada após o build"
+                persistent-hint
+              />
+            </v-col>
+            
+            <v-col cols="12" class="mb-4">
+              <v-text-field
+                label="Caminho Destino"
+                v-model="pastaEmEdicao.caminhoDestino"
+                :rules="obrigatorio"
+                placeholder="C:\inetpub\wwwroot\seu-site\seu-micro-frontend"
+                hint="Destino no IIS"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
         </v-form>
       </ModalPadrao>
     </div>
@@ -117,6 +130,12 @@
 
   const prepararParaCadastro = () => {
     Object.assign(pastaEmEdicao, new PastaDeployModel());
+    
+    // Sugerir caminho de destino baseado na pasta raiz do site
+    if (site.value.pastaRaiz) {
+      pastaEmEdicao.caminhoDestino = site.value.pastaRaiz;
+    }
+    
     emModoCadastro.value = true;
     exibirModalCadastroPasta.value = true;
   };
@@ -125,6 +144,24 @@
     Object.assign(pastaEmEdicao, pasta);
     emModoCadastro.value = false;
     exibirModalCadastroPasta.value = true;
+  };
+
+  const sugerirCaminhosComBaseNaPasta = () => {
+    if (!pastaEmEdicao.nomePastaDestino) return;
+
+    // Sugerir caminho de destino se estiver vazio
+    if (!pastaEmEdicao.caminhoDestino && site.value.pastaRaiz) {
+      pastaEmEdicao.caminhoDestino = `${site.value.pastaRaiz}\\${pastaEmEdicao.nomePastaDestino}`;
+    }
+  };
+
+  const sugerirCaminhoOrigem = () => {
+    if (!pastaEmEdicao.diretorioTrabalho) return;
+
+    // Sugerir caminho de origem baseado no diretório de trabalho (completo)
+    if (!pastaEmEdicao.caminhoOrigem) {
+      pastaEmEdicao.caminhoOrigem = pastaEmEdicao.diretorioTrabalho;
+    }
   };
 
   const salvarAlteracoes = async () => {
