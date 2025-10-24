@@ -40,6 +40,7 @@ export interface IRepositorio {
   url: string | null;
   titulo: string;
   nome: string;
+  cor?: string | null;
   projetos: IProjeto[];
   agregados: string[];
   menus: IMenu[];
@@ -54,6 +55,7 @@ export interface IPasta {
   branch: string;
   git: string;
   repositorioId?: string;
+  cor?: string | null;
   projetos: IProjeto[];
   menus: IMenu[];
   index: number;
