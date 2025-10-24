@@ -148,6 +148,13 @@
             </v-list-item>
           </v-list>
         </v-menu>
+        
+        <v-divider
+          vertical
+          class="mx-2"
+          style="height: 32px; align-self: center;"
+        />
+        
         <v-btn
           icon
           :to="{ name: 'configuracao' }"
@@ -159,21 +166,15 @@
             mdi-cog
           </v-icon>
         </v-btn>
-
-        <v-btn>
-          <v-icon color="primary">mdi-calendar</v-icon>
-          <v-tooltip
-            activator="parent"
-            location="left"
-          >
-            {{ `Compilado em: ${compiladoEm}` }}
-          </v-tooltip>
-        </v-btn>
       </div>
     </v-app-bar>
 
     <v-main>
       <router-view />
+      
+      <div class="watermark-footer">
+        Compilado em: {{ compiladoEm }}
+      </div>
     </v-main>
   </v-app>
 
@@ -278,3 +279,17 @@
     }
   });
 </script>
+
+<style scoped>
+.watermark-footer {
+  position: fixed;
+  bottom: 8px;
+  left: 16px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+  user-select: none;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+}
+</style>
