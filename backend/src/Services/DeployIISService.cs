@@ -147,16 +147,20 @@ namespace ProjectManagerWeb.src.Services
             {
                 script.AppendLine($"Write-Host 'Processando: {pasta.NomePastaDestino}' -ForegroundColor Yellow");
                 
-                // Backup da pasta atual
-                script.AppendLine($"if (Test-Path '{pasta.CaminhoDestino}') {{");
+                // Monta o caminho real da pasta (PastaRaiz + NomePastaDestino)
+                script.AppendLine($"$caminhoRealPasta = Join-Path '{site.PastaRaiz}' '{pasta.NomePastaDestino}'");
+                
+                // Backup da pasta atual (renomeia adicionando timestamp)
+                script.AppendLine("if (Test-Path $caminhoRealPasta) {");
                 script.AppendLine($"    Write-Host 'Fazendo backup de {pasta.NomePastaDestino}...' -ForegroundColor Gray");
-                script.AppendLine($"    Rename-Item '{pasta.CaminhoDestino}' '{pasta.NomePastaDestino}_$timestamp'");
+                script.AppendLine("    $pastaBackup = $caminhoRealPasta + '_' + $timestamp");
+                script.AppendLine("    Rename-Item $caminhoRealPasta $pastaBackup");
                 script.AppendLine($"    Write-Host 'Backup salvo como: {pasta.NomePastaDestino}_$timestamp' -ForegroundColor Green");
                 script.AppendLine("}");
                 
                 // Copiar nova versão
                 script.AppendLine($"Write-Host 'Copiando arquivos de {pasta.CaminhoOrigem}...' -ForegroundColor Gray");
-                script.AppendLine($"Copy-Item '{pasta.CaminhoOrigem}' '{pasta.CaminhoDestino}' -Recurse -Force");
+                script.AppendLine($"Copy-Item '{pasta.CaminhoOrigem}' $caminhoRealPasta -Recurse -Force");
                 script.AppendLine($"Write-Host 'Cópia concluída!' -ForegroundColor Green");
                 script.AppendLine("");
             }
@@ -187,12 +191,12 @@ namespace ProjectManagerWeb.src.Services
             script.AppendLine("# DEPLOY CONCLUÍDO");
             script.AppendLine("# ========================================");
             script.AppendLine("Write-Host '=== DEPLOY CONCLUÍDO COM SUCESSO! ===' -ForegroundColor Green");
-            script.AppendLine($"Write-Host 'Backup criado com timestamp: $timestamp' -ForegroundColor Cyan");
+            script.AppendLine("Write-Host \"Backup criado com timestamp: $timestamp\" -ForegroundColor Cyan");
             script.AppendLine("");
             script.AppendLine("# Pausar e fechar");
             script.AppendLine("Write-Host 'Pressione qualquer tecla para fechar...' -ForegroundColor Yellow");
             script.AppendLine("$null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')");
-            script.AppendLine("exit");
+            script.AppendLine("Stop-Process -Id $PID");
 
             // Garantir que o diretório de logs existe
             if (!Directory.Exists(LogPath))
