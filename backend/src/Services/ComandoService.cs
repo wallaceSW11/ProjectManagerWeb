@@ -44,7 +44,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
           var texto = "code . ";
 
           if (!string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
-            texto += $"--profile {projetoCadastrado.PerfilVSCode}";
+            texto += $"--profile \"{projetoCadastrado.PerfilVSCode}\"";
 
           comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;");
         }
@@ -88,7 +88,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
           var texto = "code . ";
 
           if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
-            texto += $"--profile {projetoAgregadoCadastrado.PerfilVSCode}";
+            texto += $"--profile \"{projetoAgregadoCadastrado.PerfilVSCode}\"";
 
           comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;");
         }
