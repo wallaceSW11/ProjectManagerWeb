@@ -18,6 +18,7 @@ namespace ProjectManagerWeb.src.DTOs
         string Url,
         string Nome,
         string Titulo,
+        string? Cor,
         List<ProjetoDTO> Projetos,
         List<Guid>? Agregados,
         List<MenuDTO>? Menus

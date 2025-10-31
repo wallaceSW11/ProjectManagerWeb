@@ -6,6 +6,7 @@
         'card-selecionado': pastaSelecionada.diretorio === pasta.diretorio,
       },
     ]"
+    :style="estiloBorda"
     @click="selecionarPasta(pasta)"
   >
     <v-card-title>
@@ -63,20 +64,14 @@
       </div>
     </v-card-title>
 
-    <v-card-text>
-      <v-row no-gutters>
+    <v-card-text class="pb-2">
+      <v-row no-gutters class="pt-2">
         <v-col
           cols="12"
           class="pb-1"
         >
           <v-icon>mdi-folder</v-icon>
-          {{ pasta.diretorio }}
-        </v-col>
-
-        <v-col
-          cols="12"
-          class="pt-1"
-        >
+          <span @click="() => abrirDiretorio(pasta.diretorio)" class="link pl-1">{{ pasta.diretorio }}</span>
         </v-col>
       </v-row>
     </v-card-text>
@@ -98,6 +93,7 @@
     selecionarPasta: [pasta: IPasta];
     exibirCadastroPasta: [pasta: IPasta];
     executarMenu: [pasta: IPasta, menuId: string];
+    abrirDiretorio: [diretorio: string];
   }>();
 
   const selecionarPasta = (pasta: IPasta): void => {
@@ -151,10 +147,26 @@
   const dadosTipo = computed((): TipoInfo => {
     return TIPOS[props.pasta.tipo.toUpperCase()] || TIPOS.NENHUM;
   });
+
+  const estiloBorda = computed(() => {
+    const cor = props.pasta.cor || 'rgb(var(--v-theme-primary))';
+    const isSelected = props.pastaSelecionada.diretorio === props.pasta.diretorio;
+    
+    return {
+      borderLeft: `6px solid ${cor}`,
+      ...(isSelected && { 
+        borderTop: `1px solid ${cor}`,
+        borderRight: `1px solid ${cor}`,
+        borderBottom: `1px solid ${cor}`
+      })
+    };
+  });
+
+  const abrirDiretorio = (diretorio: string): void => {
+    emit('abrirDiretorio', diretorio);
+  };
 </script>
 
 <style scoped>
-  .card-selecionado {
-    border: 1px solid rgb(var(--v-theme-primary));
-  }
+  /* Removido - agora é aplicado dinamicamente via computed */
 </style>

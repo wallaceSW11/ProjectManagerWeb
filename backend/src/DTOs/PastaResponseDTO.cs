@@ -11,6 +11,7 @@ public sealed record PastaResponseDTO(
     string Git,
     Guid RepositorioId,
     Guid? Identificador,
+    string? Cor,
     List<ProjetoDisponivelDTO> Projetos,
     List<MenuDTO>? Menus,
     int? Indice = null

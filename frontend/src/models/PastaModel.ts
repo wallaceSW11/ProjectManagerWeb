@@ -10,6 +10,7 @@ export default class PastaModel implements IPasta {
   branch: string;
   git: string;
   repositorioId?: string;
+  cor?: string | null;
   projetos: IProjeto[];
   menus: IMenu[];
   index: number;
@@ -23,6 +24,7 @@ export default class PastaModel implements IPasta {
     this.branch = obj.branch || '';
     this.git = obj.git || '';
     this.repositorioId = obj.repositorioId;
+    this.cor = obj.cor || null;
     this.projetos = (obj.projetos || []).map((p: any) => new ProjetoModel(p));
     this.menus = obj.menus || [];
     this.index = obj.index || 999;
