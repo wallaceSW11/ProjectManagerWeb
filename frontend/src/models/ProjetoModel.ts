@@ -12,6 +12,7 @@ export default class ProjetoModel implements IProjeto {
   expandido: boolean;
   identificadorRepositorioAgregado?: string;
   comandosObj: IComandos;
+  nomeIDE?: string | null;
 
   constructor(obj: Partial<IProjeto> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -23,6 +24,7 @@ export default class ProjetoModel implements IProjeto {
     this.arquivoCoverage = obj.arquivoCoverage || '';
     this.expandido = obj.expandido || false;
     this.identificadorRepositorioAgregado = obj.identificadorRepositorioAgregado;
+    this.nomeIDE = obj.nomeIDE;
     
     // Handle comandosObj from backend or frontend
     if (obj.comandosObj) {
@@ -38,7 +40,7 @@ export default class ProjetoModel implements IProjeto {
         instalar: null,
         iniciar: null,
         buildar: null,
-        abrirNoVSCode: false
+        ideIdentificador: null
       };
     }
   }
@@ -58,8 +60,8 @@ export default class ProjetoModel implements IProjeto {
     if (this.comandosObj.buildar) {
       this.comandos.push(TIPO_COMANDO.BUILDAR.valor);
     }
-    if (this.comandosObj.abrirNoVSCode) {
-      this.comandos.push(TIPO_COMANDO.ABRIR_NO_VSCODE.valor);
+    if (this.comandosObj.ideIdentificador) {
+      this.comandos.push(TIPO_COMANDO.ABRIR_NA_IDE.valor);
     }
   }
 
@@ -92,12 +94,20 @@ export default class ProjetoModel implements IProjeto {
             ativo: true
           });
           break;
-        case TIPO_COMANDO.ABRIR_NO_VSCODE.valor:
+        case TIPO_COMANDO.ABRIR_NA_IDE.valor:
+          // Usa o nome da IDE que veio do backend
+          const tituloIDE = this.nomeIDE 
+            ? `Abrir no ${this.nomeIDE}` 
+            : TIPO_COMANDO.ABRIR_NA_IDE.titulo;
           comandosDisponiveis.push({
-            titulo: TIPO_COMANDO.ABRIR_NO_VSCODE.titulo,
-            valor: TIPO_COMANDO.ABRIR_NO_VSCODE.valor,
+            titulo: tituloIDE,
+            valor: TIPO_COMANDO.ABRIR_NA_IDE.valor,
             ativo: true
           });
+          break;
+        // Ignorar comandos desconhecidos (ex: ABRIR_NO_VSCODE antigo)
+        default:
+          console.warn(`Comando desconhecido ignorado: ${comando}`);
           break;
       }
     }
@@ -118,7 +128,7 @@ export default class ProjetoModel implements IProjeto {
         instalar: this.comandosObj.instalar,
         iniciar: this.comandosObj.iniciar,
         buildar: this.comandosObj.buildar,
-        abrirNoVSCode: this.comandosObj.abrirNoVSCode
+        ideIdentificador: this.comandosObj.ideIdentificador
       },
       arquivoCoverage: this.arquivoCoverage || null,
       expandido: this.expandido

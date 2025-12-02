@@ -33,7 +33,7 @@ interface TipoComandoConstants {
   INSTALAR: TipoComandoItem;
   INICIAR: TipoComandoItem;
   BUILDAR: TipoComandoItem;
-  ABRIR_NO_VSCODE: TipoComandoItem;
+  ABRIR_NA_IDE: TipoComandoItem;
 }
 
 export const TIPO_COMANDO: TipoComandoConstants = {
@@ -49,9 +49,9 @@ export const TIPO_COMANDO: TipoComandoConstants = {
     titulo: 'Buildar',
     valor: 'BUILDAR',
   },
-  ABRIR_NO_VSCODE: {
-    titulo: 'Abrir no VS Code',
-    valor: 'ABRIR_NO_VSCODE',
+  ABRIR_NA_IDE: {
+    titulo: 'Abrir na IDE',
+    valor: 'ABRIR_NA_IDE',
   },
 };
 

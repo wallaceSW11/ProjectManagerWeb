@@ -33,8 +33,22 @@ builder.Services.AddSingleton<PastaJsonService>();
 builder.Services.AddSingleton<IISService>();
 builder.Services.AddSingleton<SiteIISJsonService>();
 builder.Services.AddSingleton<DeployIISService>();
+builder.Services.AddSingleton<IDEJsonService>();
+builder.Services.AddSingleton<MigrationService>();
 
 var app = builder.Build();
+
+// Executar migrations antes de iniciar a aplicação
+try
+{
+    var migrationService = app.Services.GetRequiredService<MigrationService>();
+    await migrationService.ExecuteMigrationsAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "Erro ao executar migrations durante inicialização");
+}
 
 // Configura porta 2025 em execução standalone (não IIS)
 if (!app.Environment.IsDevelopment())

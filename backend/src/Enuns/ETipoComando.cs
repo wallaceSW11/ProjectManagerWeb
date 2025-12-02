@@ -8,5 +8,5 @@ public enum ETipoComando
     INSTALAR,
     INICIAR,
     BUILDAR,
-    ABRIR_NO_VSCODE
+    ABRIR_NA_IDE
 }

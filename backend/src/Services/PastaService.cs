@@ -4,7 +4,7 @@ using ProjectManagerWeb.src.Enuns;
 
 namespace ProjectManagerWeb.src.Services;
 
-public class PastaService(ConfiguracaoService configuracaoService, RepositorioJsonService repositorioJsonService, PastaJsonService pastaJsonService)
+public class PastaService(ConfiguracaoService configuracaoService, RepositorioJsonService repositorioJsonService, PastaJsonService pastaJsonService, IDEJsonService ideJsonService)
 {
 
   public async Task<List<PastaResponseDTO>> ObterTodas()
@@ -58,7 +58,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
       var projetosDisponiveis = new List<ProjetoDisponivelDTO>();
 
-      repositorio.Projetos.ForEach(projeto =>
+      foreach (var projeto in repositorio.Projetos)
       {
         var comandos = new List<ETipoComando>();
 
@@ -71,8 +71,13 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
           comandos.Add(ETipoComando.BUILDAR);
 
-        if (projeto.Comandos.AbrirNoVSCode)
-          comandos.Add(ETipoComando.ABRIR_NO_VSCODE);
+        string? nomeIDE = null;
+        if (projeto.Comandos.IDEIdentificador != null)
+        {
+          comandos.Add(ETipoComando.ABRIR_NA_IDE);
+          var ide = await ideJsonService.GetByIdAsync(projeto.Comandos.IDEIdentificador.Value);
+          nomeIDE = ide?.Nome;
+        }
 
         projetosDisponiveis.Add(new ProjetoDisponivelDTO(
           projeto.Identificador,
@@ -82,49 +87,59 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           null,
           projeto.ArquivoCoverage,
           projeto.Subdiretorio,
-          projeto.Expandido
+          projeto.Expandido,
+          nomeIDE
         ));
-      });
+      }
 
-      repositorio.Agregados?.ForEach(identificadorAgregado =>
+      if (repositorio.Agregados != null)
       {
-        var repositorioAgregado = repositorios.FirstOrDefault(r => r.Identificador == identificadorAgregado);
-
-        if (repositorioAgregado == null) return;
-
-        if (!Directory.Exists(pastaNoDisco + "\\" + repositorioAgregado.Nome) || string.IsNullOrWhiteSpace(repositorioAgregado.Nome))
-          return;
-
-        repositorioAgregado.Projetos.ForEach(projeto =>
+        foreach (var identificadorAgregado in repositorio.Agregados)
         {
-          var comandos = new List<ETipoComando>();
+          var repositorioAgregado = repositorios.FirstOrDefault(r => r.Identificador == identificadorAgregado);
 
-          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
-            comandos.Add(ETipoComando.INSTALAR);
+          if (repositorioAgregado == null) continue;
 
-          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
-            comandos.Add(ETipoComando.INICIAR);
+          if (!Directory.Exists(pastaNoDisco + "\\" + repositorioAgregado.Nome) || string.IsNullOrWhiteSpace(repositorioAgregado.Nome))
+            continue;
 
-          if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
-            comandos.Add(ETipoComando.BUILDAR);
+          foreach (var projeto in repositorioAgregado.Projetos)
+          {
+            var comandos = new List<ETipoComando>();
 
-          if (projeto.Comandos.AbrirNoVSCode)
-            comandos.Add(ETipoComando.ABRIR_NO_VSCODE);
+            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Instalar))
+              comandos.Add(ETipoComando.INSTALAR);
 
-          var nomeProjetoFormatado = $"{projeto.Nome} ({repositorioAgregado.Nome})";
+            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Iniciar))
+              comandos.Add(ETipoComando.INICIAR);
 
-          projetosDisponiveis.Add(new ProjetoDisponivelDTO(
-            projeto.Identificador,
-            nomeProjetoFormatado,
-            repositorioAgregado.Nome,
-            comandos,
-            repositorioAgregado.Identificador,
-            projeto.ArquivoCoverage,
-            projeto.Subdiretorio,
-            projeto.Expandido
-          ));
-        }); 
-      });
+            if (!string.IsNullOrWhiteSpace(projeto.Comandos.Buildar))
+              comandos.Add(ETipoComando.BUILDAR);
+
+            string? nomeIDE = null;
+            if (projeto.Comandos.IDEIdentificador != null)
+            {
+              comandos.Add(ETipoComando.ABRIR_NA_IDE);
+              var ide = await ideJsonService.GetByIdAsync(projeto.Comandos.IDEIdentificador.Value);
+              nomeIDE = ide?.Nome;
+            }
+
+            var nomeProjetoFormatado = $"{projeto.Nome} ({repositorioAgregado.Nome})";
+
+            projetosDisponiveis.Add(new ProjetoDisponivelDTO(
+              projeto.Identificador,
+              nomeProjetoFormatado,
+              repositorioAgregado.Nome,
+              comandos,
+              repositorioAgregado.Identificador,
+              projeto.ArquivoCoverage,
+              projeto.Subdiretorio,
+              projeto.Expandido,
+              nomeIDE
+            ));
+          }
+        }
+      }
 
 
       var pastaResponse = new PastaResponseDTO

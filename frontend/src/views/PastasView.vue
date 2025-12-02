@@ -560,7 +560,7 @@
   };
 
   const iconeAcaoMenu = computed(() => (comando: string) => {
-    return comando === TIPO_COMANDO.ABRIR_NO_VSCODE.valor
+    return comando === TIPO_COMANDO.ABRIR_NA_IDE.valor
       ? 'mdi-open-in-new'
       : 'mdi-flash';
   });
@@ -577,7 +577,6 @@
     };
 
     try {
-      console.log(payload);
       await carregandoAsync(async () => {
         await ComandosService.executarComando(payload);
       });

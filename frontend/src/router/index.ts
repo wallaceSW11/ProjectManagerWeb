@@ -25,6 +25,11 @@ const routes: RouteRecordRaw[] = [
     name: 'sites-iis',
     component: () => import('../views/SitesIISView.vue'),
   },
+  {
+    path: '/ides',
+    name: 'ides',
+    component: () => import('../views/IDEsView.vue'),
+  },
 ];
 
 const router = createRouter({

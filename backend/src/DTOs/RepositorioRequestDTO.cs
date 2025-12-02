@@ -47,12 +47,12 @@ namespace ProjectManagerWeb.src.DTOs
     /// <param name="Instalar">O comando para instalar dependências (ex: "npm i").</param>
     /// <param name="Iniciar">O comando para iniciar o projeto (ex: "npm start" ou "dotnet run").</param>
     /// <param name="Buildar">O comando para compilar o projeto.</param>
-    /// <param name="AbrirNoVSCode">Indica se o projeto deve ser aberto no VS Code.</param>
+    /// <param name="IDEIdentificador">Identificador da IDE a ser usada para abrir o projeto.</param>
     public sealed record ComandoDTO(
         string? Instalar,
         string? Iniciar,
         string? Buildar,
-        bool AbrirNoVSCode
+        Guid? IDEIdentificador
     );
 
     public sealed record MenuDTO(
