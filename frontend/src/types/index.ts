@@ -13,11 +13,18 @@ export interface IMenu {
   comandos: Array<{ comando: string }>;
 }
 
+export interface IIDE {
+  identificador: string;
+  nome: string;
+  comandoParaExecutar: string;
+  aceitaPerfilPersonalizado: boolean;
+}
+
 export interface IComandos {
   instalar: string | null;
   iniciar: string | null;
   buildar: string | null;
-  abrirNoVSCode: boolean;
+  ideIdentificador?: string | null;
 }
 
 export interface IProjeto {
@@ -32,6 +39,7 @@ export interface IProjeto {
   comandosSelecionados?: string[];
   identificadorRepositorioAgregado?: string;
   expandido: boolean;
+  nomeIDE?: string | null; // Nome da IDE vindo do backend
   getComandosDisponiveis?(): Array<{ titulo: string; valor: string; ativo: boolean }>;
 }
 

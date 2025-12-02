@@ -79,9 +79,15 @@
             :label="TIPO_COMANDO.BUILDAR.titulo"
             v-model="projetoSelecionado.comandosObj!.buildar"
           />
-          <v-checkbox
-            :label="TIPO_COMANDO.ABRIR_NO_VSCODE.titulo"
-            v-model="projetoSelecionado.comandosObj!.abrirNoVSCode"
+          <v-select
+            label="IDE para abrir"
+            v-model="projetoSelecionado.comandosObj!.ideIdentificador"
+            :items="ides"
+            item-title="nome"
+            item-value="identificador"
+            clearable
+            hint="Selecione a IDE que será usada para abrir este projeto"
+            persistent-hint
           />
         </v-form>
       </ModalPadrao>
@@ -90,15 +96,31 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref } from 'vue';
-  import type { IRepositorio, IProjeto } from '@/types';
+  import { onMounted, reactive, ref } from 'vue';
+  import type { IRepositorio, IProjeto, IIDE } from '@/types';
   import ProjetoModel from '@/models/ProjetoModel';
+  import IDEModel from '@/models/IDEModel';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
+  import IDEsService from '@/services/IDEsService';
 
   const repositorio = defineModel<IRepositorio>({ required: true });
   const configuracaoStore = useConfiguracaoStore();
+  const ides = ref<IIDE[]>([]);
+
+  onMounted(async () => {
+    await carregarIDEs();
+  });
+
+  const carregarIDEs = async (): Promise<void> => {
+    try {
+      const resposta = await IDEsService.getIDEs();
+      ides.value = resposta.map((i: any) => new IDEModel(i));
+    } catch (error) {
+      console.error('Falha ao carregar IDEs:', error);
+    }
+  };
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
   const exibirModalCadastroProjeto = ref<boolean>(false);

@@ -4,7 +4,7 @@ using ProjectManagerWeb.src.Enuns;
 
 namespace ProjectManagerWeb.src.Services;
 
-public class ComandoService(RepositorioJsonService repositorioJsonService)
+public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJsonService ideJsonService)
 {
   public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
   {
@@ -14,11 +14,11 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
     var diretorio = pasta.Diretorio + "\\" + repositorio.Nome + "\\";
 
     // Projetos originais do repositório
-    pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null).ToList().ForEach(projeto =>
+    foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null))
     {
       var projetoCadastrado = repositorio.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto não encontrado com o identificador {projeto.Identificador}");
 
-      projeto.Comandos.ForEach(comando =>
+      foreach (var comando in projeto.Comandos)
       {
         if (comando == ETipoComando.INICIAR)
         {
@@ -39,17 +39,27 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
         if (comando == ETipoComando.BUILDAR)
           comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Buildar}; ");
 
-        if (comando == ETipoComando.ABRIR_NO_VSCODE)
+        if (comando == ETipoComando.ABRIR_NA_IDE)
         {
-          var texto = "code . ";
+          if (projetoCadastrado.Comandos.IDEIdentificador != null)
+          {
+            var ide = await ideJsonService.GetByIdAsync(projetoCadastrado.Comandos.IDEIdentificador.Value);
+            if (ide != null)
+            {
+              var texto = ide.ComandoParaExecutar + " ";
 
-          if (!string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
-            texto += $"--profile \"{projetoCadastrado.PerfilVSCode}\"";
+              // Adicionar perfil se a IDE aceita perfil personalizado
+              if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
+              {
+                texto += $"--profile \"{projetoCadastrado.PerfilVSCode}\"";
+              }
 
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;");
+              comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;");
+            }
+          }
         }
-      });
-    });
+      }
+    }
 
     // Processa projetos agregados aguardando adequadamente as operações assíncronas
     foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is not null))
@@ -62,7 +72,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
 
       var diretorioAgregado = diretorio.Replace(repositorio.Nome, repositorioAgregado.Nome) + "\\";
 
-      projeto.Comandos.ForEach(comando =>
+      foreach (var comando in projeto.Comandos)
       {
         if (comando == ETipoComando.INICIAR)
         {
@@ -83,16 +93,26 @@ public class ComandoService(RepositorioJsonService repositorioJsonService)
         if (comando == ETipoComando.BUILDAR)
           comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Buildar}; ");
 
-        if (comando == ETipoComando.ABRIR_NO_VSCODE)
+        if (comando == ETipoComando.ABRIR_NA_IDE)
         {
-          var texto = "code . ";
+          if (projetoAgregadoCadastrado.Comandos.IDEIdentificador != null)
+          {
+            var ide = await ideJsonService.GetByIdAsync(projetoAgregadoCadastrado.Comandos.IDEIdentificador.Value);
+            if (ide != null)
+            {
+              var texto = ide.ComandoParaExecutar + " ";
 
-          if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
-            texto += $"--profile \"{projetoAgregadoCadastrado.PerfilVSCode}\"";
+              // Adicionar perfil se a IDE aceita perfil personalizado
+              if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
+              {
+                texto += $"--profile \"{projetoAgregadoCadastrado.PerfilVSCode}\"";
+              }
 
-          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;");
+              comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;");
+            }
+          }
         }
-      });
+      }
     }
 
     try

@@ -25,5 +25,6 @@ public sealed record ProjetoDisponivelDTO(
     Guid? IdentificadorRepositorioAgregado = null,
     string? ArquivoCoverage = "",
     string? Subdiretorio = "",
-    bool Expandido = false
+    bool Expandido = false,
+    string? NomeIDE = null
 );

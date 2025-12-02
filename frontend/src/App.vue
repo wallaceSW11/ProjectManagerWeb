@@ -84,6 +84,18 @@
         </v-btn>
         <v-btn
           class="text-none"
+          :to="{ name: 'ides' }"
+        >
+          <v-icon
+            class="pr-2"
+            color="primary"
+          >
+            mdi-application-cog
+          </v-icon>
+          IDEs
+        </v-btn>
+        <v-btn
+          class="text-none"
           @click="exibirModalSites = true"
         >
           <v-icon
