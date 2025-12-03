@@ -10,7 +10,7 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
 {
 
   [HttpPost]
-  public async Task<IActionResult> ExecutarComando(PastaRequestDTO pasta)
+  public async Task<IActionResult> ExecutarComando([FromBody] PastaRequestDTO pasta)
   {
     var comandos = await comandoService.ExecutarComando(pasta);
     return Ok(comandos);
