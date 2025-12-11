@@ -5,11 +5,18 @@ export interface IArquivo {
   ignorarGit: boolean;
 }
 
+export interface IPastaMenu {
+  identificador: string;
+  origem: string;
+  destino: string;
+}
+
 export interface IMenu {
   identificador: string;
   titulo: string;
-  tipo: 'APLICAR_ARQUIVO' | 'COMANDO_AVULSO';
+  tipo: 'APLICAR_ARQUIVO' | 'APLICAR_PASTA' | 'COMANDO_AVULSO';
   arquivos: IArquivo[];
+  pastas: IPastaMenu[];
   comandos: Array<{ comando: string }>;
 }
 

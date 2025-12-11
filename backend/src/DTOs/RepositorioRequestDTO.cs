@@ -60,6 +60,7 @@ namespace ProjectManagerWeb.src.DTOs
         string Titulo,
         string Tipo,
         List<ArquivosDTO>? Arquivos,
+        List<PastaDTO>? Pastas,
         List<string>? Comandos
     );
 
@@ -67,5 +68,10 @@ namespace ProjectManagerWeb.src.DTOs
         string Arquivo,
         string Destino,
         bool IgnorarGit
+    );
+
+    public sealed record PastaDTO(
+        string Origem,
+        string Destino
     );
 }

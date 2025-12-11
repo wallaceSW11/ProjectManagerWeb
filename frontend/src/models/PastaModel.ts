@@ -1,4 +1,4 @@
-import type { IPasta, IProjeto, IMenu } from '@/types';
+import type { IPasta } from '@/types';
 import ProjetoModel from './ProjetoModel';
 
 export default class PastaModel implements IPasta {
@@ -11,8 +11,8 @@ export default class PastaModel implements IPasta {
   git: string;
   repositorioId?: string;
   cor?: string | null;
-  projetos: IProjeto[];
-  menus: IMenu[];
+  projetos: any[];
+  menus: any[];
   index: number;
 
   constructor(obj: Partial<IPasta> = {}) {
@@ -24,9 +24,9 @@ export default class PastaModel implements IPasta {
     this.branch = obj.branch || '';
     this.git = obj.git || '';
     this.repositorioId = obj.repositorioId;
-    this.cor = obj.cor || null;
-    this.projetos = (obj.projetos || []).map((p: any) => new ProjetoModel(p));
+    this.cor = obj.cor;
+    this.projetos = obj.projetos?.map(p => new ProjetoModel(p)) || [];
     this.menus = obj.menus || [];
-    this.index = obj.index || 999;
+    this.index = obj.index || 0;
   }
 }
