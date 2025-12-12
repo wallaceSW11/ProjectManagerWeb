@@ -51,10 +51,20 @@
                   :rules="obrigatorio"
                 />
 
-                <div>
+                <v-select
+                  label="Tipo"
+                  v-model="menuSelecionado.tipo"
+                  :items="tiposMenu"
+                  item-title="texto"
+                  item-value="valor"
+                  :rules="obrigatorio"
+                />
+
+                <!-- Arquivos -->
+                <div v-if="menuSelecionado.tipo === 'APLICAR_ARQUIVO'">
                   <div>
                     <BotaoTerciario
-                      texto="Adicionar"
+                      texto="Adicionar Arquivo"
                       icone="mdi-plus"
                       @click="prepararParaCadastroArquivos"
                       class="my-2"
@@ -83,6 +93,40 @@
                     </v-data-table>
                   </div>
                 </div>
+
+                <!-- Pastas -->
+                <div v-if="menuSelecionado.tipo === 'APLICAR_PASTA'">
+                  <div>
+                    <BotaoTerciario
+                      texto="Adicionar Pasta"
+                      icone="mdi-plus"
+                      @click="prepararParaCadastroPastas"
+                      class="my-2"
+                    />
+                  </div>
+                  <div>
+                    <v-data-table
+                      :headers="colunasMenuPastas"
+                      :items="menuSelecionado.pastas"
+                      hide-default-footer
+                    >
+                      <template #[`item.actions`]="{ item }">
+                        <IconeComTooltip
+                          icone="mdi-pencil"
+                          texto="Editar"
+                          :acao="() => mudarParaEdicaoPasta(item)"
+                          top
+                        />
+                        <IconeComTooltip
+                          icone="mdi-delete"
+                          texto="Excluir"
+                          :acao="() => excluirPasta(item)"
+                          top
+                        />
+                      </template>
+                    </v-data-table>
+                  </div>
+                </div>
               </v-form>
             </v-tabs-window-item>
 
@@ -105,6 +149,25 @@
                 />
               </v-form>
             </v-tabs-window-item>
+
+            <v-tabs-window-item>
+              <v-form ref="formPasta">
+                <v-text-field
+                  label="Pasta Origem"
+                  v-model="pastaSelecionada.origem"
+                  :rules="obrigatorio"
+                  hint="Caminho completo da pasta que será copiada (ex: C:\tools\.kiro)"
+                  persistent-hint
+                />
+                <v-text-field
+                  label="Destino"
+                  v-model="pastaSelecionada.destino"
+                  :rules="obrigatorio"
+                  hint="Onde colar a pasta, relativo ao repositório (ex: bimerup\frontend\bimerup)"
+                  persistent-hint
+                />
+              </v-form>
+            </v-tabs-window-item>
           </v-tabs-window>
         </ModalPadrao>
       </div>
@@ -114,12 +177,13 @@
 
 <script setup lang="ts">
   import { computed, reactive, ref } from 'vue';
-  import type { IRepositorio, IMenu, IArquivo } from '@/types';
+  import type { IRepositorio, IMenu, IArquivo, IPastaMenu } from '@/types';
   import RepositorioModel from '@/models/RepositorioModel';
   import MenuModel from '@/models/MenuModel';
   import BotaoTerciario from '../comum/botao/BotaoTerciario.vue';
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import ArquivoModel from '@/models/ArquivoModel';
+  import PastaMenuModel from '@/models/PastaMenuModel';
 
   const {
     emModoCadastro,
@@ -133,9 +197,17 @@
   });
   const menuSelecionado = reactive<IMenu>(new MenuModel());
   const arquivoSelecionado = reactive<IArquivo>(new ArquivoModel());
+  const pastaSelecionada = reactive<IPastaMenu>(new PastaMenuModel());
   const arquivoEmEdicao = ref<boolean>(false);
+  const pastaEmEdicao = ref<boolean>(false);
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
+
+  const tiposMenu = [
+    { texto: 'Aplicar Arquivo', valor: 'APLICAR_ARQUIVO' },
+    { texto: 'Aplicar Pasta', valor: 'APLICAR_PASTA' },
+    { texto: 'Comando Avulso', valor: 'COMANDO_AVULSO' },
+  ];
 
   const exibirModalMenuCadastro = ref<boolean>(false);
   const paginaMenu = ref<number>(0);
@@ -153,16 +225,28 @@
     { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
   ] as const);
 
+  const colunasMenuPastas = reactive([
+    { title: 'Origem', key: 'origem', align: 'start' },
+    { title: 'Destino', key: 'destino', align: 'start' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+  ] as const);
+
   const paginaTabela = computed(() => paginaMenu.value === 0);
+  const paginaArquivo = computed(() => paginaMenu.value === 1);
+  const paginaPasta = computed(() => paginaMenu.value === 2);
 
   const metodoBotaoPrimario = computed(() => {
-    return paginaTabela.value ? salvarAlteracoes : salvarAlteracoesArquivos;
+    if (paginaTabela.value) return salvarAlteracoes;
+    if (paginaArquivo.value) return salvarAlteracoesArquivos;
+    if (paginaPasta.value) return salvarAlteracoesPastas;
+    return salvarAlteracoes;
   });
 
   const metodoBotaoSecundario = computed(() => {
-    return paginaTabela.value
-      ? descartarAlteracoes
-      : descartarAlteracoesArquivos;
+    if (paginaTabela.value) return descartarAlteracoes;
+    if (paginaArquivo.value) return descartarAlteracoesArquivos;
+    if (paginaPasta.value) return descartarAlteracoesPastas;
+    return descartarAlteracoes;
   });
 
   const mudarParaPaginaTabela = (): void => {
@@ -172,6 +256,11 @@
   const descartarAlteracoesArquivos = (): void => {
     mudarParaPaginaTabela();
     limparCamposArquivos();
+  };
+
+  const descartarAlteracoesPastas = (): void => {
+    mudarParaPaginaTabela();
+    limparCamposPastas();
   };
 
   const prepararParaCadastro = (): void => {
@@ -185,8 +274,17 @@
     limparCamposArquivos();
   };
 
+  const prepararParaCadastroPastas = (): void => {
+    paginaMenu.value = 2;
+    limparCamposPastas();
+  };
+
   const limparCamposArquivos = (): void => {
     Object.assign(arquivoSelecionado, new ArquivoModel());
+  };
+
+  const limparCamposPastas = (): void => {
+    Object.assign(pastaSelecionada, new PastaMenuModel());
   };
 
   const abrirModalMenuCadastro = (): void => {
@@ -199,6 +297,12 @@
     paginaMenu.value = 1;
   };
 
+  const mudarParaEdicaoPasta = (item: IPastaMenu): void => {
+    Object.assign(pastaSelecionada, item);
+    pastaEmEdicao.value = true;
+    paginaMenu.value = 2;
+  };
+
   const mudarParaEdicao = (item: IMenu): void => {
     Object.assign(menuSelecionado, item);
     definirModoEdicao();
@@ -207,6 +311,7 @@
 
   const formProjeto = ref<any>(null);
   const formArquivo = ref<any>(null);
+  const formPasta = ref<any>(null);
 
   const formularioProjetoValido = async (): Promise<boolean> => {
     const resposta = await formProjeto.value.validate();
@@ -215,6 +320,11 @@
 
   const formularioArquivoValido = async (): Promise<boolean> => {
     const resposta = await formArquivo.value.validate();
+    return resposta.valid;
+  };
+
+  const formularioPastaValido = async (): Promise<boolean> => {
+    const resposta = await formPasta.value.validate();
     return resposta.valid;
   };
 
@@ -251,6 +361,28 @@
     mudarParaPaginaTabela();
   };
 
+  const salvarAlteracoesPastas = async (): Promise<void> => {
+    if (!(await formularioPastaValido())) return;
+
+    if (pastaEmEdicao.value) {
+      const indice = menuSelecionado.pastas.findIndex(
+        p => p.identificador === pastaSelecionada.identificador
+      );
+
+      if (indice !== -1) {
+        Object.assign(menuSelecionado.pastas[indice], pastaSelecionada);
+      }
+
+      pastaEmEdicao.value = false;
+      limparCamposPastas();
+      mudarParaPaginaTabela();
+      return;
+    }
+
+    menuSelecionado.pastas.push(new PastaMenuModel(pastaSelecionada));
+    mudarParaPaginaTabela();
+  };
+
   const adicionarMenu = (): void => {
     repositorio.value.menus.push(new MenuModel(menuSelecionado));
   };
@@ -283,6 +415,18 @@
 
     menuSelecionado.arquivos = menuSelecionado.arquivos.filter(
       a => a.identificador !== item.identificador
+    );
+  };
+
+  const excluirPasta = (item: IPastaMenu): void => {
+    const confirmDelete = confirm(
+      `Deseja remover a pasta "${item.origem}"?`
+    );
+
+    if (!confirmDelete) return;
+
+    menuSelecionado.pastas = menuSelecionado.pastas.filter(
+      p => p.identificador !== item.identificador
     );
   };
 

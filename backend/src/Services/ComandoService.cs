@@ -157,7 +157,6 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
       var nomeArquivo = Path.GetFileName(a.Arquivo);
       var diretorioDestino = Path.Combine(menu.Diretorio, a.Destino);
 
-      // Cria o diretório de destino se não existir
       if (!Directory.Exists(diretorioDestino))
         Directory.CreateDirectory(diretorioDestino);
 
@@ -167,6 +166,16 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
       else
         comandos
           .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
+    });
+
+    menuRepositorio.Pastas?.ForEach(p =>
+    {
+      var caminhoDestinoCompleto = Path.Combine(menu.Diretorio, p.Destino);
+
+      if (!Directory.Exists(caminhoDestinoCompleto))
+        Directory.CreateDirectory(caminhoDestinoCompleto);
+
+      comandos.Add($"Copy-Item \"{p.Origem}\" \"{caminhoDestinoCompleto}\" -Recurse -Force; Exit;");
     });
 
     try
