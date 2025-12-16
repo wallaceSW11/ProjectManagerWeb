@@ -183,17 +183,29 @@
 
   const reiniciarSite = async (site: ISite): Promise<void> => {
     try {
+      // Atualiza para "Reiniciando" temporariamente
+      sitesOrdenados.value = sitesOrdenados.value.map((s: ISite) =>
+        s.nome === site.nome ? { ...s, status: REINICIANDO } : s
+      );
+
       await carregandoAsync(async () => {
         await IISService.reiniciarSite(site.nome);
       }, `Reiniciando site ${site.nome}...`);
 
       notificar('sucesso', `Site ${site.nome} reiniciado.`);
+      
+      // Após reiniciar, volta para "Iniciado"
       sitesOrdenados.value = sitesOrdenados.value.map((s: ISite) =>
-        s.nome === site.nome ? { ...s, status: REINICIANDO } : s
+        s.nome === site.nome ? { ...s, status: INICIADO } : s
       );
     } catch (error) {
       console.error(`Erro ao reiniciar site ${site.nome}:`, error);
       notificar('erro', `Erro ao reiniciar site ${site.nome}.`);
+      
+      // Em caso de erro, tenta restaurar o status original
+      sitesOrdenados.value = sitesOrdenados.value.map((s: ISite) =>
+        s.nome === site.nome ? { ...s, status: site.status } : s
+      );
     }
   };
 </script>
