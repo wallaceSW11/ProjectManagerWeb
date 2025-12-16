@@ -75,6 +75,7 @@
                   @selecionarPasta="selecionarPasta"
                   @exibir-cadastro-pasta="exibirCadastroPasta"
                   @executar-menu="executarMenu"
+                  @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
                 />
               </template>
@@ -448,6 +449,26 @@
     } catch (error) {
       console.error('Falha ao executar o menu: ', error);
       notificar('erro', 'Falha ao executar o menu', String(error));
+    }
+  };
+
+  const executarMenusMultiplos = async (pasta: IPasta, menuIds: string[]): Promise<void> => {
+    if (!menuIds.length) return;
+
+    try {
+      // Executa todos os menus em sequência
+      for (const menuId of menuIds) {
+        const payload: PayloadMenuComando = {
+          diretorio: pasta.diretorio,
+          repositorioId: pasta.repositorioId || '',
+          comandoId: menuId,
+        };
+        await ComandosService.executarComandoMenu(payload);
+      }
+      notificar('sucesso', `${menuIds.length} comando(s) solicitado(s)`);
+    } catch (error) {
+      console.error('Falha ao executar os menus: ', error);
+      notificar('erro', 'Falha ao executar os menus', String(error));
     }
   };
 

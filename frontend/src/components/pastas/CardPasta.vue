@@ -35,7 +35,7 @@
         </div>
 
         <div v-if="pasta.menus.length > 0">
-          <v-menu location="bottom">
+          <v-menu location="bottom" v-model="menuAberto">
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -51,11 +51,32 @@
               <v-list-item
                 v-for="menu in pasta.menus"
                 :key="menu.identificador"
-                @click="executarMenu(pasta, menu.identificador)"
+                @click.stop="toggleMenuSelecionado(menu.identificador)"
               >
+                <template #prepend>
+                  <v-checkbox
+                    :model-value="menusSelecionados.includes(menu.identificador)"
+                    hide-details
+                    density="compact"
+                    @click.stop="toggleMenuSelecionado(menu.identificador)"
+                  />
+                </template>
                 <v-list-item-title>
                   <v-icon>mdi-folder</v-icon>
                   {{ menu.titulo }}
+                </v-list-item-title>
+              </v-list-item>
+
+              <v-divider v-if="menusSelecionados.length > 0" class="my-2" />
+
+              <v-list-item
+                v-if="menusSelecionados.length > 0"
+                @click="executarMenusSelecionados"
+                class="bg-primary"
+              >
+                <v-list-item-title class="text-center font-weight-bold">
+                  <v-icon>mdi-play</v-icon>
+                  Executar ({{ menusSelecionados.length }})
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -79,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import type { IPasta } from '@/types';
 
   interface Props {
@@ -93,8 +114,12 @@
     selecionarPasta: [pasta: IPasta];
     exibirCadastroPasta: [pasta: IPasta];
     executarMenu: [pasta: IPasta, menuId: string];
+    executarMenusMultiplos: [pasta: IPasta, menuIds: string[]];
     abrirDiretorio: [diretorio: string];
   }>();
+
+  const menuAberto = ref<boolean>(false);
+  const menusSelecionados = ref<string[]>([]);
 
   const selecionarPasta = (pasta: IPasta): void => {
     emit('selecionarPasta', pasta);
@@ -106,6 +131,23 @@
 
   const executarMenu = (pasta: IPasta, menuId: string): void => {
     emit('executarMenu', pasta, menuId);
+  };
+
+  const toggleMenuSelecionado = (menuId: string): void => {
+    const index = menusSelecionados.value.indexOf(menuId);
+    if (index > -1) {
+      menusSelecionados.value.splice(index, 1);
+    } else {
+      menusSelecionados.value.push(menuId);
+    }
+  };
+
+  const executarMenusSelecionados = (): void => {
+    if (menusSelecionados.value.length === 0) return;
+    
+    emit('executarMenusMultiplos', props.pasta, [...menusSelecionados.value]);
+    menusSelecionados.value = [];
+    menuAberto.value = false;
   };
 
   const descricaoPasta = (pasta: IPasta): string => {
