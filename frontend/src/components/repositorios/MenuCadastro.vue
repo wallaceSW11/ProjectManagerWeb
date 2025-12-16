@@ -76,6 +76,17 @@
                       :items="menuSelecionado.arquivos"
                       hide-default-footer
                     >
+                      <template #[`item.arquivo`]="{ item }">
+                        {{ obterNomeArquivo(item.arquivo) }}
+                      </template>
+                      <template #[`item.destino`]="{ item }">
+                        {{ obterUltimaPasta(item.destino) }}
+                      </template>
+                      <template #[`item.ignorarGit`]="{ item }">
+                        <v-icon :color="item.ignorarGit ? 'success' : 'error'">
+                          {{ item.ignorarGit ? 'mdi-check-circle' : 'mdi-close-circle' }}
+                        </v-icon>
+                      </template>
                       <template #[`item.actions`]="{ item }">
                         <IconeComTooltip
                           icone="mdi-pencil"
@@ -110,6 +121,12 @@
                       :items="menuSelecionado.pastas"
                       hide-default-footer
                     >
+                      <template #[`item.origem`]="{ item }">
+                        {{ obterUltimaPasta(item.origem) }}
+                      </template>
+                      <template #[`item.destino`]="{ item }">
+                        {{ obterUltimaPasta(item.destino) }}
+                      </template>
                       <template #[`item.actions`]="{ item }">
                         <IconeComTooltip
                           icone="mdi-pencil"
@@ -439,5 +456,19 @@
     limparCampos();
     definirModoInicial();
     exibirModalMenuCadastro.value = false;
+  };
+
+  // Extrai apenas o nome do arquivo com extensão
+  const obterNomeArquivo = (caminhoCompleto: string): string => {
+    if (!caminhoCompleto) return '';
+    const partes = caminhoCompleto.replace(/\\/g, '/').split('/');
+    return partes[partes.length - 1];
+  };
+
+  // Extrai apenas a última pasta do caminho
+  const obterUltimaPasta = (caminhoCompleto: string): string => {
+    if (!caminhoCompleto) return '';
+    const partes = caminhoCompleto.replace(/\\/g, '/').split('/').filter(p => p);
+    return partes[partes.length - 1] || '';
   };
 </script>
