@@ -31,6 +31,7 @@
                 :itens="sites"
                 @editar="mudarParaEdicao"
                 @excluir="excluirSite"
+                @duplicar="duplicarSite"
               />
             </v-tabs-window-item>
 
@@ -114,7 +115,8 @@ const preencherSites = async (): Promise<void> => {
       await store.carregarSites();
     });
 
-    Object.assign(sites, store.sites);
+    // Limpa o array e adiciona os novos itens
+    sites.splice(0, sites.length, ...store.sites);
   } catch (error) {
     console.error('Falha ao obter os sites:', error);
   }
@@ -167,6 +169,35 @@ const prepararParaCadastro = (): void => {
   modoOperacao.value = MODO_OPERACAO.NOVO.valor;
   limparCampos();
   irParaCadastro();
+};
+
+const duplicarSite = async (identificador: string): Promise<void> => {
+  try {
+    await store.carregarSite(identificador);
+    
+    if (!store.siteAtual) {
+      notificar('erro', 'Site não encontrado');
+      return;
+    }
+
+    // Modo cadastro com dados do site selecionado
+    modoOperacao.value = MODO_OPERACAO.NOVO.valor;
+    
+    // Copia os dados do site mas gera novo identificador
+    const siteDuplicado = new SiteIISModel({
+      ...store.siteAtual,
+      identificador: crypto.randomUUID(), // Novo ID
+      nome: `${store.siteAtual.nome} - Cópia`, // Adiciona sufixo
+      titulo: `${store.siteAtual.titulo} - Cópia`
+    });
+    
+    Object.assign(siteSelecionado.value, siteDuplicado);
+    irParaCadastro();
+    notificar('sucesso', 'Site duplicado. Ajuste os dados e salve.');
+  } catch (error) {
+    console.error('Erro ao duplicar site:', error);
+    notificar('erro', 'Falha ao duplicar site');
+  }
 };
 
 const salvarAlteracoes = async (): Promise<void> => {

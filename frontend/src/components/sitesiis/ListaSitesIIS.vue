@@ -40,6 +40,12 @@
         <v-card-actions class="d-flex justify-end">
           <div>
             <IconeComTooltip
+              icone="mdi-content-copy"
+              texto="Duplicar"
+              :acao="() => emit('duplicar', site.identificador)"
+              top
+            />
+            <IconeComTooltip
               icone="mdi-pencil"
               texto="Editar"
               :acao="() => emit('editar', site.identificador)"
@@ -68,6 +74,7 @@
   defineProps<Props>();
 
   const emit = defineEmits<{
+    duplicar: [identificador: string];
     editar: [identificador: string];
     excluir: [site: ISiteIISDeployResponse];
   }>();

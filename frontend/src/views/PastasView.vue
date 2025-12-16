@@ -75,6 +75,7 @@
                   @selecionarPasta="selecionarPasta"
                   @exibir-cadastro-pasta="exibirCadastroPasta"
                   @executar-menu="executarMenu"
+                  @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
                 />
               </template>
@@ -162,7 +163,7 @@
                                 @click="menu.acao(projeto)"
                               >
                                 <v-list-item-title>
-                                  <v-icon class="pr-1">{{ menu.icone }}</v-icon>
+                                  <v-icon class="pr-1" color="primary">{{ menu.icone }}</v-icon>
                                   {{ menu.titulo }}
                                 </v-list-item-title>
                               </v-list-item>
@@ -451,6 +452,26 @@
     }
   };
 
+  const executarMenusMultiplos = async (pasta: IPasta, menuIds: string[]): Promise<void> => {
+    if (!menuIds.length) return;
+
+    try {
+      // Executa todos os menus em sequência
+      for (const menuId of menuIds) {
+        const payload: PayloadMenuComando = {
+          diretorio: pasta.diretorio,
+          repositorioId: pasta.repositorioId || '',
+          comandoId: menuId,
+        };
+        await ComandosService.executarComandoMenu(payload);
+      }
+      notificar('sucesso', `${menuIds.length} comando(s) solicitado(s)`);
+    } catch (error) {
+      console.error('Falha ao executar os menus: ', error);
+      notificar('erro', 'Falha ao executar os menus', String(error));
+    }
+  };
+
   const exibirCadastroPasta = (pasta: IPasta): void => {
     exibirModalPasta.value = true;
     Object.assign(pastaSelecionada, pasta);
@@ -615,6 +636,10 @@
 
   :deep(.v-switch .v-label) {
     padding-left: 16px;
+  }
+
+  :deep(.v-switch .v-input__append .v-icon) {
+    color: rgb(var(--v-theme-primary));
   }
 
   .drag-area {
