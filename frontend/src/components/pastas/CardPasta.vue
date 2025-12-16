@@ -62,7 +62,7 @@
                   />
                 </template>
                 <v-list-item-title>
-                  <v-icon>{{ obterIconeMenu(menu.tipo) }}</v-icon>
+                  <v-icon color="primary" class="px-3">{{ obterIconeMenu(menu.tipo) }}</v-icon>
                   {{ menu.titulo }}
                 </v-list-item-title>
               </v-list-item>
