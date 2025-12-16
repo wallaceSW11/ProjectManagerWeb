@@ -62,7 +62,7 @@
                   />
                 </template>
                 <v-list-item-title>
-                  <v-icon>mdi-folder</v-icon>
+                  <v-icon>{{ obterIconeMenu(menu.tipo) }}</v-icon>
                   {{ menu.titulo }}
                 </v-list-item-title>
               </v-list-item>
@@ -206,6 +206,15 @@
 
   const abrirDiretorio = (diretorio: string): void => {
     emit('abrirDiretorio', diretorio);
+  };
+
+  const obterIconeMenu = (tipo: string): string => {
+    const icones: Record<string, string> = {
+      'APLICAR_ARQUIVO': 'mdi-file',
+      'APLICAR_PASTA': 'mdi-folder',
+      'COMANDO_AVULSO': 'mdi-console'
+    };
+    return icones[tipo] || 'mdi-cog';
   };
 </script>
 
