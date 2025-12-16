@@ -15,8 +15,14 @@
 
         <v-card-text>
           <v-row no-gutters>
-            <v-col cols="12">
-              {{ repositorio.url }}
+            <v-col cols="12" class="d-flex align-center">
+              <span class="flex-grow-1">{{ repositorio.url }}</span>
+              <IconeComTooltip
+                icone="mdi-content-copy"
+                texto="Copiar link"
+                :acao="() => copiarParaAreaTransferencia(repositorio.url)"
+                top
+              />
             </v-col>
 
             <v-col
@@ -52,6 +58,7 @@
 
 <script setup lang="ts">
   import type { IRepositorio } from '@/types';
+  import { notificar } from '@/utils/eventBus';
 
   interface Props {
     itens: IRepositorio[];
@@ -63,4 +70,14 @@
     editar: [identificador: string];
     excluir: [repositorio: IRepositorio];
   }>();
+
+  const copiarParaAreaTransferencia = async (texto: string): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      notificar('sucesso', 'Link copiado para a área de transferência');
+    } catch (error) {
+      console.error('Erro ao copiar para área de transferência:', error);
+      notificar('erro', 'Falha ao copiar link');
+    }
+  };
 </script>
