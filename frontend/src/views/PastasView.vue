@@ -163,7 +163,7 @@
                                 @click="menu.acao(projeto)"
                               >
                                 <v-list-item-title>
-                                  <v-icon class="pr-1">{{ menu.icone }}</v-icon>
+                                  <v-icon class="pr-1" color="primary">{{ menu.icone }}</v-icon>
                                   {{ menu.titulo }}
                                 </v-list-item-title>
                               </v-list-item>
@@ -636,6 +636,10 @@
 
   :deep(.v-switch .v-label) {
     padding-left: 16px;
+  }
+
+  :deep(.v-switch .v-input__append .v-icon) {
+    color: rgb(var(--v-theme-primary));
   }
 
   .drag-area {
