@@ -17,7 +17,7 @@ export default class RepositorioModel implements IRepositorio {
     this.url = obj.url || null;
     this.titulo = obj.titulo || '';
     this.nome = obj.nome || '';
-    this.cor = obj.cor || null;
+    this.cor = obj.cor || '#1976d2';
     this.projetos = Array.isArray(obj.projetos)
       ? obj.projetos.map((p: any) => new ProjetoModel(p))
       : [];
