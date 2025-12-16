@@ -18,9 +18,10 @@
             <v-col cols="12" class="d-flex align-center">
               <span class="flex-grow-1">{{ repositorio.url }}</span>
               <IconeComTooltip
+                v-if="repositorio.url"
                 icone="mdi-content-copy"
                 texto="Copiar link"
-                :acao="() => copiarParaAreaTransferencia(repositorio.url)"
+                :acao="() => copiarParaAreaTransferencia(repositorio.url!)"
                 top
               />
             </v-col>
