@@ -16,6 +16,9 @@
           :items="repositorio.menus"
           hide-default-footer
         >
+          <template #[`item.tipo`]="{ item }">
+            {{ formatarTipo(item.tipo) }}
+          </template>
           <template #[`item.actions`]="{ item }">
             <IconeComTooltip
               icone="mdi-pencil"
@@ -470,5 +473,11 @@
     if (!caminhoCompleto) return '';
     const partes = caminhoCompleto.replace(/\\/g, '/').split('/').filter(p => p);
     return partes[partes.length - 1] || '';
+  };
+
+  // Formata o tipo do menu para exibição
+  const formatarTipo = (tipo: string): string => {
+    const tipoEncontrado = tiposMenu.find(t => t.valor === tipo);
+    return tipoEncontrado ? tipoEncontrado.texto : tipo;
   };
 </script>
