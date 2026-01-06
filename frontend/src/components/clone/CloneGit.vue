@@ -26,6 +26,12 @@
           />
 
           <v-checkbox
+            label="Salvar branch no storage"
+            hide-details
+            v-model="clone.salvarNoStorage"
+          />
+
+          <v-checkbox
             label="Clonar agregados"
             hide-details
             v-model="clone.baixarAgregados"
@@ -96,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick, onMounted, reactive, ref } from 'vue';
+  import { nextTick, onMounted, reactive, ref, watch } from 'vue';
   import type { IClone } from '@/types';
   import CloneModel from '@/models/CloneModel';
   import CloneService from '@/services/CloneService';
@@ -116,6 +122,14 @@
   const adicionarNoLocalStorage = ref<boolean>(false);
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
+
+  watch(() => clone.branch, (novaBranch) => {
+    if (!clone.criarBranchRemoto) clone.codigo = novaBranch;
+  });
+
+  watch(() => clone.criarBranchRemoto, (criarRemoto) => {
+    clone.codigo = criarRemoto ? '' : clone.branch;
+  });
 
   onMounted(() => {
     clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
@@ -138,8 +152,10 @@
       payload.codigo = clone.codigo.toUpperCase();
       await CloneService.clonar(payload);
 
-      adicionarNoLocalStorage.value = true;
-      await nextTick(() => (adicionarNoLocalStorage.value = false));
+      if (clone.salvarNoStorage) {
+        adicionarNoLocalStorage.value = true;
+        await nextTick(() => (adicionarNoLocalStorage.value = false));
+      }
       fecharClone();
       Object.assign(clone, new CloneModel());
       clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';

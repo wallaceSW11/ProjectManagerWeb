@@ -10,6 +10,7 @@ export default class CloneModel implements IClone {
   repositorio: IRepositorio;
   criarBranchRemoto: boolean;
   baixarAgregados: boolean;
+  salvarNoStorage: boolean;
 
   constructor(obj: Partial<IClone> = {}) {
     this.diretorioRaiz = obj.diretorioRaiz || '';
@@ -20,5 +21,6 @@ export default class CloneModel implements IClone {
     this.repositorio = new RepositorioModel(obj.repositorio);
     this.criarBranchRemoto = obj.criarBranchRemoto || false;
     this.baixarAgregados = obj.baixarAgregados || false;
+    this.salvarNoStorage = obj.salvarNoStorage || false;
   }
 }

@@ -85,6 +85,7 @@ export interface IClone {
   repositorio: IRepositorio;
   criarBranchRemoto: boolean;
   baixarAgregados: boolean;
+  salvarNoStorage: boolean;
 }
 
 export interface IPerfilVSCode {
