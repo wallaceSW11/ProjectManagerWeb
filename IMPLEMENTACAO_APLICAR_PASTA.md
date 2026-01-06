@@ -52,7 +52,7 @@ Implementada a funcionalidade de **APLICAR_PASTA** no sistema de menus, permitin
 - Componente dedicado para cadastro de pastas
 - Campos:
   - **Pasta Origem**: Caminho completo (ex: `C:\__Arquivos_Wallace__\AmazonQ\kiro\.kiro`)
-  - **Destino**: Caminho relativo ao repositório (ex: `bimerup\frontend\bimerup`)
+  - **Destino**: Caminho relativo ao repositório (ex: `[nome_git]\frontend`)
 - Tabela com listagem de pastas cadastradas
 - Ações: Adicionar, Editar, Excluir
 
@@ -77,17 +77,17 @@ Ao executar o menu do tipo APLICAR_PASTA:
 
 ## Exemplo de Uso
 
-**Cenário**: Copiar a pasta `.kiro` para dentro do projeto bimerup
+**Cenário**: Copiar a pasta `.kiro` para dentro do projeto
 
 **Configuração**:
 - Título: "Aplicar configuração Kiro"
 - Tipo: Aplicar Pasta
 - Pasta Origem: `C:\__Arquivos_Wallace__\AbrirProjetoEXE\AmazonQ\kiro\.kiro`
-- Destino: `bimerup\frontend\bimerup`
+- Destino: `[nome_git]\frontend`
 
 **Resultado**: 
 A pasta `.kiro` será copiada para:
-`C:\tools\git\FATWEB1170_mensagem_ICMS_nao_informado\bimerup\frontend\bimerup\.kiro`
+`C:\tools\git\PMW-1\[nome_git]\frontend\.kiro`
 
 ## Comportamento Importante
 
