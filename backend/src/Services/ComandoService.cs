@@ -162,7 +162,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
       if (a.IgnorarGit)
         comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; cd {diretorioDestino}; git update-index --assume-unchanged {nomeArquivo}; Exit;");
+          .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Start-Sleep -Milliseconds 500; cd {diretorioDestino}; git update-index --assume-unchanged {nomeArquivo}; Exit;");
       else
         comandos
           .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
