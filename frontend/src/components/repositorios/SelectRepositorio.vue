@@ -26,10 +26,14 @@
 
   interface Props {
     obrigatorio?: boolean;
+    carregarUltimoSelecionado?: boolean;
+    chaveLocalStorage?: string;
   }
 
   const props = withDefaults(defineProps<Props>(), {
     obrigatorio: false,
+    carregarUltimoSelecionado: false,
+    chaveLocalStorage: '',
   });
 
   const repositorios = ref<IRepositorio[]>([]);
@@ -42,10 +46,26 @@
       : [];
   });
 
+  const recuperarUltimoRepositorio = (): void => {
+    if (!props.carregarUltimoSelecionado || !props.chaveLocalStorage) return;
+
+    const identificadorSalvo = localStorage.getItem(props.chaveLocalStorage);
+    if (!identificadorSalvo) return;
+
+    const repositorioEncontrado = repositorios.value.find(
+      (repo) => repo.identificador === identificadorSalvo
+    );
+
+    if (repositorioEncontrado) {
+      repositorio.value = repositorioEncontrado;
+    }
+  };
+
   onMounted(async () => {
     try {
       carregando.value = true;
       repositorios.value = await RepositoriosService.getRepositorios();
+      recuperarUltimoRepositorio();
     } catch (error) {
       console.error('Falha ao obter os repositórios', error);
     } finally {
