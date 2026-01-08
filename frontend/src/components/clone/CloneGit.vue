@@ -17,6 +17,8 @@
           <SelectRepositorio
             v-model="clone.repositorio"
             obrigatorio
+            carregar-ultimo-selecionado
+            :chave-local-storage="CHAVE_ULTIMO_REPOSITORIO"
           />
 
           <SelectBranch
@@ -115,6 +117,8 @@
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
   import SelectBranch from '@/components/comum/SelectBranch.vue';
 
+  const CHAVE_ULTIMO_REPOSITORIO = 'pmw_ultimo_repositorio_selecionado';
+
   const clone = reactive<IClone>(new CloneModel());
   const configuracaoStore = useConfiguracaoStore();
   const exibirModalClone = defineModel<boolean>({ default: false });
@@ -152,6 +156,8 @@
       payload.codigo = clone.codigo.toUpperCase();
       await CloneService.clonar(payload);
 
+      salvarUltimoRepositorio();
+
       if (clone.salvarNoStorage) {
         adicionarNoLocalStorage.value = true;
         await nextTick(() => (adicionarNoLocalStorage.value = false));
@@ -172,6 +178,15 @@
     } finally {
       carregando(false);
     }
+  };
+
+  const salvarUltimoRepositorio = (): void => {
+    if (!clone.repositorio?.identificador) return;
+    
+    localStorage.setItem(
+      CHAVE_ULTIMO_REPOSITORIO,
+      clone.repositorio.identificador
+    );
   };
 
   const fecharClone = (): void => {
