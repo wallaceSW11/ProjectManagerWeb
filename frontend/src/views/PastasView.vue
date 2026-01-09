@@ -396,11 +396,12 @@
     };
 
     try {
+      salvarAcoesSelecionadas(payload);
+      notificar('sucesso', 'Comando solicitado');
+      
       await carregandoAsync(async () => {
         await ComandosService.executarComando(payload);
       });
-      salvarAcoesSelecionadas(payload);
-      notificar('sucesso', 'Comando solicitado');
     } catch (error) {
       console.error('Falha ao executar as acoes: ', error);
       notificar('erro', 'Falha ao executar a ação', String(error));
@@ -443,9 +444,10 @@
       comandoId: menuId,
     };
 
+    notificar('sucesso', 'Comando solicitado');
+
     try {
       await ComandosService.executarComandoMenu(payload);
-      notificar('sucesso', 'Comando solicitado');
     } catch (error) {
       console.error('Falha ao executar o menu: ', error);
       notificar('erro', 'Falha ao executar o menu', String(error));
@@ -455,8 +457,9 @@
   const executarMenusMultiplos = async (pasta: IPasta, menuIds: string[]): Promise<void> => {
     if (!menuIds.length) return;
 
+    notificar('sucesso', `${menuIds.length} comando(s) solicitado(s)`);
+
     try {
-      // Executa todos os menus em sequência
       for (const menuId of menuIds) {
         const payload: PayloadMenuComando = {
           diretorio: pasta.diretorio,
@@ -465,7 +468,6 @@
         };
         await ComandosService.executarComandoMenu(payload);
       }
-      notificar('sucesso', `${menuIds.length} comando(s) solicitado(s)`);
     } catch (error) {
       console.error('Falha ao executar os menus: ', error);
       notificar('erro', 'Falha ao executar os menus', String(error));
@@ -597,11 +599,12 @@
       projetos: [projetoComando],
     };
 
+    notificar('sucesso', 'Comando solicitado');
+
     try {
       await carregandoAsync(async () => {
         await ComandosService.executarComando(payload);
       });
-      notificar('sucesso', 'Comando solicitado');
     } catch (error) {
       console.error('Falha ao executar a acao: ', error);
       notificar('erro', 'Falha ao executar a ação', String(error));
