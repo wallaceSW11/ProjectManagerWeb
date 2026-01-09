@@ -18,6 +18,7 @@ export interface IMenu {
   arquivos: IArquivo[];
   pastas: IPastaMenu[];
   comandos: Array<{ comando: string }>;
+  ativo: boolean;
 }
 
 export interface IIDE {
@@ -59,6 +60,7 @@ export interface IRepositorio {
   projetos: IProjeto[];
   agregados: string[];
   menus: IMenu[];
+  ideIdentificador?: string | null;
 }
 
 export interface IPasta {
@@ -74,6 +76,8 @@ export interface IPasta {
   projetos: IProjeto[];
   menus: IMenu[];
   index: number;
+  ideIdentificador?: string | null;
+  nomeRepositorio?: string | null;
 }
 
 export interface IClone {

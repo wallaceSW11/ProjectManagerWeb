@@ -12,7 +12,11 @@ namespace ProjectManagerWeb.src.Services
             Path.Combine(BasePath, "repositorios.json");
 
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
-        private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
+        private readonly JsonSerializerOptions _jsonOptions = new() 
+        { 
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true
+        };
 
         public RepositorioJsonService()
         {
@@ -122,7 +126,9 @@ namespace ProjectManagerWeb.src.Services
 
                 var jsonString = await File.ReadAllTextAsync(FilePath);
                 if (string.IsNullOrWhiteSpace(jsonString)) return [];
-                return JsonSerializer.Deserialize<List<RepositorioRequestDTO>>(jsonString) ?? [];
+                
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return JsonSerializer.Deserialize<List<RepositorioRequestDTO>>(jsonString, options) ?? [];
             }
             finally
             {

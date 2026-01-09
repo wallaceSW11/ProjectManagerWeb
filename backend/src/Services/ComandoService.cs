@@ -13,7 +13,6 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
     var diretorio = pasta.Diretorio + "\\" + repositorio.Nome + "\\";
 
-    // Projetos originais do repositório
     foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null))
     {
       var projetoCadastrado = repositorio.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto não encontrado com o identificador {projeto.Identificador}");
@@ -48,11 +47,8 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
             {
               var texto = ide.ComandoParaExecutar + " ";
 
-              // Adicionar perfil se a IDE aceita perfil personalizado
               if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
-              {
                 texto += $"--profile \"{projetoCadastrado.PerfilVSCode}\"";
-              }
 
               comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;");
             }
@@ -61,7 +57,6 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
       }
     }
 
-    // Processa projetos agregados aguardando adequadamente as operações assíncronas
     foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is not null))
     {
       if (projeto.IdentificadorRepositorioAgregado is null) continue;
@@ -102,11 +97,8 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
             {
               var texto = ide.ComandoParaExecutar + " ";
 
-              // Adicionar perfil se a IDE aceita perfil personalizado
               if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
-              {
                 texto += $"--profile \"{projetoAgregadoCadastrado.PerfilVSCode}\"";
-              }
 
               comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;");
             }
@@ -161,11 +153,17 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
         Directory.CreateDirectory(diretorioDestino);
 
       if (a.IgnorarGit)
-        comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Start-Sleep -Milliseconds 1000; cd {diretorioDestino}; git update-index --assume-unchanged {nomeArquivo}; Exit;");
+      {
+        var caminhoArquivoDestino = Path.Combine(diretorioDestino, nomeArquivo);
+        var sucesso = CopiarArquivoComRetry(a.Arquivo, caminhoArquivoDestino);
+        
+        if (sucesso)
+          IgnorarArquivoNoGitComRetry(diretorioDestino, nomeArquivo);
+      }
       else
-        comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
+      {
+        comandos.Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
+      }
     });
 
     menuRepositorio.Pastas?.ForEach(p =>
@@ -194,5 +192,66 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     return true;
   }
 
+  private bool CopiarArquivoComRetry(string origem, string destino, int maxTentativas = 3)
+  {
+    for (int tentativa = 1; tentativa <= maxTentativas; tentativa++)
+    {
+      try
+      {
+        var comando = $"Copy-Item \"{origem}\" \"{destino}\" -Recurse -Force; Exit;";
+        ShellExecute.ExecutarComando(comando);
 
+        Thread.Sleep(200);
+
+        if (File.Exists(destino))
+          return true;
+        
+        if (tentativa < maxTentativas)
+          Thread.Sleep(200 * tentativa);
+      }
+      catch
+      {
+        if (tentativa < maxTentativas)
+          Thread.Sleep(200 * tentativa);
+      }
+    }
+
+    return false;
+  }
+
+  private void IgnorarArquivoNoGitComRetry(string diretorio, string nomeArquivo, int maxTentativas = 3)
+  {
+    for (int tentativa = 1; tentativa <= maxTentativas; tentativa++)
+    {
+      try
+      {
+        var comando = $"cd {diretorio}; git update-index --assume-unchanged {nomeArquivo}; Exit;";
+        ShellExecute.ExecutarComando(comando);
+        return;
+      }
+      catch
+      {
+        if (tentativa < maxTentativas)
+          Thread.Sleep(200 * tentativa);
+      }
+    }
+  }
+
+  public async Task<bool> AbrirPastaIDE(AbrirPastaIDERequestDTO request)
+  {
+    var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");
+
+    var comando = $"cd {request.Diretorio}; {ide.ComandoParaExecutar} .; Exit;";
+
+    try
+    {
+      ShellExecute.ExecutarComando(comando);
+    }
+    catch
+    {
+      return false;
+    }
+
+    return true;
+  }
 }

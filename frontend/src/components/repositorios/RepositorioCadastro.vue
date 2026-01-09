@@ -48,13 +48,27 @@
           clearable
         />
       </v-col>
+
+      <v-col cols="12">
+        <v-select
+          label="IDE para abrir"
+          v-model="repositorio.ideIdentificador"
+          :items="ides"
+          item-title="nome"
+          item-value="identificador"
+          clearable
+          hint="IDE padrão para abrir a pasta do repositório"
+          persistent-hint
+        />
+      </v-col>
     </v-row>
   </v-form>
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
-  import type { IRepositorio } from '@/types';
+  import { computed, onMounted, ref } from 'vue';
+  import type { IRepositorio, IIDE } from '@/types';
+  import IDEsService from '@/services/IDEsService';
 
   interface Props {
     repositorios: IRepositorio[];
@@ -64,6 +78,23 @@
   const repositorio = defineModel<IRepositorio>({ required: true });
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
+  const ides = ref<IIDE[]>([]);
+
+  onMounted(async () => {
+    await carregarIDEs();
+  });
+
+  const carregarIDEs = async (): Promise<void> => {
+    try {
+      const resposta = await IDEsService.getIDEs();
+      ides.value = resposta;
+
+      if (!repositorio.value.ideIdentificador && ides.value.length > 0)
+        repositorio.value.ideIdentificador = ides.value[0].identificador;
+    } catch (error) {
+      console.error('Falha ao carregar IDEs:', error);
+    }
+  };
 
   const repositoriosDisponiveis = computed(() => {
     return props.repositorios.filter(
@@ -80,9 +111,8 @@
     const partesUrl = repositorio.value.url.split('/');
     let nomeExtraido = partesUrl.pop() || '';
 
-    if (nomeExtraido.endsWith('.git')) {
+    if (nomeExtraido.endsWith('.git'))
       nomeExtraido = nomeExtraido.slice(0, -4);
-    }
 
     repositorio.value.nome = nomeExtraido;
   };

@@ -11,6 +11,7 @@ export default class RepositorioModel implements IRepositorio {
   projetos: IProjeto[];
   agregados: string[];
   menus: IMenu[];
+  ideIdentificador?: string | null;
 
   constructor(obj: Partial<IRepositorio> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -23,6 +24,7 @@ export default class RepositorioModel implements IRepositorio {
       : [];
     this.agregados = obj.agregados || [];
     this.menus = obj.menus?.map((m: any) => new MenuModel(m)) || [];
+    this.ideIdentificador = obj.ideIdentificador || null;
   }
 
   /**
@@ -37,7 +39,8 @@ export default class RepositorioModel implements IRepositorio {
       cor: this.cor,
       projetos: this.projetos.map((p: any) => p.toDTO()),
       agregados: this.agregados,
-      menus: this.menus
+      menus: this.menus,
+      ideIdentificador: this.ideIdentificador
     };
   }
 }

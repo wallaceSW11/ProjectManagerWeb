@@ -14,6 +14,8 @@ public sealed record PastaResponseDTO(
     string? Cor,
     List<ProjetoDisponivelDTO> Projetos,
     List<MenuDTO>? Menus,
+    Guid? IDEIdentificador,
+    string? NomeRepositorio,
     int? Indice = null
 );
 

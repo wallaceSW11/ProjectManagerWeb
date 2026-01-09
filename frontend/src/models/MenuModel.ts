@@ -9,6 +9,7 @@ export default class MenuModel implements IMenu {
   arquivos: IArquivo[];
   pastas: IPastaMenu[];
   comandos: Array<{ comando: string }>;
+  ativo: boolean;
 
   constructor(obj: Partial<IMenu> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -17,5 +18,6 @@ export default class MenuModel implements IMenu {
     this.arquivos = obj.arquivos?.map(a => new ArquivoModel(a)) || [];
     this.pastas = obj.pastas?.map(p => new PastaMenuModel(p)) || [];
     this.comandos = obj.comandos || [];
+    this.ativo = obj.ativo ?? true;
   }
 }
