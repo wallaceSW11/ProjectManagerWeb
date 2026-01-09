@@ -161,11 +161,17 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
         Directory.CreateDirectory(diretorioDestino);
 
       if (a.IgnorarGit)
-        comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Start-Sleep -Milliseconds 1000; cd {diretorioDestino}; git update-index --assume-unchanged {nomeArquivo}; Exit;");
+      {
+        var caminhoArquivoDestino = Path.Combine(diretorioDestino, nomeArquivo);
+        var sucesso = CopiarArquivoComRetry(a.Arquivo, caminhoArquivoDestino);
+        
+        if (sucesso)
+          IgnorarArquivoNoGitComRetry(diretorioDestino, nomeArquivo);
+      }
       else
-        comandos
-          .Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
+      {
+        comandos.Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
+      }
     });
 
     menuRepositorio.Pastas?.ForEach(p =>
@@ -192,6 +198,65 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     }
 
     return true;
+  }
+
+  private bool CopiarArquivoComRetry(string origem, string destino, int maxTentativas = 3)
+  {
+    for (int tentativa = 1; tentativa <= maxTentativas; tentativa++)
+    {
+      try
+      {
+        var comando = $"Copy-Item \"{origem}\" \"{destino}\" -Recurse -Force; Exit;";
+        ShellExecute.ExecutarComando(comando);
+
+        Thread.Sleep(100);
+
+        if (File.Exists(destino))
+        {
+          Console.WriteLine($"[CopiarArquivo] Sucesso na tentativa {tentativa} - Arquivo: {Path.GetFileName(destino)}");
+          return true;
+        }
+
+        Console.WriteLine($"[CopiarArquivo] Tentativa {tentativa}/{maxTentativas} - Arquivo ainda não existe, aguardando...");
+        
+        if (tentativa < maxTentativas)
+          Thread.Sleep(200 * tentativa);
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"[CopiarArquivo] Erro na tentativa {tentativa}/{maxTentativas}: {ex.Message}");
+        
+        if (tentativa < maxTentativas)
+          Thread.Sleep(200 * tentativa);
+      }
+    }
+
+    Console.WriteLine($"[CopiarArquivo] FALHA após {maxTentativas} tentativas - Arquivo: {destino}");
+    return false;
+  }
+
+  private void IgnorarArquivoNoGitComRetry(string diretorio, string nomeArquivo, int maxTentativas = 3)
+  {
+    for (int tentativa = 1; tentativa <= maxTentativas; tentativa++)
+    {
+      try
+      {
+        var comando = $"cd {diretorio}; git update-index --assume-unchanged {nomeArquivo}; Exit;";
+        ShellExecute.ExecutarComando(comando);
+
+        Console.WriteLine($"[IgnorarGit] Sucesso na tentativa {tentativa} - Arquivo: {nomeArquivo}");
+        return;
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"[IgnorarGit] Erro na tentativa {tentativa}/{maxTentativas}: {ex.Message}");
+        
+        if (tentativa < maxTentativas)
+          Thread.Sleep(200 * tentativa);
+      }
+    }
+
+    Console.WriteLine($"[IgnorarGit] FALHA após {maxTentativas} tentativas - Arquivo: {nomeArquivo}");
   }
 
 
