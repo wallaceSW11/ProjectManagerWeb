@@ -104,12 +104,14 @@ public class ShellExecute
 
         try
         {
+            var usarShell = command.Contains("Copy-Item", StringComparison.OrdinalIgnoreCase);
+
             var psi = new ProcessStartInfo
             {
                 FileName = "pwsh.exe",
                 Arguments = $"-WindowStyle Hidden -Command \"{command}\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
+                UseShellExecute = usarShell,
+                CreateNoWindow = !usarShell,
                 WindowStyle = ProcessWindowStyle.Hidden
             };
 
