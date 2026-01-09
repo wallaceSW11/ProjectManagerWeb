@@ -19,6 +19,11 @@
           <template #[`item.tipo`]="{ item }">
             {{ formatarTipo(item.tipo) }}
           </template>
+          <template #[`item.ativo`]="{ item }">
+            <v-icon :color="item.ativo ? 'success' : 'error'">
+              {{ item.ativo ? 'mdi-check-circle' : 'mdi-close-circle' }}
+            </v-icon>
+          </template>
           <template #[`item.actions`]="{ item }">
             <IconeComTooltip
               icone="mdi-pencil"
@@ -61,6 +66,13 @@
                   item-title="texto"
                   item-value="valor"
                   :rules="obrigatorio"
+                />
+
+                <v-checkbox
+                  label="Ativo"
+                  v-model="menuSelecionado.ativo"
+                  hint="Apenas menus ativos aparecem no menu de contexto"
+                  persistent-hint
                 />
 
                 <!-- Arquivos -->
@@ -235,6 +247,7 @@
   const colunas = reactive([
     { title: 'Título', key: 'titulo', align: 'start' },
     { title: 'Tipo', key: 'tipo', align: 'start' },
+    { title: 'Ativo', key: 'ativo', align: 'center' },
     { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
   ] as const);
 

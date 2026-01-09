@@ -34,7 +34,7 @@
           />
         </div>
 
-        <div v-if="pasta.menus.length > 0">
+        <div v-if="menusAtivos.length > 0">
           <v-menu location="bottom" v-model="menuAberto">
             <template #activator="{ props }">
               <v-btn
@@ -49,7 +49,7 @@
 
             <v-list dense>
               <v-list-item
-                v-for="menu in pasta.menus"
+                v-for="menu in menusAtivos"
                 :key="menu.identificador"
                 @click.stop="toggleMenuSelecionado(menu.identificador)"
               >
@@ -120,6 +120,10 @@
 
   const menuAberto = ref<boolean>(false);
   const menusSelecionados = ref<string[]>([]);
+
+  const menusAtivos = computed(() => {
+    return props.pasta.menus.filter(menu => menu.ativo);
+  });
 
   const selecionarPasta = (pasta: IPasta): void => {
     emit('selecionarPasta', pasta);

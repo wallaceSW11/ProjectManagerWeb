@@ -18,6 +18,7 @@ export interface IMenu {
   arquivos: IArquivo[];
   pastas: IPastaMenu[];
   comandos: Array<{ comando: string }>;
+  ativo: boolean;
 }
 
 export interface IIDE {

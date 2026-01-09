@@ -61,7 +61,8 @@ namespace ProjectManagerWeb.src.DTOs
         string Tipo,
         List<ArquivosDTO>? Arquivos,
         List<PastaDTO>? Pastas,
-        List<string>? Comandos
+        List<string>? Comandos,
+        bool Ativo = true
     );
 
     public sealed record ArquivosDTO(
