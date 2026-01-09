@@ -201,7 +201,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
         var comando = $"Copy-Item \"{origem}\" \"{destino}\" -Recurse -Force; Exit;";
         ShellExecute.ExecutarComando(comando);
 
-        Thread.Sleep(100);
+        Thread.Sleep(200);
 
         if (File.Exists(destino))
           return true;
