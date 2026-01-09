@@ -22,6 +22,11 @@ interface ComandoAvulso {
   comando: string;
 }
 
+interface AbrirPastaIDE {
+  diretorio: string;
+  ideIdentificador: string;
+}
+
 class ComandosService extends BaseApiService {
   async executarComando(comandos: ComandoExecucao): Promise<void> {
     return await this.post('comandos', comandos);
@@ -33,6 +38,10 @@ class ComandosService extends BaseApiService {
 
   async executarComandoAvulso(comando: ComandoAvulso): Promise<void> {
     return await this.post('comandos/avulso', comando);
+  }
+
+  async abrirPastaIDE(request: AbrirPastaIDE): Promise<void> {
+    return await this.post('comandos/abrir-pasta-ide', request);
   }
 }
 

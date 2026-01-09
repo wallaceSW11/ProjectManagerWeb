@@ -24,6 +24,20 @@ cd backend/migrations
 
 **Arquivo afetado:** `%ProgramData%\PMW\Banco\repositorios.json`
 
+### AddIDEIdentificadorToRepositorios.ps1
+**Data:** 2026-01-09  
+**Descrição:** Adiciona o campo `ideIdentificador` em todos os repositórios existentes, usando a primeira IDE cadastrada como padrão.
+
+**O que faz:**
+- Cria backup automático do arquivo antes de modificar
+- Busca a primeira IDE cadastrada no sistema
+- Adiciona o campo `ideIdentificador` em todos os repositórios
+- Mantém a estrutura JSON formatada
+
+**Arquivos afetados:** 
+- `%ProgramData%\PMW\Banco\repositorios.json`
+- `%ProgramData%\PMW\Banco\ides.json` (leitura)
+
 ## Segurança
 
 Todos os scripts de migration:

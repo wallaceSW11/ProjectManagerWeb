@@ -45,6 +45,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           null,
           [],
           [],
+          null,
+          null,
           indice
         );
 
@@ -155,6 +157,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.Cor,
         projetosDisponiveis,
         repositorio.Menus ?? [],
+        repositorio.IDEIdentificador,
+        repositorio.Nome,
         pasta.Indice
       );
 

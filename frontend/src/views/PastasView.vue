@@ -77,6 +77,7 @@
                   @executar-menu="executarMenu"
                   @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
+                  @abrirNaIDE="abrirPastaNaIDE"
                 />
               </template>
             </draggable>
@@ -619,6 +620,31 @@
     } catch (error) {
       console.error('Falha ao abrir o diretório: ', error);
       notificar('erro', 'Falha ao abrir o diretório', String(error));
+    }
+  };
+
+  const abrirPastaNaIDE = async (pasta: IPasta): Promise<void> => {
+    try {
+      if (!pasta.ideIdentificador) {
+        notificar('aviso', 'Nenhuma IDE configurada para este repositório');
+        return;
+      }
+
+      const diretorioCompleto = pasta.nomeRepositorio 
+        ? `${pasta.diretorio}\\${pasta.nomeRepositorio}`
+        : pasta.diretorio;
+
+      await carregandoAsync(async () => {
+        await ComandosService.abrirPastaIDE({
+          diretorio: diretorioCompleto,
+          ideIdentificador: pasta.ideIdentificador!,
+        });
+      });
+
+      notificar('sucesso', 'Abrindo pasta na IDE');
+    } catch (error) {
+      console.error('Falha ao abrir na IDE: ', error);
+      notificar('erro', 'Falha ao abrir na IDE', String(error));
     }
   };
 </script>

@@ -93,6 +93,13 @@
         >
           <v-icon>mdi-folder</v-icon>
           <span @click="() => abrirDiretorio(pasta.diretorio)" class="link pl-1">{{ pasta.diretorio }}</span>
+          <IconeComTooltip
+            v-if="ideDisponivel"
+            icone="mdi-code-tags"
+            :texto="`Abrir no ${nomeIDE}`"
+            :acao="abrirNaIDE"
+            class="ml-2"
+          />
         </v-col>
       </v-row>
     </v-card-text>
@@ -116,6 +123,7 @@
     executarMenu: [pasta: IPasta, menuId: string];
     executarMenusMultiplos: [pasta: IPasta, menuIds: string[]];
     abrirDiretorio: [diretorio: string];
+    abrirNaIDE: [pasta: IPasta];
   }>();
 
   const menuAberto = ref<boolean>(false);
@@ -123,6 +131,15 @@
 
   const menusAtivos = computed(() => {
     return props.pasta.menus.filter(menu => menu.ativo);
+  });
+
+  const ideDisponivel = computed(() => {
+    return props.pasta.ideIdentificador;
+  });
+
+  const nomeIDE = computed(() => {
+    const projetoComIDE = props.pasta.projetos.find(p => p.nomeIDE);
+    return projetoComIDE ? projetoComIDE.nomeIDE : 'IDE';
   });
 
   const selecionarPasta = (pasta: IPasta): void => {
@@ -210,6 +227,10 @@
 
   const abrirDiretorio = (diretorio: string): void => {
     emit('abrirDiretorio', diretorio);
+  };
+
+  const abrirNaIDE = (): void => {
+    emit('abrirNaIDE', props.pasta);
   };
 
   const obterIconeMenu = (tipo: string): string => {

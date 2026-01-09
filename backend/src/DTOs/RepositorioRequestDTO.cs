@@ -21,7 +21,8 @@ namespace ProjectManagerWeb.src.DTOs
         string? Cor,
         List<ProjetoDTO> Projetos,
         List<Guid>? Agregados,
-        List<MenuDTO>? Menus
+        List<MenuDTO>? Menus,
+        Guid? IDEIdentificador
     );
 
     /// <summary>

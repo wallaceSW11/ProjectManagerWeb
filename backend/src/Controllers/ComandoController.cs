@@ -29,4 +29,11 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
     var comandos = await comandoService.ExecutarComandoMenu(menu);
     return Ok(comandos);
   }
+
+  [HttpPost("abrir-pasta-ide")]
+  public async Task<IActionResult> AbrirPastaIDE([FromBody] AbrirPastaIDERequestDTO request)
+  {
+    var resultado = await comandoService.AbrirPastaIDE(request);
+    return Ok(resultado);
+  }
 }

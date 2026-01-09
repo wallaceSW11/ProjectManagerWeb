@@ -237,5 +237,21 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     }
   }
 
+  public async Task<bool> AbrirPastaIDE(AbrirPastaIDERequestDTO request)
+  {
+    var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");
 
+    var comando = $"cd {request.Diretorio}; {ide.ComandoParaExecutar} .; Exit;";
+
+    try
+    {
+      ShellExecute.ExecutarComando(comando);
+    }
+    catch
+    {
+      return false;
+    }
+
+    return true;
+  }
 }
