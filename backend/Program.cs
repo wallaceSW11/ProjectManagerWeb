@@ -50,11 +50,12 @@ catch (Exception ex)
     logger.LogError(ex, "Erro ao executar migrations durante inicialização");
 }
 
-// Configura porta 2025 em execução standalone (não IIS)
+// Configura porta em execução standalone (não IIS)
 if (!app.Environment.IsDevelopment())
 {
+    var porta = app.Configuration.GetValue<int>("Porta", 2025);
     app.Urls.Clear();
-    app.Urls.Add("http://*:2025");
+    app.Urls.Add($"http://*:{porta}");
 }
 
 // Pipeline
