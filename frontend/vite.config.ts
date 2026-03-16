@@ -37,10 +37,7 @@ export default defineConfig({
           // Separar Vuetify
           'vuetify-vendor': ['vuetify'],
           // Separar Axios
-          'http-vendor': ['axios'],
-          // Separar outras bibliotecas grandes se houver
-          'vendor': ['@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity']
-        }
+          'http-vendor': ['axios']
       }
     }
   }
