@@ -38,6 +38,7 @@ export default defineConfig({
           'vuetify-vendor': ['vuetify'],
           // Separar Axios
           'http-vendor': ['axios']
+        }
       }
     }
   }
