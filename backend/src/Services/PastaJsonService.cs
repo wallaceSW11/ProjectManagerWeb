@@ -1,12 +1,12 @@
 using System.Text.Json;
 using ProjectManagerWeb.src.DTOs;
+using ProjectManagerWeb.src.Utils;
 
 namespace ProjectManagerWeb.src.Services
 {
     public class PastaJsonService
     {
-        private static readonly string BasePath =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PMW", "Banco");
+        private static readonly string BasePath = PathHelper.BancoPath;
 
         private static readonly string FilePath =
             Path.Combine(BasePath, "pastas.json");

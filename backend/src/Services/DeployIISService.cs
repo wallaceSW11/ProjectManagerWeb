@@ -4,13 +4,9 @@ using ProjectManagerWeb.src.Utils;
 
 namespace ProjectManagerWeb.src.Services
 {
-    /// <summary>
-    /// Service responsável por orquestrar o processo de deploy de sites IIS
-    /// </summary>
     public class DeployIISService(SiteIISJsonService siteIISService)
     {
-        private static readonly string LogPath =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PMW", "Banco", "deploy-logs");
+        private static readonly string LogPath = Path.Combine(PathHelper.BancoPath, "deploy-logs");
 
         public DeployIISService() : this(null!)
         {

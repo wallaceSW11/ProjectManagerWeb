@@ -5,7 +5,7 @@ namespace ProjectManagerWeb.src.Utils;
 public class ShellExecute
 {
     private static readonly string LogFilePath =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PMW", "Banco", "comandos-executados.txt");
+        Path.Combine(PathHelper.BancoPath, "comandos-executados.txt");
 
     /// <summary>
     /// Abre o PowerShell através do CMD para executar um comando Git, mantendo o console aberto.

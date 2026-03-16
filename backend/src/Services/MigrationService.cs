@@ -1,12 +1,12 @@
 using System.Text.Json;
 using ProjectManagerWeb.src.DTOs;
+using ProjectManagerWeb.src.Utils;
 
 namespace ProjectManagerWeb.src.Services
 {
     public class MigrationService
     {
-        private static readonly string BasePath =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PMW", "Banco");
+        private static readonly string BasePath = PathHelper.BancoPath;
 
         private static readonly string FilePath =
             Path.Combine(BasePath, "migrations.json");
@@ -75,34 +75,29 @@ namespace ProjectManagerWeb.src.Services
 
             try
             {
-                // Migration 001: Adicionar IDEs
-                const string migration001 = "001_AddIDEs";
-                if (!await IsMigrationExecutedAsync(migration001))
-                {
-                    _logger.LogInformation($"Executando migration: {migration001}");
-                    await Migration_001_AddIDEs();
-                    await RecordMigrationAsync(migration001);
-                    _logger.LogInformation($"Migration {migration001} registrada como executada");
-                }
-                else
-                {
-                    _logger.LogInformation($"Migration {migration001} já foi executada anteriormente");
-                }
-
-                // Futuras migrations podem ser adicionadas aqui
-                // if (!await IsMigrationExecutedAsync("002_NomeDaMigration"))
-                // {
-                //     await Migration_002_NomeDaMigration();
-                //     await RecordMigrationAsync("002_NomeDaMigration");
-                // }
+                await ExecutarMigration("001_AddIDEs", Migration_001_AddIDEs);
+                await ExecutarMigration("002_MigrateProgramDataToUserProfile", Migration_002_MigrateProgramDataToUserProfile);
 
                 _logger.LogInformation("Todas as migrations foram verificadas");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao executar migrations. A aplicação continuará a inicialização.");
-                // Não lançar exceção para não bloquear a inicialização da aplicação
             }
+        }
+
+        private async Task ExecutarMigration(string nome, Func<Task> migration)
+        {
+            if (await IsMigrationExecutedAsync(nome))
+            {
+                _logger.LogInformation($"Migration {nome} já foi executada anteriormente");
+                return;
+            }
+
+            _logger.LogInformation($"Executando migration: {nome}");
+            await migration();
+            await RecordMigrationAsync(nome);
+            _logger.LogInformation($"Migration {nome} concluída");
         }
 
         /// <summary>
@@ -199,6 +194,83 @@ namespace ProjectManagerWeb.src.Services
                 _logger.LogError(ex, $"Erro ao executar migration {migrationName}");
                 throw;
             }
+        }
+
+        public async Task Migration_002_MigrateProgramDataToUserProfile()
+        {
+            var origemPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "PMW", "Banco"
+            );
+
+            if (!Directory.Exists(origemPath))
+            {
+                _logger.LogInformation("Migration 002: Nenhum dado encontrado em ProgramData. Nada a migrar.");
+                return;
+            }
+
+            var arquivos = Directory.GetFiles(origemPath, "*.json")
+                .Concat(Directory.GetFiles(origemPath, "*.txt"))
+                .ToList();
+
+            if (arquivos.Count == 0)
+            {
+                _logger.LogInformation("Migration 002: ProgramData existe mas está vazio. Nada a migrar.");
+                return;
+            }
+
+            _logger.LogInformation($"Migration 002: {arquivos.Count} arquivo(s) encontrado(s) em ProgramData. Iniciando migração...");
+
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var backupPath = Path.Combine(origemPath, $"bkp_{timestamp}");
+            Directory.CreateDirectory(backupPath);
+
+            var destino = PathHelper.BancoPath;
+            if (!Directory.Exists(destino))
+                Directory.CreateDirectory(destino);
+
+            var erros = new List<string>();
+
+            foreach (var arquivo in arquivos)
+            {
+                var nomeArquivo = Path.GetFileName(arquivo);
+                var destinoArquivo = Path.Combine(destino, nomeArquivo);
+
+                try
+                {
+                    File.Copy(arquivo, destinoArquivo, overwrite: true);
+                    _logger.LogInformation($"Migration 002: Copiado {nomeArquivo} → {destinoArquivo}");
+                }
+                catch (Exception ex)
+                {
+                    erros.Add(nomeArquivo);
+                    _logger.LogError(ex, $"Migration 002: Falha ao copiar {nomeArquivo}");
+                }
+            }
+
+            if (erros.Count > 0)
+            {
+                _logger.LogWarning($"Migration 002: {erros.Count} arquivo(s) falharam na cópia: {string.Join(", ", erros)}. Arquivos originais mantidos.");
+                return;
+            }
+
+            foreach (var arquivo in arquivos)
+            {
+                var nomeArquivo = Path.GetFileName(arquivo);
+                var backupArquivo = Path.Combine(backupPath, nomeArquivo);
+
+                try
+                {
+                    File.Move(arquivo, backupArquivo);
+                    _logger.LogInformation($"Migration 002: Movido para backup: {nomeArquivo}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Migration 002: Falha ao mover {nomeArquivo} para backup");
+                }
+            }
+
+            _logger.LogInformation($"Migration 002: Concluída. Backup em: {backupPath}");
         }
 
         // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---
