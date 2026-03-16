@@ -12,8 +12,10 @@
     "format": "prettier --write \"src/**/*.{js,ts,vue,json,css,scss,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,ts,vue,json,css,scss,md}\"",
     "publish:backend": "cd ..\\Backend && dotnet publish .\\ProjectManagerWeb.csproj -c Release -o C:\\inetpub\\wwwroot\\PMW",
+    "publish:backend:2": "cd ..\\Backend && dotnet publish .\\ProjectManagerWeb.csproj -c Release -o C:\\inetpub\\wwwroot\\PMW_2",
     "copy:to:backend": "xcopy dist\\* ..\\Backend\\frontend /s /e /y /i",
-    "publish:all": "pnpm run build && pnpm run copy:to:backend && pnpm run publish:backend"
+    "publish:all": "pnpm run build && pnpm run copy:to:backend && pnpm run publish:backend",
+    "publish:all:2": "pnpm run build && pnpm run copy:to:backend && pnpm run publish:backend:2"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
