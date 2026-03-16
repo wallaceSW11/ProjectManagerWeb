@@ -36,7 +36,6 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
-        // Log assíncrono sem bloquear
         _ = Task.Run(() => LogComandoAsync(command));
 
         try
@@ -52,7 +51,6 @@ public class ShellExecute
         }
         catch (Exception ex)
         {
-            // Log de erro
             _ = Task.Run(() => LogComandoAsync(command, $"ERRO: {ex.Message}"));
             throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
