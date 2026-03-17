@@ -12,6 +12,7 @@ class BaseApiService {
       headers: {
         'Content-Type': 'application/json',
       },
+      timeout: 180000, // 3 min para o JARVAS pensar
     });
   }
 

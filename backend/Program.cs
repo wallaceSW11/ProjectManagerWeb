@@ -36,6 +36,12 @@ builder.Services.AddSingleton<DeployIISService>();
 builder.Services.AddSingleton<IDEJsonService>();
 builder.Services.AddSingleton<MigrationService>();
 
+// JARVAS
+builder.Services.AddSingleton<ILLMService, OllamaService>();
+builder.Services.AddSingleton<JarvasContextoService>();
+builder.Services.AddSingleton<JarvasOrquestrador>();
+builder.Services.AddSingleton<JarvasPreParser>();
+
 var app = builder.Build();
 
 // Executar migrations antes de iniciar a aplicação
@@ -49,6 +55,16 @@ catch (Exception ex)
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
     logger.LogError(ex, "Erro ao executar migrations durante inicialização");
 }
+
+// Warm-up do LLM em background (não bloqueia o startup)
+_ = Task.Run(async () =>
+{
+    var llm = app.Services.GetRequiredService<ILLMService>();
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("JARVAS: iniciando warm-up do modelo...");
+    await llm.WarmUpAsync();
+    logger.LogInformation("JARVAS: modelo aquecido e pronto.");
+});
 
 // Configura porta em execução standalone (não IIS)
 if (!app.Environment.IsDevelopment())

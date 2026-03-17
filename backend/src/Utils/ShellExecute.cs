@@ -29,6 +29,7 @@ public class ShellExecute
 
     /// <summary>
     /// Executa um comando PowerShell com interface visível, mantendo o console aberto.
+    /// Fire-and-forget — não aguarda o processo terminar.
     /// </summary>
     /// <param name="command">O comando a ser executado.</param>
     public static void ExecutarComandoComInterface(string command)
@@ -54,6 +55,52 @@ public class ShellExecute
             _ = Task.Run(() => LogComandoAsync(command, $"ERRO: {ex.Message}"));
             throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Executa um comando PowerShell com janela visível (usuário acompanha) e AGUARDA terminar.
+    /// Usa arquivo sentinela: o comando escreve um arquivo ao concluir, o backend faz polling.
+    /// Ideal para git clone — janela aberta + sequenciamento garantido.
+    /// </summary>
+    public static async Task ExecutarComandoAguardarAsync(string command, int timeoutMs = 300_000)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+            throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
+
+        _ = Task.Run(() => LogComandoAsync(command));
+
+        // Arquivo de script e sentinela temporários — evita problemas de escape no -Command
+        var id = Guid.NewGuid().ToString("N");
+        var script   = Path.Combine(Path.GetTempPath(), $"jarvas_{id}.ps1");
+        var sentinela = Path.Combine(Path.GetTempPath(), $"jarvas_{id}.done");
+
+        // Escreve o script: executa o comando e cria o sentinela ao terminar
+        await File.WriteAllTextAsync(script,
+            $"{command}\nNew-Item -ItemType File -Path '{sentinela}' -Force | Out-Null\n");
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = "pwsh.exe",
+            Arguments = $"-NoExit -ExecutionPolicy Bypass -File \"{script}\"",
+            UseShellExecute = true
+        };
+
+        using var process = Process.Start(psi)!;
+
+        // Polling no arquivo sentinela (verifica a cada 500ms)
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        while (!File.Exists(sentinela))
+        {
+            if (DateTime.UtcNow > deadline)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+                throw new TimeoutException($"Comando excedeu {timeoutMs / 1000}s");
+            }
+            await Task.Delay(500);
+        }
+
+        // Limpa arquivos temporários
+        try { File.Delete(sentinela); File.Delete(script); } catch { }
     }
 
     /// <summary>

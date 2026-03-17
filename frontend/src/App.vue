@@ -193,6 +193,7 @@
 
   <CloneGit v-model="exibirModalClone" />
   <SitesGerenciamento v-model="exibirModalSites" />
+  <JarvasChat />
 </template>
 
 <script setup>
@@ -203,6 +204,7 @@
   import CloneGit from '@/components/clone/CloneGit.vue';
   import eventBus, { carregandoAsync } from '@/utils/eventBus';
   import SitesGerenciamento from '@/components/sites/SitesGerenciamento.vue';
+  import JarvasChat from '@/components/jarvas/JarvasChat.vue';
   import { UX_CONFIG } from '@/constants/geral-constants';
   import { useSiteIISStore } from '@/stores/siteIIS';
 

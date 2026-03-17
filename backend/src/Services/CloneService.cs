@@ -23,7 +23,7 @@ public class CloneService
         _repositorioJson = repositorioJson;
     }
 
-    public async Task<bool> Clonar(CloneRequestDTO clone)
+    public async Task<bool> Clonar(CloneRequestDTO clone, bool aguardar = false)
     {
         StringBuilder diretorioCompleto = new();
         StringBuilder comando = new();
@@ -40,62 +40,83 @@ public class CloneService
         var gitPrincipal = await _repositorioJson.GetByIdAsync(clone.RepositorioId);
 
         if (gitPrincipal is null)
-        {
             return false;
-            throw new Exception("Git não encontrado");
-        }
 
-        comando
-            .Append($"cd {diretorioCompleto.ToString()}; ")
-            .Append($"git clone {gitPrincipal.Url}; ")
-            .Append($"cd {gitPrincipal.Nome}; ");
+        var dirRepo = Path.Combine(diretorioCompleto.ToString(), gitPrincipal.Nome);
+        var jaClonado = Directory.Exists(Path.Combine(dirRepo, ".git"));
+
+        // Se existe a pasta mas sem .git (clone incompleto), remove para reclone limpo
+        if (Directory.Exists(dirRepo) && !jaClonado)
+            Directory.Delete(dirRepo, true);
+
+        comando.Append($"cd \"{diretorioCompleto}\"; ");
+
+        if (jaClonado)
+            comando.Append($"cd \"{gitPrincipal.Nome}\"; ");
+        else
+            comando.Append($"git clone {gitPrincipal.Url}; cd \"{gitPrincipal.Nome}\"; ");
 
         if (clone.CriarBranchRemoto)
         {
-            comando.Append($" git checkout {clone.Branch} 2>$null; ");
+            comando.Append($"git checkout {clone.Branch} 2>$null; ");
             if (clone.Tipo == "nenhum")
-                comando.Append($" git checkout -b {clone.Codigo};");
+                comando.Append($"git checkout -b {clone.Codigo};");
             else
-                comando.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
+                comando.Append($"git checkout -b {clone.Tipo}/{clone.Codigo};");
         }
         else
         {
-            comando.Append($" git checkout {clone.Branch};");
+            comando.Append($"git checkout {clone.Branch};");
         }
 
-        ShellExecute.ExecutarComando(comando.ToString());
+        if (aguardar)
+            // JARVAS: aguarda terminar para poder sequenciar menus depois
+            await ShellExecute.ExecutarComandoAguardarAsync(comando.ToString());
+        else
+            // Fluxo manual: fire-and-forget, abre pwsh visível e retorna imediatamente
+            ShellExecute.ExecutarComando(comando.ToString());
 
         if (clone.BaixarAgregados)
         {
-
-            gitPrincipal.Agregados?.ForEach(async identificadorAgredado =>
+            var agregadosTasks = (gitPrincipal.Agregados ?? []).Select(async identificadorAgregado =>
             {
-                var agregado = await _repositorioJson.GetByIdAsync(identificadorAgredado);
-
+                var agregado = await _repositorioJson.GetByIdAsync(identificadorAgregado);
                 if (agregado is null) return;
 
-                comando.Clear();
+                var dirAgregado = Path.Combine(diretorioCompleto.ToString(), agregado.Nome);
+                var agregadoJaClonado = Directory.Exists(Path.Combine(dirAgregado, ".git"));
 
-                comando
-                    .Append($"cd {diretorioCompleto.ToString()}; ")
-                    .Append($"git clone {agregado.Url}; ")
-                    .Append($"cd {agregado.Nome}; ");
+                if (Directory.Exists(dirAgregado) && !agregadoJaClonado)
+                    Directory.Delete(dirAgregado, true);
+
+                var cmdAgregado = new StringBuilder();
+                cmdAgregado.Append($"cd \"{diretorioCompleto}\"; ");
+
+                if (agregadoJaClonado)
+                    cmdAgregado.Append($"cd \"{agregado.Nome}\"; ");
+                else
+                    cmdAgregado.Append($"git clone {agregado.Url}; cd \"{agregado.Nome}\"; ");
 
                 if (clone.CriarBranchRemoto)
                 {
-                    comando.Append($" git checkout {clone.Branch} 2>$null; ");
+                    cmdAgregado.Append($"git checkout {clone.Branch} 2>$null; ");
                     if (clone.Tipo == "nenhum")
-                        comando.Append($" git checkout -b {clone.Codigo};");
+                        cmdAgregado.Append($"git checkout -b {clone.Codigo};");
                     else
-                        comando.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
+                        cmdAgregado.Append($"git checkout -b {clone.Tipo}/{clone.Codigo};");
                 }
                 else
                 {
-                    comando.Append($" git checkout {clone.Branch};");
+                    cmdAgregado.Append($"git checkout {clone.Branch};");
                 }
 
-                ShellExecute.ExecutarComando(comando.ToString());
+                if (aguardar)
+                    await ShellExecute.ExecutarComandoAguardarAsync(cmdAgregado.ToString());
+                else
+                    ShellExecute.ExecutarComando(cmdAgregado.ToString());
             });
+
+            await Task.WhenAll(agregadosTasks);
         }
 
         return true;
