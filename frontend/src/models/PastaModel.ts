@@ -16,6 +16,7 @@ export default class PastaModel implements IPasta {
   index: number;
   ideIdentificador?: string | null;
   nomeRepositorio?: string | null;
+  perfilVSCode?: string | null;
 
   constructor(obj: Partial<IPasta> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -32,5 +33,6 @@ export default class PastaModel implements IPasta {
     this.index = obj.index || 0;
     this.ideIdentificador = obj.ideIdentificador || null;
     this.nomeRepositorio = obj.nomeRepositorio || null;
+    this.perfilVSCode = obj.perfilVSCode || null;
   }
 }

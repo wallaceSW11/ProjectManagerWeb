@@ -22,7 +22,8 @@ namespace ProjectManagerWeb.src.DTOs
         List<ProjetoDTO> Projetos,
         List<Guid>? Agregados,
         List<MenuDTO>? Menus,
-        Guid? IDEIdentificador
+        Guid? IDEIdentificador,
+        string? PerfilVSCode = null
     );
 
     /// <summary>

@@ -9,6 +9,10 @@ class ConfiguracaoService extends BaseApiService {
   async postConfiguracao(configuracao: IConfiguracao): Promise<void> {
     return await this.post('configuracoes', configuracao);
   }
+
+  async renomearPerfil(nomeAntigo: string, nomeNovo: string): Promise<void> {
+    return await this.put(`configuracoes/perfis/${encodeURIComponent(nomeAntigo)}`, nomeNovo);
+  }
 }
 
 export default new ConfiguracaoService();

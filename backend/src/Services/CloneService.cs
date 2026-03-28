@@ -7,18 +7,14 @@ namespace ProjectManagerWeb.src.Services;
 
 public class CloneService
 {
-    private const string FilePath = "Banco\\pastas.json";
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
     private readonly RepositorioJsonService _repositorioJson;
 
     public CloneService(RepositorioJsonService repositorioJson)
     {
-        var directoryName = Path.GetDirectoryName(FilePath);
-        if (!string.IsNullOrEmpty(directoryName) && !Directory.Exists(directoryName))
-        {
-            Directory.CreateDirectory(directoryName);
-        }
+        if (!Directory.Exists(PathHelper.BancoPath))
+            Directory.CreateDirectory(PathHelper.BancoPath);
 
         _repositorioJson = repositorioJson;
     }
@@ -47,7 +43,7 @@ public class CloneService
 
         comando
             .Append($"cd {diretorioCompleto.ToString()}; ")
-            .Append($"git clone {gitPrincipal.Url}; ")
+            .Append($"git clone --depth 1 {gitPrincipal.Url}; ")
             .Append($"cd {gitPrincipal.Nome}; ");
 
         if (clone.CriarBranchRemoto)
@@ -78,7 +74,7 @@ public class CloneService
 
                 comando
                     .Append($"cd {diretorioCompleto.ToString()}; ")
-                    .Append($"git clone {agregado.Url}; ")
+                    .Append($"git clone --depth 1 {agregado.Url}; ")
                     .Append($"cd {agregado.Nome}; ");
 
                 if (clone.CriarBranchRemoto)

@@ -159,7 +159,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.Menus ?? [],
         repositorio.IDEIdentificador,
         repositorio.Nome,
-        pasta.Indice
+        pasta.Indice,
+        repositorio.PerfilVSCode
       );
 
       pastaResponseList.Add(pastaResponse);

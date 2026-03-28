@@ -25,6 +25,7 @@ interface ComandoAvulso {
 interface AbrirPastaIDE {
   diretorio: string;
   ideIdentificador: string;
+  perfilVSCode?: string | null;
 }
 
 class ComandosService extends BaseApiService {

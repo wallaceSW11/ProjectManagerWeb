@@ -136,12 +136,20 @@
     salvarConfiguracao(); // opcional, salva direto
   };
 
-  // Editar perfil (exemplo)
-  const editarPerfil = (item: IPerfilVSCode): void => {
+  const editarPerfil = async (item: IPerfilVSCode): Promise<void> => {
     const novoNome = prompt('Editar nome do perfil:', item.nome);
-    if (novoNome && novoNome.trim()) {
-      item.nome = novoNome.trim();
-      salvarConfiguracao();
+    if (!novoNome || !novoNome.trim()) return;
+
+    const nomeAntigo = item.nome;
+    const nomeTrimado = novoNome.trim();
+
+    try {
+      await ConfiguracaoService.renomearPerfil(nomeAntigo, nomeTrimado);
+      item.nome = nomeTrimado;
+      configuracaoStore.salvarConfiguracao(configuracao);
+      notificar('sucesso', 'Perfil renomeado e atualizado em todos os projetos');
+    } catch (error: any) {
+      notificar('erro', 'Falha ao renomear perfil', error.message);
     }
   };
 

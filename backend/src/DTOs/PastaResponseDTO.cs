@@ -16,7 +16,8 @@ public sealed record PastaResponseDTO(
     List<MenuDTO>? Menus,
     Guid? IDEIdentificador,
     string? NomeRepositorio,
-    int? Indice = null
+    int? Indice = null,
+    string? PerfilVSCode = null
 );
 
 public sealed record ProjetoDisponivelDTO(

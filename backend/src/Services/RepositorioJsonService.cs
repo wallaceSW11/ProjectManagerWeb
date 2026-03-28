@@ -96,6 +96,39 @@ namespace ProjectManagerWeb.src.Services
             }
         }
 
+        public async Task RenomearPerfilVSCodeAsync(string nomeAntigo, string nomeNovo)
+        {
+            await _semaphore.WaitAsync();
+            try
+            {
+                var repositorios = await LerListaDoArquivoAsync(locked: true);
+                var alterou = false;
+
+                var repositoriosAtualizados = repositorios.Select(r =>
+                {
+                    var perfilRepo = r.PerfilVSCode == nomeAntigo ? nomeNovo : r.PerfilVSCode;
+
+                    var projetosAtualizados = r.Projetos.Select(p =>
+                    {
+                        if (p.PerfilVSCode != nomeAntigo) return p;
+                        alterou = true;
+                        return p with { PerfilVSCode = nomeNovo };
+                    }).ToList();
+
+                    if (perfilRepo != r.PerfilVSCode) alterou = true;
+
+                    return r with { PerfilVSCode = perfilRepo, Projetos = projetosAtualizados };
+                }).ToList();
+
+                if (alterou)
+                    await GravarListaNoArquivoAsync(repositoriosAtualizados, locked: true);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
         public async Task<bool> DeleteAsync(Guid identificador)
         {
             await _semaphore.WaitAsync();

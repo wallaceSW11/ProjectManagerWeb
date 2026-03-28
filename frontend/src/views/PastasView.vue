@@ -517,6 +517,15 @@
         executarComandoAvulso(comando);
       },
     },
+    {
+      identificador: 4,
+      titulo: 'Baixar histórico completo (git fetch --unshallow)',
+      icone: 'mdi-source-branch-sync',
+      acao: (projeto: any) => {
+        const diretorio = `${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}`;
+        executarComandoAvulso(`cd ${diretorio}; git fetch --unshallow;`);
+      },
+    },
   ];
 
   const menusProjetoDisponiveis = (projeto: any): MenuProjeto[] => {
@@ -638,6 +647,7 @@
         await ComandosService.abrirPastaIDE({
           diretorio: diretorioCompleto,
           ideIdentificador: pasta.ideIdentificador!,
+          perfilVSCode: pasta.perfilVSCode,
         });
       });
 

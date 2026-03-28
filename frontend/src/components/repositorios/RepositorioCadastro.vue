@@ -61,6 +61,19 @@
           persistent-hint
         />
       </v-col>
+
+      <v-col cols="12">
+        <v-select
+          :items="configuracaoStore.perfisVSCode"
+          label="Perfil da IDE"
+          v-model="repositorio.perfilVSCode"
+          item-title="nome"
+          item-value="nome"
+          clearable
+          hint="Perfil usado ao abrir a pasta raiz do repositório na IDE"
+          persistent-hint
+        />
+      </v-col>
     </v-row>
   </v-form>
 </template>
@@ -69,6 +82,7 @@
   import { computed, onMounted, ref } from 'vue';
   import type { IRepositorio, IIDE } from '@/types';
   import IDEsService from '@/services/IDEsService';
+  import { useConfiguracaoStore } from '@/stores/configuracao';
 
   interface Props {
     repositorios: IRepositorio[];
@@ -76,6 +90,7 @@
 
   const props = defineProps<Props>();
   const repositorio = defineModel<IRepositorio>({ required: true });
+  const configuracaoStore = useConfiguracaoStore();
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
   const ides = ref<IIDE[]>([]);

@@ -71,4 +71,23 @@ public class ConfiguracaoService
             _semaphore.Release();
         }
     }
+
+    public async Task<bool> RenomearPerfilAsync(string nomeAntigo, string nomeNovo)
+    {
+        var configuracao = await ObterConfiguracaoAsync();
+
+        var perfil = configuracao.PerfisVSCode?.FirstOrDefault(p =>
+            p.Nome.Equals(nomeAntigo, StringComparison.OrdinalIgnoreCase));
+
+        if (perfil is null) return false;
+
+        var perfisAtualizados = configuracao.PerfisVSCode!
+            .Select(p => p.Nome.Equals(nomeAntigo, StringComparison.OrdinalIgnoreCase)
+                ? new PerfilVSCodeRequestDTO(nomeNovo)
+                : p)
+            .ToList();
+
+        await SalvarConfiguracaoAsync(configuracao with { PerfisVSCode = perfisAtualizados });
+        return true;
+    }
 }

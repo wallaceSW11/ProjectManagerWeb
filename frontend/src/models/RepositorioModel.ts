@@ -12,6 +12,7 @@ export default class RepositorioModel implements IRepositorio {
   agregados: string[];
   menus: IMenu[];
   ideIdentificador?: string | null;
+  perfilVSCode?: string | null;
 
   constructor(obj: Partial<IRepositorio> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -25,11 +26,9 @@ export default class RepositorioModel implements IRepositorio {
     this.agregados = obj.agregados || [];
     this.menus = obj.menus?.map((m: any) => new MenuModel(m)) || [];
     this.ideIdentificador = obj.ideIdentificador || null;
+    this.perfilVSCode = obj.perfilVSCode || null;
   }
 
-  /**
-   * Converte para o formato DTO esperado pelo backend
-   */
   toDTO() {
     return {
       identificador: this.identificador,
@@ -40,7 +39,8 @@ export default class RepositorioModel implements IRepositorio {
       projetos: this.projetos.map((p: any) => p.toDTO()),
       agregados: this.agregados,
       menus: this.menus,
-      ideIdentificador: this.ideIdentificador
+      ideIdentificador: this.ideIdentificador,
+      perfilVSCode: this.perfilVSCode
     };
   }
 }

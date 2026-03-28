@@ -61,6 +61,7 @@ export interface IRepositorio {
   agregados: string[];
   menus: IMenu[];
   ideIdentificador?: string | null;
+  perfilVSCode?: string | null;
 }
 
 export interface IPasta {
@@ -78,6 +79,7 @@ export interface IPasta {
   index: number;
   ideIdentificador?: string | null;
   nomeRepositorio?: string | null;
+  perfilVSCode?: string | null;
 }
 
 export interface IClone {

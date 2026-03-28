@@ -241,7 +241,12 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
   {
     var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");
 
-    var comando = $"cd {request.Diretorio}; {ide.ComandoParaExecutar} .; Exit;";
+    var texto = $"{ide.ComandoParaExecutar} .";
+
+    if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(request.PerfilVSCode))
+      texto = $"{ide.ComandoParaExecutar} --profile \"{request.PerfilVSCode}\" .";
+
+    var comando = $"cd {request.Diretorio}; {texto}; Exit;";
 
     try
     {
