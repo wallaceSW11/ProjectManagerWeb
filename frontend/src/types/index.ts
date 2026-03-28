@@ -62,6 +62,7 @@ export interface IRepositorio {
   menus: IMenu[];
   ideIdentificador?: string | null;
   perfilVSCode?: string | null;
+  comandoClone?: string | null;
 }
 
 export interface IPasta {
