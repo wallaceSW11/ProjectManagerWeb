@@ -281,7 +281,7 @@ namespace ProjectManagerWeb.src.Services
             {
                 if (!string.IsNullOrWhiteSpace(repo.ComandoClone)) continue;
 
-                var repoAtualizado = repo with { ComandoClone = "git clone --depth 1" };
+                var repoAtualizado = repo with { ComandoClone = "git clone --depth 1 --no-single-branch" };
                 await _repositorioService.UpdateAsync(repo.Identificador, repoAtualizado);
                 _logger.LogInformation($"Migration 003: ComandoClone definido para repositório {repo.Nome}");
             }
