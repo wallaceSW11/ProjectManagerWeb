@@ -23,8 +23,7 @@ namespace ProjectManagerWeb.src.DTOs
         List<Guid>? Agregados,
         List<MenuDTO>? Menus,
         Guid? IDEIdentificador,
-        string? PerfilVSCode = null,
-        string? ComandoClone = null
+        string? PerfilVSCode = null
     );
 
     /// <summary>

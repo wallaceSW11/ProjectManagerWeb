@@ -74,15 +74,6 @@
           persistent-hint
         />
       </v-col>
-
-      <v-col cols="12">
-        <v-text-field
-          label="Comando de clone"
-          v-model="repositorio.comandoClone"
-          hint="Ex: git clone --depth 1 | Se vazio, usa 'git clone --depth 1'. O --no-single-branch é adicionado automaticamente quando necessário."
-          persistent-hint
-        />
-      </v-col>
     </v-row>
   </v-form>
 </template>

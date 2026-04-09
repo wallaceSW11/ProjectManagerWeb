@@ -43,7 +43,7 @@ public class CloneService
 
         comando
             .Append($"cd {diretorioCompleto.ToString()}; ")
-            .Append($"{MontarComandoClone(gitPrincipal.ComandoClone)} {gitPrincipal.Url}; ")
+            .Append($"{MontarComandoClone(clone.CriarBranchRemoto, clone.HistoricoCompleto)} {gitPrincipal.Url}; ")
             .Append($"cd {gitPrincipal.Nome}; ");
 
         if (clone.CriarBranchRemoto)
@@ -74,7 +74,7 @@ public class CloneService
 
                 comando
                     .Append($"cd {diretorioCompleto.ToString()}; ")
-                    .Append($"{MontarComandoClone(agregado.ComandoClone)} {agregado.Url}; ")
+                    .Append($"{MontarComandoClone(clone.CriarBranchRemoto, clone.HistoricoCompleto)} {agregado.Url}; ")
                     .Append($"cd {agregado.Nome}; ");
 
                 if (clone.CriarBranchRemoto)
@@ -97,9 +97,9 @@ public class CloneService
         return true;
     }
 
-    private static string MontarComandoClone(string? comandoClone)
+    private static string MontarComandoClone(bool criarBranchRemoto, bool historicoCompleto)
     {
-        const string padrao = "git clone --depth 1 --no-single-branch";
-        return string.IsNullOrWhiteSpace(comandoClone) ? padrao : comandoClone.Trim();
+        if (historicoCompleto) return "git clone";
+        return criarBranchRemoto ? "git clone --depth 1" : "git clone --depth 1 --no-single-branch";
     }
 }

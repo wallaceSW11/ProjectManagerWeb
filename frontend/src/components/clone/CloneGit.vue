@@ -44,6 +44,12 @@
             hide-details
             v-model="clone.criarBranchRemoto"
           />
+          <v-checkbox
+            label="Baixar histórico completo"
+            hide-details
+            v-model="clone.historicoCompleto"
+            hint="Sem --depth, baixa o histórico completo do git"
+          />
 
           <v-radio-group
             label="Tipo"

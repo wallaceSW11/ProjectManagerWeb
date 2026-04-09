@@ -12,5 +12,6 @@ public sealed record CloneRequestDTO(
     Guid RepositorioId,
     bool CriarBranchRemoto,
     bool BaixarAgregados,
-    bool BaixarSomenteAgregados
+    bool BaixarSomenteAgregados,
+    bool HistoricoCompleto = false
 );

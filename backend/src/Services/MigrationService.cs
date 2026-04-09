@@ -77,7 +77,6 @@ namespace ProjectManagerWeb.src.Services
             {
                 await ExecutarMigration("001_AddIDEs", Migration_001_AddIDEs);
                 await ExecutarMigration("002_MigrateProgramDataToUserProfile", Migration_002_MigrateProgramDataToUserProfile);
-                await ExecutarMigration("003_AddComandoClone", Migration_003_AddComandoClone);
 
                 _logger.LogInformation("Todas as migrations foram verificadas");
             }
@@ -271,20 +270,6 @@ namespace ProjectManagerWeb.src.Services
             }
 
             _logger.LogInformation($"Migration 002: Concluída. Backup em: {backupPath}");
-        }
-
-        public async Task Migration_003_AddComandoClone()
-        {
-            var repositorios = await _repositorioService.GetAllAsync();
-
-            foreach (var repo in repositorios)
-            {
-                if (!string.IsNullOrWhiteSpace(repo.ComandoClone)) continue;
-
-                var repoAtualizado = repo with { ComandoClone = "git clone --depth 1 --no-single-branch" };
-                await _repositorioService.UpdateAsync(repo.Identificador, repoAtualizado);
-                _logger.LogInformation($"Migration 003: ComandoClone definido para repositório {repo.Nome}");
-            }
         }
 
         // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---

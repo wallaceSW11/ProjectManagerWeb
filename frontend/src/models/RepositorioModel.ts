@@ -13,7 +13,6 @@ export default class RepositorioModel implements IRepositorio {
   menus: IMenu[];
   ideIdentificador?: string | null;
   perfilVSCode?: string | null;
-  comandoClone?: string | null;
 
   constructor(obj: Partial<IRepositorio> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -28,7 +27,6 @@ export default class RepositorioModel implements IRepositorio {
     this.menus = obj.menus?.map((m: any) => new MenuModel(m)) || [];
     this.ideIdentificador = obj.ideIdentificador || null;
     this.perfilVSCode = obj.perfilVSCode || null;
-    this.comandoClone = obj.comandoClone || null;
   }
 
   toDTO() {
@@ -42,8 +40,7 @@ export default class RepositorioModel implements IRepositorio {
       agregados: this.agregados,
       menus: this.menus,
       ideIdentificador: this.ideIdentificador,
-      perfilVSCode: this.perfilVSCode,
-      comandoClone: this.comandoClone
+      perfilVSCode: this.perfilVSCode
     };
   }
 }

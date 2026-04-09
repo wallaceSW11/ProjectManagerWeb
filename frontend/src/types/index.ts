@@ -62,7 +62,6 @@ export interface IRepositorio {
   menus: IMenu[];
   ideIdentificador?: string | null;
   perfilVSCode?: string | null;
-  comandoClone?: string | null;
 }
 
 export interface IPasta {
@@ -93,6 +92,7 @@ export interface IClone {
   criarBranchRemoto: boolean;
   baixarAgregados: boolean;
   salvarNoStorage: boolean;
+  historicoCompleto: boolean;
 }
 
 export interface IPerfilVSCode {

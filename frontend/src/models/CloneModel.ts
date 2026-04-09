@@ -11,6 +11,7 @@ export default class CloneModel implements IClone {
   criarBranchRemoto: boolean;
   baixarAgregados: boolean;
   salvarNoStorage: boolean;
+  historicoCompleto: boolean;
 
   constructor(obj: Partial<IClone> = {}) {
     this.diretorioRaiz = obj.diretorioRaiz || '';
@@ -22,5 +23,6 @@ export default class CloneModel implements IClone {
     this.criarBranchRemoto = obj.criarBranchRemoto || false;
     this.baixarAgregados = obj.baixarAgregados || false;
     this.salvarNoStorage = obj.salvarNoStorage || false;
+    this.historicoCompleto = obj.historicoCompleto || false;
   }
 }
