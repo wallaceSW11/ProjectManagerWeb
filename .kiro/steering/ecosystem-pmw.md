@@ -201,6 +201,25 @@ pnpm run publish:all
 
 Scripts de atualização: `Atualizar_PMW.ps1` (raiz) e `backend/atualizar_PWM_pwsh.ps1`.
 
+## CI/CD — GitHub Actions
+
+Pipeline: `.github/workflows/release.yml` — dispara em push para `main`.
+
+Fluxo:
+1. Build do frontend (`pnpm install --frozen-lockfile` + `pnpm run build`) em `windows-latest`
+2. Copia `frontend/dist/` para `backend/frontend/` via `xcopy`
+3. `dotnet publish` gera pasta `publish/`
+4. Compacta em `PMW_vYYYY.MM.DD.HHmm.zip`
+5. Cria GitHub Release com o zip como artefato e release notes automáticas
+
+Cache ativo: pnpm (key: `pnpm-lock.yaml`) e NuGet (key: hash do `.csproj`) — economiza ~85s por run.
+
+**Convenção importante:** o script `build` no `package.json` não inclui `pnpm install` — o install é responsabilidade do chamador (workflow em CI, desenvolvedor localmente). Nunca adicionar `pnpm i &&` de volta ao script `build`.
+
+Atualização local: `Atualizar_PMW.ps1` (raiz) — baixa o último release do GitHub, para o processo, extrai e reinicia. **Preserva `appsettings.json` local** — nunca sobrescrever esse arquivo no deploy.
+
+O `backend/atualizar_PWM_pwsh.ps1` é um script legado (faz `git pull` direto) — não usar, o fluxo correto é via release.
+
 ## convenções
 
 - código em inglês, UI em pt-br
