@@ -192,6 +192,10 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
     return await pastaJsonService.GetAllAsync();
   }
 
+  public async Task RemoverPorDiretorio(string diretorio)
+  {
+    await pastaJsonService.DeleteAsync(diretorio);
+  }
   public async Task AtualizarIndices(List<PastaIndiceRequestDTO> indices)
   {
     var pastasExistentes = await pastaJsonService.GetAllAsync();

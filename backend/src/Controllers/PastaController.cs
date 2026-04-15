@@ -75,4 +75,34 @@ public class PastaController(PastaService pastaService, ConfiguracaoService conf
     await configuracaoService.RestaurarDiretorioAsync(request.Diretorio);
     return Ok();
   }
+
+  [HttpDelete]
+  public async Task<IActionResult> ExcluirDiretorio([FromBody] DiretorioRequestDTO request)
+  {
+    if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
+
+    if (!Directory.Exists(request.Diretorio))
+      return NotFound("Diretório não encontrado.");
+
+    try
+    {
+      RemoverAtributosReadOnly(new DirectoryInfo(request.Diretorio));
+      Directory.Delete(request.Diretorio, recursive: true);
+      await pastaService.RemoverPorDiretorio(request.Diretorio);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return BadRequest($"Erro ao excluir o diretório: {ex.Message}");
+    }
+  }
+
+  private static void RemoverAtributosReadOnly(DirectoryInfo diretorio)
+  {
+    foreach (var arquivo in diretorio.GetFiles("*", SearchOption.AllDirectories))
+      arquivo.Attributes = FileAttributes.Normal;
+
+    foreach (var subDiretorio in diretorio.GetDirectories("*", SearchOption.AllDirectories))
+      subDiretorio.Attributes = FileAttributes.Normal;
+  }
 }

@@ -206,3 +206,24 @@ Nunca assumir que `comandos` chegará sempre como array — depende de qual endp
 ## comentários
 
 Zero comentários. Nomes auto-documentados.
+
+## confirmações destrutivas
+
+Usar `confirm()` nativo do browser — não criar modal customizado para isso.
+
+```ts
+const confirmado = confirm(`Tem certeza que deseja excluir?\n\n${diretorio}\n\nEsta ação não pode ser desfeita.`);
+if (!confirmado) return;
+```
+
+## DELETE com body no axios
+
+Axios não aceita body direto em `delete()` — usar a opção `data`:
+
+```ts
+// errado
+await this.delete('pastas', { diretorio });
+
+// certo
+await this.delete('pastas', { data: { diretorio } });
+```
