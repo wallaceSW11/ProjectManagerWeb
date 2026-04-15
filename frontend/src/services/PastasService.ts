@@ -28,6 +28,18 @@ class PastasService extends BaseApiService {
   async atualizarExpandido(payload: ExpandidoAtualizar): Promise<void> {
     return await this.patch(`pastas/projetos/expandido`, payload);
   }
+
+  async getOcultas(): Promise<string[]> {
+    return await this.get<string[]>('pastas/ocultas');
+  }
+
+  async ocultar(diretorio: string): Promise<void> {
+    return await this.post('pastas/ocultar', { diretorio });
+  }
+
+  async restaurar(diretorio: string): Promise<void> {
+    return await this.post('pastas/restaurar', { diretorio });
+  }
 }
 
 export default new PastasService();

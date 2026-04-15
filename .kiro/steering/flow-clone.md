@@ -1,0 +1,109 @@
+---
+inclusion: fileMatch
+fileMatchPattern: "**/Clone*,**/clone*"
+description: Fluxo de clonagem de repositório Git com criação automática de pasta.
+---
+
+# flow-clone
+
+Fluxo de clonagem de repositório Git no PMW.
+
+## o que faz
+
+Clona um repositório (e opcionalmente seus agregados) em um diretório local,
+cria/faz checkout do branch desejado e registra a pasta resultante no `pastas.json`.
+Tudo em uma única operação — o usuário sai com o projeto pronto no disco e já listado na tela principal.
+
+## frontend
+
+componente: `frontend/src/components/clone/CloneGit.vue`
+model: `frontend/src/models/CloneModel.ts` → `IClone`
+service: `frontend/src/services/CloneService.ts` → `clonar(clone: IClone)`
+
+campos do formulário (`IClone`):
+- `repositorio`: `IRepositorio` selecionado — obrigatório
+- `diretorioRaiz`: caminho base onde a pasta será criada (vem da `ConfiguracaoStore`)
+- `codigo`: código do projeto (ex: `PMW-123`) — vira parte do nome da pasta
+- `descricao`: descrição curta — vira parte do nome da pasta (espaços → `_`)
+- `tipo`: `'nenhum' | 'feature' | 'bug' | 'hotfix'` — prefixo do branch criado
+- `branch`: branch de origem para checkout
+- `criarBranchRemoto`: se `true`, cria novo branch local a partir do `branch` de origem
+- `baixarAgregados`: se `true`, clona também os repositórios agregados do repositório principal
+- `historicoCompleto`: se `false` (padrão), usa `--depth 1` para clone raso
+- `salvarNoStorage`: flag de UI — não enviado ao backend
+
+fluxo:
+1. usuário seleciona repositório, preenche código, descrição, branch e opções
+2. submit → `CloneService.clonar(clone)` → `POST /api/clones`
+3. backend retorna a `PastaCadastroRequestDTO` criada
+4. frontend atualiza a lista de pastas (recarrega `GET /api/pastas`)
+
+## backend
+
+controller: `backend/src/Controllers/CloneController.cs`
+services: `CloneService`, `PastaService`, `RepositorioJsonService`
+
+endpoint: `POST /api/clones`
+body: `CloneRequestDTO`
+
+```csharp
+public sealed record CloneRequestDTO(
+    string DiretorioRaiz,
+    string Codigo,
+    string Descricao,
+    string Tipo,
+    string Branch,
+    Guid RepositorioId,
+    bool CriarBranchRemoto,
+    bool BaixarAgregados,
+    bool BaixarSomenteAgregados,
+    bool HistoricoCompleto = false
+);
+```
+
+lógica do `CloneService.Clonar()`:
+1. monta `diretorioCompleto = DiretorioRaiz + Codigo + "_" + Descricao.Replace(" ", "_")`
+2. cria o diretório físico se não existir
+3. busca o repositório principal por `RepositorioId`
+4. monta e executa o comando git via `ShellExecute.ExecutarComando()`:
+   - `HistoricoCompleto = false` + `CriarBranchRemoto = false` → `git clone --depth 1 --no-single-branch`
+   - `HistoricoCompleto = false` + `CriarBranchRemoto = true`  → `git clone --depth 1`
+   - `HistoricoCompleto = true`                                → `git clone`
+5. faz checkout do branch de origem
+6. se `CriarBranchRemoto = true`:
+   - `Tipo == "nenhum"` → `git checkout -b {Codigo}`
+   - `Tipo != "nenhum"` → `git checkout -b {Tipo}/{Codigo}`
+7. se `BaixarAgregados = true`: repete os passos 4–6 para cada `Guid` em `repositorio.Agregados`
+
+lógica do `CloneController` após o clone:
+1. chama `CriarPasta()` — monta `PastaCadastroRequestDTO` e chama `PastaService.Cadastrar()`
+2. retorna a pasta criada como `Ok(pastaCriada)`
+
+## nome da pasta no disco
+
+```
+{DiretorioRaiz}{Codigo}_{Descricao com espaços substituídos por _}
+```
+
+Exemplo: `DiretorioRaiz = C:\Dev\`, `Codigo = PMW-123`, `Descricao = "minha feature"` → `C:\Dev\PMW-123_minha_feature`
+
+## comportamento dos agregados
+
+Agregados são clonados **dentro do mesmo diretório** que o repositório principal.
+Cada agregado fica em `{diretorioCompleto}\{agregado.Nome}`.
+O checkout do branch nos agregados usa `2>$null` para suprimir erro caso o branch não exista no agregado.
+
+## arquivos envolvidos
+
+```
+frontend/src/components/clone/CloneGit.vue
+frontend/src/models/CloneModel.ts
+frontend/src/services/CloneService.ts
+frontend/src/types/index.ts              → IClone
+backend/src/Controllers/CloneController.cs
+backend/src/Services/CloneService.cs
+backend/src/DTOs/CloneRequestDTO.cs
+backend/src/Services/PastaService.cs
+backend/src/Services/RepositorioJsonService.cs
+backend/src/Utils/ShellExecute.cs
+```

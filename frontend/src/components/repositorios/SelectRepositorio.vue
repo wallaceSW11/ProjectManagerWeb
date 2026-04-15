@@ -1,28 +1,37 @@
 <template>
-  <v-select
-    label="Repositório"
-    :items="repositorios"
-    item-title="titulo"
-    v-model="repositorio"
-    :rules="regras"
-    :loading="carregando"
-    return-object
-  >
-    <template #item="{ item, props }">
-      <v-list-item
-        v-bind="props"
-        class="pb-2"
-      >
-        <v-list-item-subtitle>{{ item.raw.url }}</v-list-item-subtitle>
-      </v-list-item>
-    </template>
-  </v-select>
+  <div class="d-flex align-center gap-1">
+    <v-select
+      label="Repositório"
+      :items="repositorios"
+      item-title="titulo"
+      v-model="repositorio"
+      :rules="regras"
+      :loading="carregando"
+      return-object
+      class="flex-grow-1"
+    >
+      <template #item="{ item, props }">
+        <v-list-item
+          v-bind="props"
+          class="pb-2"
+        >
+          <v-list-item-subtitle>{{ item.raw.url }}</v-list-item-subtitle>
+        </v-list-item>
+      </template>
+    </v-select>
+
+    <OrdenarRepositorios
+      :repositorios="repositorios"
+      @ordenado="recarregar"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
   import { computed, onMounted, ref } from 'vue';
   import type { IRepositorio } from '@/types';
   import RepositoriosService from '@/services/RepositoriosService';
+  import OrdenarRepositorios from './OrdenarRepositorios.vue';
 
   interface Props {
     obrigatorio?: boolean;
@@ -62,6 +71,10 @@
   };
 
   onMounted(async () => {
+    await carregarRepositorios();
+  });
+
+  const carregarRepositorios = async (): Promise<void> => {
     try {
       carregando.value = true;
       repositorios.value = await RepositoriosService.getRepositorios();
@@ -71,5 +84,9 @@
     } finally {
       carregando.value = false;
     }
-  });
+  };
+
+  const recarregar = async (): Promise<void> => {
+    await carregarRepositorios();
+  };
 </script>

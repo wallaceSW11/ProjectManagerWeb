@@ -4,28 +4,53 @@
       <v-row no-gutters>
         <v-col
           cols="8"
-          class="d-flex justify-space-between"
+          class="d-flex justify-space-between align-center pb-2"
         >
           <h2>Pastas</h2>
 
-          <v-btn
-            @click="carregarPastas"
-            size="small"
-          >
-            <v-icon>mdi-refresh</v-icon>
-            <v-tooltip
-              location="top"
-              text="Atualizar listagem"
-              activator="parent"
+          <div class="d-flex align-center" style="gap: 8px;">
+            <v-text-field
+              ref="campoPesquisa"
+              v-model="termoPesquisa"
+              placeholder="Código ou descrição"
+              density="compact"
+              variant="underlined"
+              hide-details
+              clearable
+              style="width: 220px; min-width: 220px; padding-right: 8px;"
+              prepend-inner-icon="mdi-magnify"
+              @keydown.esc="termoPesquisa = ''"
             />
-          </v-btn>
+
+            <IconeComTooltip
+              icone="mdi-refresh"
+              texto="Atualizar listagem"
+              :acao="carregarPastas"
+            />
+
+            <PastasOcultas ref="pastasOcultas" @atualizar="carregarPastas" />
+          </div>
         </v-col>
 
         <v-col class="ml-4 d-flex align-center justify-space-between">
           <div>
             <h3>Projetos / Ações</h3>
           </div>
-          <div class="pr-3">
+          <div class="d-flex align-center gap-2 pr-3">
+            <v-select
+              v-if="perfisDisponiveis.length > 0"
+              v-model="perfilSelecionadoId"
+              :items="perfisDisponiveis"
+              item-title="nome"
+              item-value="identificador"
+              placeholder="Aplicar perfil"
+              density="compact"
+              variant="underlined"
+              hide-details
+              clearable
+              style="width: 180px; min-width: 180px; padding-right: 8px;"
+              @update:modelValue="aplicarPerfil"
+            />
             <v-tooltip text="Desmarcar todos">
               <template #activator="{ props }">
                 <v-icon
@@ -60,11 +85,12 @@
 
           <div v-else>
             <draggable
-              v-model="pastas"
+              v-model="pastasExibidas"
               item-key="diretorio"
               :animation="200"
               group="pastas"
               class="drag-area"
+              :disabled="!!termoPesquisa"
               @end="atualizarIndicesPastas"
             >
               <template #item="{ element }">
@@ -78,6 +104,7 @@
                   @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
                   @abrirNaIDE="abrirPastaNaIDE"
+                  @ocultar-pasta="ocultarPasta"
                 />
               </template>
             </draggable>
@@ -230,15 +257,17 @@
 
 <script setup lang="ts">
   import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
-  import type { IPasta, IProjeto } from '@/types';
+  import type { IPasta, IProjeto, IRepositorio, IPerfilMarcacao } from '@/types';
   import PastasService from '@/services/PastasService';
   import PastaModel from '@/models/PastaModel';
   import ProjetoModel from '@/models/ProjetoModel';
   import ComandosService from '@/services/ComandosService';
+  import RepositoriosService from '@/services/RepositoriosService';
+  import RepositorioModel from '@/models/RepositorioModel';
   import emitter, { carregandoAsync, notificar } from '@/utils/eventBus';
   import CadastroPasta from '@/components/pastas/PastaCadastro.vue';
   import CardPasta from '@/components/pastas/CardPasta.vue';
-  import draggable from 'vuedraggable';
+  import PastasOcultas from '@/components/pastas/PastasOcultas.vue';  import draggable from 'vuedraggable';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
 
@@ -270,7 +299,57 @@
   const pastas = ref<IPasta[]>([]);
   const pastaSelecionada = reactive<IPasta>(new PastaModel());
   const exibirModalPasta = ref<boolean>(false);
+  const termoPesquisa = ref<string>('');
+  const campoPesquisa = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null);
+  const pastasOcultas = ref<{ recarregar: () => Promise<void> } | null>(null);
   const configuracaoStore = useConfiguracaoStore();
+  const repositorios = ref<IRepositorio[]>([]);
+  const perfilSelecionadoId = ref<string | null>(null);
+
+  const perfisDisponiveis = computed((): IPerfilMarcacao[] => {
+    if (!pastaSelecionada.repositorioId) return [];
+    const repo = repositorios.value.find(r => r.identificador === pastaSelecionada.repositorioId);
+    return repo?.perfis || [];
+  });
+
+  const aplicarPerfil = (identificadorPerfil: string | null): void => {
+    if (!identificadorPerfil) return;
+
+    const perfil = perfisDisponiveis.value.find(p => p.identificador === identificadorPerfil);
+    if (!perfil) return;
+
+    pastaSelecionada.projetos.forEach((projeto: any) => {
+      const marcacao = perfil.projetos.find(
+        pp => pp.identificadorProjeto === projeto.identificador
+      );
+      projeto.comandosSelecionados = marcacao ? [...marcacao.comandos] : [];
+    });
+
+    perfilSelecionadoId.value = null;
+  };
+
+  const focarPesquisa = (event: KeyboardEvent): void => {
+    if (event.ctrlKey && event.key === 'f') {
+      event.preventDefault();
+      campoPesquisa.value?.focus();
+    }
+  };
+
+  const pastasExibidas = computed({
+    get: () => {
+      if (!termoPesquisa.value) return pastas.value;
+
+      const termo = termoPesquisa.value.toLowerCase();
+      return pastas.value.filter(
+        (p: IPasta) =>
+          p.codigo?.toLowerCase().includes(termo) ||
+          p.descricao?.toLowerCase().includes(termo)
+      );
+    },
+    set: (valor: IPasta[]) => {
+      pastas.value = valor;
+    },
+  });
 
   const carregarPastasListener = (): void => {
     carregarPastas();
@@ -279,15 +358,26 @@
   onMounted(async () => {
     await inicializarPagina();
     emitter.on('atualizarListaPastas', carregarPastasListener);
+    window.addEventListener('keydown', focarPesquisa);
   });
 
   onUnmounted(() => {
     emitter.off('atualizarListaPastas', carregarPastasListener);
+    window.removeEventListener('keydown', focarPesquisa);
   });
 
   const inicializarPagina = async (): Promise<void> => {
-    await carregarPastas();
+    await Promise.all([carregarPastas(), carregarRepositorios()]);
     selecionarPastaSalva();
+  };
+
+  const carregarRepositorios = async (): Promise<void> => {
+    try {
+      const resposta = await RepositoriosService.getRepositorios();
+      repositorios.value = resposta.map((r: any) => new RepositorioModel(r));
+    } catch (error) {
+      console.error('Falha ao carregar repositórios:', error);
+    }
   };
 
   const selecionarPastaSalva = (): void => {
@@ -629,6 +719,18 @@
     } catch (error) {
       console.error('Falha ao abrir o diretório: ', error);
       notificar('erro', 'Falha ao abrir o diretório', String(error));
+    }
+  };
+
+  const ocultarPasta = async (diretorio: string): Promise<void> => {
+    try {
+      await PastasService.ocultar(diretorio);
+      pastas.value = pastas.value.filter((p: IPasta) => p.diretorio !== diretorio);
+      notificar('sucesso', 'Pasta ocultada');
+      await pastasOcultas.value?.recarregar();
+    } catch (error) {
+      console.error('Falha ao ocultar pasta:', error);
+      notificar('erro', 'Falha ao ocultar pasta');
     }
   };
 

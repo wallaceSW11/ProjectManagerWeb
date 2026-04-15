@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Auto-Aprendizado",
+  "description": "Ao final de cada interação, avalia autonomamente se houve descoberta relevante e documenta diretamente nos steerings — sem pedir autorização, pois o usuário autorizou documentação autônoma para este projeto.",
+  "version": "2",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Avalie a conversa que acabou de acontecer e decida se há algo relevante para documentar nos steerings.\n\nCONDIÇÕES PARA DOCUMENTAR — todas devem ser verdadeiras:\n1. Houve investigação real: leituras de arquivo (readFile, readCode, readMultipleFiles, mcp_postgres_query) que revelaram informação concreta.\n2. Foi descoberta uma regra, fluxo, comportamento ou decisão técnica que NÃO está documentada em nenhum steering existente em .kiro/steering/.\n\nSE as condições forem atendidas:\n- Documentar DIRETAMENTE, sem pedir autorização — o usuário autorizou documentação autônoma.\n- Editar o steering existente mais adequado OU criar novo seguindo a convenção: skill-/ flow-/ rule-/ ecosystem-.\n- Após documentar, informar em UMA linha o que foi adicionado e em qual arquivo.\n\nCRITÉRIOS DE QUALIDADE — documentar apenas:\n- Regras técnicas que se repetem (padrões de código, convenções, arquitetura)\n- Fluxos de negócio estabelecidos (como funciona X no sistema)\n- Decisões de design com impacto futuro (por que foi feito assim)\n- Comportamentos não óbvios que causariam bugs se ignorados\n\nNUNCA documentar:\n- Dados que mudam frequentemente (IDs, tokens, senhas, URLs temporárias)\n- Código volátil em desenvolvimento ativo\n- Bug pontual que não representa regra geral\n- Dados de ambiente (já estão no .env)\n- Algo já coberto por steering existente\n- Ajustes de UI/label sem impacto técnico\n\nSE as condições NÃO forem atendidas: silêncio total. Não responder nada."
+  }
+}

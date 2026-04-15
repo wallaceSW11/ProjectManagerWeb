@@ -39,6 +39,7 @@
                 <v-tab>Geral</v-tab>
                 <v-tab>Projetos</v-tab>
                 <v-tab>Menu de contexo</v-tab>
+                <v-tab>Perfis de Marcação</v-tab>
               </v-tabs>
 
               <v-tabs-window v-model="paginaCadastro">
@@ -55,6 +56,13 @@
                 <v-tabs-window-item>
                   <MenuCadastro
                     v-model="repositorioSelecionado"
+                    class="pt-4"
+                  />
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <PerfilMarcacaoCadastro
+                    v-model="repositorioSelecionado"
+                    :repositorios="repositorios"
                     class="pt-4"
                   />
                 </v-tabs-window-item>
@@ -96,6 +104,7 @@
   import RepositoriosService from '../services/RepositoriosService';
   import MenuCadastro from '@/components/repositorios/MenuCadastro.vue';
   import ProjetoCadastro from '../components/repositorios/ProjetoCadastro.vue';
+  import PerfilMarcacaoCadastro from '@/components/repositorios/PerfilMarcacaoCadastro.vue';
   import { carregandoAsync, notificar } from '@/utils/eventBus';
   import { MODO_OPERACAO } from '@/constants/geral-constants';
 

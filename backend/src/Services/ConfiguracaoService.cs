@@ -90,4 +90,35 @@ public class ConfiguracaoService
         await SalvarConfiguracaoAsync(configuracao with { PerfisVSCode = perfisAtualizados });
         return true;
     }
+
+    public async Task<List<string>> ObterDiretoriosOcultosAsync()
+    {
+        var configuracao = await ObterConfiguracaoAsync();
+        return configuracao.DiretoriosOcultos ?? [];
+    }
+
+    public async Task OcultarDiretorioAsync(string diretorio)
+    {
+        var configuracao = await ObterConfiguracaoAsync();
+        var ocultos = configuracao.DiretoriosOcultos ?? [];
+
+        if (ocultos.Contains(diretorio, StringComparer.OrdinalIgnoreCase)) return;
+
+        await SalvarConfiguracaoAsync(configuracao with
+        {
+            DiretoriosOcultos = [.. ocultos, diretorio]
+        });
+    }
+
+    public async Task RestaurarDiretorioAsync(string diretorio)
+    {
+        var configuracao = await ObterConfiguracaoAsync();
+        var ocultos = configuracao.DiretoriosOcultos ?? [];
+
+        var atualizados = ocultos
+            .Where(d => !d.Equals(diretorio, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        await SalvarConfiguracaoAsync(configuracao with { DiretoriosOcultos = atualizados });
+    }
 }

@@ -25,11 +25,17 @@
           </div>
         </div>
 
-        <div v-if="!pasta.descricao">
+        <div v-if="!pasta.descricao" class="d-flex align-center gap-1">
           <IconeComTooltip
             icone="mdi-plus"
             texto="Cadastrar pasta"
             :acao="() => exibirCadastroPasta(pasta)"
+            top
+          />
+          <IconeComTooltip
+            icone="mdi-eye-off"
+            texto="Ocultar pasta"
+            :acao="() => emit('ocultarPasta', pasta.diretorio)"
             top
           />
         </div>
@@ -124,7 +130,8 @@
     executarMenusMultiplos: [pasta: IPasta, menuIds: string[]];
     abrirDiretorio: [diretorio: string];
     abrirNaIDE: [pasta: IPasta];
-  }>();
+    ocultarPasta: [diretorio: string];
+  }>(); 
 
   const menuAberto = ref<boolean>(false);
   const menusSelecionados = ref<string[]>([]);
