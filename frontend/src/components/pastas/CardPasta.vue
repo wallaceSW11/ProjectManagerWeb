@@ -38,9 +38,16 @@
             :acao="() => emit('ocultarPasta', pasta.diretorio)"
             top
           />
+          <IconeComTooltip
+            icone="mdi-delete"
+            texto="Excluir pasta"
+            cor="error"
+            :acao="() => emit('excluirPasta', pasta.diretorio)"
+            top
+          />
         </div>
 
-        <div v-if="menusAtivos.length > 0">
+        <div v-if="pasta.descricao">
           <v-menu location="bottom" v-model="menuAberto">
             <template #activator="{ props }">
               <v-btn
@@ -83,6 +90,15 @@
                 <v-list-item-title class="text-center font-weight-bold">
                   <v-icon>mdi-play</v-icon>
                   Executar ({{ menusSelecionados.length }})
+                </v-list-item-title>
+              </v-list-item>
+
+              <v-divider v-if="menusAtivos.length > 0" class="my-2" />
+
+              <v-list-item @click.stop="emit('excluirPasta', pasta.diretorio)">
+                <v-list-item-title>
+                  <v-icon color="error" class="px-3">mdi-delete</v-icon>
+                  Excluir pasta
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -131,6 +147,7 @@
     abrirDiretorio: [diretorio: string];
     abrirNaIDE: [pasta: IPasta];
     ocultarPasta: [diretorio: string];
+    excluirPasta: [diretorio: string];
   }>(); 
 
   const menuAberto = ref<boolean>(false);

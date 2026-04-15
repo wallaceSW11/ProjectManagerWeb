@@ -40,6 +40,10 @@ class PastasService extends BaseApiService {
   async restaurar(diretorio: string): Promise<void> {
     return await this.post('pastas/restaurar', { diretorio });
   }
+
+  async excluir(diretorio: string): Promise<void> {
+    return await this.delete('pastas', { data: { diretorio } });
+  }
 }
 
 export default new PastasService();

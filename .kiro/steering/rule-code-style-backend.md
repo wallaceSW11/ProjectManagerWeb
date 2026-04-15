@@ -162,6 +162,25 @@ Nomes em português são aceitos neste projeto (ex: `ObterTodas`, `Cadastrar`, `
 Comandos externos (git, dotnet publish, appcmd) são executados via `ShellExecute.ExecutarComando()` ou `ProcessStartInfo`.
 Operações IIS requerem `Verb = "runas"` — sempre tratar `TimeoutException` e fallback.
 
+## exclusão de diretórios no Windows
+
+`Directory.Delete(path, recursive: true)` falha com `Access Denied` em arquivos com atributo `ReadOnly` (comum em pastas `.git`). Sempre remover atributos antes de deletar:
+
+```csharp
+private static void RemoverAtributosReadOnly(DirectoryInfo diretorio)
+{
+    foreach (var arquivo in diretorio.GetFiles("*", SearchOption.AllDirectories))
+        arquivo.Attributes = FileAttributes.Normal;
+
+    foreach (var subDiretorio in diretorio.GetDirectories("*", SearchOption.AllDirectories))
+        subDiretorio.Attributes = FileAttributes.Normal;
+}
+
+// uso:
+RemoverAtributosReadOnly(new DirectoryInfo(caminho));
+Directory.Delete(caminho, recursive: true);
+```
+
 ## upsert em json services — comportamento de AddAsync
 
 Alguns `JsonService` implementam **upsert silencioso** em vez de rejeitar duplicatas.

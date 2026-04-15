@@ -6,7 +6,7 @@
           cols="8"
           class="d-flex justify-space-between align-center pb-2"
         >
-          <h2>Pastas</h2>
+          <h2>Pastas <span v-if="pastas.length > 0" class="text-medium-emphasis text-body-1">({{ pastas.length }})</span></h2>
 
           <div class="d-flex align-center" style="gap: 8px;">
             <v-text-field
@@ -105,6 +105,7 @@
                   @abrirDiretorio="abrirDiretorio"
                   @abrirNaIDE="abrirPastaNaIDE"
                   @ocultar-pasta="ocultarPasta"
+                  @excluir-pasta="excluirPasta"
                 />
               </template>
             </draggable>
@@ -731,6 +732,22 @@
     } catch (error) {
       console.error('Falha ao ocultar pasta:', error);
       notificar('erro', 'Falha ao ocultar pasta');
+    }
+  };
+
+  const excluirPasta = async (diretorio: string): Promise<void> => {
+    const confirmado = confirm(
+      `Tem certeza que deseja excluir permanentemente a pasta?\n\n${diretorio}\n\nEsta ação não pode ser desfeita.`
+    );
+    if (!confirmado) return;
+
+    try {
+      await PastasService.excluir(diretorio);
+      pastas.value = pastas.value.filter((p: IPasta) => p.diretorio !== diretorio);
+      notificar('sucesso', 'Pasta excluída');
+    } catch (error) {
+      console.error('Falha ao excluir pasta:', error);
+      notificar('erro', 'Falha ao excluir pasta', String(error));
     }
   };
 
