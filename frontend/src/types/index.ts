@@ -60,8 +60,20 @@ export interface IRepositorio {
   projetos: IProjeto[];
   agregados: string[];
   menus: IMenu[];
+  perfis: IPerfilMarcacao[];
   ideIdentificador?: string | null;
   perfilVSCode?: string | null;
+}
+
+export interface IPerfilMarcacaoProjeto {
+  identificadorProjeto: string;
+  comandos: string[];
+}
+
+export interface IPerfilMarcacao {
+  identificador: string;
+  nome: string;
+  projetos: IPerfilMarcacaoProjeto[];
 }
 
 export interface IPasta {

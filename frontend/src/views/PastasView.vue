@@ -40,7 +40,21 @@
           <div>
             <h3>Projetos / Ações</h3>
           </div>
-          <div class="pr-3">
+          <div class="d-flex align-center gap-2 pr-3">
+            <v-select
+              v-if="perfisDisponiveis.length > 0"
+              v-model="perfilSelecionadoId"
+              :items="perfisDisponiveis"
+              item-title="nome"
+              item-value="identificador"
+              placeholder="Aplicar perfil"
+              density="compact"
+              variant="underlined"
+              hide-details
+              clearable
+              style="width: 180px; min-width: 180px; padding-right: 8px;"
+              @update:modelValue="aplicarPerfil"
+            />
             <v-tooltip text="Desmarcar todos">
               <template #activator="{ props }">
                 <v-icon
@@ -246,11 +260,13 @@
 
 <script setup lang="ts">
   import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
-  import type { IPasta, IProjeto } from '@/types';
+  import type { IPasta, IProjeto, IRepositorio, IPerfilMarcacao } from '@/types';
   import PastasService from '@/services/PastasService';
   import PastaModel from '@/models/PastaModel';
   import ProjetoModel from '@/models/ProjetoModel';
   import ComandosService from '@/services/ComandosService';
+  import RepositoriosService from '@/services/RepositoriosService';
+  import RepositorioModel from '@/models/RepositorioModel';
   import emitter, { carregandoAsync, notificar } from '@/utils/eventBus';
   import CadastroPasta from '@/components/pastas/PastaCadastro.vue';
   import CardPasta from '@/components/pastas/CardPasta.vue';
@@ -289,6 +305,30 @@
   const termoPesquisa = ref<string>('');
   const campoPesquisa = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null);
   const configuracaoStore = useConfiguracaoStore();
+  const repositorios = ref<IRepositorio[]>([]);
+  const perfilSelecionadoId = ref<string | null>(null);
+
+  const perfisDisponiveis = computed((): IPerfilMarcacao[] => {
+    if (!pastaSelecionada.repositorioId) return [];
+    const repo = repositorios.value.find(r => r.identificador === pastaSelecionada.repositorioId);
+    return repo?.perfis || [];
+  });
+
+  const aplicarPerfil = (identificadorPerfil: string | null): void => {
+    if (!identificadorPerfil) return;
+
+    const perfil = perfisDisponiveis.value.find(p => p.identificador === identificadorPerfil);
+    if (!perfil) return;
+
+    pastaSelecionada.projetos.forEach((projeto: any) => {
+      const marcacao = perfil.projetos.find(
+        pp => pp.identificadorProjeto === projeto.identificador
+      );
+      projeto.comandosSelecionados = marcacao ? [...marcacao.comandos] : [];
+    });
+
+    perfilSelecionadoId.value = null;
+  };
 
   const focarPesquisa = (event: KeyboardEvent): void => {
     if (event.ctrlKey && event.key === 'f') {
@@ -329,8 +369,17 @@
   });
 
   const inicializarPagina = async (): Promise<void> => {
-    await carregarPastas();
+    await Promise.all([carregarPastas(), carregarRepositorios()]);
     selecionarPastaSalva();
+  };
+
+  const carregarRepositorios = async (): Promise<void> => {
+    try {
+      const resposta = await RepositoriosService.getRepositorios();
+      repositorios.value = resposta.map((r: any) => new RepositorioModel(r));
+    } catch (error) {
+      console.error('Falha ao carregar repositórios:', error);
+    }
   };
 
   const selecionarPastaSalva = (): void => {

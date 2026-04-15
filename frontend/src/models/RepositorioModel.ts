@@ -1,6 +1,7 @@
-import type { IRepositorio, IProjeto, IMenu } from '@/types';
+import type { IRepositorio, IProjeto, IMenu, IPerfilMarcacao } from '@/types';
 import MenuModel from './MenuModel';
 import ProjetoModel from './ProjetoModel';
+import PerfilMarcacaoModel from './PerfilMarcacaoModel';
 
 export default class RepositorioModel implements IRepositorio {
   identificador: string;
@@ -11,6 +12,7 @@ export default class RepositorioModel implements IRepositorio {
   projetos: IProjeto[];
   agregados: string[];
   menus: IMenu[];
+  perfis: IPerfilMarcacao[];
   ideIdentificador?: string | null;
   perfilVSCode?: string | null;
 
@@ -25,6 +27,7 @@ export default class RepositorioModel implements IRepositorio {
       : [];
     this.agregados = obj.agregados || [];
     this.menus = obj.menus?.map((m: any) => new MenuModel(m)) || [];
+    this.perfis = obj.perfis?.map((p: any) => new PerfilMarcacaoModel(p)) || [];
     this.ideIdentificador = obj.ideIdentificador || null;
     this.perfilVSCode = obj.perfilVSCode || null;
   }
@@ -39,6 +42,7 @@ export default class RepositorioModel implements IRepositorio {
       projetos: this.projetos.map((p: any) => p.toDTO()),
       agregados: this.agregados,
       menus: this.menus,
+      perfis: this.perfis,
       ideIdentificador: this.ideIdentificador,
       perfilVSCode: this.perfilVSCode
     };

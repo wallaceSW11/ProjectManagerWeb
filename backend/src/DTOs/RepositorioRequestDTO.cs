@@ -23,7 +23,8 @@ namespace ProjectManagerWeb.src.DTOs
         List<Guid>? Agregados,
         List<MenuDTO>? Menus,
         Guid? IDEIdentificador,
-        string? PerfilVSCode = null
+        string? PerfilVSCode = null,
+        List<PerfilMarcacaoDTO>? Perfis = null
     );
 
     /// <summary>
@@ -76,5 +77,16 @@ namespace ProjectManagerWeb.src.DTOs
     public sealed record PastaDTO(
         string Origem,
         string Destino
+    );
+
+    public sealed record PerfilMarcacaoDTO(
+        Guid Identificador,
+        string Nome,
+        List<PerfilMarcacaoProjetoDTO> Projetos
+    );
+
+    public sealed record PerfilMarcacaoProjetoDTO(
+        Guid IdentificadorProjeto,
+        List<string> Comandos
     );
 }
