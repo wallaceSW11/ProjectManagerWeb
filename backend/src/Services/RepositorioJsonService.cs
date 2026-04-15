@@ -30,7 +30,8 @@ namespace ProjectManagerWeb.src.Services
 
         public async Task<List<RepositorioRequestDTO>> GetAllAsync()
         {
-            return await LerListaDoArquivoAsync();
+            var repositorios = await LerListaDoArquivoAsync();
+            return [.. repositorios.OrderBy(r => r.Indice)];
         }
 
         public async Task<RepositorioRequestDTO?> GetByIdAsync(Guid identificador)
@@ -141,6 +142,27 @@ namespace ProjectManagerWeb.src.Services
 
                 await GravarListaNoArquivoAsync(repositorios, locked: true);
                 return true;
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        public async Task AtualizarIndicesAsync(List<RepositorioIndiceRequestDTO> indices)
+        {
+            await _semaphore.WaitAsync();
+            try
+            {
+                var repositorios = await LerListaDoArquivoAsync(locked: true);
+
+                var atualizados = repositorios.Select(r =>
+                {
+                    var indice = indices.FirstOrDefault(i => i.Identificador == r.Identificador);
+                    return indice != null ? r with { Indice = indice.Indice } : r;
+                }).ToList();
+
+                await GravarListaNoArquivoAsync(atualizados, locked: true);
             }
             finally
             {

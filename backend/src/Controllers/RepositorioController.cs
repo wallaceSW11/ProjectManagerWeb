@@ -54,10 +54,19 @@ namespace ProjectManagerWeb.src.Controllers
             var sucesso = await repositorioService.DeleteAsync(identificador);
             if (!sucesso)
             {
-                return NotFound(); // Retorna 404 se o ID a ser excluído não existe
+                return NotFound();
             }
 
-            return NoContent(); // Retorna 204 para indicar sucesso na exclusão
+            return NoContent();
+        }
+
+        [HttpPut("indices")]
+        public async Task<IActionResult> AtualizarIndices([FromBody] List<RepositorioIndiceRequestDTO> indices)
+        {
+            if (indices == null || indices.Count == 0) return BadRequest();
+
+            await repositorioService.AtualizarIndicesAsync(indices);
+            return Ok();
         }
     }
 }

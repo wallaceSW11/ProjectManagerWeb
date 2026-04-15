@@ -24,7 +24,8 @@ namespace ProjectManagerWeb.src.DTOs
         List<MenuDTO>? Menus,
         Guid? IDEIdentificador,
         string? PerfilVSCode = null,
-        List<PerfilMarcacaoDTO>? Perfis = null
+        List<PerfilMarcacaoDTO>? Perfis = null,
+        int Indice = 0
     );
 
     /// <summary>

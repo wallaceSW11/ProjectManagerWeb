@@ -22,6 +22,10 @@ class RepositoriosService extends BaseApiService {
   async excluirRepositorio(repositorio: IRepositorio): Promise<void> {
     return await this.delete(`repositorios/${repositorio.identificador}`);
   }
+
+  async atualizarOrdem(indices: { identificador: string; indice: number }[]): Promise<void> {
+    return await this.put('repositorios/indices', indices);
+  }
 }
 
 export default new RepositoriosService();
