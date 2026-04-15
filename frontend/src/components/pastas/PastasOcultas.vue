@@ -82,6 +82,8 @@
       diretoriosOcultos.value = diretoriosOcultos.value.filter(d => d !== diretorio);
       notificar('sucesso', 'Pasta restaurada');
       emit('atualizar');
+
+      if (diretoriosOcultos.value.length === 0) fechar();
     } catch (error) {
       console.error('Falha ao restaurar pasta:', error);
       notificar('erro', 'Falha ao restaurar pasta');
