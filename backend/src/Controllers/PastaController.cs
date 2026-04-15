@@ -6,7 +6,7 @@ namespace ProjectManagerWeb.src.Controllers;
 
 [ApiController]
 [Route("api/pastas")]
-public class PastaController(PastaService pastaService) : ControllerBase
+public class PastaController(PastaService pastaService, ConfiguracaoService configuracaoService) : ControllerBase
 {
 
   [HttpGet]
@@ -51,5 +51,28 @@ public class PastaController(PastaService pastaService) : ControllerBase
     {
       return BadRequest(ex.Message);
     }
+  }
+
+  [HttpGet("ocultas")]
+  public async Task<IActionResult> ObterOcultas()
+  {
+    var ocultas = await configuracaoService.ObterDiretoriosOcultosAsync();
+    return Ok(ocultas);
+  }
+
+  [HttpPost("ocultar")]
+  public async Task<IActionResult> Ocultar([FromBody] DiretorioRequestDTO request)
+  {
+    if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
+    await configuracaoService.OcultarDiretorioAsync(request.Diretorio);
+    return Ok();
+  }
+
+  [HttpPost("restaurar")]
+  public async Task<IActionResult> Restaurar([FromBody] DiretorioRequestDTO request)
+  {
+    if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
+    await configuracaoService.RestaurarDiretorioAsync(request.Diretorio);
+    return Ok();
   }
 }

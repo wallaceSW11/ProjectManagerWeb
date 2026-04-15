@@ -8,7 +8,7 @@
         >
           <h2>Pastas</h2>
 
-          <div class="d-flex align-center gap-2">
+          <div class="d-flex align-center" style="gap: 8px;">
             <v-text-field
               ref="campoPesquisa"
               v-model="termoPesquisa"
@@ -22,17 +22,13 @@
               @keydown.esc="termoPesquisa = ''"
             />
 
-            <v-btn
-              @click="carregarPastas"
-              size="small"
-            >
-              <v-icon>mdi-refresh</v-icon>
-              <v-tooltip
-                location="top"
-                text="Atualizar listagem"
-                activator="parent"
-              />
-            </v-btn>
+            <IconeComTooltip
+              icone="mdi-refresh"
+              texto="Atualizar listagem"
+              :acao="carregarPastas"
+            />
+
+            <PastasOcultas ref="pastasOcultas" @atualizar="carregarPastas" />
           </div>
         </v-col>
 
@@ -108,6 +104,7 @@
                   @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
                   @abrirNaIDE="abrirPastaNaIDE"
+                  @ocultar-pasta="ocultarPasta"
                 />
               </template>
             </draggable>
@@ -270,7 +267,7 @@
   import emitter, { carregandoAsync, notificar } from '@/utils/eventBus';
   import CadastroPasta from '@/components/pastas/PastaCadastro.vue';
   import CardPasta from '@/components/pastas/CardPasta.vue';
-  import draggable from 'vuedraggable';
+  import PastasOcultas from '@/components/pastas/PastasOcultas.vue';  import draggable from 'vuedraggable';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
 
@@ -304,6 +301,7 @@
   const exibirModalPasta = ref<boolean>(false);
   const termoPesquisa = ref<string>('');
   const campoPesquisa = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null);
+  const pastasOcultas = ref<{ recarregar: () => Promise<void> } | null>(null);
   const configuracaoStore = useConfiguracaoStore();
   const repositorios = ref<IRepositorio[]>([]);
   const perfilSelecionadoId = ref<string | null>(null);
@@ -721,6 +719,18 @@
     } catch (error) {
       console.error('Falha ao abrir o diretório: ', error);
       notificar('erro', 'Falha ao abrir o diretório', String(error));
+    }
+  };
+
+  const ocultarPasta = async (diretorio: string): Promise<void> => {
+    try {
+      await PastasService.ocultar(diretorio);
+      pastas.value = pastas.value.filter((p: IPasta) => p.diretorio !== diretorio);
+      notificar('sucesso', 'Pasta ocultada');
+      await pastasOcultas.value?.recarregar();
+    } catch (error) {
+      console.error('Falha ao ocultar pasta:', error);
+      notificar('erro', 'Falha ao ocultar pasta');
     }
   };
 

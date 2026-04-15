@@ -14,10 +14,13 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
     var configuracao = await configuracaoService.ObterConfiguracaoAsync();
     var diretorioRaiz = configuracao.DiretorioRaiz;
+    var diretoriosOcultos = configuracao.DiretoriosOcultos ?? [];
 
     var pastaResponseList = new List<PastaResponseDTO>();
 
-    var pastasNoDisco = Directory.GetDirectories(diretorioRaiz);
+    var pastasNoDisco = Directory.GetDirectories(diretorioRaiz)
+        .Where(d => !diretoriosOcultos.Contains(d, StringComparer.OrdinalIgnoreCase))
+        .ToArray();
 
     await LimparPastasInexistentes(pastasCadastradas, pastasNoDisco);
 
