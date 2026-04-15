@@ -4,21 +4,36 @@
       <v-row no-gutters>
         <v-col
           cols="8"
-          class="d-flex justify-space-between"
+          class="d-flex justify-space-between align-center pb-2"
         >
           <h2>Pastas</h2>
 
-          <v-btn
-            @click="carregarPastas"
-            size="small"
-          >
-            <v-icon>mdi-refresh</v-icon>
-            <v-tooltip
-              location="top"
-              text="Atualizar listagem"
-              activator="parent"
+          <div class="d-flex align-center gap-2">
+            <v-text-field
+              ref="campoPesquisa"
+              v-model="termoPesquisa"
+              placeholder="Código ou descrição"
+              density="compact"
+              variant="underlined"
+              hide-details
+              clearable
+              style="width: 220px; min-width: 220px; padding-right: 8px;"
+              prepend-inner-icon="mdi-magnify"
+              @keydown.esc="termoPesquisa = ''"
             />
-          </v-btn>
+
+            <v-btn
+              @click="carregarPastas"
+              size="small"
+            >
+              <v-icon>mdi-refresh</v-icon>
+              <v-tooltip
+                location="top"
+                text="Atualizar listagem"
+                activator="parent"
+              />
+            </v-btn>
+          </div>
         </v-col>
 
         <v-col class="ml-4 d-flex align-center justify-space-between">
@@ -60,11 +75,12 @@
 
           <div v-else>
             <draggable
-              v-model="pastas"
+              v-model="pastasExibidas"
               item-key="diretorio"
               :animation="200"
               group="pastas"
               class="drag-area"
+              :disabled="!!termoPesquisa"
               @end="atualizarIndicesPastas"
             >
               <template #item="{ element }">
@@ -270,7 +286,32 @@
   const pastas = ref<IPasta[]>([]);
   const pastaSelecionada = reactive<IPasta>(new PastaModel());
   const exibirModalPasta = ref<boolean>(false);
+  const termoPesquisa = ref<string>('');
+  const campoPesquisa = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null);
   const configuracaoStore = useConfiguracaoStore();
+
+  const focarPesquisa = (event: KeyboardEvent): void => {
+    if (event.ctrlKey && event.key === 'f') {
+      event.preventDefault();
+      campoPesquisa.value?.focus();
+    }
+  };
+
+  const pastasExibidas = computed({
+    get: () => {
+      if (!termoPesquisa.value) return pastas.value;
+
+      const termo = termoPesquisa.value.toLowerCase();
+      return pastas.value.filter(
+        (p: IPasta) =>
+          p.codigo?.toLowerCase().includes(termo) ||
+          p.descricao?.toLowerCase().includes(termo)
+      );
+    },
+    set: (valor: IPasta[]) => {
+      pastas.value = valor;
+    },
+  });
 
   const carregarPastasListener = (): void => {
     carregarPastas();
@@ -279,10 +320,12 @@
   onMounted(async () => {
     await inicializarPagina();
     emitter.on('atualizarListaPastas', carregarPastasListener);
+    window.addEventListener('keydown', focarPesquisa);
   });
 
   onUnmounted(() => {
     emitter.off('atualizarListaPastas', carregarPastasListener);
+    window.removeEventListener('keydown', focarPesquisa);
   });
 
   const inicializarPagina = async (): Promise<void> => {
