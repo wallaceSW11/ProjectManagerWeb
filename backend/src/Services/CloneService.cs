@@ -43,7 +43,7 @@ public class CloneService
 
         comando
             .Append($"cd {diretorioCompleto.ToString()}; ")
-            .Append($"{MontarComandoClone(clone.CriarBranchRemoto, clone.HistoricoCompleto)} {gitPrincipal.Url}; ")
+            .Append($"{MontarComandoClone(clone.CriarBranchRemoto, clone.HistoricoCompleto, clone.Branch)} {gitPrincipal.Url}; ")
             .Append($"cd {gitPrincipal.Nome}; ");
 
         if (clone.CriarBranchRemoto)
@@ -74,7 +74,7 @@ public class CloneService
 
                 comando
                     .Append($"cd {diretorioCompleto.ToString()}; ")
-                    .Append($"{MontarComandoClone(clone.CriarBranchRemoto, clone.HistoricoCompleto)} {agregado.Url}; ")
+                    .Append($"{MontarComandoClone(clone.CriarBranchRemoto, clone.HistoricoCompleto, clone.Branch)} {agregado.Url}; ")
                     .Append($"cd {agregado.Nome}; ");
 
                 if (clone.CriarBranchRemoto)
@@ -97,9 +97,13 @@ public class CloneService
         return true;
     }
 
-    private static string MontarComandoClone(bool criarBranchRemoto, bool historicoCompleto)
+    private static string MontarComandoClone(bool criarBranchRemoto, bool historicoCompleto, string branch)
     {
         if (historicoCompleto) return "git clone";
+        if (criarBranchRemoto && !EhBranchBase(branch)) return "git clone --depth 1 --no-single-branch";
         return criarBranchRemoto ? "git clone --depth 1" : "git clone --depth 1 --no-single-branch";
     }
+
+    private static bool EhBranchBase(string branch) =>
+        branch is "develop" or "dev" or "main" or "master";
 }

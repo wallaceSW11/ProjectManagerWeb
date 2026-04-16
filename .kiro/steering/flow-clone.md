@@ -66,14 +66,35 @@ lógica do `CloneService.Clonar()`:
 2. cria o diretório físico se não existir
 3. busca o repositório principal por `RepositorioId`
 4. monta e executa o comando git via `ShellExecute.ExecutarComando()`:
-   - `HistoricoCompleto = false` + `CriarBranchRemoto = false` → `git clone --depth 1 --no-single-branch`
-   - `HistoricoCompleto = false` + `CriarBranchRemoto = true`  → `git clone --depth 1`
-   - `HistoricoCompleto = true`                                → `git clone`
+   - `HistoricoCompleto = true`                                                          → `git clone`
+   - `HistoricoCompleto = false` + `CriarBranchRemoto = false`                          → `git clone --depth 1 --no-single-branch`
+   - `HistoricoCompleto = false` + `CriarBranchRemoto = true` + branch base             → `git clone --depth 1`
+   - `HistoricoCompleto = false` + `CriarBranchRemoto = true` + branch **não-base**     → `git clone --depth 1 --no-single-branch`
 5. faz checkout do branch de origem
 6. se `CriarBranchRemoto = true`:
    - `Tipo == "nenhum"` → `git checkout -b {Codigo}`
    - `Tipo != "nenhum"` → `git checkout -b {Tipo}/{Codigo}`
 7. se `BaixarAgregados = true`: repete os passos 4–6 para cada `Guid` em `repositorio.Agregados`
+
+## branches base vs. branches de trabalho (criarBranchRemoto)
+
+Quando `CriarBranchRemoto = true`, o comportamento do clone depende do tipo de branch de origem:
+
+**Branches base** (`develop`, `dev`, `main`, `master`):
+- `git clone --depth 1` é suficiente — a branch padrão do remote já é uma dessas.
+- O `git checkout <branch>` subsequente funciona porque a branch já está presente localmente.
+
+**Branches de trabalho** (qualquer outro nome, ex: `adequacao-cnpj`):
+- `git clone --depth 1` baixa **apenas a branch padrão do remote** — o `git checkout adequacao-cnpj` falha silenciosamente (suprimido por `2>$null`) e a nova branch é criada em cima da branch padrão, não da branch desejada.
+- Solução: usar `git clone --depth 1 --no-single-branch` para baixar todas as refs remotas, permitindo o checkout correto.
+
+O método `EhBranchBase(string branch)` encapsula essa verificação (case-insensitive):
+```csharp
+private static bool EhBranchBase(string branch) =>
+    branch is "develop" or "dev" or "main" or "master";
+```
+
+Essa regra se aplica tanto ao repositório principal quanto aos agregados.
 
 lógica do `CloneController` após o clone:
 1. chama `CriarPasta()` — monta `PastaCadastroRequestDTO` e chama `PastaService.Cadastrar()`
