@@ -1,28 +1,43 @@
 <template>
-  <v-combobox
-    label="Branch"
-    v-model="branch"
-    :rules="regras"
-    :items="itemsFiltrados"
-    autocomplete="off"
-    hide-no-data
-  >
-    <template #item="{ props, item }">
-      <v-list-item
-        v-bind="props"
-        :title="item.title"
-      >
-        <template #append>
-          <v-btn
-            icon="mdi-close"
-            size="x-small"
-            variant="text"
-            @click.stop="removerBranch(item.title)"
-          />
-        </template>
-      </v-list-item>
-    </template>
-  </v-combobox>
+  <div class="d-flex align-center gap-1">
+    <v-combobox
+      label="Branch"
+      v-model="branch"
+      :rules="regras"
+      :items="itemsFiltrados"
+      :disabled="disabled"
+      :loading="loading"
+      :hint="hint"
+      :error="error"
+      :persistent-hint="!!hint"
+      autocomplete="off"
+      hide-no-data
+      class="flex-grow-1"
+      @blur="emit('blur')"
+    >
+      <template #item="{ props, item }">
+        <v-list-item
+          v-bind="props"
+          :title="item.title"
+        >
+          <template #append>
+            <v-btn
+              icon="mdi-close"
+              size="x-small"
+              variant="text"
+              @click.stop="removerBranch(item.title)"
+            />
+          </template>
+        </v-list-item>
+      </template>
+    </v-combobox>
+
+    <IconeComTooltip
+      icone="mdi-clipboard-outline"
+      texto="Colar da área de transferência"
+      :acao="colarDoClipboard"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -32,6 +47,14 @@
   const props = defineProps<{
     obrigatorio: any;
     adicionarNoLocalStorage?: boolean;
+    disabled?: boolean;
+    hint?: string;
+    error?: boolean;
+    loading?: boolean;
+  }>();
+
+  const emit = defineEmits<{
+    blur: [];
   }>();
 
   const regras = computed(() => {
@@ -74,6 +97,15 @@
   const removerBranch = (branchParaRemover: string) => {
     branchs.value = branchs.value.filter(b => b !== branchParaRemover);
     localStorage.setItem(CHAVE_BRANCHS, JSON.stringify(branchs.value));
+  };
+
+  const colarDoClipboard = async (): Promise<void> => {
+    try {
+      const texto = await navigator.clipboard.readText();
+      if (texto) branch.value = texto.trim();
+    } catch {
+      // permissão negada ou clipboard vazio — silencioso
+    }
   };
 
   onMounted(() => {

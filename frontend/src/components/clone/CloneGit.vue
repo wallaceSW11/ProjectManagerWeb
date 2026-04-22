@@ -25,6 +25,12 @@
             v-model="clone.branch"
             obrigatorio
             :adicionarNoLocalStorage="adicionarNoLocalStorage"
+            :disabled="!repositorioSelecionado"
+            :loading="validandoBranch"
+            :hint="hintBranch"
+            :error="branchInvalida"
+            persistent-hint
+            @blur="validarBranch"
           />
 
           <v-checkbox
@@ -95,6 +101,7 @@
         <v-btn
           color="primary"
           variant="outlined"
+          :disabled="branchInvalida"
           @click="clonar"
         >
           <v-icon>mdi-download</v-icon>
@@ -110,30 +117,36 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick, onMounted, reactive, ref, watch } from 'vue';
+  import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
   import type { IClone } from '@/types';
   import CloneModel from '@/models/CloneModel';
   import CloneService from '@/services/CloneService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import {
-    atualizarListaPastas,
-    carregando,
     notificar,
   } from '@/utils/eventBus';
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
   import SelectBranch from '@/components/comum/SelectBranch.vue';
 
   const CHAVE_ULTIMO_REPOSITORIO = 'pmw_ultimo_repositorio_selecionado';
+  const BRANCHES_BASE = ['develop', 'dev', 'main', 'master'];
 
   const clone = reactive<IClone>(new CloneModel());
   const configuracaoStore = useConfiguracaoStore();
   const exibirModalClone = defineModel<boolean>({ default: false });
   const formClone = ref<any>(null);
   const adicionarNoLocalStorage = ref<boolean>(false);
+  const branchInvalida = ref<boolean>(false);
+  const hintBranch = ref<string>('');
+  const validandoBranch = ref<boolean>(false);
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 
+  const repositorioSelecionado = computed(() => !!clone.repositorio?.url);
+
   watch(() => clone.branch, (novaBranch) => {
+    branchInvalida.value = false;
+    hintBranch.value = '';
     if (!clone.criarBranchRemoto) clone.codigo = novaBranch;
   });
 
@@ -141,9 +154,42 @@
     clone.codigo = criarRemoto ? '' : clone.branch;
   });
 
+  watch(repositorioSelecionado, (temRepositorio) => {
+    if (!temRepositorio) {
+      clone.branch = '';
+      branchInvalida.value = false;
+      hintBranch.value = '';
+    }
+  });
+
   onMounted(() => {
     clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
   });
+
+  const ehBranchBase = (branch: string): boolean =>
+    BRANCHES_BASE.includes(branch.toLowerCase());
+
+  const validarBranch = async (): Promise<void> => {
+    if (!clone.branch || !repositorioSelecionado.value) return;
+    if (ehBranchBase(clone.branch)) {
+      branchInvalida.value = false;
+      hintBranch.value = '';
+      return;
+    }
+
+    validandoBranch.value = true;
+    try {
+      const url = clone.repositorio.url ?? '';
+      const existe = await CloneService.verificarBranch(url, clone.branch);
+      branchInvalida.value = !existe;
+      hintBranch.value = existe ? '' : 'Branch não encontrada no remote';
+    } catch {
+      branchInvalida.value = false;
+      hintBranch.value = '';
+    } finally {
+      validandoBranch.value = false;
+    }
+  };
 
   const formularioValido = async (): Promise<boolean> => {
     const form = await formClone.value.validate();
@@ -153,42 +199,30 @@
   const clonar = async (): Promise<void> => {
     if (!(await formularioValido())) return;
 
-    try {
-      const payload = {
-        ...clone,
-        repositorioId: clone.repositorio.identificador,
-      };
+    const payload = {
+      ...clone,
+      repositorioId: clone.repositorio.identificador,
+    };
+    payload.codigo = clone.codigo.toUpperCase();
 
-      payload.codigo = clone.codigo.toUpperCase();
-      await CloneService.clonar(payload);
+    salvarUltimoRepositorio();
 
-      salvarUltimoRepositorio();
-
-      if (clone.salvarNoStorage) {
-        adicionarNoLocalStorage.value = true;
-        await nextTick(() => (adicionarNoLocalStorage.value = false));
-      }
-      fecharClone();
-      Object.assign(clone, new CloneModel());
-      clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
-      notificar('sucesso', 'Clone iniciado');
-      
-      carregando(true, 'Clonando...');
-      setTimeout(() => {
-        carregando(false);        
-        atualizarListaPastas();
-      }, 2000);
-    } catch (error) {
-      console.error('Falha ao clonar:', error);
-      notificar('erro', 'Falha ao clonar');
-    } finally {
-      carregando(false);
+    if (clone.salvarNoStorage) {
+      adicionarNoLocalStorage.value = true;
+      await nextTick(() => (adicionarNoLocalStorage.value = false));
     }
+
+    fecharClone();
+    notificar('sucesso', 'Clone iniciado');
+
+    CloneService.clonar(payload).catch(() => {
+      notificar('erro', 'Falha ao clonar');
+    });
   };
 
   const salvarUltimoRepositorio = (): void => {
     if (!clone.repositorio?.identificador) return;
-    
+
     localStorage.setItem(
       CHAVE_ULTIMO_REPOSITORIO,
       clone.repositorio.identificador
@@ -199,6 +233,8 @@
     exibirModalClone.value = false;
     Object.assign(clone, new CloneModel());
     clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
+    branchInvalida.value = false;
+    hintBranch.value = '';
   };
 </script>
 
