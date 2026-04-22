@@ -9,12 +9,29 @@ namespace ProjectManagerWeb.src.Controllers;
 public class CloneController(CloneService cloneService, PastaService pastaService, RepositorioJsonService repositorioJsonService) : ControllerBase
 {
 
+    [HttpGet("verificar-branch")]
+    public async Task<IActionResult> VerificarBranch([FromQuery] string url, [FromQuery] string branch)
+    {
+        if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(branch))
+            return BadRequest("URL e branch são obrigatórios.");
+
+        var existe = await cloneService.VerificarBranchExisteAsync(url, branch);
+        return Ok(new { existe });
+    }
+
     [HttpPost]
     public async Task<IActionResult> Clonar([FromBody] CloneRequestDTO novaClonagem)
     {
-        await cloneService.Clonar(novaClonagem);
-        var pastaCriada = await CriarPasta(novaClonagem);
-        return Ok(pastaCriada);
+        try
+        {
+            await cloneService.Clonar(novaClonagem);
+            var pastaCriada = await CriarPasta(novaClonagem);
+            return Ok(pastaCriada);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     private async Task<IActionResult> CriarPasta(CloneRequestDTO novaClonagem)
