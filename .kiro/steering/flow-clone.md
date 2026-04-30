@@ -108,6 +108,28 @@ lógica do `CloneController` após o clone:
 
 Exemplo: `DiretorioRaiz = C:\Dev\`, `Codigo = PMW-123`, `Descricao = "minha feature"` → `C:\Dev\PMW-123_minha_feature`
 
+## problema: branch principal ausente ao clonar branch não-base diretamente
+
+Quando `CriarBranchRemoto = false` e `Branch` é uma branch não-base (ex: `feature/TC-123`), o comando montado é:
+
+```bash
+git clone --depth 1 --branch feature/TC-123 <url>
+```
+
+O `--branch` no `git clone` define o HEAD do clone como aquela branch. O repositório local fica **sem a branch principal** (`main`, `develop`, etc.), o que impede:
+- `git pull` (sem upstream da branch principal configurado)
+- `git merge develop` / `git rebase develop`
+
+**Solução planejada:** após o clone de branch não-base sem `CriarBranchRemoto`, detectar automaticamente qual branch principal existe no remote (tentando `main` → `master` → `develop` → `dev` em ordem via `git ls-remote`) e adicionar ao script:
+
+```bash
+git fetch origin <branchPrincipal>; git branch --track <branchPrincipal> origin/<branchPrincipal>;
+```
+
+Isso garante que a branch principal fique disponível localmente para merge/rebase sem precisar de campo extra no repositório.
+
+O mesmo comportamento se aplica aos **agregados** clonados com branch não-base.
+
 ## comportamento dos agregados
 
 Agregados são clonados **dentro do mesmo diretório** que o repositório principal.
