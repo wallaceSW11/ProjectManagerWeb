@@ -23,6 +23,17 @@ public class CloneService
         return !string.IsNullOrWhiteSpace(resultado);
     }
 
+    public async Task<string> DetectarBranchPrincipalAsync(string url)
+    {
+        string[] candidatas = ["main", "master", "develop", "dev"];
+        foreach (var candidata in candidatas)
+        {
+            var existe = await VerificarBranchExisteAsync(url, candidata);
+            if (existe) return candidata;
+        }
+        return string.Empty;
+    }
+
     public async Task<bool> Clonar(CloneRequestDTO clone)
     {
         StringBuilder diretorioCompleto = new();
@@ -41,15 +52,18 @@ public class CloneService
         if (gitPrincipal is null)
             return false;
 
+        string branchPrincipalPrincipal = string.Empty;
         if (!EhBranchBase(clone.Branch))
         {
             var existe = await VerificarBranchExisteAsync(gitPrincipal.Url!, clone.Branch);
             if (!existe)
                 throw new Exception($"Branch '{clone.Branch}' não encontrada no remote.");
+
+            branchPrincipalPrincipal = await DetectarBranchPrincipalAsync(gitPrincipal.Url!);
         }
 
         var comandoPrincipal = MontarComandoClone(clone.HistoricoCompleto, clone.Branch);
-        var scriptPrincipal = MontarScript(diretorioCompleto.ToString(), gitPrincipal.Url!, gitPrincipal.Nome, comandoPrincipal, clone);
+        var scriptPrincipal = MontarScript(diretorioCompleto.ToString(), gitPrincipal.Url!, gitPrincipal.Nome, comandoPrincipal, clone, branchPrincipalPrincipal);
         ShellExecute.ExecutarComando(scriptPrincipal);
 
         if (clone.BaixarAgregados)
@@ -60,14 +74,23 @@ public class CloneService
                 if (agregado is null) return;
 
                 var branchAgregado = clone.Branch;
+                var branchPrincipalAgregado = string.Empty;
+
                 if (!EhBranchBase(clone.Branch))
                 {
                     var existeNoAgregado = await VerificarBranchExisteAsync(agregado.Url!, clone.Branch);
-                    branchAgregado = existeNoAgregado ? clone.Branch : string.Empty;
+                    if (existeNoAgregado)
+                    {
+                        branchPrincipalAgregado = await DetectarBranchPrincipalAsync(agregado.Url!);
+                    }
+                    else
+                    {
+                        branchAgregado = string.Empty;
+                    }
                 }
 
                 var comandoAgregado = MontarComandoClone(clone.HistoricoCompleto, branchAgregado);
-                var scriptAgregado = MontarScript(diretorioCompleto.ToString(), agregado.Url!, agregado.Nome, comandoAgregado, clone with { Branch = branchAgregado });
+                var scriptAgregado = MontarScript(diretorioCompleto.ToString(), agregado.Url!, agregado.Nome, comandoAgregado, clone with { Branch = branchAgregado }, branchPrincipalAgregado);
                 ShellExecute.ExecutarComando(scriptAgregado);
             });
         }
@@ -75,7 +98,7 @@ public class CloneService
         return true;
     }
 
-    private static string MontarScript(string diretorioCompleto, string url, string nomeRepo, string comandoClone, CloneRequestDTO clone)
+    private static string MontarScript(string diretorioCompleto, string url, string nomeRepo, string comandoClone, CloneRequestDTO clone, string branchPrincipal = "")
     {
         StringBuilder script = new();
 
@@ -83,6 +106,12 @@ public class CloneService
             .Append($"cd \"{diretorioCompleto}\"; ")
             .Append($"{comandoClone} {url}; ")
             .Append($"cd \"{nomeRepo}\"; ");
+
+        if (!string.IsNullOrEmpty(branchPrincipal))
+        {
+            script.Append($"git fetch origin {branchPrincipal}; ");
+            script.Append($"git branch --track {branchPrincipal} origin/{branchPrincipal}; ");
+        }
 
         if (clone.CriarBranchRemoto)
         {
