@@ -25,13 +25,14 @@ public class CloneService
 
     public async Task<string> DetectarBranchPrincipalAsync(string url)
     {
-        string[] candidatas = ["main", "master", "develop", "dev"];
-        foreach (var candidata in candidatas)
-        {
-            var existe = await VerificarBranchExisteAsync(url, candidata);
-            if (existe) return candidata;
-        }
-        return string.Empty;
+        var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --symref \"{url}\" HEAD");
+        var linha = resultado
+            .Split('\n')
+            .FirstOrDefault(l => l.StartsWith("ref: refs/heads/"));
+
+        if (linha is null) return string.Empty;
+
+        return linha.Replace("ref: refs/heads/", "").Split('\t')[0].Trim();
     }
 
     public async Task<bool> Clonar(CloneRequestDTO clone)
