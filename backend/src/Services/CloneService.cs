@@ -53,18 +53,17 @@ public class CloneService
         if (gitPrincipal is null)
             return false;
 
-        string branchPrincipalPrincipal = string.Empty;
+        string branchPrincipal = string.Empty;
         if (!EhBranchBase(clone.Branch))
         {
             var existe = await VerificarBranchExisteAsync(gitPrincipal.Url!, clone.Branch);
             if (!existe)
                 throw new Exception($"Branch '{clone.Branch}' não encontrada no remote.");
 
-            branchPrincipalPrincipal = await DetectarBranchPrincipalAsync(gitPrincipal.Url!);
+            branchPrincipal = await DetectarBranchPrincipalAsync(gitPrincipal.Url!);
         }
 
-        var comandoPrincipal = MontarComandoClone(clone.HistoricoCompleto, clone.Branch);
-        var scriptPrincipal = MontarScript(diretorioCompleto.ToString(), gitPrincipal.Url!, gitPrincipal.Nome, comandoPrincipal, clone, branchPrincipalPrincipal);
+        var scriptPrincipal = MontarScript(diretorioCompleto.ToString(), gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal);
         ShellExecute.ExecutarComando(scriptPrincipal);
 
         if (clone.BaixarAgregados)
@@ -74,8 +73,8 @@ public class CloneService
                 var agregado = await _repositorioJson.GetByIdAsync(identificadorAgregado);
                 if (agregado is null) return;
 
-                var branchAgregado = clone.Branch;
                 var branchPrincipalAgregado = string.Empty;
+                var branchNaoBaseAgregado = string.Empty;
 
                 if (!EhBranchBase(clone.Branch))
                 {
@@ -83,15 +82,11 @@ public class CloneService
                     if (existeNoAgregado)
                     {
                         branchPrincipalAgregado = await DetectarBranchPrincipalAsync(agregado.Url!);
-                    }
-                    else
-                    {
-                        branchAgregado = string.Empty;
+                        branchNaoBaseAgregado = clone.Branch;
                     }
                 }
 
-                var comandoAgregado = MontarComandoClone(clone.HistoricoCompleto, branchAgregado);
-                var scriptAgregado = MontarScript(diretorioCompleto.ToString(), agregado.Url!, agregado.Nome, comandoAgregado, clone with { Branch = branchAgregado }, branchPrincipalAgregado);
+                var scriptAgregado = MontarScript(diretorioCompleto.ToString(), agregado.Url!, agregado.Nome, clone with { Branch = branchNaoBaseAgregado }, branchPrincipalAgregado);
                 ShellExecute.ExecutarComando(scriptAgregado);
             });
         }
@@ -99,47 +94,38 @@ public class CloneService
         return true;
     }
 
-    private static string MontarScript(string diretorioCompleto, string url, string nomeRepo, string comandoClone, CloneRequestDTO clone, string branchPrincipal = "")
+    private static string MontarScript(string diretorioCompleto, string url, string nomeRepo, CloneRequestDTO clone, string branchPrincipal = "")
     {
+        // branch não-base: clona a principal, depois faz fetch raso da branch informada
+        // branch base: clona direto com --branch, sem baixar outras refs
+        var ehNaoBase = !string.IsNullOrEmpty(branchPrincipal);
+        var branchParaClone = ehNaoBase ? branchPrincipal : clone.Branch;
+        var depth = clone.HistoricoCompleto ? string.Empty : "--depth 1 ";
+
         StringBuilder script = new();
 
         script
             .Append($"cd \"{diretorioCompleto}\"; ")
-            .Append($"{comandoClone} {url}; ")
+            .Append($"git clone {depth}--branch {branchParaClone} \"{url}\"; ")
             .Append($"cd \"{nomeRepo}\"; ");
 
-        if (!string.IsNullOrEmpty(branchPrincipal))
+        if (ehNaoBase && !string.IsNullOrEmpty(clone.Branch))
         {
-            script.Append($"git fetch origin {branchPrincipal}; ");
-            script.Append($"git branch --track {branchPrincipal} origin/{branchPrincipal}; ");
+            // fetch raso somente da branch não-base criando a ref remota explicitamente
+            var depthFetch = clone.HistoricoCompleto ? string.Empty : "--depth 1 ";
+            script.Append($"git fetch origin {depthFetch}{clone.Branch}; ");
+            script.Append($"git checkout -b {clone.Branch} FETCH_HEAD; ");
         }
 
         if (clone.CriarBranchRemoto)
         {
-            if (EhBranchBase(clone.Branch) || string.IsNullOrEmpty(clone.Branch))
-                script.Append($" git checkout {(string.IsNullOrEmpty(clone.Branch) ? string.Empty : clone.Branch)} 2>$null; ");
-
             if (clone.Tipo == "nenhum")
-                script.Append($" git checkout -b {clone.Codigo};");
+                script.Append($"git checkout -b {clone.Codigo};");
             else
-                script.Append($" git checkout -b {clone.Tipo}/{clone.Codigo};");
-        }
-        else if (!string.IsNullOrEmpty(clone.Branch) && EhBranchBase(clone.Branch))
-        {
-            script.Append($" git checkout {clone.Branch};");
+                script.Append($"git checkout -b {clone.Tipo}/{clone.Codigo};");
         }
 
         return script.ToString();
-    }
-
-    private static string MontarComandoClone(bool historicoCompleto, string branch)
-    {
-        var depth = historicoCompleto ? string.Empty : "--depth 1 ";
-        var branchArg = !string.IsNullOrEmpty(branch) && !EhBranchBase(branch)
-            ? $"--branch {branch} "
-            : string.Empty;
-
-        return $"git clone {depth}{branchArg}".TrimEnd();
     }
 
     private static bool EhBranchBase(string branch) =>
