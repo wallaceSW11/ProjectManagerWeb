@@ -75,6 +75,7 @@ public class CloneService
 
                 var branchPrincipalAgregado = string.Empty;
                 var branchNaoBaseAgregado = string.Empty;
+                var branchBaseAgregado = string.Empty;
 
                 if (!EhBranchBase(clone.Branch))
                 {
@@ -84,9 +85,21 @@ public class CloneService
                         branchPrincipalAgregado = await DetectarBranchPrincipalAsync(agregado.Url!);
                         branchNaoBaseAgregado = clone.Branch;
                     }
+                    else
+                    {
+                        branchBaseAgregado = await DetectarBranchPrincipalAsync(agregado.Url!);
+                    }
                 }
 
-                var scriptAgregado = MontarScript(diretorioCompleto.ToString(), agregado.Url!, agregado.Nome, clone with { Branch = branchNaoBaseAgregado }, branchPrincipalAgregado);
+                CloneRequestDTO cloneAgregado;
+                if (!string.IsNullOrEmpty(branchNaoBaseAgregado))
+                    cloneAgregado = clone with { Branch = branchNaoBaseAgregado };
+                else if (!string.IsNullOrEmpty(branchBaseAgregado))
+                    cloneAgregado = clone with { Branch = branchBaseAgregado, CriarBranchRemoto = false };
+                else
+                    cloneAgregado = clone;
+
+                var scriptAgregado = MontarScript(diretorioCompleto.ToString(), agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado);
                 ShellExecute.ExecutarComando(scriptAgregado);
             });
         }
