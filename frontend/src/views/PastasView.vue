@@ -104,6 +104,7 @@
                   @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
                   @abrirNaIDE="abrirPastaNaIDE"
+                  @abrirKiroCli="abrirPastaKiroCli"
                   @ocultar-pasta="ocultarPasta"
                   @excluir-pasta="excluirPasta"
                 />
@@ -758,9 +759,12 @@
         return;
       }
 
-      const diretorioCompleto = pasta.nomeRepositorio 
+      let diretorioCompleto = pasta.nomeRepositorio 
         ? `${pasta.diretorio}\\${pasta.nomeRepositorio}`
         : pasta.diretorio;
+
+      if (pasta.subdiretorio)
+        diretorioCompleto += `\\${pasta.subdiretorio}`;
 
       await carregandoAsync(async () => {
         await ComandosService.abrirPastaIDE({
@@ -774,6 +778,25 @@
     } catch (error) {
       console.error('Falha ao abrir na IDE: ', error);
       notificar('erro', 'Falha ao abrir na IDE', String(error));
+    }
+  };
+
+  const abrirPastaKiroCli = (pasta: IPasta): void => {
+    try {
+      if (!pasta.cliComando) {
+        notificar('aviso', 'Nenhuma CLI configurada para este repositório');
+        return;
+      }
+
+      let diretorio = pasta.diretorio;
+      if (pasta.subdiretorio)
+        diretorio += `\\${pasta.subdiretorio}`;
+
+      const comando = `cd ${diretorio}; ${pasta.cliComando}`;
+      ComandosService.executarComandoAvulso({ comando });
+      notificar('sucesso', `Abrindo ${pasta.cliComando}`);
+    } catch (error) {
+      notificar('erro', 'Falha ao abrir CLI', String(error));
     }
   };
 </script>

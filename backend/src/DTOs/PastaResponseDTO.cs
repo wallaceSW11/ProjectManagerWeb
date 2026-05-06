@@ -17,7 +17,10 @@ public sealed record PastaResponseDTO(
     Guid? IDEIdentificador,
     string? NomeRepositorio,
     int? Indice = null,
-    string? PerfilVSCode = null
+    string? PerfilVSCode = null,
+    string? NomeIDE = null,
+    string? Subdiretorio = null,
+    string? CliComando = null
 );
 
 public sealed record ProjetoDisponivelDTO(

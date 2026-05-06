@@ -25,7 +25,9 @@ namespace ProjectManagerWeb.src.DTOs
         Guid? IDEIdentificador,
         string? PerfilVSCode = null,
         List<PerfilMarcacaoDTO>? Perfis = null,
-        int Indice = 0
+        int Indice = 0,
+        string? Subdiretorio = null,
+        string? CliComando = null
     );
 
     /// <summary>

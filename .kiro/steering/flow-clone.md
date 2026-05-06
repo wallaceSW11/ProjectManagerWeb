@@ -29,7 +29,7 @@ campos do formulário (`IClone`):
 - `branch`: branch de origem para checkout
 - `criarBranchRemoto`: se `true`, cria novo branch local a partir do `branch` de origem
 - `baixarAgregados`: se `true`, clona também os repositórios agregados do repositório principal
-- `historicoCompleto`: se `false` (padrão), usa `--depth 1` para clone raso
+- `historicoCompleto`: se `false` (padrão), usa `--filter=blob:none --single-branch` (partial clone)
 - `salvarNoStorage`: flag de UI — não enviado ao backend
 
 fluxo:
@@ -67,9 +67,9 @@ lógica do `CloneService.Clonar()`:
 3. busca o repositório principal por `RepositorioId`
 4. monta e executa o comando git via `ShellExecute.ExecutarComando()`:
    - `HistoricoCompleto = true`                                                          → `git clone`
-   - `HistoricoCompleto = false` + `CriarBranchRemoto = false`                          → `git clone --depth 1 --no-single-branch`
-   - `HistoricoCompleto = false` + `CriarBranchRemoto = true` + branch base             → `git clone --depth 1`
-   - `HistoricoCompleto = false` + `CriarBranchRemoto = true` + branch **não-base**     → `git clone --depth 1 --no-single-branch`
+   - `HistoricoCompleto = false` + `CriarBranchRemoto = false`                          → `git clone --filter=blob:none --single-branch`
+   - `HistoricoCompleto = false` + `CriarBranchRemoto = true` + branch base             → `git clone --filter=blob:none --single-branch`
+   - `HistoricoCompleto = false` + `CriarBranchRemoto = true` + branch **não-base**     → `git clone --filter=blob:none --single-branch`
 5. faz checkout do branch de origem
 6. se `CriarBranchRemoto = true`:
    - `Tipo == "nenhum"` → `git checkout -b {Codigo}`
@@ -81,12 +81,12 @@ lógica do `CloneService.Clonar()`:
 Quando `CriarBranchRemoto = true`, o comportamento do clone depende do tipo de branch de origem:
 
 **Branches base** (`develop`, `dev`, `main`, `master`):
-- `git clone --depth 1` é suficiente — a branch padrão do remote já é uma dessas.
+- `git clone --filter=blob:none --single-branch --branch develop` é suficiente — a branch padrão do remote já é uma dessas.
 - O `git checkout <branch>` subsequente funciona porque a branch já está presente localmente.
 
 **Branches de trabalho** (qualquer outro nome, ex: `adequacao-cnpj`):
-- `git clone --depth 1` baixa **apenas a branch padrão do remote** — o `git checkout adequacao-cnpj` falha silenciosamente (suprimido por `2>$null`) e a nova branch é criada em cima da branch padrão, não da branch desejada.
-- Solução: usar `git clone --depth 1 --no-single-branch` para baixar todas as refs remotas, permitindo o checkout correto.
+- Clona a branch principal com `--filter=blob:none --single-branch`, depois faz `git fetch origin <branch>` e checkout a partir do FETCH_HEAD.
+- Com partial clone o histórico de commits está completo, então o fetch funciona sem problemas.
 
 O método `EhBranchBase(string branch)` encapsula essa verificação (case-insensitive):
 ```csharp
@@ -113,11 +113,10 @@ Exemplo: `DiretorioRaiz = C:\Dev\`, `Codigo = PMW-123`, `Descricao = "minha feat
 Quando `CriarBranchRemoto = false` e `Branch` é uma branch não-base (ex: `feature/TC-123`), o comando montado é:
 
 ```bash
-git clone --depth 1 --branch feature/TC-123 <url>
+git clone --filter=blob:none --single-branch --branch feature/TC-123 <url>
 ```
 
-O `--branch` no `git clone` define o HEAD do clone como aquela branch. O repositório local fica **sem a branch principal** (`main`, `develop`, etc.), o que impede:
-- `git pull` (sem upstream da branch principal configurado)
+O `--branch` no `git clone` define o HEAD do clone como aquela branch. Com `--single-branch`, o repositório local fica **sem a branch principal** (`main`, `develop`, etc.), o que impede:
 - `git merge develop` / `git rebase develop`
 
 **Solução planejada:** após o clone de branch não-base sem `CriarBranchRemoto`, detectar automaticamente qual branch principal existe no remote (tentando `main` → `master` → `develop` → `dev` em ordem via `git ls-remote`) e adicionar ao script:

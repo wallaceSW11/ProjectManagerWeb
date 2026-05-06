@@ -74,7 +74,7 @@
             />
             <v-radio
               label="Bug"
-              value="bug"
+              value="bugfix"
             />
             <v-radio
               label="HotFix"
@@ -124,6 +124,7 @@
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import {
     notificar,
+    atualizarListaPastas,
   } from '@/utils/eventBus';
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
   import SelectBranch from '@/components/comum/SelectBranch.vue';
@@ -214,6 +215,7 @@
 
     fecharClone();
     notificar('sucesso', 'Clone iniciado');
+    setTimeout(atualizarListaPastas, 5000);
 
     CloneService.clonar(payload).catch(() => {
       notificar('erro', 'Falha ao clonar');

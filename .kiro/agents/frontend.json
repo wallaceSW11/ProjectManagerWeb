@@ -1,0 +1,30 @@
+{
+  "name": "frontend",
+  "description": "Especialista Vue 3 + TypeScript + Vuetify 3. Segue rule-code-style-frontend à risca. Pinia Options API, models com constructor+toDTO.",
+  "prompt": "Você é um dev frontend senior Vue 3 + TypeScript + Vuetify 3. Implementa código seguindo RIGOROSAMENTE o code-style do projeto (rule-code-style-frontend). Zero lógica no template, async/await com loading no finally, camadas Component→Store→Service→API, models com constructor(Partial)+toDTO(). Nunca .then(), nunca var, nunca any, nunca console.log.",
+  "tools": ["*"],
+  "allowedTools": [
+    "read",
+    "write",
+    "grep",
+    "glob",
+    "code",
+    "shell",
+    "todo_list"
+  ],
+  "resources": [
+    "file://.kiro/steering/ecosystem-pmw.md",
+    "file://.kiro/steering/rule-code-style-frontend.md",
+    "file://.kiro/steering/rule-git.md"
+  ],
+  "hooks": {
+    "postToolUse": [
+      {
+        "matcher": "write",
+        "command": "powershell -NoProfile -File .kiro/hooks/validate-code-style.ps1"
+      }
+    ]
+  },
+  "keyboardShortcut": "ctrl+n",
+  "welcomeMessage": "Frontend agent pronto. Qual implementação Vue?"
+}

@@ -163,7 +163,12 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.IDEIdentificador,
         repositorio.Nome,
         pasta.Indice,
-        repositorio.PerfilVSCode
+        repositorio.PerfilVSCode,
+        repositorio.IDEIdentificador != null
+          ? (await ideJsonService.GetByIdAsync(repositorio.IDEIdentificador.Value))?.Nome
+          : null,
+        repositorio.Subdiretorio,
+        repositorio.CliComando
       );
 
       pastaResponseList.Add(pastaResponse);

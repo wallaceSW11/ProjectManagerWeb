@@ -89,6 +89,12 @@ Hook `eslint-fix-on-save` roda `eslint --fix` em `.vue` e `.ts` ao salvar.
 ESLint valida: lógica, tipos, ordem de atributos Vue, `no-console`, `no-unused-vars`.
 Formatação de atributos HTML: responsabilidade do Prettier, não do ESLint.
 
+## delegação
+
+Para tarefas especializadas, delegar para subagents:
+- `backend` — implementação .NET 9 seguindo code-style-backend
+- `frontend` — implementação Vue 3 seguindo code-style-frontend
+
 ## proibições absolutas
 
 - NUNCA hardcodar secrets, API keys, tokens ou connection strings

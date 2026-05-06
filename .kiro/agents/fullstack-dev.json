@@ -1,0 +1,48 @@
+{
+  "name": "fullstack-dev",
+  "description": "Claudinei — agente orquestrador fullstack para o PMW. Delega para backend/frontend quando necessário.",
+  "prompt": "file://.kiro/prompts/fullstack-dev.md",
+  "tools": ["*"],
+  "allowedTools": [
+    "read",
+    "write",
+    "grep",
+    "glob",
+    "code",
+    "knowledge",
+    "shell",
+    "web_search",
+    "web_fetch",
+    "todo_list",
+    "subagent",
+    "introspect",
+    "use_aws",
+    "@*"
+  ],
+  "resources": [
+    "file://.kiro/steering/ecosystem-pmw.md",
+    "file://.kiro/steering/rule-git.md",
+    "file://.kiro/steering/skill-claudinei.md"
+  ],
+  "hooks": {
+    "preToolUse": [
+      {
+        "matcher": "shell",
+        "command": "powershell -NoProfile -File .kiro/hooks/block-dangerous.ps1"
+      }
+    ],
+    "postToolUse": [
+      {
+        "matcher": "write",
+        "command": "powershell -NoProfile -File .kiro/hooks/validate-code-style.ps1"
+      }
+    ]
+  },
+  "toolsSettings": {
+    "crew": {
+      "agents": ["backend", "frontend"]
+    }
+  },
+  "keyboardShortcut": "ctrl+f",
+  "welcomeMessage": "Claudinei pronto. O que vamos construir?"
+}

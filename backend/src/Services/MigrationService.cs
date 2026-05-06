@@ -16,15 +16,18 @@ namespace ProjectManagerWeb.src.Services
 
         private readonly IDEJsonService _ideService;
         private readonly RepositorioJsonService _repositorioService;
+        private readonly ConfiguracaoService _configuracaoService;
         private readonly ILogger<MigrationService> _logger;
 
         public MigrationService(
             IDEJsonService ideService,
             RepositorioJsonService repositorioService,
+            ConfiguracaoService configuracaoService,
             ILogger<MigrationService> logger)
         {
             _ideService = ideService;
             _repositorioService = repositorioService;
+            _configuracaoService = configuracaoService;
             _logger = logger;
 
             if (!Directory.Exists(BasePath))
@@ -77,6 +80,7 @@ namespace ProjectManagerWeb.src.Services
             {
                 await ExecutarMigration("001_AddIDEs", Migration_001_AddIDEs);
                 await ExecutarMigration("002_MigrateProgramDataToUserProfile", Migration_002_MigrateProgramDataToUserProfile);
+                await ExecutarMigration("003_AddDefaultCLIs", Migration_003_AddDefaultCLIs);
 
                 _logger.LogInformation("Todas as migrations foram verificadas");
             }
@@ -196,7 +200,8 @@ namespace ProjectManagerWeb.src.Services
             }
         }
 
-        public async Task Migration_002_MigrateProgramDataToUserProfile()        {
+        public async Task Migration_002_MigrateProgramDataToUserProfile()
+        {
             var origemPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 "PMW", "Banco"
@@ -237,7 +242,8 @@ namespace ProjectManagerWeb.src.Services
 
                 try
                 {
-                    File.Copy(arquivo, destinoArquivo, overwrite: true);
+                    var conteudo = await File.ReadAllBytesAsync(arquivo);
+                    await File.WriteAllBytesAsync(destinoArquivo, conteudo);
                     _logger.LogInformation($"Migration 002: Copiado {nomeArquivo} → {destinoArquivo}");
                 }
                 catch (Exception ex)
@@ -273,6 +279,27 @@ namespace ProjectManagerWeb.src.Services
         }
 
         // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---
+
+        public async Task Migration_003_AddDefaultCLIs()
+        {
+            var configuracao = await _configuracaoService.ObterConfiguracaoAsync();
+            var clis = configuracao.CLIs ?? [];
+
+            var adicionados = new List<CliRequestDTO>();
+
+            if (!clis.Any(c => c.Comando.Equals("kiro-cli", StringComparison.OrdinalIgnoreCase)))
+                adicionados.Add(new CliRequestDTO("Kiro CLI", "kiro-cli"));
+
+            if (!clis.Any(c => c.Comando.Equals("claude", StringComparison.OrdinalIgnoreCase)))
+                adicionados.Add(new CliRequestDTO("Claude Code", "claude"));
+
+            if (adicionados.Count == 0) return;
+
+            var clisAtualizadas = clis.Concat(adicionados).ToList();
+            await _configuracaoService.SalvarConfiguracaoAsync(configuracao with { CLIs = clisAtualizadas });
+
+            _logger.LogInformation($"Migration 003: {adicionados.Count} CLI(s) adicionada(s)");
+        }
 
         private static async Task<MigrationsDTO> LerMigrationsDoArquivoAsync(bool locked = false)
         {
