@@ -74,7 +74,7 @@
             />
             <v-radio
               label="Bug"
-              value="bug"
+              value="bugfix"
             />
             <v-radio
               label="HotFix"

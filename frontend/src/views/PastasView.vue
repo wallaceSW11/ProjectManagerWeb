@@ -104,6 +104,7 @@
                   @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
                   @abrirNaIDE="abrirPastaNaIDE"
+                  @abrirKiroCli="abrirPastaKiroCli"
                   @ocultar-pasta="ocultarPasta"
                   @excluir-pasta="excluirPasta"
                 />
@@ -774,6 +775,17 @@
     } catch (error) {
       console.error('Falha ao abrir na IDE: ', error);
       notificar('erro', 'Falha ao abrir na IDE', String(error));
+    }
+  };
+
+  const abrirPastaKiroCli = (pasta: IPasta): void => {
+    try {
+      const comando = `cd ${pasta.diretorio}; kiro-cli`;
+      ComandosService.executarComandoAvulso({ comando });
+      notificar('sucesso', 'Abrindo Kiro CLI');
+    } catch (error) {
+      console.error('Falha ao abrir Kiro CLI: ', error);
+      notificar('erro', 'Falha ao abrir Kiro CLI', String(error));
     }
   };
 </script>

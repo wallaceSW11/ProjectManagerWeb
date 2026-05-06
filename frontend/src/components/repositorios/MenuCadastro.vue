@@ -194,8 +194,7 @@
                 <v-text-field
                   label="Destino"
                   v-model="pastaSelecionada.destino"
-                  :rules="obrigatorio"
-                  hint="Onde colar a pasta, relativo ao repositório (ex: [nome_git]\frontend)"
+                  hint="Onde colar a pasta, relativo ao repositório. Vazio = raiz (ex: [nome_git]\frontend)"
                   persistent-hint
                 />
               </v-form>

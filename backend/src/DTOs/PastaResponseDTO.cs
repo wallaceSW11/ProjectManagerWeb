@@ -17,7 +17,8 @@ public sealed record PastaResponseDTO(
     Guid? IDEIdentificador,
     string? NomeRepositorio,
     int? Indice = null,
-    string? PerfilVSCode = null
+    string? PerfilVSCode = null,
+    string? NomeIDE = null
 );
 
 public sealed record ProjetoDisponivelDTO(

@@ -15,6 +15,7 @@ export default class PastaModel implements IPasta {
   menus: any[];
   index: number;
   ideIdentificador?: string | null;
+  nomeIDE?: string | null;
   nomeRepositorio?: string | null;
   perfilVSCode?: string | null;
 
@@ -32,6 +33,7 @@ export default class PastaModel implements IPasta {
     this.menus = obj.menus || [];
     this.index = obj.index || 0;
     this.ideIdentificador = obj.ideIdentificador || null;
+    this.nomeIDE = obj.nomeIDE || null;
     this.nomeRepositorio = obj.nomeRepositorio || null;
     this.perfilVSCode = obj.perfilVSCode || null;
   }

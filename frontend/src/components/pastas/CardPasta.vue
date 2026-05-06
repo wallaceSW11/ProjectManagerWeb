@@ -122,6 +122,12 @@
             :acao="abrirNaIDE"
             class="ml-2"
           />
+          <IconeComTooltip
+            icone="mdi-console-line"
+            texto="Abrir Kiro CLI"
+            :acao="abrirKiroCli"
+            class="ml-1"
+          />
         </v-col>
       </v-row>
     </v-card-text>
@@ -146,6 +152,7 @@
     executarMenusMultiplos: [pasta: IPasta, menuIds: string[]];
     abrirDiretorio: [diretorio: string];
     abrirNaIDE: [pasta: IPasta];
+    abrirKiroCli: [pasta: IPasta];
     ocultarPasta: [diretorio: string];
     excluirPasta: [diretorio: string];
   }>(); 
@@ -162,8 +169,7 @@
   });
 
   const nomeIDE = computed(() => {
-    const projetoComIDE = props.pasta.projetos.find(p => p.nomeIDE);
-    return projetoComIDE ? projetoComIDE.nomeIDE : 'IDE';
+    return props.pasta.nomeIDE || 'IDE';
   });
 
   const selecionarPasta = (pasta: IPasta): void => {
@@ -255,6 +261,10 @@
 
   const abrirNaIDE = (): void => {
     emit('abrirNaIDE', props.pasta);
+  };
+
+  const abrirKiroCli = (): void => {
+    emit('abrirKiroCli', props.pasta);
   };
 
   const obterIconeMenu = (tipo: string): string => {

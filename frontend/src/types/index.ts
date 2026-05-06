@@ -90,6 +90,7 @@ export interface IPasta {
   menus: IMenu[];
   index: number;
   ideIdentificador?: string | null;
+  nomeIDE?: string | null;
   nomeRepositorio?: string | null;
   perfilVSCode?: string | null;
 }
