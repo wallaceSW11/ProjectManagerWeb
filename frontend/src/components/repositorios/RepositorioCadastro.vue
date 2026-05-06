@@ -74,6 +74,29 @@
           persistent-hint
         />
       </v-col>
+
+      <v-col cols="12">
+        <v-text-field
+          label="Subdiretório"
+          v-model="repositorio.subdiretorio"
+          hint="Subpasta de trabalho para monorepos (ex: ProjectManagerWeb). Deixe vazio para abrir na raiz."
+          persistent-hint
+          clearable
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <v-select
+          label="CLI de IA"
+          v-model="repositorio.cliComando"
+          :items="configuracaoStore.clis"
+          item-title="nome"
+          item-value="comando"
+          clearable
+          hint="CLI usada para abrir o repositório (ex: Kiro CLI, Claude Code)"
+          persistent-hint
+        />
+      </v-col>
     </v-row>
   </v-form>
 </template>

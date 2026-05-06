@@ -123,8 +123,9 @@
             class="ml-2"
           />
           <IconeComTooltip
+            v-if="pasta.cliComando"
             icone="mdi-console-line"
-            texto="Abrir Kiro CLI"
+            texto="Abrir CLI"
             :acao="abrirKiroCli"
             class="ml-1"
           />

@@ -63,6 +63,8 @@ export interface IRepositorio {
   perfis: IPerfilMarcacao[];
   ideIdentificador?: string | null;
   perfilVSCode?: string | null;
+  subdiretorio?: string | null;
+  cliComando?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {
@@ -93,6 +95,8 @@ export interface IPasta {
   nomeIDE?: string | null;
   nomeRepositorio?: string | null;
   perfilVSCode?: string | null;
+  subdiretorio?: string | null;
+  cliComando?: string | null;
 }
 
 export interface IClone {
@@ -115,6 +119,7 @@ export interface IPerfilVSCode {
 export interface IConfiguracao {
   diretorioRaiz: string;
   perfisVSCode: Array<{ nome: string }>;
+  clis: Array<{ nome: string; comando: string }>;
 }
 
 export interface ISite {

@@ -759,9 +759,12 @@
         return;
       }
 
-      const diretorioCompleto = pasta.nomeRepositorio 
+      let diretorioCompleto = pasta.nomeRepositorio 
         ? `${pasta.diretorio}\\${pasta.nomeRepositorio}`
         : pasta.diretorio;
+
+      if (pasta.subdiretorio)
+        diretorioCompleto += `\\${pasta.subdiretorio}`;
 
       await carregandoAsync(async () => {
         await ComandosService.abrirPastaIDE({
@@ -780,12 +783,20 @@
 
   const abrirPastaKiroCli = (pasta: IPasta): void => {
     try {
-      const comando = `cd ${pasta.diretorio}; kiro-cli`;
+      if (!pasta.cliComando) {
+        notificar('aviso', 'Nenhuma CLI configurada para este repositório');
+        return;
+      }
+
+      let diretorio = pasta.diretorio;
+      if (pasta.subdiretorio)
+        diretorio += `\\${pasta.subdiretorio}`;
+
+      const comando = `cd ${diretorio}; ${pasta.cliComando}`;
       ComandosService.executarComandoAvulso({ comando });
-      notificar('sucesso', 'Abrindo Kiro CLI');
+      notificar('sucesso', `Abrindo ${pasta.cliComando}`);
     } catch (error) {
-      console.error('Falha ao abrir Kiro CLI: ', error);
-      notificar('erro', 'Falha ao abrir Kiro CLI', String(error));
+      notificar('erro', 'Falha ao abrir CLI', String(error));
     }
   };
 </script>

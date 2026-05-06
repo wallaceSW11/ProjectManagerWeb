@@ -68,6 +68,53 @@
               </div>
             </div>
           </v-col>
+
+          <!-- CLIs -->
+          <v-col cols="12" class="mt-6">
+            <h2>CLIs de IA</h2>
+
+            <v-divider />
+
+            <div class="d-flex flex-column justify-center">
+              <div class="d-flex align-center">
+                <v-text-field
+                  label="Nome"
+                  v-model="nomeCliNovo"
+                  autocomplete="new-password"
+                  class="mr-2"
+                />
+                <v-text-field
+                  label="Comando"
+                  v-model="comandoCliNovo"
+                  autocomplete="new-password"
+                />
+                <v-btn
+                  class="ml-2"
+                  @click="adicionarCli"
+                >
+                  <v-icon>mdi-plus</v-icon>
+                  Adicionar
+                </v-btn>
+              </div>
+
+              <div>
+                <v-data-table
+                  :items="configuracao.clis"
+                  :headers="colunasCli"
+                  hide-default-footer
+                >
+                  <template #[`item.actions`]="{ item }">
+                    <IconeComTooltip
+                      icone="mdi-delete"
+                      texto="Excluir"
+                      :acao="() => removerCli(item)"
+                      top
+                    />
+                  </template>
+                </v-data-table>
+              </div>
+            </div>
+          </v-col>
         </v-row>
       </v-col>
     </v-row>
@@ -86,6 +133,8 @@
 
   // --- STATE ---
   const nomePerfil = ref<string>(''); // input do perfil
+  const nomeCliNovo = ref<string>('');
+  const comandoCliNovo = ref<string>('');
   const configuracao = reactive<IConfiguracao>(new ConfiguracaoModel());
 
   onMounted(() => {
@@ -94,6 +143,12 @@
 
   const colunas = reactive([
     { title: 'Perfil', key: 'nome', align: 'start' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+  ] as const);
+
+  const colunasCli = reactive([
+    { title: 'Nome', key: 'nome', align: 'start' },
+    { title: 'Comando', key: 'comando', align: 'start' },
     { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
   ] as const);
 
@@ -160,6 +215,27 @@
       configuracao.perfisVSCode = configuracao.perfisVSCode.filter(
         p => p !== item
       );
+      salvarConfiguracao();
+    }
+  };
+
+  // --- CLIs ---
+  const adicionarCli = (): void => {
+    if (!nomeCliNovo.value.trim() || !comandoCliNovo.value.trim()) {
+      alert('Nome e comando são obrigatórios');
+      return;
+    }
+
+    configuracao.clis.push({ nome: nomeCliNovo.value, comando: comandoCliNovo.value });
+    nomeCliNovo.value = '';
+    comandoCliNovo.value = '';
+    salvarConfiguracao();
+  };
+
+  const removerCli = (item: { nome: string; comando: string }): void => {
+    const confirmDelete = confirm(`Deseja remover a CLI "${item.nome}"?`);
+    if (confirmDelete) {
+      configuracao.clis = configuracao.clis.filter(c => c !== item);
       salvarConfiguracao();
     }
   };

@@ -16,6 +16,8 @@ export const useConfiguracaoStore = defineStore('configuracao', {
     diretorioRaiz: (state): string => state.configuracao.diretorioRaiz,
     perfisVSCode: (state): Array<{ nome: string }> =>
       state.configuracao.perfisVSCode,
+    clis: (state): Array<{ nome: string; comando: string }> =>
+      state.configuracao.clis,
   },
 
   actions: {
