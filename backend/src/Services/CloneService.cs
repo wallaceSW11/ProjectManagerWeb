@@ -109,24 +109,22 @@ public class CloneService
 
     private static string MontarScript(string diretorioCompleto, string url, string nomeRepo, CloneRequestDTO clone, string branchPrincipal = "")
     {
-        // branch não-base: clona a principal, depois faz fetch raso da branch informada
+        // branch não-base: clona a principal, depois faz fetch da branch informada
         // branch base: clona direto com --branch, sem baixar outras refs
         var ehNaoBase = !string.IsNullOrEmpty(branchPrincipal);
         var branchParaClone = ehNaoBase ? branchPrincipal : clone.Branch;
-        var depth = clone.HistoricoCompleto ? string.Empty : "--depth 1 ";
+        var filter = clone.HistoricoCompleto ? string.Empty : "--filter=blob:none --single-branch ";
 
         StringBuilder script = new();
 
         script
             .Append($"cd \"{diretorioCompleto}\"; ")
-            .Append($"git clone {depth}--branch {branchParaClone} \"{url}\"; ")
+            .Append($"git clone {filter}--branch {branchParaClone} \"{url}\"; ")
             .Append($"cd \"{nomeRepo}\"; ");
 
         if (ehNaoBase && !string.IsNullOrEmpty(clone.Branch))
         {
-            // fetch raso somente da branch não-base criando a ref remota explicitamente
-            var depthFetch = clone.HistoricoCompleto ? string.Empty : "--depth 1 ";
-            script.Append($"git fetch origin {depthFetch}{clone.Branch}; ");
+            script.Append($"git fetch origin {clone.Branch}; ");
             script.Append($"git checkout -b {clone.Branch} FETCH_HEAD; ");
         }
 
