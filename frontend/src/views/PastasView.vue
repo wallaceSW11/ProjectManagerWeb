@@ -759,10 +759,7 @@
         return;
       }
 
-      let diretorioCompleto = pasta.nomeRepositorio 
-        ? `${pasta.diretorio}\\${pasta.nomeRepositorio}`
-        : pasta.diretorio;
-
+      let diretorioCompleto = pasta.diretorio;
       if (pasta.subdiretorio)
         diretorioCompleto += `\\${pasta.subdiretorio}`;
 
