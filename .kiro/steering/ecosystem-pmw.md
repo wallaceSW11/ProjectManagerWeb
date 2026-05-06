@@ -238,6 +238,7 @@ O `backend/atualizar_PWM_pwsh.ps1` é um script legado (faz `git pull` direto) �
 | Pastas / comandos / menus | `flow-pastas` | automático (Pasta/**) |
 | Repositórios / projetos / agregados | `flow-repositorios` | automático (Repositorio/**) |
 | IDEs | `flow-ides` | automático (IDE/**) |
+| Sites IIS / Deploy | `flow-sitesiis` | automático (SiteIIS/**/Deploy/**/IIS/**) |
 | Code style backend | `rule-code-style-backend` | automático (backend/**) |
 | Code style frontend | `rule-code-style-frontend` | automático (frontend/**) |
 | Criar/editar steering | `#skill-criar-steering` | manual |

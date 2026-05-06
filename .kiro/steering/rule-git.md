@@ -4,7 +4,7 @@ inclusion: always
 
 # rule-git
 
-Convenções de git para o projeto Confeitaria.
+Convenções de git para o projeto PMW.
 
 ## branches
 
@@ -29,10 +29,12 @@ Tipos:
 
 Exemplos:
 ```
-feat(products): adicionar upload de imagem
-fix(auth): corrigir expiração do cookie em produção
+feat(clone): adicionar opção de clone raso
+fix(pastas): corrigir listagem de pastas ocultas
 chore(deps): atualizar vuetify para 3.8
-refactor(orders): extrair lógica de status para service
+refactor(repositorios): extrair lógica de agregados para service
+docs(steering): criar flow-sitesiis
+style(sitesiis): ajustar espaçamento dos cards
 ```
 
 ## regras
