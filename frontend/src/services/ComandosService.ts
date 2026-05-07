@@ -20,6 +20,7 @@ interface ComandoMenu {
 
 interface ComandoAvulso {
   comando: string;
+  perfilTerminal?: string | null;
 }
 
 interface AbrirPastaIDE {

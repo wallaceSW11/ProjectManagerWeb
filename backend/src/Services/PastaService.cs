@@ -93,7 +93,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           projeto.ArquivoCoverage,
           projeto.Subdiretorio,
           projeto.Expandido,
-          nomeIDE
+          nomeIDE,
+          projeto.PerfilTerminal
         ));
       }
 
@@ -140,7 +141,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
               projeto.ArquivoCoverage,
               projeto.Subdiretorio,
               projeto.Expandido,
-              nomeIDE
+              nomeIDE,
+              projeto.PerfilTerminal
             ));
           }
         }
@@ -168,7 +170,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           ? (await ideJsonService.GetByIdAsync(repositorio.IDEIdentificador.Value))?.Nome
           : null,
         repositorio.Subdiretorio,
-        repositorio.CliComando
+        repositorio.CliComando,
+        repositorio.PerfilTerminal
       );
 
       pastaResponseList.Add(pastaResponse);

@@ -5,6 +5,7 @@ export interface ISiteIIS {
   pastaRaiz: string;
   pastas: IPastaDeploy[];
   poolsAplicacao: string[];
+  perfilTerminalAdmin?: string | null;
 }
 
 export interface ISiteIISDeployResponse {
@@ -38,6 +39,7 @@ export default class SiteIISModel implements ISiteIIS {
   pastaRaiz: string;
   pastas: IPastaDeploy[];
   poolsAplicacao: string[];
+  perfilTerminalAdmin?: string | null;
 
   constructor(obj: Partial<ISiteIIS> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -46,6 +48,7 @@ export default class SiteIISModel implements ISiteIIS {
     this.pastaRaiz = obj.pastaRaiz || '';
     this.pastas = obj.pastas || [];
     this.poolsAplicacao = obj.poolsAplicacao || [];
+    this.perfilTerminalAdmin = obj.perfilTerminalAdmin || null;
   }
 
   static fromJson(json: Partial<ISiteIIS>): SiteIISModel {
@@ -59,7 +62,8 @@ export default class SiteIISModel implements ISiteIIS {
       nome: this.nome,
       pastaRaiz: this.pastaRaiz,
       pastas: this.pastas,
-      poolsAplicacao: this.poolsAplicacao
+      poolsAplicacao: this.poolsAplicacao,
+      perfilTerminalAdmin: this.perfilTerminalAdmin
     };
   }
 }

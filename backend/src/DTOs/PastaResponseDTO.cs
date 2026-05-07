@@ -20,7 +20,8 @@ public sealed record PastaResponseDTO(
     string? PerfilVSCode = null,
     string? NomeIDE = null,
     string? Subdiretorio = null,
-    string? CliComando = null
+    string? CliComando = null,
+    string? PerfilTerminal = null
 );
 
 public sealed record ProjetoDisponivelDTO(
@@ -32,5 +33,6 @@ public sealed record ProjetoDisponivelDTO(
     string? ArquivoCoverage = "",
     string? Subdiretorio = "",
     bool Expandido = false,
-    string? NomeIDE = null
+    string? NomeIDE = null,
+    string? PerfilTerminal = null
 );

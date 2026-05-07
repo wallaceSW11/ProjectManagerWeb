@@ -9,7 +9,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
   public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
   {
     var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
-    var comandos = new List<string>();
+    var comandos = new List<(string Comando, string? Perfil)>();
 
     var diretorio = pasta.Diretorio + "\\" + repositorio.Nome + "\\";
 
@@ -24,19 +24,19 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
           if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && projetoCadastrado.Comandos.Instalar.Contains("npm i"))
           {
             if (Directory.Exists($"{diretorio}{projetoCadastrado.Subdiretorio}\\node_modules"))
-              comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ");
+              comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
             else
-              comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};");
+              comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal));
           }
           else
-            comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ");
+            comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
         }
 
         if (comando == ETipoComando.INSTALAR)
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; ");
+          comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; ", projetoCadastrado.PerfilTerminal));
 
         if (comando == ETipoComando.BUILDAR)
-          comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Buildar}; ");
+          comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Buildar}; ", projetoCadastrado.PerfilTerminal));
 
         if (comando == ETipoComando.ABRIR_NA_IDE)
         {
@@ -50,7 +50,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
               if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
                 texto += $"--profile \"{projetoCadastrado.PerfilVSCode}\"";
 
-              comandos.Add($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;");
+              comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;", null));
             }
           }
         }
@@ -74,19 +74,19 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
           if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && projetoAgregadoCadastrado.Comandos.Instalar.Contains("npm i"))
           {
             if (Directory.Exists($"{diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}\\node_modules"))
-              comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ");
+              comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
             else
-              comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};");
+              comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal));
           }
           else
-            comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ");
+            comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
         }
 
         if (comando == ETipoComando.INSTALAR)
-          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; ");
+          comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; ", projetoAgregadoCadastrado.PerfilTerminal));
 
         if (comando == ETipoComando.BUILDAR)
-          comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Buildar}; ");
+          comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Buildar}; ", projetoAgregadoCadastrado.PerfilTerminal));
 
         if (comando == ETipoComando.ABRIR_NA_IDE)
         {
@@ -100,7 +100,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
               if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
                 texto += $"--profile \"{projetoAgregadoCadastrado.PerfilVSCode}\"";
 
-              comandos.Add($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;");
+              comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;", null));
             }
           }
         }
@@ -109,7 +109,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
     try
     {
-      comandos.ForEach(ShellExecute.ExecutarComando);
+      comandos.ForEach(c => ShellExecute.ExecutarComando(c.Comando, c.Perfil));
     }
     catch
     {
@@ -123,11 +123,11 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     return true;
   }
 
-  public bool ExecutarComandoAvulso(string comando)
+  public bool ExecutarComandoAvulso(string comando, string? perfilTerminal = null)
   {
     try
     {
-      ShellExecute.ExecutarComando(comando);
+      ShellExecute.ExecutarComando(comando, perfilTerminal);
     }
     catch
     {
@@ -178,7 +178,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
     try
     {
-      comandos.ForEach(ShellExecute.ExecutarComando); 
+      comandos.ForEach(c => ShellExecute.ExecutarComando(c)); 
     }
     catch
     {
