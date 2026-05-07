@@ -75,6 +75,10 @@
             :label="TIPO_COMANDO.INICIAR.titulo"
             v-model="projetoSelecionado.comandosObj!.iniciar"
           />
+          <SelectPerfilTerminal
+            v-model="projetoSelecionado.perfilTerminal"
+            hint="Perfil do Windows Terminal usado ao iniciar"
+          />
           <v-text-field
             :label="TIPO_COMANDO.BUILDAR.titulo"
             v-model="projetoSelecionado.comandosObj!.buildar"
@@ -104,6 +108,7 @@
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
   import IDEsService from '@/services/IDEsService';
+  import SelectPerfilTerminal from '@/components/comum/SelectPerfilTerminal.vue';
 
   const repositorio = defineModel<IRepositorio>({ required: true });
   const configuracaoStore = useConfiguracaoStore();

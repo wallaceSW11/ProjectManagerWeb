@@ -47,7 +47,7 @@ namespace ProjectManagerWeb.src.Services
 
                 // 3. Executar script e capturar output
                 log.Add("=== EXECUTANDO DEPLOY ===");
-                var sucesso = await ExecutarScriptPowerShell(scriptPath, log);
+                var sucesso = await ExecutarScriptPowerShell(scriptPath, log, site.PerfilTerminalAdmin);
 
                 if (sucesso)
                 {
@@ -213,7 +213,7 @@ namespace ProjectManagerWeb.src.Services
         /// <summary>
         /// Executa o script PowerShell usando o ShellExecute
         /// </summary>
-        private async Task<bool> ExecutarScriptPowerShell(string scriptPath, List<string> log)
+        private async Task<bool> ExecutarScriptPowerShell(string scriptPath, List<string> log, string? perfilTerminalAdmin = null)
         {
             try
             {
@@ -225,7 +225,7 @@ namespace ProjectManagerWeb.src.Services
                 log.Add("IMPORTANTE: Aceite o UAC e acompanhe o progresso na janela do PowerShell que será aberta.");
                 
                 // Executar como Administrador para ter acesso ao IIS
-                ShellExecute.ExecutarComandoComoAdministrador(comando);
+                ShellExecute.ExecutarComandoComoAdministrador(comando, perfilTerminalAdmin);
                 
                 log.Add("PowerShell iniciado com privilégios administrativos!");
                 log.Add("O processo está rodando em segundo plano.");

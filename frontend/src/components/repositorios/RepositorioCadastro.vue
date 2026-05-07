@@ -97,6 +97,13 @@
           persistent-hint
         />
       </v-col>
+
+      <v-col cols="12">
+        <SelectPerfilTerminal
+          v-model="repositorio.perfilTerminal"
+          hint="Perfil do Windows Terminal usado ao abrir a CLI de IA"
+        />
+      </v-col>
     </v-row>
   </v-form>
 </template>
@@ -106,6 +113,7 @@
   import type { IRepositorio, IIDE } from '@/types';
   import IDEsService from '@/services/IDEsService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
+  import SelectPerfilTerminal from '@/components/comum/SelectPerfilTerminal.vue';
 
   interface Props {
     repositorios: IRepositorio[];

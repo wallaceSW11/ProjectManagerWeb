@@ -20,6 +20,7 @@ export default class PastaModel implements IPasta {
   perfilVSCode?: string | null;
   subdiretorio?: string | null;
   cliComando?: string | null;
+  perfilTerminal?: string | null;
 
   constructor(obj: Partial<IPasta> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -40,5 +41,6 @@ export default class PastaModel implements IPasta {
     this.perfilVSCode = obj.perfilVSCode || null;
     this.subdiretorio = obj.subdiretorio || null;
     this.cliComando = obj.cliComando || null;
+    this.perfilTerminal = obj.perfilTerminal || null;
   }
 }

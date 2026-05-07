@@ -35,6 +35,7 @@ builder.Services.AddSingleton<SiteIISJsonService>();
 builder.Services.AddSingleton<DeployIISService>();
 builder.Services.AddSingleton<IDEJsonService>();
 builder.Services.AddSingleton<MigrationService>();
+builder.Services.AddSingleton<TerminalService>();
 
 var app = builder.Build();
 

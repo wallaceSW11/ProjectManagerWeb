@@ -27,7 +27,8 @@ namespace ProjectManagerWeb.src.DTOs
         List<PerfilMarcacaoDTO>? Perfis = null,
         int Indice = 0,
         string? Subdiretorio = null,
-        string? CliComando = null
+        string? CliComando = null,
+        string? PerfilTerminal = null
     );
 
     /// <summary>
@@ -43,7 +44,8 @@ namespace ProjectManagerWeb.src.DTOs
         string? PerfilVSCode,
         ComandoDTO Comandos,
         string? ArquivoCoverage,
-        bool Expandido = false
+        bool Expandido = false,
+        string? PerfilTerminal = null
     );
 
     /// <summary>

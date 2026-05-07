@@ -32,12 +32,21 @@
           persistent-hint
         />
       </v-col>
+
+      <v-col cols="12" class="mb-4">
+        <SelectPerfilTerminal
+          v-model="site.perfilTerminalAdmin"
+          label="Perfil do Terminal (Admin)"
+          hint="Perfil do Windows Terminal com privilégio de administrador para deploy"
+        />
+      </v-col>
     </v-row>
   </v-form>
 </template>
 
 <script setup lang="ts">
   import type { ISiteIIS } from '@/models/SiteIISModel';
+  import SelectPerfilTerminal from '@/components/comum/SelectPerfilTerminal.vue';
 
   const site = defineModel<ISiteIIS>({ required: true });
 

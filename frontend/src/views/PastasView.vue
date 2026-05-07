@@ -790,7 +790,7 @@
         diretorio += `\\${pasta.subdiretorio}`;
 
       const comando = `cd ${diretorio}; ${pasta.cliComando}`;
-      ComandosService.executarComandoAvulso({ comando });
+      ComandosService.executarComandoAvulso({ comando, perfilTerminal: pasta.perfilTerminal });
       notificar('sucesso', `Abrindo ${pasta.cliComando}`);
     } catch (error) {
       notificar('erro', 'Falha ao abrir CLI', String(error));

@@ -11,7 +11,8 @@ public sealed record SiteIISRequestDTO(
     [Required] string Nome,
     [Required] string PastaRaiz,
     List<PastaDeployDTO> Pastas,
-    List<string> PoolsAplicacao
+    List<string> PoolsAplicacao,
+    string? PerfilTerminalAdmin = null
 );
 
 /// <summary>

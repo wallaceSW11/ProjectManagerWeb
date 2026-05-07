@@ -48,6 +48,7 @@ export interface IProjeto {
   identificadorRepositorioAgregado?: string;
   expandido: boolean;
   nomeIDE?: string | null; // Nome da IDE vindo do backend
+  perfilTerminal?: string | null;
   getComandosDisponiveis?(): Array<{ titulo: string; valor: string; ativo: boolean }>;
 }
 
@@ -65,6 +66,7 @@ export interface IRepositorio {
   perfilVSCode?: string | null;
   subdiretorio?: string | null;
   cliComando?: string | null;
+  perfilTerminal?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {
@@ -97,6 +99,7 @@ export interface IPasta {
   perfilVSCode?: string | null;
   subdiretorio?: string | null;
   cliComando?: string | null;
+  perfilTerminal?: string | null;
 }
 
 export interface IClone {
