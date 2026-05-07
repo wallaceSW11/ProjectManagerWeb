@@ -39,34 +39,36 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
-        _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO", perfilTerminal));
-
         try
         {
             ProcessStartInfo psi;
+            string executavel;
 
             if (!string.IsNullOrWhiteSpace(perfilTerminal))
             {
                 var encodedCommand = Convert.ToBase64String(
                     System.Text.Encoding.Unicode.GetBytes(command));
 
+                executavel = "wt.exe";
                 psi = new ProcessStartInfo
                 {
-                    FileName = "wt.exe",
+                    FileName = executavel,
                     Arguments = $"-w 0 new-tab -p \"{perfilTerminal}\" pwsh -NoExit -EncodedCommand {encodedCommand}",
                     UseShellExecute = true
                 };
             }
             else
             {
+                executavel = "pwsh.exe";
                 psi = new ProcessStartInfo
                 {
-                    FileName = "pwsh.exe",
+                    FileName = executavel,
                     Arguments = $"-NoExit -Command \"{command}\"",
                     UseShellExecute = true
                 };
             }
 
+            _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO", perfilTerminal, executavel));
             Process.Start(psi);
         }
         catch (Exception ex)
@@ -87,41 +89,41 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
-        // Log assíncrono sem bloquear
-        _ = Task.Run(() => LogComandoAsync(command, "ADMIN SOLICITADO", perfilTerminal));
-
         try
         {
             ProcessStartInfo psi;
+            string executavel;
 
             if (!string.IsNullOrWhiteSpace(perfilTerminal))
             {
                 var encodedCommand = Convert.ToBase64String(
                     System.Text.Encoding.Unicode.GetBytes(command));
 
+                executavel = "wt.exe";
                 psi = new ProcessStartInfo
                 {
-                    FileName = "wt.exe",
+                    FileName = executavel,
                     Arguments = $"-w 0 new-tab -p \"{perfilTerminal}\" pwsh -NoExit -EncodedCommand {encodedCommand}",
                     UseShellExecute = true
                 };
             }
             else
             {
+                executavel = "pwsh.exe";
                 psi = new ProcessStartInfo
                 {
-                    FileName = "pwsh.exe",
+                    FileName = executavel,
                     Arguments = $"-NoExit -Command \"{command}\"",
                     UseShellExecute = true,
                     Verb = "runas"
                 };
             }
 
+            _ = Task.Run(() => LogComandoAsync(command, "ADMIN SOLICITADO", perfilTerminal, executavel));
             Process.Start(psi);
         }
         catch (Exception ex)
         {
-            // Log de erro
             _ = Task.Run(() => LogComandoAsync(command, $"ADMIN ERRO: {ex.Message}", perfilTerminal));
             throw new Exception($"Erro ao executar o comando como administrador: {ex.Message}", ex);
         }
@@ -136,8 +138,7 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
-        // Log assíncrono sem bloquear
-        _ = Task.Run(() => LogComandoAsync(command));
+        _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO", executavel: "pwsh.exe (hidden)"));
 
         try
         {
@@ -157,19 +158,19 @@ public class ShellExecute
         }
         catch (Exception ex)
         {
-            // Log de erro
             _ = Task.Run(() => LogComandoAsync(command, $"ERRO: {ex.Message}"));
             throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
     }
 
-    private static async Task LogComandoAsync(string command, string status = "SOLICITADO", string? perfilTerminal = null)
+    private static async Task LogComandoAsync(string command, string status = "SOLICITADO", string? perfilTerminal = null, string? executavel = null)
     {
         try
         {
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            var exe = !string.IsNullOrWhiteSpace(executavel) ? $" [{executavel}]" : "";
             var perfil = !string.IsNullOrWhiteSpace(perfilTerminal) ? $" [Perfil: {perfilTerminal}]" : "";
-            var logEntry = $"[{timestamp}] {status}{perfil} - {command}{Environment.NewLine}";
+            var logEntry = $"[{timestamp}] {status}{exe}{perfil} - {command}{Environment.NewLine}";
             
             await File.AppendAllTextAsync(LogFilePath, logEntry);
         }

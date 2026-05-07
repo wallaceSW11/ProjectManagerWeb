@@ -6,11 +6,8 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: windows-latest
-    permissions:
-      contents: write
-
+  build-frontend:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +24,28 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: frontend/pnpm-lock.yaml
 
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 1
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build-frontend
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -39,33 +58,21 @@ jobs:
           key: nuget-${{ hashFiles('backend/**/*.csproj') }}
           restore-keys: nuget-
 
-      - name: Build frontend
-        working-directory: frontend
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm run build
-
-      - name: Copiar frontend para backend
-        shell: pwsh
-        run: |
-          xcopy frontend\dist\* backend\frontend /s /e /y /i
+      - name: Download frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: backend/frontend
 
       - name: Publicar backend
-        shell: pwsh
-        run: |
-          dotnet publish backend\ProjectManagerWeb.csproj -c Release -o publish
+        run: dotnet publish backend/ProjectManagerWeb.csproj -c Release -r win-x64 --self-contained false -o publish
 
       - name: Gerar versão
         id: versao
-        shell: pwsh
-        run: |
-          $versao = "v$(Get-Date -Format 'yyyy.MM.dd.HHmm')"
-          echo "VERSAO=$versao" >> $env:GITHUB_OUTPUT
+        run: echo "VERSAO=v$(date -u +'%Y.%m.%d.%H%M')" >> "$GITHUB_OUTPUT"
 
       - name: Compactar artefato
-        shell: pwsh
-        run: |
-          Compress-Archive -Path publish\* -DestinationPath PMW_${{ steps.versao.outputs.VERSAO }}.zip
+        run: cd publish && zip -r ../PMW_${{ steps.versao.outputs.VERSAO }}.zip .
 
       - name: Criar Release
         uses: softprops/action-gh-release@v2
