@@ -39,7 +39,7 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
-        _ = Task.Run(() => LogComandoAsync(command));
+        _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO", perfilTerminal));
 
         try
         {
@@ -71,7 +71,7 @@ public class ShellExecute
         }
         catch (Exception ex)
         {
-            _ = Task.Run(() => LogComandoAsync(command, $"ERRO: {ex.Message}"));
+            _ = Task.Run(() => LogComandoAsync(command, $"ERRO: {ex.Message}", perfilTerminal));
             throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
     }
@@ -88,7 +88,7 @@ public class ShellExecute
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
         // Log assíncrono sem bloquear
-        _ = Task.Run(() => LogComandoAsync(command, "ADMIN SOLICITADO"));
+        _ = Task.Run(() => LogComandoAsync(command, "ADMIN SOLICITADO", perfilTerminal));
 
         try
         {
@@ -122,7 +122,7 @@ public class ShellExecute
         catch (Exception ex)
         {
             // Log de erro
-            _ = Task.Run(() => LogComandoAsync(command, $"ADMIN ERRO: {ex.Message}"));
+            _ = Task.Run(() => LogComandoAsync(command, $"ADMIN ERRO: {ex.Message}", perfilTerminal));
             throw new Exception($"Erro ao executar o comando como administrador: {ex.Message}", ex);
         }
     }
@@ -141,10 +141,13 @@ public class ShellExecute
 
         try
         {
+            var encodedCommand = Convert.ToBase64String(
+                System.Text.Encoding.Unicode.GetBytes(command));
+
             var psi = new ProcessStartInfo
             {
                 FileName = "pwsh.exe",
-                Arguments = $"-WindowStyle Hidden -Command \"{command}\"",
+                Arguments = $"-WindowStyle Hidden -EncodedCommand {encodedCommand}",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
@@ -160,12 +163,13 @@ public class ShellExecute
         }
     }
 
-    private static async Task LogComandoAsync(string command, string status = "SOLICITADO")
+    private static async Task LogComandoAsync(string command, string status = "SOLICITADO", string? perfilTerminal = null)
     {
         try
         {
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            var logEntry = $"[{timestamp}] {status} - {command}{Environment.NewLine}";
+            var perfil = !string.IsNullOrWhiteSpace(perfilTerminal) ? $" [Perfil: {perfilTerminal}]" : "";
+            var logEntry = $"[{timestamp}] {status}{perfil} - {command}{Environment.NewLine}";
             
             await File.AppendAllTextAsync(LogFilePath, logEntry);
         }

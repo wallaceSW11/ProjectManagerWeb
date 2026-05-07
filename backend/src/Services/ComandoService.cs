@@ -241,16 +241,18 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
   {
     var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");
 
-    var texto = $"{ide.ComandoParaExecutar} .";
+    var alvo = ObterAlvoIDE(request.Diretorio);
+
+    var texto = $"{ide.ComandoParaExecutar} {alvo}";
 
     if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(request.PerfilVSCode))
-      texto = $"{ide.ComandoParaExecutar} --profile \"{request.PerfilVSCode}\" .";
+      texto = $"{ide.ComandoParaExecutar} --profile \"{request.PerfilVSCode}\" {alvo}";
 
     var comando = $"cd {request.Diretorio}; {texto}; Exit;";
 
     try
     {
-      ShellExecute.ExecutarComando(comando);
+      ShellExecute.ExecutarComandoSemInterface(comando);
     }
     catch
     {
@@ -258,5 +260,17 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     }
 
     return true;
+  }
+
+  private static string ObterAlvoIDE(string diretorio)
+  {
+    if (Directory.Exists(diretorio))
+    {
+      var workspace = Directory.GetFiles(diretorio, "*.code-workspace").FirstOrDefault();
+      if (workspace != null)
+        return $"\"{workspace}\"";
+    }
+
+    return ".";
   }
 }
