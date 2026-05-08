@@ -28,7 +28,8 @@ namespace ProjectManagerWeb.src.DTOs
         int Indice = 0,
         string? Subdiretorio = null,
         string? CliComando = null,
-        string? PerfilTerminal = null
+        string? PerfilTerminal = null,
+        bool AbrirWorkspace = true
     );
 
     /// <summary>

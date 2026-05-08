@@ -81,6 +81,7 @@ namespace ProjectManagerWeb.src.Services
                 await ExecutarMigration("001_AddIDEs", Migration_001_AddIDEs);
                 await ExecutarMigration("002_MigrateProgramDataToUserProfile", Migration_002_MigrateProgramDataToUserProfile);
                 await ExecutarMigration("003_AddDefaultCLIs", Migration_003_AddDefaultCLIs);
+                await ExecutarMigration("004_AddAbrirWorkspace", Migration_004_AddAbrirWorkspace);
 
                 _logger.LogInformation("Todas as migrations foram verificadas");
             }
@@ -299,6 +300,22 @@ namespace ProjectManagerWeb.src.Services
             await _configuracaoService.SalvarConfiguracaoAsync(configuracao with { CLIs = clisAtualizadas });
 
             _logger.LogInformation($"Migration 003: {adicionados.Count} CLI(s) adicionada(s)");
+        }
+
+        public async Task Migration_004_AddAbrirWorkspace()
+        {
+            var repositorios = await _repositorioService.GetAllAsync();
+
+            foreach (var repo in repositorios)
+            {
+                if (!repo.AbrirWorkspace)
+                {
+                    var atualizado = repo with { AbrirWorkspace = true };
+                    await _repositorioService.UpdateAsync(repo.Identificador, atualizado);
+                }
+            }
+
+            _logger.LogInformation("Migration 004: AbrirWorkspace=true adicionado aos repositórios existentes");
         }
 
         private static async Task<MigrationsDTO> LerMigrationsDoArquivoAsync(bool locked = false)

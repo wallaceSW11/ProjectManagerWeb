@@ -27,6 +27,7 @@ interface AbrirPastaIDE {
   diretorio: string;
   ideIdentificador: string;
   perfilVSCode?: string | null;
+  abrirWorkspace?: boolean;
 }
 
 class ComandosService extends BaseApiService {

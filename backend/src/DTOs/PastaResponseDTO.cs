@@ -21,7 +21,8 @@ public sealed record PastaResponseDTO(
     string? NomeIDE = null,
     string? Subdiretorio = null,
     string? CliComando = null,
-    string? PerfilTerminal = null
+    string? PerfilTerminal = null,
+    bool AbrirWorkspace = true
 );
 
 public sealed record ProjetoDisponivelDTO(

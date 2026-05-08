@@ -768,6 +768,7 @@
           diretorio: diretorioCompleto,
           ideIdentificador: pasta.ideIdentificador!,
           perfilVSCode: pasta.perfilVSCode,
+          abrirWorkspace: pasta.abrirWorkspace,
         });
       });
 
