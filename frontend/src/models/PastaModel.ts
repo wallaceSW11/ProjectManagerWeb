@@ -21,6 +21,7 @@ export default class PastaModel implements IPasta {
   subdiretorio?: string | null;
   cliComando?: string | null;
   perfilTerminal?: string | null;
+  abrirWorkspace: boolean;
 
   constructor(obj: Partial<IPasta> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -42,5 +43,6 @@ export default class PastaModel implements IPasta {
     this.subdiretorio = obj.subdiretorio || null;
     this.cliComando = obj.cliComando || null;
     this.perfilTerminal = obj.perfilTerminal || null;
+    this.abrirWorkspace = obj.abrirWorkspace !== undefined ? obj.abrirWorkspace : true;
   }
 }
