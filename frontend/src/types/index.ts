@@ -67,6 +67,7 @@ export interface IRepositorio {
   subdiretorio?: string | null;
   cliComando?: string | null;
   perfilTerminal?: string | null;
+  abrirWorkspace?: boolean;
 }
 
 export interface IPerfilMarcacaoProjeto {
@@ -100,6 +101,7 @@ export interface IPasta {
   subdiretorio?: string | null;
   cliComando?: string | null;
   perfilTerminal?: string | null;
+  abrirWorkspace?: boolean;
 }
 
 export interface IClone {

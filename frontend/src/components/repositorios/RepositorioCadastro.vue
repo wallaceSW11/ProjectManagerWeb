@@ -63,6 +63,16 @@
       </v-col>
 
       <v-col cols="12">
+        <v-checkbox
+          v-model="repositorio.abrirWorkspace"
+          label="Abrir workspace"
+          hint="Se marcado, abre o arquivo .code-workspace quando existir no diretório"
+          persistent-hint
+          hide-details="auto"
+        />
+      </v-col>
+
+      <v-col cols="12">
         <v-select
           :items="configuracaoStore.perfisVSCode"
           label="Perfil da IDE"

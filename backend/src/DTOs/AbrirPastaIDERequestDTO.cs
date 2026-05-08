@@ -3,5 +3,6 @@ namespace ProjectManagerWeb.src.DTOs;
 public sealed record AbrirPastaIDERequestDTO(
   string Diretorio,
   Guid IDEIdentificador,
-  string? PerfilVSCode = null
+  string? PerfilVSCode = null,
+  bool AbrirWorkspace = true
 );

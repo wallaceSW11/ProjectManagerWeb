@@ -171,7 +171,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           : null,
         repositorio.Subdiretorio,
         repositorio.CliComando,
-        repositorio.PerfilTerminal
+        repositorio.PerfilTerminal,
+        repositorio.AbrirWorkspace
       );
 
       pastaResponseList.Add(pastaResponse);

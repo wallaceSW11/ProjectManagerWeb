@@ -18,6 +18,7 @@ export default class RepositorioModel implements IRepositorio {
   subdiretorio?: string | null;
   cliComando?: string | null;
   perfilTerminal?: string | null;
+  abrirWorkspace: boolean;
 
   constructor(obj: Partial<IRepositorio> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -36,6 +37,7 @@ export default class RepositorioModel implements IRepositorio {
     this.subdiretorio = obj.subdiretorio || null;
     this.cliComando = obj.cliComando || null;
     this.perfilTerminal = obj.perfilTerminal || null;
+    this.abrirWorkspace = obj.abrirWorkspace !== undefined ? obj.abrirWorkspace : true;
   }
 
   toDTO() {
@@ -53,7 +55,8 @@ export default class RepositorioModel implements IRepositorio {
       perfilVSCode: this.perfilVSCode,
       subdiretorio: this.subdiretorio,
       cliComando: this.cliComando,
-      perfilTerminal: this.perfilTerminal
+      perfilTerminal: this.perfilTerminal,
+      abrirWorkspace: this.abrirWorkspace
     };
   }
 }

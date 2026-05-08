@@ -241,7 +241,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
   {
     var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");
 
-    var alvo = ObterAlvoIDE(request.Diretorio);
+    var alvo = ObterAlvoIDE(request.Diretorio, request.AbrirWorkspace);
 
     var texto = $"{ide.ComandoParaExecutar} {alvo}";
 
@@ -262,9 +262,9 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     return true;
   }
 
-  private static string ObterAlvoIDE(string diretorio)
+  private static string ObterAlvoIDE(string diretorio, bool abrirWorkspace)
   {
-    if (Directory.Exists(diretorio))
+    if (abrirWorkspace && Directory.Exists(diretorio))
     {
       var workspace = Directory.GetFiles(diretorio, "*.code-workspace").FirstOrDefault();
       if (workspace != null)
