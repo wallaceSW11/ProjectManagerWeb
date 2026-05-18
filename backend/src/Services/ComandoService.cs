@@ -242,11 +242,12 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");
 
     var alvo = ObterAlvoIDE(request.Diretorio, request.AbrirWorkspace);
+    var comandoBase = alvo == "." ? ide.ComandoParaExecutar : ide.ComandoParaExecutar.TrimEnd(' ', '.');
 
-    var texto = $"{ide.ComandoParaExecutar} {alvo}";
+    var texto = $"{comandoBase} {alvo}";
 
     if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(request.PerfilVSCode))
-      texto = $"{ide.ComandoParaExecutar} --profile \"{request.PerfilVSCode}\" {alvo}";
+      texto = $"{comandoBase} --profile \"{request.PerfilVSCode}\" {alvo}";
 
     var comando = $"cd {request.Diretorio}; {texto}; Exit;";
 
