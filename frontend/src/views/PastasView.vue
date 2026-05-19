@@ -863,9 +863,13 @@
       if (pasta.subdiretorio)
         diretorio += `\\${pasta.subdiretorio}`;
 
-      const comando = `cd ${diretorio}; ${pasta.cliComando}`;
+      const comandoCli = pasta.cliComandoComplementar
+        ? `${pasta.cliComando} ${pasta.cliComandoComplementar}`
+        : pasta.cliComando;
+
+      const comando = `cd ${diretorio}; ${comandoCli}`;
       ComandosService.executarComandoAvulso({ comando, perfilTerminal: pasta.perfilTerminal });
-      notificar('sucesso', `Abrindo ${pasta.cliComando}`);
+      notificar('sucesso', `Abrindo ${comandoCli}`);
     } catch (error) {
       notificar('erro', 'Falha ao abrir CLI', String(error));
     }
