@@ -22,7 +22,9 @@ public sealed record PastaResponseDTO(
     string? Subdiretorio = null,
     string? CliComando = null,
     string? PerfilTerminal = null,
-    bool AbrirWorkspace = true
+    bool AbrirWorkspace = true,
+    bool Fixada = false,
+    int OrdemFixada = 0
 );
 
 public sealed record ProjetoDisponivelDTO(

@@ -9,5 +9,7 @@ public sealed record PastaCadastroRequestDTO(
     string Branch,
     string Git,
     Guid RepositorioId,
-    int? Indice = null
+    int? Indice = null,
+    bool Fixada = false,
+    int OrdemFixada = 0
 );

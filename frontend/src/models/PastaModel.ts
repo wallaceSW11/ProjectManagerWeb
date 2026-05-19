@@ -22,6 +22,8 @@ export default class PastaModel implements IPasta {
   cliComando?: string | null;
   perfilTerminal?: string | null;
   abrirWorkspace: boolean;
+  fixada: boolean;
+  ordemFixada: number;
 
   constructor(obj: Partial<IPasta> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -44,5 +46,7 @@ export default class PastaModel implements IPasta {
     this.cliComando = obj.cliComando || null;
     this.perfilTerminal = obj.perfilTerminal || null;
     this.abrirWorkspace = obj.abrirWorkspace !== undefined ? obj.abrirWorkspace : true;
+    this.fixada = obj.fixada || false;
+    this.ordemFixada = obj.ordemFixada || 0;
   }
 }

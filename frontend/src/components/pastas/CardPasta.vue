@@ -48,6 +48,12 @@
         </div>
 
         <div v-if="pasta.descricao">
+          <IconeComTooltip
+            :icone="pasta.fixada ? 'mdi-pin-off' : 'mdi-pin'"
+            :texto="pasta.fixada ? 'Desafixar' : 'Fixar'"
+            :acao="() => emit('toggleFixar', pasta)"
+            top
+          />
           <v-menu location="bottom" v-model="menuAberto">
             <template #activator="{ props }">
               <v-btn
@@ -156,6 +162,7 @@
     abrirKiroCli: [pasta: IPasta];
     ocultarPasta: [diretorio: string];
     excluirPasta: [diretorio: string];
+    toggleFixar: [pasta: IPasta];
   }>(); 
 
   const menuAberto = ref<boolean>(false);

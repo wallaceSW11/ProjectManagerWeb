@@ -102,6 +102,8 @@ export interface IPasta {
   cliComando?: string | null;
   perfilTerminal?: string | null;
   abrirWorkspace?: boolean;
+  fixada?: boolean;
+  ordemFixada?: number;
 }
 
 export interface IClone {

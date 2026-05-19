@@ -44,6 +44,18 @@ class PastasService extends BaseApiService {
   async excluir(diretorio: string): Promise<void> {
     return await this.delete('pastas', { data: { diretorio } });
   }
+
+  async fixar(identificador: string): Promise<void> {
+    return await this.put(`pastas/${identificador}/fixar`, null);
+  }
+
+  async desfixar(identificador: string): Promise<void> {
+    return await this.put(`pastas/${identificador}/desfixar`, null);
+  }
+
+  async reordenarFixadas(indices: IndiceAtualizar[]): Promise<void> {
+    return await this.put('pastas/reordenar-fixadas', indices);
+  }
 }
 
 export default new PastasService();

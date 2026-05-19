@@ -17,17 +17,20 @@ namespace ProjectManagerWeb.src.Services
         private readonly IDEJsonService _ideService;
         private readonly RepositorioJsonService _repositorioService;
         private readonly ConfiguracaoService _configuracaoService;
+        private readonly PastaJsonService _pastaJsonService;
         private readonly ILogger<MigrationService> _logger;
 
         public MigrationService(
             IDEJsonService ideService,
             RepositorioJsonService repositorioService,
             ConfiguracaoService configuracaoService,
+            PastaJsonService pastaJsonService,
             ILogger<MigrationService> logger)
         {
             _ideService = ideService;
             _repositorioService = repositorioService;
             _configuracaoService = configuracaoService;
+            _pastaJsonService = pastaJsonService;
             _logger = logger;
 
             if (!Directory.Exists(BasePath))
@@ -82,6 +85,7 @@ namespace ProjectManagerWeb.src.Services
                 await ExecutarMigration("002_MigrateProgramDataToUserProfile", Migration_002_MigrateProgramDataToUserProfile);
                 await ExecutarMigration("003_AddDefaultCLIs", Migration_003_AddDefaultCLIs);
                 await ExecutarMigration("004_AddAbrirWorkspace", Migration_004_AddAbrirWorkspace);
+                await ExecutarMigration("005_AddPastaFixada", Migration_005_AddPastaFixada);
 
                 _logger.LogInformation("Todas as migrations foram verificadas");
             }
@@ -316,6 +320,19 @@ namespace ProjectManagerWeb.src.Services
             }
 
             _logger.LogInformation("Migration 004: AbrirWorkspace=true adicionado aos repositórios existentes");
+        }
+
+        public async Task Migration_005_AddPastaFixada()
+        {
+            var pastas = await _pastaJsonService.GetAllAsync();
+
+            foreach (var pasta in pastas)
+            {
+                var atualizada = pasta with { Fixada = false, OrdemFixada = 0 };
+                await _pastaJsonService.UpdateAsync(pasta.Diretorio, atualizada);
+            }
+
+            _logger.LogInformation("Migration 005: Campos Fixada e OrdemFixada adicionados às pastas existentes");
         }
 
         private static async Task<MigrationsDTO> LerMigrationsDoArquivoAsync(bool locked = false)

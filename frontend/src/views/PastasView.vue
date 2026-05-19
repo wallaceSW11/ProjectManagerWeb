@@ -85,7 +85,37 @@
 
           <div v-else>
             <draggable
-              v-model="pastasExibidas"
+              v-if="pastasFixadas.length > 0"
+              v-model="pastasFixadas"
+              item-key="diretorio"
+              :animation="200"
+              group="pastas-fixadas"
+              class="drag-area"
+              @end="atualizarOrdemFixadas"
+            >
+              <template #item="{ element }">
+                <CardPasta
+                  :pasta="element"
+                  :pasta-selecionada="pastaSelecionada"
+                  :cor="element.cor"
+                  @selecionarPasta="selecionarPasta"
+                  @exibir-cadastro-pasta="exibirCadastroPasta"
+                  @executar-menu="executarMenu"
+                  @executar-menus-multiplos="executarMenusMultiplos"
+                  @abrirDiretorio="abrirDiretorio"
+                  @abrirNaIDE="abrirPastaNaIDE"
+                  @abrirKiroCli="abrirPastaKiroCli"
+                  @ocultar-pasta="ocultarPasta"
+                  @excluir-pasta="excluirPasta"
+                  @toggle-fixar="toggleFixarPasta"
+                />
+              </template>
+            </draggable>
+
+            <v-divider v-if="pastasFixadas.length > 0" class="my-2 mx-2" />
+
+            <draggable
+              v-model="pastasNaoFixadas"
               item-key="diretorio"
               :animation="200"
               group="pastas"
@@ -107,6 +137,7 @@
                   @abrirKiroCli="abrirPastaKiroCli"
                   @ocultar-pasta="ocultarPasta"
                   @excluir-pasta="excluirPasta"
+                  @toggle-fixar="toggleFixarPasta"
                 />
               </template>
             </draggable>
@@ -337,19 +368,35 @@
     }
   };
 
-  const pastasExibidas = computed({
+  const pastasFixadas = computed({
     get: () => {
-      if (!termoPesquisa.value) return pastas.value;
+      return pastas.value
+        .filter((p: IPasta) => p.fixada)
+        .sort((a: IPasta, b: IPasta) => (a.ordemFixada || 0) - (b.ordemFixada || 0));
+    },
+    set: (valor: IPasta[]) => {
+      valor.forEach((p, index) => {
+        const pasta = pastas.value.find((x: IPasta) => x.diretorio === p.diretorio);
+        if (pasta) (pasta as any).ordemFixada = index;
+      });
+    },
+  });
+
+  const pastasNaoFixadas = computed({
+    get: () => {
+      const naoFixadas = pastas.value.filter((p: IPasta) => !p.fixada);
+      if (!termoPesquisa.value) return naoFixadas;
 
       const termo = termoPesquisa.value.toLowerCase();
-      return pastas.value.filter(
+      return naoFixadas.filter(
         (p: IPasta) =>
           p.codigo?.toLowerCase().includes(termo) ||
           p.descricao?.toLowerCase().includes(termo)
       );
     },
     set: (valor: IPasta[]) => {
-      pastas.value = valor;
+      const fixadas = pastas.value.filter((p: IPasta) => p.fixada);
+      pastas.value = [...fixadas, ...valor];
     },
   });
 
@@ -651,7 +698,7 @@
   const atualizarIndicesPastas = async (): Promise<void> => {
     try {
       await PastasService.atualizarIndices(
-        pastas.value
+        pastasNaoFixadas.value
           .filter((p: IPasta) => p.identificador)
           .map((p: IPasta, index: number) => ({
             identificador: p.identificador,
@@ -661,6 +708,32 @@
     } catch (error) {
       console.error('Falha ao atualizar a ordem das pastas: ', error);
       notificar('erro', 'Falha ao atualizar a ordem das pastas');
+    }
+  };
+
+  const toggleFixarPasta = async (pasta: IPasta): Promise<void> => {
+    try {
+      if (pasta.fixada) {
+        await PastasService.desfixar(pasta.identificador);
+      } else {
+        await PastasService.fixar(pasta.identificador);
+      }
+      await carregarPastas();
+    } catch (error) {
+      notificar('erro', 'Falha ao fixar/desafixar pasta');
+    }
+  };
+
+  const atualizarOrdemFixadas = async (): Promise<void> => {
+    try {
+      await PastasService.reordenarFixadas(
+        pastasFixadas.value.map((p: IPasta, index: number) => ({
+          identificador: p.identificador,
+          indice: index,
+        }))
+      );
+    } catch (error) {
+      notificar('erro', 'Falha ao reordenar pastas fixadas');
     }
   };
 
