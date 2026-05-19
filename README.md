@@ -1,99 +1,76 @@
+# ProjectManagerWeb (PMW)
 
-# ProjectManagerWeb
-
-**Gerenciador de projetos web desenvolvido em Vue 3 (frontend) e .NET 9 (backend).**
-
----
-
-## ⚠️ Atenção
-
-Este projeto foi feito no modo *“go horse” / “vibe coding”* — ou seja: foi entregue rápido para atender a necessidade, sem seguir 100% das boas práticas de um dev sênior. Funciona bem, mas pode (e deve) ser evoluído. 🚀
+**Ferramenta desktop-web para gerenciar repositórios Git, pastas de projetos, IDEs e deploy no IIS.**  
+Roda localmente na máquina do desenvolvedor — sem autenticação, sem banco relacional.
 
 ---
 
-## 📦 Tecnologias usadas
+## 📦 Stack
 
-- **Frontend:** Vue 3  
-  - Framework UI: **Vuetify**  
-  - Gerenciamento de estado: **Pinia**  
+| Camada | Tecnologia |
+|--------|-----------|
+| Frontend | Vue 3 + TypeScript + Vuetify 3 + Pinia + Vue Router + Axios + Vite |
+| Backend | .NET 9 + ASP.NET Core |
+| Persistência | Arquivos JSON em `%APPDATA%\PMW\Banco\` |
+| Package Manager | pnpm |
+| Infra | IIS local via `dotnet publish` |
 
-- **Backend:** .NET 9  
-- Integração: backend serve o build do frontend (`dist`) em produção  
+---
+
+## 🚀 Funcionalidades
+
+- **Pastas** — listagem automática do diretório raiz, com fixação no topo, reordenação drag-and-drop, ocultação e exclusão
+- **Repositórios** — CRUD completo com projetos, menus de contexto, perfis de marcação e agregados
+- **Execução de comandos** — instalar, iniciar, buildar múltiplos projetos com um clique
+- **IDEs** — configuração de IDEs (VS Code, Kiro, Delphi) com abertura direta da pasta
+- **CLI de IA** — abertura de terminais com CLI configurável (Kiro CLI, Claude Code) + comando complementar por repositório
+- **Sites IIS** — CRUD de sites, controle start/stop/restart, deploy automatizado
+- **Configuração global** — diretório raiz, perfis VSCode, CLIs disponíveis, diretórios ocultos
 
 ---
 
 ## 🛠️ Como rodar localmente (dev)
 
-1. Clone o repositório  
-   ```bash
-   git clone https://github.com/wallaceSW11/ProjectManagerWeb.git
-   ```
+```bash
+# Clone
+git clone https://github.com/wallaceSW11/ProjectManagerWeb.git
+cd ProjectManagerWeb
 
-2. Entre na pasta do projeto  
-   ```bash
-   cd ProjectManagerWeb
-   ```
+# Frontend (porta 5173)
+cd frontend
+pnpm install
+pnpm run dev
 
-3. Instale dependências do frontend  
-   ```bash
-   cd frontend
-   npm install
-   ```
+# Backend (porta 2024)
+cd ../backend
+dotnet restore
+dotnet run
+```
 
-4. Rode o frontend em modo dev (porta **5173**)  
-   ```bash
-   npm start
-   ```
-
-5. Inicie o backend (porta **2024**)  
-   ```bash
-   cd ../backend
-   dotnet restore
-   dotnet run
-   ```
-
-6. Acesse:  
-   - Frontend dev: [http://localhost:5173](http://localhost:5173)  
-   - Backend dev: [http://localhost:2024/api](http://localhost:2024/api)  
+Acesse: [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 📦 Build e produção
+## 📦 Build e publicação
 
-1. Gere o build do frontend  
-   ```bash
-   cd frontend
-   npm run build
-   ```
-
-2. O backend já está configurado para exportar o frontend gerado na pasta `dist`.  
-   Basta rodar o backend em ambiente produtivo que ele servirá o front junto.  
-
----
-
-## ⚙️ Publicação local (workflow interno)
-
-Para facilitar meu uso diário, configurei uma estrutura de publicação local em:  
-
-```
-C:\inetpub\wwwroot\PMW
+```bash
+# Build completo + publicação no IIS
+cd frontend
+pnpm run publish:all
 ```
 
-- No **frontend**, ao rodar:  
-  ```bash
-  npm run publish:all
-  ```  
-  o projeto é publicado diretamente na pasta acima.  
+Ou manualmente:
 
-- No **backend**, existe o arquivo `Iniciar_PMW.bat`.  
-  - Ele abre o backend usando a conta do usuário local, garantindo o acesso correto ao PowerShell.  
-  - Roda sem interface gráfica (fica em segundo plano no Gerenciador de Tarefas do Windows).  
+```bash
+# Frontend
+cd frontend
+pnpm run build
+pnpm run copy:to:backend
 
-- Além disso, há outros dois scripts `.bat` no backend:  
-  - Um responsável por atualizar o repositório (fazendo o `git clone`/`pull`),  
-  - Outro que executa novamente o processo de publicação.  
-
-👉 Com isso, consigo atualizar e rodar todo o ambiente local com poucos cliques, sem precisar abrir manualmente cada pasta e terminal.  
+# Backend
+cd ../backend
+dotnet publish ProjectManagerWeb.csproj -c Release -o C:\inetpub\wwwroot\PMW
+```
 
 ---
 
@@ -101,42 +78,87 @@ C:\inetpub\wwwroot\PMW
 
 ```
 ProjectManagerWeb/
-│
-├── frontend/             # Vue 3 + Vuetify + Pinia
+├── frontend/                # Vue 3 SPA
 │   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── dist/             # gerado após build/publish
+│   │   ├── views/           # PastasView, RepositoriosView, ConfiguracaoView, SitesIISView, IDEsView
+│   │   ├── components/      # Componentes organizados por domínio
+│   │   ├── stores/          # Pinia (Options API)
+│   │   ├── services/        # Camada de API (Axios)
+│   │   ├── models/          # Classes com constructor + toDTO()
+│   │   ├── types/           # Interfaces TypeScript
+│   │   └── composables/     # Composables reutilizáveis
+│   └── package.json
 │
-├── backend/              # .NET 9
-│   ├── Controllers/
-│   ├── Models/
-│   ├── Program.cs
-│   ├── Iniciar_PMW.bat
-│   └── (outros scripts e configs)
+├── backend/                 # .NET 9 Web API
+│   ├── src/
+│   │   ├── Controllers/     # Endpoints REST
+│   │   ├── Services/        # Lógica de negócio + JsonServices
+│   │   ├── DTOs/            # Records de request/response
+│   │   └── Utils/           # PathHelper, ShellExecute
+│   └── ProjectManagerWeb.csproj
 │
+├── .github/workflows/       # CI/CD (release.yml)
+├── Atualizar_PMW.ps1        # Script de atualização local
 └── README.md
 ```
 
 ---
 
-## 📖 Workflow de desenvolvimento
+## 🔄 CI/CD
 
-O processo adotado é simples e prático:  
+Pipeline em `.github/workflows/release.yml` — dispara em push para `main`:
 
-- Para cada **tarefa do sprint**, é feito um **clone separado do repositório**.  
-- A pasta recebe o nome da tarefa + breve descrição.  
-- Isso permite trabalhar de forma isolada em cada demanda, sem poluir o código principal.  
-- Ao final, as alterações podem ser integradas ou apenas servir como base de referência para aquela tarefa.  
+1. Build frontend (`pnpm install --frozen-lockfile` + `pnpm run build`)
+2. Copia `dist/` para `backend/frontend/`
+3. `dotnet publish` → pasta `publish/`
+4. Compacta em `PMW_vYYYY.MM.DD.HHmm.zip`
+5. Cria GitHub Release com artefato
+
+Atualização local: `Atualizar_PMW.ps1` baixa o último release, para o processo, extrai e reinicia.
 
 ---
 
-## ⚡ Automação para subir múltiplos projetos
+## ⚡ Workflow de uso
 
-Uma das grandes facilidades do sistema é que, **após uma configuração inicial**, você pode iniciar **3 ou mais projetos com apenas alguns cliques**.  
+1. Configure o **diretório raiz** (onde ficam as pastas de trabalho)
+2. Cadastre **repositórios** com seus projetos e comandos
+3. Faça **clone** de repositórios direto pela interface
+4. Na tela principal, selecione uma pasta → marque os projetos → **Executar**
+5. Múltiplos projetos sobem com um clique (instalar + iniciar + buildar)
 
-- No app, você configura cada repositório indicando quais projetos existem e como rodar cada um (ex: `npm start`, `dotnet run`).  
-- Na tela, basta marcar os projetos que deseja levantar e confirmar.  
-- O backend cuida de disparar os comandos via **PowerShell**, eliminando a necessidade de abrir várias pastas e terminais manualmente.  
+---
 
-👉 Assim, ao invés de navegar pasta por pasta e rodar os comandos, você seleciona os projetos no painel e deixa o sistema cuidar da execução.
+## 📋 Versão atual — Features recentes
+
+- ✅ Pastas fixadas (pin no topo com reordenação independente)
+- ✅ Comando complementar da CLI (ex: `chat --agent "delphi-dev"`)
+- ✅ Aba IDE/Terminal no cadastro de repositório
+- ✅ Perfil do Windows Terminal configurável
+- ✅ Abrir workspace (.code-workspace)
+- ✅ Perfis de marcação (seleção rápida de comandos)
+- ✅ Menus de contexto com execução múltipla
+
+---
+
+## 🎯 Versão 2 — Planejamento
+
+> Layout mais bonito e moderno. Ideias e decisões a definir:
+
+- [ ] Redesign da tela principal (cards, cores, tipografia)
+- [ ] Tema claro/escuro refinado
+- [ ] Dashboard com visão geral (projetos ativos, últimos comandos)
+- [ ] Animações e transições
+- [ ] Responsividade (mesmo sendo desktop, melhorar em diferentes resoluções)
+- [ ] Ícones e identidade visual própria
+- [ ] _Outras ideias..._
+
+---
+
+## 📖 Convenções
+
+- Código em inglês, UI em pt-br
+- Sem AutoMapper, sem EF, sem banco relacional
+- Camadas: Controller → Service → JsonService → JSON
+- Frontend: Component → Store → Service → API
+- Models com `constructor(Partial<I>)` + `toDTO()`
+- Commits: `tipo(escopo): descrição em pt-br`
