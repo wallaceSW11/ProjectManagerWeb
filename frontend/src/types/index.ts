@@ -68,6 +68,7 @@ export interface IRepositorio {
   cliComando?: string | null;
   perfilTerminal?: string | null;
   abrirWorkspace?: boolean;
+  cliComandoComplementar?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {
@@ -102,6 +103,9 @@ export interface IPasta {
   cliComando?: string | null;
   perfilTerminal?: string | null;
   abrirWorkspace?: boolean;
+  fixada?: boolean;
+  ordemFixada?: number;
+  cliComandoComplementar?: string | null;
 }
 
 export interface IClone {

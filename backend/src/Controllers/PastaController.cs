@@ -60,6 +60,44 @@ public class PastaController(PastaService pastaService, ConfiguracaoService conf
     return Ok(ocultas);
   }
 
+  [HttpPut("{identificador:guid}/fixar")]
+  public async Task<IActionResult> Fixar(Guid identificador)
+  {
+    try
+    {
+      await pastaService.FixarPasta(identificador);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return BadRequest(ex.Message);
+    }
+  }
+
+  [HttpPut("{identificador:guid}/desfixar")]
+  public async Task<IActionResult> Desfixar(Guid identificador)
+  {
+    try
+    {
+      await pastaService.DesfixarPasta(identificador);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return BadRequest(ex.Message);
+    }
+  }
+
+  [HttpPut("reordenar-fixadas")]
+  public async Task<IActionResult> ReordenarFixadas([FromBody] List<PastaIndiceRequestDTO> indices)
+  {
+    if (!ModelState.IsValid)
+      return BadRequest(ModelState);
+
+    await pastaService.ReordenarFixadas(indices);
+    return Ok();
+  }
+
   [HttpPost("ocultar")]
   public async Task<IActionResult> Ocultar([FromBody] DiretorioRequestDTO request)
   {

@@ -37,6 +37,7 @@
             <v-tabs-window-item>
               <v-tabs v-model="paginaCadastro">
                 <v-tab>Geral</v-tab>
+                <v-tab>IDE / Terminal</v-tab>
                 <v-tab>Projetos</v-tab>
                 <v-tab>Menu de contexo</v-tab>
                 <v-tab>Perfis de Marcação</v-tab>
@@ -47,6 +48,12 @@
                   <RepositorioCadastro
                     v-model="repositorioSelecionado"
                     :repositorios="repositorios"
+                    class="pt-4"
+                  />
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <IDETerminalCadastro
+                    v-model="repositorioSelecionado"
                     class="pt-4"
                   />
                 </v-tabs-window-item>
@@ -100,6 +107,7 @@
   import type { IRepositorio } from '@/types';
   import ListaRepositorios from '../components/repositorios/ListaRepositorios.vue';
   import RepositorioCadastro from '../components/repositorios/RepositorioCadastro.vue';
+  import IDETerminalCadastro from '../components/repositorios/IDETerminalCadastro.vue';
   import RepositorioModel from '../models/RepositorioModel';
   import RepositoriosService from '../services/RepositoriosService';
   import MenuCadastro from '@/components/repositorios/MenuCadastro.vue';

@@ -29,7 +29,8 @@ namespace ProjectManagerWeb.src.DTOs
         string? Subdiretorio = null,
         string? CliComando = null,
         string? PerfilTerminal = null,
-        bool AbrirWorkspace = true
+        bool AbrirWorkspace = true,
+        string? CliComandoComplementar = null
     );
 
     /// <summary>

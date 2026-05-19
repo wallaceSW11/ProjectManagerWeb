@@ -172,7 +172,10 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.Subdiretorio,
         repositorio.CliComando,
         repositorio.PerfilTerminal,
-        repositorio.AbrirWorkspace
+        repositorio.AbrirWorkspace,
+        pasta.Fixada,
+        pasta.OrdemFixada,
+        repositorio.CliComandoComplementar
       );
 
       pastaResponseList.Add(pastaResponse);
@@ -277,6 +280,42 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
     }
 
     throw new Exception($"Projeto não encontrado com o identificador {projetoId}");
+  }
+
+  public async Task FixarPasta(Guid identificador)
+  {
+    var pastas = await pastaJsonService.GetAllAsync();
+    var pasta = pastas.FirstOrDefault(p => p.Identificador == identificador)
+      ?? throw new Exception("Pasta não encontrada");
+
+    var maxOrdem = pastas.Where(p => p.Fixada).Select(p => p.OrdemFixada).DefaultIfEmpty(0).Max();
+    var pastaAtualizada = pasta with { Fixada = true, OrdemFixada = maxOrdem + 1 };
+    await pastaJsonService.UpdateAsync(pasta.Diretorio, pastaAtualizada);
+  }
+
+  public async Task DesfixarPasta(Guid identificador)
+  {
+    var pastas = await pastaJsonService.GetAllAsync();
+    var pasta = pastas.FirstOrDefault(p => p.Identificador == identificador)
+      ?? throw new Exception("Pasta não encontrada");
+
+    var pastaAtualizada = pasta with { Fixada = false, OrdemFixada = 0 };
+    await pastaJsonService.UpdateAsync(pasta.Diretorio, pastaAtualizada);
+  }
+
+  public async Task ReordenarFixadas(List<PastaIndiceRequestDTO> indices)
+  {
+    var pastas = await pastaJsonService.GetAllAsync();
+
+    foreach (var indice in indices)
+    {
+      var pasta = pastas.FirstOrDefault(p => p.Identificador == indice.Identificador);
+      if (pasta != null && pasta.Fixada)
+      {
+        var pastaAtualizada = pasta with { OrdemFixada = indice.Indice };
+        await pastaJsonService.UpdateAsync(pasta.Diretorio, pastaAtualizada);
+      }
+    }
   }
 
   private async Task LimparPastasInexistentes(List<PastaCadastroRequestDTO> pastasCadastradas, string[] pastasNoDisco)
