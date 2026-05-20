@@ -141,13 +141,10 @@
         </v-col>
 
         <v-col>
-          <div
-            class="d-flex flex-column ml-2"
-            style="height: calc(100dvh - 140px)"
-          >
+          <div class="ml-2" style="height: calc(100dvh - 140px)">
             <div
-              class="d-flex flex-grow-1 flex-column pr-2"
-              style="overflow: auto"
+              class="pr-2"
+              style="height: calc(100% - 48px); overflow-y: auto"
             >
               <div v-if="pastaSelecionada?.projetos.length === 0 && !ideDisponivel && !cliDisponivel">
                 Não há projetos disponíveis.
@@ -184,6 +181,8 @@
                           height="40px"
                           color="primary"
                           density="compact"
+                          append-icon="mdi-open-in-new"
+                          @click:append="abrirPastaNaIDE(pastaSelecionada as IPasta)"
                         />
                         <v-switch
                           v-if="cliDisponivel"
@@ -194,6 +193,8 @@
                           height="40px"
                           color="primary"
                           density="compact"
+                          append-icon="mdi-flash"
+                          @click:append="abrirPastaKiroCli(pastaSelecionada as IPasta)"
                         />
                       </div>
                     </v-expand-transition>
@@ -536,12 +537,16 @@
     Object.assign(pastaSelecionada, pastaComProjetosModels);
 
     const acoes = consultarAcoesSelecionadas();
+    const acaoPasta = acoes?.find((a: any) => a.diretorio === pasta.diretorio);
+
+    if (acaoPasta?.diretorioAcoes) {
+      diretorioAcoes.value = acaoPasta.diretorioAcoes;
+    }
 
     if (pastaSelecionada.projetos) {
       pastaSelecionada.projetos.forEach((projeto: any) => {
-        const comandos = acoes
-          ?.find((a: any) => a.diretorio === pasta.diretorio)
-          ?.projetos.find(
+        const comandos = acaoPasta
+          ?.projetos?.find(
             (p: any) => p.identificador === projeto.identificador
           )?.comandos;
 
@@ -612,14 +617,16 @@
   const CHAVE_ACOES_SELECIONADAS = 'AcoesSelecionadas';
 
   const salvarAcoesSelecionadas = (payload: PayloadComando): void => {
-    const salvarNoLocalStorage = (valor: PayloadComando[]): void => {
+    const payloadComDiretorioAcoes = { ...payload, diretorioAcoes: diretorioAcoes.value };
+
+    const salvarNoLocalStorage = (valor: any[]): void => {
       localStorage.setItem(CHAVE_ACOES_SELECIONADAS, JSON.stringify(valor));
     };
 
     let acoes = consultarAcoesSelecionadas();
 
     if (!acoes?.length) {
-      salvarNoLocalStorage([payload]);
+      salvarNoLocalStorage([payloadComDiretorioAcoes]);
       return;
     }
 
@@ -627,7 +634,7 @@
       (a: any) => a.diretorio === payload.diretorio
     );
 
-    indice === -1 ? acoes.push(payload) : acoes.splice(indice, 1, payload);
+    indice === -1 ? acoes.push(payloadComDiretorioAcoes) : acoes.splice(indice, 1, payloadComDiretorioAcoes);
 
     salvarNoLocalStorage(acoes);
   };
