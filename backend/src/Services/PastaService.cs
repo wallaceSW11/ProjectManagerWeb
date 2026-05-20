@@ -175,7 +175,10 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.AbrirWorkspace,
         pasta.Fixada,
         pasta.OrdemFixada,
-        repositorio.CliComandoComplementar
+        repositorio.CliComandoComplementar,
+        repositorio.CliComando != null
+          ? configuracao.CLIs?.FirstOrDefault(c => c.Comando.Equals(repositorio.CliComando, StringComparison.OrdinalIgnoreCase))?.Nome
+          : null
       );
 
       pastaResponseList.Add(pastaResponse);

@@ -121,20 +121,6 @@
         >
           <v-icon>mdi-folder</v-icon>
           <span @click="() => abrirDiretorio(pasta.diretorio)" class="link pl-1">{{ pasta.diretorio }}</span>
-          <IconeComTooltip
-            v-if="ideDisponivel"
-            icone="mdi-code-tags"
-            :texto="`Abrir no ${nomeIDE}`"
-            :acao="abrirNaIDE"
-            class="ml-2"
-          />
-          <IconeComTooltip
-            v-if="pasta.cliComando"
-            icone="mdi-console-line"
-            texto="Abrir CLI"
-            :acao="abrirKiroCli"
-            class="ml-1"
-          />
         </v-col>
       </v-row>
     </v-card-text>
@@ -158,8 +144,6 @@
     executarMenu: [pasta: IPasta, menuId: string];
     executarMenusMultiplos: [pasta: IPasta, menuIds: string[]];
     abrirDiretorio: [diretorio: string];
-    abrirNaIDE: [pasta: IPasta];
-    abrirKiroCli: [pasta: IPasta];
     ocultarPasta: [diretorio: string];
     excluirPasta: [diretorio: string];
     toggleFixar: [pasta: IPasta];
@@ -170,14 +154,6 @@
 
   const menusAtivos = computed(() => {
     return props.pasta.menus.filter(menu => menu.ativo);
-  });
-
-  const ideDisponivel = computed(() => {
-    return props.pasta.ideIdentificador;
-  });
-
-  const nomeIDE = computed(() => {
-    return props.pasta.nomeIDE || 'IDE';
   });
 
   const selecionarPasta = (pasta: IPasta): void => {
@@ -265,14 +241,6 @@
 
   const abrirDiretorio = (diretorio: string): void => {
     emit('abrirDiretorio', diretorio);
-  };
-
-  const abrirNaIDE = (): void => {
-    emit('abrirNaIDE', props.pasta);
-  };
-
-  const abrirKiroCli = (): void => {
-    emit('abrirKiroCli', props.pasta);
   };
 
   const obterIconeMenu = (tipo: string): string => {

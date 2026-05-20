@@ -54,6 +54,34 @@
         <h3 class="mb-2">Marcações</h3>
         <v-divider class="mb-3" />
 
+        <v-card
+          v-if="repositorio.ideIdentificador || repositorio.cliComando"
+          class="mb-2"
+          style="background-color: #2d2d30"
+        >
+          <v-card-title class="pb-0 text-body-1">Diretório</v-card-title>
+          <v-card-text class="pa-0 ml-4 pr-4">
+            <v-switch
+              v-if="repositorio.ideIdentificador"
+              label="Abrir na IDE"
+              v-model="perfilSelecionado.abrirIDE"
+              hide-details
+              height="40px"
+              color="primary"
+              density="compact"
+            />
+            <v-switch
+              v-if="repositorio.cliComando"
+              label="Abrir CLI"
+              v-model="perfilSelecionado.abrirCLI"
+              hide-details
+              height="40px"
+              color="primary"
+              density="compact"
+            />
+          </v-card-text>
+        </v-card>
+
         <div
           v-for="grupo in projetosComComandos"
           :key="grupo.projeto.identificador"

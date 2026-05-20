@@ -103,8 +103,6 @@
                   @executar-menu="executarMenu"
                   @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
-                  @abrirNaIDE="abrirPastaNaIDE"
-                  @abrirKiroCli="abrirPastaKiroCli"
                   @ocultar-pasta="ocultarPasta"
                   @excluir-pasta="excluirPasta"
                   @toggle-fixar="toggleFixarPasta"
@@ -133,8 +131,6 @@
                   @executar-menu="executarMenu"
                   @executar-menus-multiplos="executarMenusMultiplos"
                   @abrirDiretorio="abrirDiretorio"
-                  @abrirNaIDE="abrirPastaNaIDE"
-                  @abrirKiroCli="abrirPastaKiroCli"
                   @ocultar-pasta="ocultarPasta"
                   @excluir-pasta="excluirPasta"
                   @toggle-fixar="toggleFixarPasta"
@@ -153,12 +149,58 @@
               class="d-flex flex-grow-1 flex-column pr-2"
               style="overflow: auto"
             >
-              <div v-if="pastaSelecionada?.projetos.length === 0">
+              <div v-if="pastaSelecionada?.projetos.length === 0 && !ideDisponivel && !cliDisponivel">
                 Não há projetos disponíveis.
               </div>
 
+              <template v-else>
+                <v-card
+                  v-if="ideDisponivel || cliDisponivel"
+                  class="mb-2"
+                  style="background-color: #2d2d30"
+                >
+                  <v-card-title class="pb-0 d-flex align-center">
+                    <div class="d-flex flex-grow-1 align-center">
+                      <v-icon
+                        @click="diretorioExpandido = !diretorioExpandido"
+                        size="small"
+                        class="mr-2"
+                      >
+                        {{ diretorioExpandido ? 'mdi-chevron-down' : 'mdi-chevron-right' }}
+                      </v-icon>
+                      <span>Diretório</span>
+                    </div>
+                  </v-card-title>
+
+                  <v-card-text class="pa-0 ma-0 ml-4 pr-4">
+                    <v-expand-transition>
+                      <div v-if="diretorioExpandido">
+                        <v-switch
+                          v-if="ideDisponivel"
+                          :label="`Abrir no ${pastaSelecionada.nomeIDE || 'IDE'}`"
+                          v-model="diretorioAcoes"
+                          value="IDE"
+                          hide-details
+                          height="40px"
+                          color="primary"
+                          density="compact"
+                        />
+                        <v-switch
+                          v-if="cliDisponivel"
+                          :label="`Abrir no ${pastaSelecionada.nomeCli || 'CLI'}`"
+                          v-model="diretorioAcoes"
+                          value="CLI"
+                          hide-details
+                          height="40px"
+                          color="primary"
+                          density="compact"
+                        />
+                      </div>
+                    </v-expand-transition>
+                  </v-card-text>
+                </v-card>
+
               <div
-                v-else
                 v-for="projeto in pastaSelecionada.projetos"
                 :key="projeto.identificador"
               >
@@ -256,6 +298,7 @@
                   </v-card-text>
                 </v-card>
               </div>
+              </template>
             </div>
 
             <div class="d-flex shrink mt-1">
@@ -269,7 +312,7 @@
                     p =>
                       p.comandosSelecionados &&
                       p.comandosSelecionados.length > 0
-                  )
+                  ) && diretorioAcoes.length === 0
                 "
               >
                 <v-icon>mdi-lightning-bolt</v-icon>
@@ -338,6 +381,11 @@
   const configuracaoStore = useConfiguracaoStore();
   const repositorios = ref<IRepositorio[]>([]);
   const perfilSelecionadoId = ref<string | null>(null);
+  const diretorioExpandido = ref<boolean>(true);
+  const diretorioAcoes = ref<string[]>([]);
+
+  const ideDisponivel = computed(() => !!pastaSelecionada.ideIdentificador);
+  const cliDisponivel = computed(() => !!pastaSelecionada.cliComando);
 
   const perfisDisponiveis = computed((): IPerfilMarcacao[] => {
     if (!pastaSelecionada.repositorioId) return [];
@@ -350,6 +398,11 @@
 
     const perfil = perfisDisponiveis.value.find(p => p.identificador === identificadorPerfil);
     if (!perfil) return;
+
+    const acoes: string[] = [];
+    if (perfil.abrirIDE && ideDisponivel.value) acoes.push('IDE');
+    if (perfil.abrirCLI && cliDisponivel.value) acoes.push('CLI');
+    diretorioAcoes.value = acoes;
 
     pastaSelecionada.projetos.forEach((projeto: any) => {
       const marcacao = perfil.projetos.find(
@@ -473,6 +526,8 @@
   };
 
   const selecionarPasta = (pasta: IPasta): void => {
+    diretorioAcoes.value = [];
+
     // Garantir que a pasta selecionada tenha projetos como instâncias de ProjetoModel
     const pastaComProjetosModels = new PastaModel(pasta);
     pastaComProjetosModels.projetos =
@@ -515,24 +570,30 @@
   };
 
   const executarAcoes = async (): Promise<void> => {
+    // Executar ações do diretório (IDE/CLI)
+    if (diretorioAcoes.value.includes('IDE')) {
+      abrirPastaNaIDE(pastaSelecionada as IPasta);
+    }
+    if (diretorioAcoes.value.includes('CLI')) {
+      abrirPastaKiroCli(pastaSelecionada as IPasta);
+    }
+
+    const projetosComComandos = pastaSelecionada.projetos.filter(
+      (p: any) => p.comandosSelecionados && p.comandosSelecionados.length > 0
+    );
+
+    if (projetosComComandos.length === 0) return;
+
     const payload: PayloadComando = {
       diretorio: pastaSelecionada.diretorio,
       repositorioId: pastaSelecionada.repositorioId || '',
-      projetos: pastaSelecionada.projetos
-        .filter(
-          (p: any) =>
-            p.comandosSelecionados && p.comandosSelecionados.length > 0
-        )
-        .map((p: any) => {
-          return {
-            identificador: p.identificador,
-            nome: p.nome,
-            comandos: p.comandosSelecionados || [],
-            identificadorRepositorioAgregado:
-              p.identificadorRepositorioAgregado,
-            nomeRepositorio: p.nomeRepositorio,
-          };
-        }),
+      projetos: projetosComComandos.map((p: any) => ({
+        identificador: p.identificador,
+        nome: p.nome,
+        comandos: p.comandosSelecionados || [],
+        identificadorRepositorioAgregado: p.identificadorRepositorioAgregado,
+        nomeRepositorio: p.nomeRepositorio,
+      })),
     };
 
     try {

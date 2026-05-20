@@ -80,6 +80,8 @@ export interface IPerfilMarcacao {
   identificador: string;
   nome: string;
   projetos: IPerfilMarcacaoProjeto[];
+  abrirIDE: boolean;
+  abrirCLI: boolean;
 }
 
 export interface IPasta {
@@ -106,6 +108,7 @@ export interface IPasta {
   fixada?: boolean;
   ordemFixada?: number;
   cliComandoComplementar?: string | null;
+  nomeCli?: string | null;
 }
 
 export interface IClone {

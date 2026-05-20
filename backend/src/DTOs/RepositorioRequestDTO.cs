@@ -89,7 +89,9 @@ namespace ProjectManagerWeb.src.DTOs
     public sealed record PerfilMarcacaoDTO(
         Guid Identificador,
         string Nome,
-        List<PerfilMarcacaoProjetoDTO> Projetos
+        List<PerfilMarcacaoProjetoDTO> Projetos,
+        bool AbrirIDE = false,
+        bool AbrirCLI = false
     );
 
     public sealed record PerfilMarcacaoProjetoDTO(

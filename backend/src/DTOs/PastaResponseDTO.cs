@@ -25,7 +25,8 @@ public sealed record PastaResponseDTO(
     bool AbrirWorkspace = true,
     bool Fixada = false,
     int OrdemFixada = 0,
-    string? CliComandoComplementar = null
+    string? CliComandoComplementar = null,
+    string? NomeCli = null
 );
 
 public sealed record ProjetoDisponivelDTO(
