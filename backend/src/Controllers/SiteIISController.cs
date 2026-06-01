@@ -11,6 +11,9 @@ namespace ProjectManagerWeb.src.Controllers
         [HttpGet]
         public async Task<IActionResult> ConsultarTodos()
         {
+            if (!OperatingSystem.IsWindows())
+                return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
             var sites = await siteIISService.GetAllAsync();
             
             var response = sites.Select(s => new SiteIISDeployResponseDTO(
@@ -28,6 +31,9 @@ namespace ProjectManagerWeb.src.Controllers
         [HttpGet("{identificador:guid}")]
         public async Task<IActionResult> ConsultarPorId(Guid identificador)
         {
+            if (!OperatingSystem.IsWindows())
+                return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
             var site = await siteIISService.GetByIdAsync(identificador);
             
             if (site == null)
@@ -39,6 +45,9 @@ namespace ProjectManagerWeb.src.Controllers
         [HttpPost]
         public async Task<IActionResult> Cadastrar([FromBody] SiteIISRequestDTO site)
         {
+            if (!OperatingSystem.IsWindows())
+                return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
             if (site == null)
                 return BadRequest("O corpo da requisição não pode ser nulo.");
 
@@ -56,6 +65,9 @@ namespace ProjectManagerWeb.src.Controllers
         [HttpPut("{identificador:guid}")]
         public async Task<IActionResult> Atualizar(Guid identificador, [FromBody] SiteIISRequestDTO siteAtualizado)
         {
+            if (!OperatingSystem.IsWindows())
+                return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
             if (siteAtualizado == null)
                 return BadRequest("O corpo da requisição não pode ser nulo.");
 
@@ -70,6 +82,9 @@ namespace ProjectManagerWeb.src.Controllers
         [HttpDelete("{identificador:guid}")]
         public async Task<IActionResult> Excluir(Guid identificador)
         {
+            if (!OperatingSystem.IsWindows())
+                return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
             var sucesso = await siteIISService.DeleteAsync(identificador);
             
             if (!sucesso)
@@ -81,6 +96,9 @@ namespace ProjectManagerWeb.src.Controllers
         [HttpPost("{identificador:guid}/atualizar")]
         public async Task<IActionResult> AtualizarSite(Guid identificador)
         {
+            if (!OperatingSystem.IsWindows())
+                return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
             try
             {
                 var resultado = await deployService.AtualizarSiteAsync(identificador);

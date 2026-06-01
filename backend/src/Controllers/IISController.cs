@@ -18,6 +18,9 @@ public class IISController(IISService iisService) : ControllerBase
     [HttpGet("sites")]
     public async Task<IActionResult> ListarSites()
     {
+        if (!OperatingSystem.IsWindows())
+            return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
         try
         {
             var sites = await iisService.ListarSitesAsync();
@@ -37,6 +40,9 @@ public class IISController(IISService iisService) : ControllerBase
     [HttpPost("sites/{nomeSite}/iniciar")]
     public async Task<IActionResult> IniciarSite(string nomeSite)
     {
+        if (!OperatingSystem.IsWindows())
+            return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
         try
         {
             if (string.IsNullOrWhiteSpace(nomeSite))
@@ -63,6 +69,9 @@ public class IISController(IISService iisService) : ControllerBase
     [HttpPost("sites/{nomeSite}/parar")]
     public async Task<IActionResult> PararSite(string nomeSite)
     {
+        if (!OperatingSystem.IsWindows())
+            return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
         try
         {
             if (string.IsNullOrWhiteSpace(nomeSite))
@@ -89,6 +98,9 @@ public class IISController(IISService iisService) : ControllerBase
     [HttpPost("sites/{nomeSite}/reiniciar")]
     public async Task<IActionResult> ReiniciarSite(string nomeSite)
     {
+        if (!OperatingSystem.IsWindows())
+            return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
         try
         {
             if (string.IsNullOrWhiteSpace(nomeSite))
@@ -115,6 +127,9 @@ public class IISController(IISService iisService) : ControllerBase
     [HttpPost("sites/acao")]
     public async Task<IActionResult> ExecutarAcaoSite([FromBody] AcaoSiteIISRequestDTO request)
     {
+        if (!OperatingSystem.IsWindows())
+            return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
+
         try
         {
             if (!ModelState.IsValid)

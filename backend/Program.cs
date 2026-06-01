@@ -1,13 +1,12 @@
 using System.Text.Json.Serialization;
 using ProjectManagerWeb.src.Services;
+using ProjectManagerWeb.src.Utils;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
-    // Define a pasta do frontend como WebRoot
     WebRootPath = "frontend"
 });
 
-// Adiciona serviços
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
@@ -37,9 +36,15 @@ builder.Services.AddSingleton<IDEJsonService>();
 builder.Services.AddSingleton<MigrationService>();
 builder.Services.AddSingleton<TerminalService>();
 
+if (OperatingSystem.IsWindows())
+    builder.Services.AddSingleton<IShellProvider, WindowsShellProvider>();
+else
+    builder.Services.AddSingleton<IShellProvider, LinuxShellProvider>();
+
 var app = builder.Build();
 
-// Executar migrations antes de iniciar a aplicação
+ShellExecute.Configure(app.Services.GetRequiredService<IShellProvider>());
+
 try
 {
     var migrationService = app.Services.GetRequiredService<MigrationService>();
@@ -51,7 +56,6 @@ catch (Exception ex)
     logger.LogError(ex, "Erro ao executar migrations durante inicialização");
 }
 
-// Configura porta em execução standalone (não IIS)
 if (!app.Environment.IsDevelopment())
 {
     var porta = app.Configuration.GetValue<int>("Porta", 2025);
@@ -59,7 +63,6 @@ if (!app.Environment.IsDevelopment())
     app.Urls.Add($"http://*:{porta}");
 }
 
-// Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -67,36 +70,24 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
-
-// Serve arquivos estáticos (JS, CSS, assets)
 app.UseStaticFiles();
-
-// Rotas da API
 app.MapControllers();
 
-// Fallback para rotas do Vue
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value;
-
     if (path is null) return;
-
-    // Se for API, passa para o próximo middleware
     if (path.StartsWith("/api"))
     {
         await next();
         return;
     }
-
-    // Se existir arquivo físico correspondente, serve ele
     var filePath = Path.Combine(app.Environment.WebRootPath, path.TrimStart('/'));
     if (File.Exists(filePath))
     {
         await context.Response.SendFileAsync(filePath);
         return;
     }
-
-    // Qualquer outra rota cai no index.html (Vue Router)
     context.Response.ContentType = "text/html";
     await context.Response.SendFileAsync(Path.Combine(app.Environment.WebRootPath, "index.html"));
 });

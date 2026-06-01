@@ -4,11 +4,17 @@ namespace ProjectManagerWeb.src.DTOs;
 
 public sealed record ConfiguracaoRequestDTO
 (
-    string DiretorioRaiz = "C:\\tools\\git",
+    string? DiretorioRaiz = null,
     List<PerfilVSCodeRequestDTO>? PerfisVSCode = default,
     List<string>? DiretoriosOcultos = default,
     [property: JsonPropertyName("clis")] List<CliRequestDTO>? CLIs = default
-);
+)
+{
+    public string DiretorioRaizEfetivo => DiretorioRaiz
+        ?? (OperatingSystem.IsWindows()
+            ? @"C:\tools\git"
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "git"));
+}
 
 public sealed record PerfilVSCodeRequestDTO(
     string Nome

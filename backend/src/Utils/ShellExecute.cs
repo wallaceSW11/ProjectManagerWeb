@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace ProjectManagerWeb.src.Utils;
 
 public class ShellExecute
@@ -7,33 +5,22 @@ public class ShellExecute
     private static readonly string LogFilePath =
         Path.Combine(PathHelper.BancoPath, "comandos-executados.txt");
 
-    /// <summary>
-    /// Abre o PowerShell através do CMD para executar um comando Git, mantendo o console aberto.
-    /// </summary>
-    /// <param name="command">O comando a ser executado.</param>
-    /// <param name="perfilTerminal">Perfil do Windows Terminal (opcional).</param>
+    private static IShellProvider _provider = null!;
+
+    public static void Configure(IShellProvider provider) =>
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+
     public static void ExecutarComando(string command, string? perfilTerminal = null)
     {
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
-        // Verifica se o comando contém "Exit;" para decidir qual método usar
         if (command.Contains("Exit;", StringComparison.OrdinalIgnoreCase))
-        {
             ExecutarComandoSemInterface(command);
-        }
         else
-        {
             ExecutarComandoComInterface(command, perfilTerminal);
-        }
     }
 
-    /// <summary>
-    /// Executa um comando PowerShell com interface visível, mantendo o console aberto.
-    /// Se um perfil do Windows Terminal for informado, abre via wt.exe como nova aba.
-    /// </summary>
-    /// <param name="command">O comando a ser executado.</param>
-    /// <param name="perfilTerminal">Perfil do Windows Terminal (opcional).</param>
     public static void ExecutarComandoComInterface(string command, string? perfilTerminal = null)
     {
         if (string.IsNullOrWhiteSpace(command))
@@ -41,35 +28,8 @@ public class ShellExecute
 
         try
         {
-            ProcessStartInfo psi;
-            string executavel;
-
-            if (!string.IsNullOrWhiteSpace(perfilTerminal))
-            {
-                var encodedCommand = Convert.ToBase64String(
-                    System.Text.Encoding.Unicode.GetBytes(command));
-
-                executavel = "wt.exe";
-                psi = new ProcessStartInfo
-                {
-                    FileName = executavel,
-                    Arguments = $"-w 0 new-tab -p \"{perfilTerminal}\" pwsh -NoExit -EncodedCommand {encodedCommand}",
-                    UseShellExecute = true
-                };
-            }
-            else
-            {
-                executavel = "pwsh.exe";
-                psi = new ProcessStartInfo
-                {
-                    FileName = executavel,
-                    Arguments = $"-NoExit -Command \"{command}\"",
-                    UseShellExecute = true
-                };
-            }
-
-            _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO", perfilTerminal, executavel));
-            Process.Start(psi);
+            _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO", perfilTerminal));
+            _provider.ExecutarComInterface(command, perfilTerminal);
         }
         catch (Exception ex)
         {
@@ -78,12 +38,6 @@ public class ShellExecute
         }
     }
 
-    /// <summary>
-    /// Executa um comando PowerShell com privilégios de administrador, mantendo o console aberto.
-    /// Se um perfil do Windows Terminal for informado, abre via wt.exe (o perfil deve ter elevate=true).
-    /// </summary>
-    /// <param name="command">O comando a ser executado.</param>
-    /// <param name="perfilTerminal">Perfil do Windows Terminal com privilégio admin (opcional).</param>
     public static void ExecutarComandoComoAdministrador(string command, string? perfilTerminal = null)
     {
         if (string.IsNullOrWhiteSpace(command))
@@ -91,36 +45,8 @@ public class ShellExecute
 
         try
         {
-            ProcessStartInfo psi;
-            string executavel;
-
-            if (!string.IsNullOrWhiteSpace(perfilTerminal))
-            {
-                var encodedCommand = Convert.ToBase64String(
-                    System.Text.Encoding.Unicode.GetBytes(command));
-
-                executavel = "wt.exe";
-                psi = new ProcessStartInfo
-                {
-                    FileName = executavel,
-                    Arguments = $"-w 0 new-tab -p \"{perfilTerminal}\" pwsh -NoExit -EncodedCommand {encodedCommand}",
-                    UseShellExecute = true
-                };
-            }
-            else
-            {
-                executavel = "pwsh.exe";
-                psi = new ProcessStartInfo
-                {
-                    FileName = executavel,
-                    Arguments = $"-NoExit -Command \"{command}\"",
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };
-            }
-
-            _ = Task.Run(() => LogComandoAsync(command, "ADMIN SOLICITADO", perfilTerminal, executavel));
-            Process.Start(psi);
+            _ = Task.Run(() => LogComandoAsync(command, "ADMIN SOLICITADO", perfilTerminal));
+            _provider.ExecutarComoAdministrador(command, perfilTerminal);
         }
         catch (Exception ex)
         {
@@ -129,32 +55,15 @@ public class ShellExecute
         }
     }
 
-    /// <summary>
-    /// Executa um comando PowerShell sem interface visível (em background).
-    /// </summary>
-    /// <param name="command">O comando a ser executado.</param>
     public static void ExecutarComandoSemInterface(string command)
     {
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
-        _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO", executavel: "pwsh.exe (hidden)"));
-
         try
         {
-            var encodedCommand = Convert.ToBase64String(
-                System.Text.Encoding.Unicode.GetBytes(command));
-
-            var psi = new ProcessStartInfo
-            {
-                FileName = "pwsh.exe",
-                Arguments = $"-WindowStyle Hidden -EncodedCommand {encodedCommand}",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-
-            Process.Start(psi);
+            _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO"));
+            _provider.ExecutarSemInterface(command);
         }
         catch (Exception ex)
         {
@@ -163,20 +72,18 @@ public class ShellExecute
         }
     }
 
-    private static async Task LogComandoAsync(string command, string status = "SOLICITADO", string? perfilTerminal = null, string? executavel = null)
+    private static async Task LogComandoAsync(string command, string status = "SOLICITADO", string? perfilTerminal = null)
     {
         try
         {
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            var exe = !string.IsNullOrWhiteSpace(executavel) ? $" [{executavel}]" : "";
             var perfil = !string.IsNullOrWhiteSpace(perfilTerminal) ? $" [Perfil: {perfilTerminal}]" : "";
-            var logEntry = $"[{timestamp}] {status}{exe}{perfil} - {command}{Environment.NewLine}";
-            
+            var logEntry = $"[{timestamp}] {status}{perfil} - {command}{Environment.NewLine}";
+
             await File.AppendAllTextAsync(LogFilePath, logEntry);
         }
         catch
         {
-            // Ignora erros de log para não quebrar a funcionalidade principal
         }
     }
 }
