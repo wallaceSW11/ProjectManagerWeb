@@ -64,22 +64,32 @@ jobs:
           name: frontend-dist
           path: backend/frontend
 
-      - name: Publicar backend
-        run: dotnet publish backend/ProjectManagerWeb.csproj -c Release -r win-x64 --self-contained false -o publish
+      - name: Publicar Windows
+        run: dotnet publish backend/ProjectManagerWeb.csproj -c Release -r win-x64 --self-contained false -o publish-win
+
+      - name: Publicar Linux
+        run: dotnet publish backend/ProjectManagerWeb.csproj -c Release -r linux-x64 --self-contained false -o publish-linux
+
+      - name: Copiar infra para pacote Linux
+        run: cp -r infra publish-linux/
 
       - name: Gerar versão
         id: versao
         run: echo "VERSAO=v$(date -u +'%Y.%m.%d.%H%M')" >> "$GITHUB_OUTPUT"
 
-      - name: Compactar artefato
-        run: cd publish && zip -r ../PMW_${{ steps.versao.outputs.VERSAO }}.zip .
+      - name: Compactar artefatos
+        run: |
+          cd publish-win && zip -r ../PMW_Windows_${{ steps.versao.outputs.VERSAO }}.zip .
+          cd ../publish-linux && zip -r ../PMW_Linux_${{ steps.versao.outputs.VERSAO }}.zip .
 
       - name: Criar Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.versao.outputs.VERSAO }}
           name: PMW ${{ steps.versao.outputs.VERSAO }}
-          files: PMW_${{ steps.versao.outputs.VERSAO }}.zip
+          files: |
+            PMW_Windows_${{ steps.versao.outputs.VERSAO }}.zip
+            PMW_Linux_${{ steps.versao.outputs.VERSAO }}.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

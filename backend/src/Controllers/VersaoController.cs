@@ -17,4 +17,16 @@ public class VersaoController() : ControllerBase
         DateTime dataCompilacao = service.ObterDataCompilacao();
         return Ok(dataCompilacao.ToString("dd/MM/yyyy HH:mm:ss"));
     }
+
+    [HttpGet("features")]
+    public IActionResult Features()
+    {
+        return Ok(new
+        {
+            Iis = OperatingSystem.IsWindows(),
+            Deploy = OperatingSystem.IsWindows(),
+            TerminalProfiles = OperatingSystem.IsWindows(),
+            Os = OperatingSystem.IsWindows() ? "windows" : "linux"
+        });
+    }
 }

@@ -11,11 +11,13 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
     var comandos = new List<(string Comando, string? Perfil)>();
 
-    var diretorio = pasta.Diretorio + "\\" + repositorio.Nome + "\\";
+    var diretorio = Path.Combine(pasta.Diretorio, repositorio.Nome);
 
     foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null))
     {
       var projetoCadastrado = repositorio.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto não encontrado com o identificador {projeto.Identificador}");
+
+      var pathProjeto = Path.Combine(diretorio, projetoCadastrado.Subdiretorio ?? "");
 
       foreach (var comando in projeto.Comandos)
       {
@@ -23,20 +25,20 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
         {
           if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && projetoCadastrado.Comandos.Instalar.Contains("npm i"))
           {
-            if (Directory.Exists($"{diretorio}{projetoCadastrado.Subdiretorio}\\node_modules"))
-              comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
+            if (Directory.Exists(Path.Combine(pathProjeto, "node_modules")))
+              comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
             else
-              comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal));
+              comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal));
           }
           else
-            comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
+            comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
         }
 
         if (comando == ETipoComando.INSTALAR)
-          comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Instalar}; ", projetoCadastrado.PerfilTerminal));
+          comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; ", projetoCadastrado.PerfilTerminal));
 
         if (comando == ETipoComando.BUILDAR)
-          comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {projetoCadastrado.Comandos.Buildar}; ", projetoCadastrado.PerfilTerminal));
+          comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Buildar}; ", projetoCadastrado.PerfilTerminal));
 
         if (comando == ETipoComando.ABRIR_NA_IDE)
         {
@@ -50,7 +52,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
               if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
                 texto += $"--profile \"{projetoCadastrado.PerfilVSCode}\"";
 
-              comandos.Add(($"cd {diretorio}{projetoCadastrado.Subdiretorio}; {texto}; Exit;", null));
+              comandos.Add(($"cd \"{pathProjeto}\"; {texto}; Exit;", null));
             }
           }
         }
@@ -65,28 +67,30 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
       var projetoAgregadoCadastrado = repositorioAgregado.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto agregado não encontrado com o identificador {projeto.Identificador}");
 
-      var diretorioAgregado = diretorio.Replace(repositorio.Nome, repositorioAgregado.Nome) + "\\";
+      var diretorioAgregado = Path.Combine(pasta.Diretorio, repositorioAgregado.Nome);
 
       foreach (var comando in projeto.Comandos)
       {
+        var pathProjetoAgregado = Path.Combine(diretorioAgregado, projetoAgregadoCadastrado.Subdiretorio ?? "");
+
         if (comando == ETipoComando.INICIAR)
         {
           if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && projetoAgregadoCadastrado.Comandos.Instalar.Contains("npm i"))
           {
-            if (Directory.Exists($"{diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}\\node_modules"))
-              comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
+            if (Directory.Exists(Path.Combine(pathProjetoAgregado, "node_modules")))
+              comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
             else
-              comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal));
+              comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal));
           }
           else
-            comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
+            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
         }
 
         if (comando == ETipoComando.INSTALAR)
-          comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Instalar}; ", projetoAgregadoCadastrado.PerfilTerminal));
+          comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; ", projetoAgregadoCadastrado.PerfilTerminal));
 
         if (comando == ETipoComando.BUILDAR)
-          comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {projetoAgregadoCadastrado.Comandos.Buildar}; ", projetoAgregadoCadastrado.PerfilTerminal));
+          comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Buildar}; ", projetoAgregadoCadastrado.PerfilTerminal));
 
         if (comando == ETipoComando.ABRIR_NA_IDE)
         {
@@ -100,7 +104,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
               if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
                 texto += $"--profile \"{projetoAgregadoCadastrado.PerfilVSCode}\"";
 
-              comandos.Add(($"cd {diretorioAgregado}{projetoAgregadoCadastrado.Subdiretorio}; {texto}; Exit;", null));
+              comandos.Add(($"cd \"{pathProjetoAgregado}\"; {texto}; Exit;", null));
             }
           }
         }
@@ -142,8 +146,6 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     var repositorio = await repositorioJsonService.GetByIdAsync(menu.RepositorioId) ?? throw new Exception("Repositório não encontrado");
     var menuRepositorio = repositorio.Menus?.FirstOrDefault(m => m.Identificador == menu.ComandoId) ?? throw new Exception("Comando não encontrado");
 
-    var comandos = new List<string>();
-
     menuRepositorio.Arquivos?.ForEach(a =>
     {
       var nomeArquivo = Path.GetFileName(a.Arquivo);
@@ -152,88 +154,43 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
       if (!Directory.Exists(diretorioDestino))
         Directory.CreateDirectory(diretorioDestino);
 
+      var caminhoArquivoDestino = Path.Combine(diretorioDestino, nomeArquivo);
+      File.Copy(a.Arquivo, caminhoArquivoDestino, overwrite: true);
+
       if (a.IgnorarGit)
-      {
-        var caminhoArquivoDestino = Path.Combine(diretorioDestino, nomeArquivo);
-        var sucesso = CopiarArquivoComRetry(a.Arquivo, caminhoArquivoDestino);
-        
-        if (sucesso)
-          IgnorarArquivoNoGitComRetry(diretorioDestino, nomeArquivo);
-      }
-      else
-      {
-        comandos.Add($"Copy-Item \"{a.Arquivo}\" \"{diretorioDestino}\\{nomeArquivo}\" -Recurse -Force; Exit;");
-      }
+        IgnorarArquivoNoGit(diretorioDestino, nomeArquivo);
     });
 
     menuRepositorio.Pastas?.ForEach(p =>
     {
       var caminhoDestinoCompleto = Path.Combine(menu.Diretorio, p.Destino);
-
-      if (!Directory.Exists(caminhoDestinoCompleto))
-        Directory.CreateDirectory(caminhoDestinoCompleto);
-
-      comandos.Add($"Copy-Item \"{p.Origem}\" \"{caminhoDestinoCompleto}\" -Recurse -Force; Exit;");
+      CopiarDiretorioRecursivo(p.Origem, caminhoDestinoCompleto);
     });
-
-    try
-    {
-      comandos.ForEach(c => ShellExecute.ExecutarComando(c)); 
-    }
-    catch
-    {
-      return false;
-    }
-    finally
-    {
-      comandos.Clear();
-    }
 
     return true;
   }
 
-  private bool CopiarArquivoComRetry(string origem, string destino, int maxTentativas = 3)
+  private static void CopiarDiretorioRecursivo(string origem, string destino)
   {
-    for (int tentativa = 1; tentativa <= maxTentativas; tentativa++)
-    {
-      try
-      {
-        var comando = $"Copy-Item \"{origem}\" \"{destino}\" -Recurse -Force; Exit;";
-        ShellExecute.ExecutarComando(comando);
+    Directory.CreateDirectory(destino);
 
-        Thread.Sleep(200);
+    foreach (var arquivo in Directory.GetFiles(origem))
+      File.Copy(arquivo, Path.Combine(destino, Path.GetFileName(arquivo)), true);
 
-        if (File.Exists(destino))
-          return true;
-        
-        if (tentativa < maxTentativas)
-          Thread.Sleep(200 * tentativa);
-      }
-      catch
-      {
-        if (tentativa < maxTentativas)
-          Thread.Sleep(200 * tentativa);
-      }
-    }
-
-    return false;
+    foreach (var subDir in Directory.GetDirectories(origem))
+      CopiarDiretorioRecursivo(subDir, Path.Combine(destino, Path.GetFileName(subDir)));
   }
 
-  private void IgnorarArquivoNoGitComRetry(string diretorio, string nomeArquivo, int maxTentativas = 3)
+  private static void IgnorarArquivoNoGit(string diretorio, string nomeArquivo)
   {
-    for (int tentativa = 1; tentativa <= maxTentativas; tentativa++)
+    try
     {
-      try
-      {
-        var comando = $"cd {diretorio}; git update-index --assume-unchanged {nomeArquivo}; Exit;";
-        ShellExecute.ExecutarComando(comando);
-        return;
-      }
-      catch
-      {
-        if (tentativa < maxTentativas)
-          Thread.Sleep(200 * tentativa);
-      }
+      var comando = $"cd \"{diretorio}\"; git update-index --assume-unchanged {nomeArquivo}; Exit;";
+      ShellExecute.ExecutarComando(comando);
+    }
+    catch
+    {
+      // Ignora erro de git — não é crítico
     }
   }
 
@@ -249,7 +206,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(request.PerfilVSCode))
       texto = $"{comandoBase} --profile \"{request.PerfilVSCode}\" {alvo}";
 
-    var comando = $"cd {request.Diretorio}; {texto}; Exit;";
+    var comando = $"cd \"{request.Diretorio}\"; {texto}; Exit;";
 
     try
     {

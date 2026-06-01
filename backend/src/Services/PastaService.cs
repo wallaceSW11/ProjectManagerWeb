@@ -13,7 +13,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
     var repositorios = await repositorioJsonService.GetAllAsync();
 
     var configuracao = await configuracaoService.ObterConfiguracaoAsync();
-    var diretorioRaiz = configuracao.DiretorioRaiz;
+    var diretorioRaiz = configuracao.DiretorioRaizEfetivo;
     var diretoriosOcultos = configuracao.DiretoriosOcultos ?? [];
 
     var pastaResponseList = new List<PastaResponseDTO>();
@@ -106,7 +106,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
           if (repositorioAgregado == null) continue;
 
-          if (!Directory.Exists(pastaNoDisco + "\\" + repositorioAgregado.Nome) || string.IsNullOrWhiteSpace(repositorioAgregado.Nome))
+          if (!Directory.Exists(Path.Combine(pastaNoDisco, repositorioAgregado.Nome)) || string.IsNullOrWhiteSpace(repositorioAgregado.Nome))
             continue;
 
           foreach (var projeto in repositorioAgregado.Projetos)

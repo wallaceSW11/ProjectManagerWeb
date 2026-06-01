@@ -1,0 +1,16 @@
+[Unit]
+Description=Project Manager Web (PMW)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/pmw
+ExecStart=/usr/bin/dotnet ProjectManagerWeb.dll
+Restart=on-failure
+RestartSec=5
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://localhost:2025
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+[Install]
+WantedBy=default.target

@@ -95,6 +95,7 @@
           IDEs
         </v-btn>
         <v-btn
+          v-if="featuresStore.iis"
           class="text-none"
           @click="exibirModalSites = true"
         >
@@ -106,7 +107,7 @@
           </v-icon>
           Sites IIS
         </v-btn>
-        <v-menu>
+        <v-menu v-if="featuresStore.deploy">
           <template v-slot:activator="{ props }">
             <v-btn
               class="text-none"
@@ -205,11 +206,13 @@
   import SitesGerenciamento from '@/components/sites/SitesGerenciamento.vue';
   import { UX_CONFIG } from '@/constants/geral-constants';
   import { useSiteIISStore } from '@/stores/siteIIS';
+  import { useFeaturesStore } from '@/stores/features';
 
   const compiladoEm = ref();
   const exibirModalClone = ref(false);
   const exibirModalSites = ref(false);
 
+  const featuresStore = useFeaturesStore();
   const siteIISStore = useSiteIISStore();
   const sitesParaDeploy = ref([]);
 
@@ -277,9 +280,12 @@
     // Configura o listener do evento de carregamento
     eventBus.on('carregando', handleCarregando);
 
-    // Inicia a consulta da versão e aplica o delay inicial
+    await featuresStore.carregar();
     await consultarVersao();
-    await carregarSitesParaDeploy();
+
+    if (featuresStore.iis) {
+      await carregarSitesParaDeploy();
+    }
   });
 
   onBeforeUnmount(() => {
