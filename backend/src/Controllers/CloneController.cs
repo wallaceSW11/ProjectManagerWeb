@@ -37,7 +37,7 @@ public class CloneController(CloneService cloneService, PastaService pastaServic
     private async Task<IActionResult> CriarPasta(CloneRequestDTO novaClonagem)
     {
         var repositorio = await repositorioJsonService.GetByIdAsync(novaClonagem.RepositorioId);
-        var diretorioCompleto = novaClonagem.DiretorioRaiz + novaClonagem.Codigo + "_" + novaClonagem.Descricao.Replace(" ", "_");
+        var diretorioCompleto = Path.Combine(novaClonagem.DiretorioRaiz, $"{novaClonagem.Codigo}_{novaClonagem.Descricao.Replace(" ", "_")}");
 
         var pasta = new PastaCadastroRequestDTO
         (

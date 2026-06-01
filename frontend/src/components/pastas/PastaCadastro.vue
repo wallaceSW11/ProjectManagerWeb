@@ -85,6 +85,7 @@
   import PastaModel from '@/models/PastaModel';
   import PastaService from '@/services/PastasService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
+  import { useFeaturesStore } from '@/stores/features';
   import RepositorioModel from '@/models/RepositorioModel';
   import { notificar, atualizarListaPastas } from '@/utils/eventBus';
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
@@ -100,6 +101,7 @@
 
   const pasta = reactive<IPasta>(new PastaModel());
   const configuracaoStore = useConfiguracaoStore();
+  const featuresStore = useFeaturesStore();
   const exibirModalPasta = defineModel<boolean>({ default: false });
   const repositorio = ref<IRepositorio>(new RepositorioModel());
   const formPasta = ref<any>(null);
@@ -119,7 +121,7 @@
 
   const obterCodigoDescricao = (): { codigo: string; descricao: string } => {
     const diretorio = pasta.diretorio.replace(
-      configuracaoStore.diretorioRaiz + '\\',
+      configuracaoStore.diretorioRaiz + featuresStore.pathSeparator,
       ''
     );
 

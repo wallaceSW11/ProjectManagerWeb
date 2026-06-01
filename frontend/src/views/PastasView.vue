@@ -346,6 +346,7 @@
   import CardPasta from '@/components/pastas/CardPasta.vue';
   import PastasOcultas from '@/components/pastas/PastasOcultas.vue';  import draggable from 'vuedraggable';
   import { useConfiguracaoStore } from '@/stores/configuracao';
+  import { useFeaturesStore } from '@/stores/features';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
 
   interface MenuProjeto {
@@ -380,6 +381,7 @@
   const campoPesquisa = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null);
   const pastasOcultas = ref<{ recarregar: () => Promise<void> } | null>(null);
   const configuracaoStore = useConfiguracaoStore();
+  const featuresStore = useFeaturesStore();
   const repositorios = ref<IRepositorio[]>([]);
   const perfilSelecionadoId = ref<string | null>(null);
   const diretorioExpandido = ref<boolean>(true);
@@ -701,26 +703,24 @@
       titulo: 'Abrir no Explorer',
       icone: 'mdi-folder-open',
       acao: (projeto: any) => {
-        let comando = '';
-
-        if (projeto.identificadorRepositorioAgregado)
-          comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
-
-        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; explorer .; Exit;`;
+        const sep = featuresStore.pathSeparator;
+        const dir = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`;
+        const comando = featuresStore.isWindows
+          ? `cd ${dir}; explorer .; Exit;`
+          : `cd "${dir}"; xdg-open .; Exit;`;
         executarComandoAvulso(comando);
       },
     },
     {
       identificador: 3,
-      titulo: 'Abrir no PowerShell',
+      titulo: 'Abrir no Terminal',
       icone: 'mdi-console',
       acao: (projeto: any) => {
-        let comando = '';
-
-        if (projeto.identificadorRepositorioAgregado)
-          comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe;`;
-
-        comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.subdiretorio}; pwsh.exe;`;
+        const sep = featuresStore.pathSeparator;
+        const dir = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`;
+        const comando = featuresStore.isWindows
+          ? `cd ${dir}; pwsh.exe;`
+          : `cd "${dir}";`;
         executarComandoAvulso(comando);
       },
     },
@@ -729,8 +729,9 @@
       titulo: 'Baixar histórico completo (git fetch --unshallow)',
       icone: 'mdi-source-branch-sync',
       acao: (projeto: any) => {
-        const diretorio = `${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}`;
-        executarComandoAvulso(`cd ${diretorio}; git fetch --unshallow;`);
+        const sep = featuresStore.pathSeparator;
+        const diretorio = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}`;
+        executarComandoAvulso(`cd "${diretorio}"; git fetch --unshallow;`);
       },
     },
   ];
@@ -744,7 +745,8 @@
         titulo: 'Abrir coverage',
         icone: 'mdi-file-chart',
         acao: (projeto: any) => {
-          const comando = `cd ${pastaSelecionada.diretorio}\\${projeto.nomeRepositorio}\\${projeto.arquivoCoverage}`;
+          const sep = featuresStore.pathSeparator;
+          const comando = `cd "${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.arquivoCoverage}"`;
           executarComandoAvulso(comando);
         },
       });
@@ -902,7 +904,7 @@
 
       let diretorioCompleto = pasta.diretorio;
       if (pasta.subdiretorio)
-        diretorioCompleto += `\\${pasta.subdiretorio}`;
+        diretorioCompleto += `${featuresStore.pathSeparator}${pasta.subdiretorio}`;
 
       await carregandoAsync(async () => {
         await ComandosService.abrirPastaIDE({
@@ -929,7 +931,7 @@
 
       let diretorio = pasta.diretorio;
       if (pasta.subdiretorio)
-        diretorio += `\\${pasta.subdiretorio}`;
+        diretorio += `${featuresStore.pathSeparator}${pasta.subdiretorio}`;
 
       const comandoCli = pasta.cliComandoComplementar
         ? `${pasta.cliComando} ${pasta.cliComandoComplementar}`

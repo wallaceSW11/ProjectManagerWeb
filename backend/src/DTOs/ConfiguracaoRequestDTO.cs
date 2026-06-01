@@ -7,7 +7,8 @@ public sealed record ConfiguracaoRequestDTO
     string? DiretorioRaiz = null,
     List<PerfilVSCodeRequestDTO>? PerfisVSCode = default,
     List<string>? DiretoriosOcultos = default,
-    [property: JsonPropertyName("clis")] List<CliRequestDTO>? CLIs = default
+    [property: JsonPropertyName("clis")] List<CliRequestDTO>? CLIs = default,
+    string? TerminalLinux = "ptyxis"
 )
 {
     public string DiretorioRaizEfetivo => DiretorioRaiz

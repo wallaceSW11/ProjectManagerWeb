@@ -132,6 +132,7 @@ export interface IConfiguracao {
   diretorioRaiz: string;
   perfisVSCode: Array<{ nome: string }>;
   clis: Array<{ nome: string; comando: string }>;
+  terminalLinux: string;
 }
 
 export interface ISite {

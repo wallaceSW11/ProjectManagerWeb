@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Services;
+using ProjectManagerWeb.src.Utils;
 
 namespace ProjectManagerWeb.src.Controllers
 {
     [ApiController]
     [Route("api/configuracoes")]
-    public class ConfiguracaoController(ConfiguracaoService configuracaoService, RepositorioJsonService repositorioJsonService) : ControllerBase
+    public class ConfiguracaoController(ConfiguracaoService configuracaoService, RepositorioJsonService repositorioJsonService, IShellProvider shellProvider) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> ObterConfiguracao()
@@ -18,6 +19,7 @@ namespace ProjectManagerWeb.src.Controllers
         public async Task<IActionResult> SalvarConfiguracao(ConfiguracaoRequestDTO configuracao)
         {
             await configuracaoService.SalvarConfiguracaoAsync(configuracao);
+            shellProvider.RecarregarTerminal();
             return NoContent();
         }
 
