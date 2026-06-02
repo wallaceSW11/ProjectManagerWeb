@@ -93,14 +93,15 @@ if (Test-Path $infraDir) {
 
 # --- 8. Iniciar processo ---
 Write-Host "Iniciando PMW..." -ForegroundColor Yellow
-$exe = Join-Path $Pasta "backend\ProjectManagerWeb.exe"
+$exe = Join-Path $Pasta "ProjectManagerWeb.exe"
 if (Test-Path $exe) {
-    Start-Process -FilePath $exe -WindowStyle Hidden -WorkingDirectory (Join-Path $Pasta "backend")
+    # Novo layout: executável na raiz
+    Start-Process -FilePath $exe -WindowStyle Hidden -WorkingDirectory $Pasta
 } else {
-    # Fallback: versão antiga (executável na raiz)
-    $exe = Join-Path $Pasta "ProjectManagerWeb.exe"
+    # Fallback: versão antiga (dentro de backend\)
+    $exe = Join-Path $Pasta "backend\ProjectManagerWeb.exe"
     if (Test-Path $exe) {
-        Start-Process -FilePath $exe -WindowStyle Hidden -WorkingDirectory $Pasta
+        Start-Process -FilePath $exe -WindowStyle Hidden -WorkingDirectory (Join-Path $Pasta "backend")
     }
 }
 
