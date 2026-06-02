@@ -112,8 +112,7 @@ chmod +x "$PMW_DIR/infra/pmw.sh"
 # ------------------------------------------------------------------
 # 6. Ajusta permissões finais
 # ------------------------------------------------------------------
-chmod -R +x "$PMW_DIR/backend" 2>/dev/null
-chmod +x "$PMW_DIR/backend/ProjectManagerWeb" 2>/dev/null
+chmod +x "$PMW_DIR/ProjectManagerWeb" 2>/dev/null
 chown -R "$USER:$USER" "$PMW_DIR"
 
 # ------------------------------------------------------------------

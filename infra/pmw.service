@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/pmw/backend
-ExecStart=/opt/pmw/backend/ProjectManagerWeb
+WorkingDirectory=/opt/pmw
+ExecStart=/opt/pmw/ProjectManagerWeb
 Restart=on-failure
 RestartSec=5
 Environment=ASPNETCORE_ENVIRONMENT=Production

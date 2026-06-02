@@ -37,6 +37,12 @@ function Get-PmwDir {
         "$env:USERPROFILE\pmw"
     )
     foreach ($c in $candidatos) {
+        # Novo layout: executável na raiz
+        if (Test-Path (Join-Path $c "ProjectManagerWeb.exe")) {
+            $c | Out-File -FilePath $CONFIG_FILE -Encoding utf8 -Force
+            return $c
+        }
+        # Fallback: layout antigo (dentro de backend\)
         if (Test-Path (Join-Path $c "backend\ProjectManagerWeb.exe")) {
             $c | Out-File -FilePath $CONFIG_FILE -Encoding utf8 -Force
             return $c
@@ -54,7 +60,7 @@ $PMW_DIR = Get-PmwDir
 function Start-PMW {
     $dir = Get-PmwDir
     if (-not $dir) { return }
-    $exe = Join-Path $dir "backend\ProjectManagerWeb.exe"
+    $exe = Join-Path $dir "ProjectManagerWeb.exe"
     if (-not (Test-Path $exe)) {
         Write-Host "❌ executável não encontrado em $dir" -ForegroundColor Red
         return
@@ -64,7 +70,7 @@ function Start-PMW {
         Write-Host "⚠️  PMW já está em execução (PID $($proc.Id))" -ForegroundColor Yellow
         return
     }
-    Start-Process -FilePath $exe -WindowStyle Hidden -WorkingDirectory (Join-Path $dir "backend")
+    Start-Process -FilePath $exe -WindowStyle Hidden -WorkingDirectory $dir
     Write-Host "✅ PMW iniciado. Acesse http://localhost:2025" -ForegroundColor Green
 }
 

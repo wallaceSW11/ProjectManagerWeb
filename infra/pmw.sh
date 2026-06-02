@@ -108,9 +108,7 @@ case "$1" in
 
     # Ajusta permissões
     echo "Ajustando permissões..."
-    chmod -R +x "$PMW_DIR/backend" 2>/dev/null
-    chmod +x "$PMW_DIR/backend/ProjectManagerWeb" 2>/dev/null
-    chmod +x "$PMW_DIR/frontend" 2>/dev/null
+    chmod +x "$PMW_DIR/ProjectManagerWeb" 2>/dev/null
     chown -R "$USER:$USER" "$PMW_DIR"
 
     # Atualiza scripts de infra (se o pacote tiver a pasta infra)
