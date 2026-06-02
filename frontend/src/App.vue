@@ -299,6 +299,12 @@
   });
 </script>
 
+<style>
+.v-main {
+  overflow: hidden;
+}
+</style>
+
 <style scoped>
 .watermark-footer {
   position: fixed;
