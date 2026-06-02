@@ -56,6 +56,23 @@ Sistema próprio em JSON (sem EF Migrations).
 Registradas em `migrations.json`. Executadas no startup via `MigrationService.ExecuteMigrationsAsync()`.
 Nova migration: adicionar método `Migration_00X_NomeDaMigration()` no `MigrationService` e registrar em `ExecuteMigrationsAsync()`.
 
+## Deploy / infraestrutura
+
+**Linux:**
+- `bootstrap.sh` → instalação do zero (curl, unzip, git, baixa release, configura systemd)
+- `infra/pmw.sh` → gerenciamento (start, stop, update, logs)
+- `infra/pmw.service` → systemd user service (self-contained, não precisa de dotnet runtime)
+- Diretórios: app em `/opt/pmw/`, scripts em `/opt/pmw-tools/`
+
+**Windows:**
+- `infra/pmw.ps1` → gerenciamento (start, stop, update, install) com detecção automática do diretório
+- `infra/pmw-start.vbs` → inicialização sem console visível (WScript)
+- `infra/pmw-start.bat` → atalho para o .vbs
+- `Atualizar_PMW.ps1` → script legado de atualização
+- Diretórios: app em `C:\PMW` ou `C:\inetpub\wwwroot\PMW`, scripts em `C:\PMW-Tools/`
+
+**CI/CD:** `.github/workflows/release.yml` — push na `main` gera `PMW_Windows_*.zip` e `PMW_Linux_*.zip`
+
 ## Onde buscar informação
 
 | Preciso de | Arquivo |
@@ -65,6 +82,8 @@ Nova migration: adicionar método `Migration_00X_NomeDaMigration()` no `Migratio
 | Repositórios / projetos / agregados | `.opencode/flows/repositorios.md` |
 | IDEs | `.opencode/flows/ides.md` |
 | Sites IIS / Deploy | `.opencode/flows/sitesiis.md` |
+| Deploy Linux | `infra/pmw.sh`, `bootstrap.sh` |
+| Deploy Windows | `infra/pmw.ps1`, `Atualizar_PMW.ps1` |
 | Code style backend | `.opencode/code-style/backend.md` |
 | Code style frontend | `.opencode/code-style/frontend.md` |
 | Git / commits | `AGENTS.md` (seção Git) |

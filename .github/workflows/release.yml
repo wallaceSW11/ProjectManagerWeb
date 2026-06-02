@@ -67,11 +67,13 @@ jobs:
       - name: Publicar Windows
         run: dotnet publish backend/ProjectManagerWeb.csproj -c Release -r win-x64 --self-contained false -o publish-win
 
-      - name: Publicar Linux
-        run: dotnet publish backend/ProjectManagerWeb.csproj -c Release -r linux-x64 --self-contained false -o publish-linux
+      - name: Publicar Linux (self-contained)
+        run: dotnet publish backend/ProjectManagerWeb.csproj -c Release -r linux-x64 --self-contained true -o publish-linux
 
-      - name: Copiar infra para pacote Linux
-        run: cp -r infra publish-linux/
+      - name: Copiar infra para ambos os pacotes
+        run: |
+          cp -r infra publish-linux/
+          cp -r infra publish-win/
 
       - name: Gerar versão
         id: versao
