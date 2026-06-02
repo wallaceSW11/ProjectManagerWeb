@@ -52,6 +52,17 @@ export interface IProjeto {
   getComandosDisponiveis?(): Array<{ titulo: string; valor: string; ativo: boolean }>;
 }
 
+export interface ICodigoTarefa {
+  identificador: string;
+  iniciais: string;
+  branchPrincipal: string;
+  criarBranchRemoto: boolean;
+  clonarAgregados: boolean;
+  baixarHistoricoCompleto: boolean;
+  habilitarTipos: boolean;
+  tiposHabilitados: string[];
+}
+
 export interface IRepositorio {
   identificador: string;
   url: string | null;
@@ -62,6 +73,7 @@ export interface IRepositorio {
   agregados: string[];
   menus: IMenu[];
   perfis: IPerfilMarcacao[];
+  codigosTarefa: ICodigoTarefa[];
   ideIdentificador?: string | null;
   perfilVSCode?: string | null;
   subdiretorio?: string | null;
@@ -69,6 +81,9 @@ export interface IRepositorio {
   perfilTerminal?: string | null;
   abrirWorkspace?: boolean;
   cliComandoComplementar?: string | null;
+  branchBase?: string | null;
+  urlBaseGestorTarefas?: string | null;
+  pastaCentralizadora?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {
@@ -109,6 +124,7 @@ export interface IPasta {
   ordemFixada?: number;
   cliComandoComplementar?: string | null;
   nomeCli?: string | null;
+  nomeAba?: string | null;
 }
 
 export interface IClone {
@@ -128,11 +144,16 @@ export interface IPerfilVSCode {
   nome: string;
 }
 
+export interface IPastaCentralizadora {
+  nome: string;
+}
+
 export interface IConfiguracao {
   diretorioRaiz: string;
   perfisVSCode: Array<{ nome: string }>;
   clis: Array<{ nome: string; comando: string }>;
   terminalLinux: string;
+  pastasCentralizadoras: IPastaCentralizadora[];
 }
 
 export interface ISite {

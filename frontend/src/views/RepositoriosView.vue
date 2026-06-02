@@ -37,6 +37,7 @@
             <v-tabs-window-item>
               <v-tabs v-model="paginaCadastro">
                 <v-tab>Geral</v-tab>
+                <v-tab>Tarefas</v-tab>
                 <v-tab>IDE / Terminal</v-tab>
                 <v-tab>Projetos</v-tab>
                 <v-tab>Menu de contexo</v-tab>
@@ -48,6 +49,12 @@
                   <RepositorioCadastro
                     v-model="repositorioSelecionado"
                     :repositorios="repositorios"
+                    class="pt-4"
+                  />
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <TarefasCadastro
+                    v-model="repositorioSelecionado"
                     class="pt-4"
                   />
                 </v-tabs-window-item>
@@ -113,6 +120,7 @@
   import MenuCadastro from '@/components/repositorios/MenuCadastro.vue';
   import ProjetoCadastro from '../components/repositorios/ProjetoCadastro.vue';
   import PerfilMarcacaoCadastro from '@/components/repositorios/PerfilMarcacaoCadastro.vue';
+  import TarefasCadastro from '@/components/repositorios/TarefasCadastro.vue';
   import { carregandoAsync, notificar } from '@/utils/eventBus';
   import { MODO_OPERACAO } from '@/constants/geral-constants';
 

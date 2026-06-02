@@ -13,6 +13,18 @@ class ConfiguracaoService extends BaseApiService {
   async renomearPerfil(nomeAntigo: string, nomeNovo: string): Promise<void> {
     return await this.put(`configuracoes/perfis/${encodeURIComponent(nomeAntigo)}`, nomeNovo);
   }
+
+  async adicionarPastaCentralizadora(nome: string): Promise<void> {
+    return await this.post('configuracoes/pastas-centralizadoras', nome);
+  }
+
+  async renomearPastaCentralizadora(nomeAntigo: string, nomeNovo: string): Promise<void> {
+    return await this.put(`configuracoes/pastas-centralizadoras/${encodeURIComponent(nomeAntigo)}`, nomeNovo);
+  }
+
+  async removerPastaCentralizadora(nome: string): Promise<void> {
+    return await this.delete(`configuracoes/pastas-centralizadoras/${encodeURIComponent(nome)}`);
+  }
 }
 
 export default new ConfiguracaoService();

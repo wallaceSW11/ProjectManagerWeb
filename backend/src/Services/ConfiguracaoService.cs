@@ -121,4 +121,47 @@ public class ConfiguracaoService
 
         await SalvarConfiguracaoAsync(configuracao with { DiretoriosOcultos = atualizados });
     }
+
+    public async Task AdicionarPastaCentralizadoraAsync(string nome)
+    {
+        var configuracao = await ObterConfiguracaoAsync();
+        var pastas = configuracao.PastasCentralizadoras ?? [];
+
+        if (pastas.Any(p => p.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase)))
+            throw new Exception("Já existe uma pasta centralizadora com esse nome");
+
+        await SalvarConfiguracaoAsync(configuracao with
+        {
+            PastasCentralizadoras = [.. pastas, new PastaCentralizadoraDTO(nome)]
+        });
+    }
+
+    public async Task RenomearPastaCentralizadoraAsync(string nomeAntigo, string nomeNovo)
+    {
+        var configuracao = await ObterConfiguracaoAsync();
+        var pastas = configuracao.PastasCentralizadoras ?? [];
+
+        var lista = pastas
+            .Select(p => p.Nome.Equals(nomeAntigo, StringComparison.OrdinalIgnoreCase)
+                ? new PastaCentralizadoraDTO(nomeNovo)
+                : p)
+            .ToList();
+
+        await SalvarConfiguracaoAsync(configuracao with { PastasCentralizadoras = lista });
+    }
+
+    public async Task RemoverPastaCentralizadoraAsync(string nome)
+    {
+        var configuracao = await ObterConfiguracaoAsync();
+        var pastas = configuracao.PastasCentralizadoras ?? [];
+
+        var atualizadas = pastas
+            .Where(p => !p.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (atualizadas.Count == pastas.Count)
+            throw new Exception("Pasta centralizadora não encontrada");
+
+        await SalvarConfiguracaoAsync(configuracao with { PastasCentralizadoras = atualizadas });
+    }
 }

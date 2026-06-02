@@ -19,6 +19,7 @@ namespace ProjectManagerWeb.src.DTOs
         string Nome,
         string Titulo,
         string? Cor,
+        string? BranchBase,
         List<ProjetoDTO> Projetos,
         List<Guid>? Agregados,
         List<MenuDTO>? Menus,
@@ -30,7 +31,10 @@ namespace ProjectManagerWeb.src.DTOs
         string? CliComando = null,
         string? PerfilTerminal = null,
         bool AbrirWorkspace = true,
-        string? CliComandoComplementar = null
+        string? CliComandoComplementar = null,
+        List<CodigoTarefaDTO>? CodigosTarefa = null,
+        string? UrlBaseGestorTarefas = null,
+        string? PastaCentralizadora = null
     );
 
     /// <summary>

@@ -9,8 +9,18 @@
       <v-card-text class="pt-0">
         <v-form ref="formClone">
           <v-text-field
-            label="Diretório"
-            v-model="clone.diretorioRaiz"
+            ref="campoCodigoTarefa"
+            label="Código da tarefa"
+            v-model.uppercase="codigoTarefaInput"
+            class="uppercase-input"
+            :rules="obrigatorio"
+            @blur="processarCodigoTarefa"
+          />
+
+          <v-text-field
+            ref="campoDescricao"
+            label="Descrição"
+            v-model="clone.descricao"
             :rules="obrigatorio"
           />
 
@@ -45,11 +55,13 @@
             v-model="clone.baixarAgregados"
             :disabled="!clone.repositorio.agregados?.length"
           />
+
           <v-checkbox
             label="Criar branch remoto"
             hide-details
             v-model="clone.criarBranchRemoto"
           />
+
           <v-checkbox
             label="Baixar histórico completo"
             hide-details
@@ -81,18 +93,6 @@
               value="hotfix"
             />
           </v-radio-group>
-
-          <v-text-field
-            label="Número da tarefa"
-            v-model.uppercase="clone.codigo"
-            class="uppercase-input"
-            :rules="obrigatorio"
-          />
-          <v-text-field
-            label="Descrição"
-            v-model="clone.descricao"
-            :rules="obrigatorio"
-          />
         </v-form>
       </v-card-text>
 
@@ -121,6 +121,7 @@
   import type { IClone } from '@/types';
   import CloneModel from '@/models/CloneModel';
   import CloneService from '@/services/CloneService';
+  import RepositoriosService from '@/services/RepositoriosService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { useFeaturesStore } from '@/stores/features';
   import {
@@ -142,19 +143,21 @@
   const branchInvalida = ref<boolean>(false);
   const hintBranch = ref<string>('');
   const validandoBranch = ref<boolean>(false);
+  const codigoTarefaInput = ref<string>('');
+  const campoCodigoTarefa = ref<any>(null);
+  const campoDescricao = ref<any>(null);
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 
   const repositorioSelecionado = computed(() => !!clone.repositorio?.url);
 
-  watch(() => clone.branch, (novaBranch) => {
-    branchInvalida.value = false;
-    hintBranch.value = '';
-    if (!clone.criarBranchRemoto) clone.codigo = novaBranch;
+  watch(codigoTarefaInput, (valor) => {
+    clone.codigo = valor;
   });
 
-  watch(() => clone.criarBranchRemoto, (criarRemoto) => {
-    clone.codigo = criarRemoto ? '' : clone.branch;
+  watch(() => clone.branch, () => {
+    branchInvalida.value = false;
+    hintBranch.value = '';
   });
 
   watch(repositorioSelecionado, (temRepositorio) => {
@@ -165,16 +168,93 @@
     }
   });
 
-  watch(exibirModalClone, (abriu) => {
-    if (abriu)
-      clone.diretorioRaiz =
-        configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
+  watch(exibirModalClone, async (abriu) => {
+    if (!abriu) return;
+
+    clone.diretorioRaiz =
+      configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
+
+    const texto = await lerClipboard();
+    const padrao = /^[A-Za-z]+\d+$/;
+    if (padrao.test(texto.trim())) {
+      codigoTarefaInput.value = texto.trim().toUpperCase();
+      await processarCodigoTarefa();
+      await nextTick();
+      campoDescricao.value?.focus();
+    } else {
+      await nextTick();
+      campoCodigoTarefa.value?.focus();
+    }
   });
+
+  function extrairIniciais(codigo: string): string {
+    const match = codigo.match(/^([A-Za-z]+)/);
+    return match ? match[1].toUpperCase() : '';
+  }
+
+  async function lerClipboard(): Promise<string> {
+    try {
+      return await navigator.clipboard.readText();
+    } catch {
+      return '';
+    }
+  }
+
+  async function processarCodigoTarefa(): Promise<void> {
+    const codigo = codigoTarefaInput.value?.trim();
+    if (!codigo) return;
+
+    const iniciais = extrairIniciais(codigo);
+    if (!iniciais) return;
+
+    try {
+      const resultado = await RepositoriosService.buscarCodigoTarefa(iniciais);
+      if (!resultado) return;
+
+      const { codigoTarefa, repositorio } = resultado;
+
+      if (repositorio) {
+        clone.repositorio = repositorio;
+
+        if (repositorio.pastaCentralizadora) {
+          clone.diretorioRaiz = configuracaoStore.diretorioRaiz + featuresStore.pathSeparator + repositorio.pastaCentralizadora + featuresStore.pathSeparator;
+        } else {
+          clone.diretorioRaiz = configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
+        }
+      }
+
+      if (codigoTarefa.branchPrincipal) {
+        clone.branch = codigoTarefa.branchPrincipal;
+      } else if (repositorio.branchBase) {
+        clone.branch = repositorio.branchBase;
+      }
+
+      clone.criarBranchRemoto = codigoTarefa.criarBranchRemoto;
+      clone.baixarAgregados = codigoTarefa.clonarAgregados;
+      clone.historicoCompleto = codigoTarefa.baixarHistoricoCompleto;
+
+      if (!codigoTarefa.habilitarTipos) {
+        clone.tipo = 'nenhum';
+      }
+
+      if (!clone.criarBranchRemoto) {
+        await validarBranch();
+      }
+    } catch {
+      notificar('erro', 'Erro ao buscar código da tarefa');
+    }
+  }
 
   const ehBranchBase = (branch: string): boolean =>
     BRANCHES_BASE.includes(branch.toLowerCase());
 
   const validarBranch = async (): Promise<void> => {
+    if (clone.criarBranchRemoto) {
+      branchInvalida.value = false;
+      hintBranch.value = '';
+      return;
+    }
+
     if (!clone.branch || !repositorioSelecionado.value) return;
     if (ehBranchBase(clone.branch)) {
       branchInvalida.value = false;
@@ -239,6 +319,7 @@
     exibirModalClone.value = false;
     Object.assign(clone, new CloneModel());
     clone.diretorioRaiz = configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
+    codigoTarefaInput.value = '';
     branchInvalida.value = false;
     hintBranch.value = '';
   };

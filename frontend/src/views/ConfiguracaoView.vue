@@ -79,6 +79,53 @@
             </div>
           </v-col>
 
+          <!-- Pastas Centralizadoras -->
+          <v-col cols="12" class="mt-6">
+            <h2>Pastas Centralizadoras</h2>
+
+            <v-divider />
+
+            <div class="d-flex flex-column justify-center">
+              <div class="d-flex align-center">
+                <v-text-field
+                  label="Nome da pasta"
+                  v-model="nomePastaCentralizadora"
+                  autocomplete="new-password"
+                />
+                <v-btn
+                  class="ml-2"
+                  @click="adicionarPastaCentralizadora"
+                >
+                  <v-icon>mdi-plus</v-icon>
+                  Adicionar
+                </v-btn>
+              </div>
+
+              <div>
+                <v-data-table
+                  :items="configuracao.pastasCentralizadoras"
+                  :headers="colunasPastasCentralizadoras"
+                  hide-default-footer
+                >
+                  <template #[`item.actions`]="{ item }">
+                    <IconeComTooltip
+                      icone="mdi-pencil"
+                      texto="Editar"
+                      :acao="() => editarPastaCentralizadora(item)"
+                      top
+                    />
+                    <IconeComTooltip
+                      icone="mdi-delete"
+                      texto="Excluir"
+                      :acao="() => removerPastaCentralizadora(item)"
+                      top
+                    />
+                  </template>
+                </v-data-table>
+              </div>
+            </div>
+          </v-col>
+
           <!-- CLIs -->
           <v-col cols="12" class="mt-6">
             <h2>CLIs de IA</h2>
@@ -133,7 +180,7 @@
 
 <script setup lang="ts">
   import { onMounted, reactive, ref } from 'vue';
-  import type { IConfiguracao, IPerfilVSCode } from '@/types';
+  import type { IConfiguracao, IPastaCentralizadora, IPerfilVSCode } from '@/types';
   import ConfiguracaoModel from '../models/ConfiguracaoModel';
   import ConfiguracaoService from '../services/ConfiguracaoService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
@@ -148,6 +195,7 @@
   const nomePerfil = ref<string>(''); // input do perfil
   const nomeCliNovo = ref<string>('');
   const comandoCliNovo = ref<string>('');
+  const nomePastaCentralizadora = ref<string>('');
   const configuracao = reactive<IConfiguracao>(new ConfiguracaoModel());
 
   onMounted(() => {
@@ -162,6 +210,11 @@
   const colunasCli = reactive([
     { title: 'Nome', key: 'nome', align: 'start' },
     { title: 'Comando', key: 'comando', align: 'start' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+  ] as const);
+
+  const colunasPastasCentralizadoras = reactive([
+    { title: 'Nome', key: 'nome', align: 'start' },
     { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
   ] as const);
 
@@ -250,6 +303,63 @@
     if (confirmDelete) {
       configuracao.clis = configuracao.clis.filter(c => c !== item);
       salvarConfiguracao();
+    }
+  };
+
+  // --- Pastas Centralizadoras ---
+  const adicionarPastaCentralizadora = async (): Promise<void> => {
+    if (!nomePastaCentralizadora.value.trim()) {
+      alert('O nome da pasta é obrigatório');
+      return;
+    }
+
+    const jaExiste = configuracao.pastasCentralizadoras.some(
+      p => p.nome === nomePastaCentralizadora.value.trim()
+    );
+
+    if (jaExiste) {
+      alert('Já existe uma pasta centralizadora com esse nome');
+      return;
+    }
+
+    try {
+      await ConfiguracaoService.adicionarPastaCentralizadora(nomePastaCentralizadora.value.trim());
+      configuracao.pastasCentralizadoras.push({ nome: nomePastaCentralizadora.value.trim() });
+      nomePastaCentralizadora.value = '';
+      notificar('sucesso', 'Pasta centralizadora adicionada');
+    } catch (error: any) {
+      notificar('erro', 'Falha ao adicionar pasta centralizadora', error.message);
+    }
+  };
+
+  const editarPastaCentralizadora = async (item: IPastaCentralizadora): Promise<void> => {
+    const novoNome = prompt('Editar nome da pasta centralizadora:', item.nome);
+    if (!novoNome || !novoNome.trim()) return;
+
+    const nomeAntigo = item.nome;
+    const nomeTrimado = novoNome.trim();
+
+    try {
+      await ConfiguracaoService.renomearPastaCentralizadora(nomeAntigo, nomeTrimado);
+      item.nome = nomeTrimado;
+      notificar('sucesso', 'Pasta centralizadora renomeada');
+    } catch (error: any) {
+      notificar('erro', 'Falha ao renomear pasta centralizadora', error.message);
+    }
+  };
+
+  const removerPastaCentralizadora = async (item: IPastaCentralizadora): Promise<void> => {
+    const confirmado = confirm(`Deseja remover a pasta centralizadora "${item.nome}"?`);
+    if (!confirmado) return;
+
+    try {
+      await ConfiguracaoService.removerPastaCentralizadora(item.nome);
+      configuracao.pastasCentralizadoras = configuracao.pastasCentralizadoras.filter(
+        p => p !== item
+      );
+      notificar('sucesso', 'Pasta centralizadora removida');
+    } catch (error: any) {
+      notificar('erro', 'Falha ao remover pasta centralizadora', error.message);
     }
   };
 </script>

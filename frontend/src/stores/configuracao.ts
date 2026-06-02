@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import ConfiguracaoService from '../services/ConfiguracaoService';
 import ConfiguracaoModel from '../models/ConfiguracaoModel';
-import type { IConfiguracao } from '@/types';
+import type { IConfiguracao, IPastaCentralizadora } from '@/types';
 
 interface ConfiguracaoState {
   configuracao: IConfiguracao;
@@ -18,6 +18,8 @@ export const useConfiguracaoStore = defineStore('configuracao', {
       state.configuracao.perfisVSCode,
     clis: (state): Array<{ nome: string; comando: string }> =>
       state.configuracao.clis,
+    pastasCentralizadoras: (state): IPastaCentralizadora[] =>
+      state.configuracao.pastasCentralizadoras,
   },
 
   actions: {

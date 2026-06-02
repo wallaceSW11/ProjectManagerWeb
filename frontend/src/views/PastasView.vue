@@ -70,6 +70,22 @@
         </v-col>
       </v-row>
 
+      <v-tabs
+        v-model="abaSelecionada"
+        density="compact"
+        color="primary"
+        class="mb-2"
+        show-arrows
+      >
+        <v-tab
+          v-for="aba in abasDisponiveis"
+          :key="aba"
+          :value="aba"
+        >
+          {{ aba }}
+        </v-tab>
+      </v-tabs>
+
       <v-row
         no-gutters
         class="d-flex"
@@ -379,6 +395,7 @@
   const exibirModalPasta = ref<boolean>(false);
   const termoPesquisa = ref<string>('');
   const campoPesquisa = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null);
+  const abaSelecionada = ref<string>('Raiz');
   const pastasOcultas = ref<{ recarregar: () => Promise<void> } | null>(null);
   const configuracaoStore = useConfiguracaoStore();
   const featuresStore = useFeaturesStore();
@@ -389,6 +406,17 @@
 
   const ideDisponivel = computed(() => !!pastaSelecionada.ideIdentificador);
   const cliDisponivel = computed(() => !!pastaSelecionada.cliComando);
+
+  const abasDisponiveis = computed(() => {
+    const abas = new Set<string>();
+    pastas.value.forEach((p: IPasta) => { if (p.nomeAba) abas.add(p.nomeAba); });
+    const ordenadas = Array.from(abas).sort((a, b) => {
+      if (a === 'Raiz') return -1;
+      if (b === 'Raiz') return 1;
+      return 0;
+    });
+    return ordenadas;
+  });
 
   const perfisDisponiveis = computed((): IPerfilMarcacao[] => {
     if (!pastaSelecionada.repositorioId) return [];
@@ -427,7 +455,7 @@
   const pastasFixadas = computed({
     get: () => {
       return pastas.value
-        .filter((p: IPasta) => p.fixada)
+        .filter((p: IPasta) => p.fixada && p.nomeAba === abaSelecionada.value)
         .sort((a: IPasta, b: IPasta) => (a.ordemFixada || 0) - (b.ordemFixada || 0));
     },
     set: (valor: IPasta[]) => {
@@ -440,7 +468,8 @@
 
   const pastasNaoFixadas = computed({
     get: () => {
-      const naoFixadas = pastas.value.filter((p: IPasta) => !p.fixada);
+      let naoFixadas = pastas.value.filter((p: IPasta) => !p.fixada);
+      naoFixadas = naoFixadas.filter((p: IPasta) => p.nomeAba === abaSelecionada.value);
       if (!termoPesquisa.value) return naoFixadas;
 
       const termo = termoPesquisa.value.toLowerCase();
@@ -488,18 +517,32 @@
   const selecionarPastaSalva = (): void => {
     if (!pastas.value.length) return;
 
-    const diretorioSalvo = consultarPastaSelecionadaDoStorage();
+    const pastasDaAba = pastas.value.filter(
+      (p: IPasta) => p.nomeAba === abaSelecionada.value
+    );
 
-    if (!diretorioSalvo) {
-      selecionarPasta(pastas.value[0]);
+    if (!pastasDaAba.length) {
+      if (pastas.value.length) {
+        selecionarPasta(pastas.value[0]);
+      }
       return;
     }
 
-    const selecionada = pastas.value.find(
+    const diretorioSalvo = consultarPastaSelecionadaDoStorage();
+
+    if (!diretorioSalvo) {
+      selecionarPasta(pastasDaAba[0]);
+      return;
+    }
+
+    const selecionada = pastasDaAba.find(
       (p: IPasta) => p.diretorio === diretorioSalvo
     );
 
-    if (!selecionada) return;
+    if (!selecionada) {
+      selecionarPasta(pastasDaAba[0]);
+      return;
+    }
 
     const indice = pastas.value.findIndex(
       (p: IPasta) => p.diretorio === diretorioSalvo
