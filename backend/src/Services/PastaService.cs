@@ -375,8 +375,6 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
     // Remover pastas que não existem mais no disco
     foreach (var pastaParaRemover in pastasParaRemover)
-    {
       await pastaJsonService.DeleteAsync(pastaParaRemover.Diretorio);
-    }
   }
 }

@@ -6,14 +6,23 @@ Tela principal do PMW (`/`). Lista diretórios físicos dentro do `diretorioRaiz
 
 `GET /api/pastas` → `PastaService.ObterTodas()`
 
-Lógica do backend:
-1. Lê `diretorioRaiz` e `diretoriosOcultos` da `ConfiguracaoService`
-2. Lista diretórios físicos, excluindo ocultos
-3. Limpa do `pastas.json` entradas cujo diretório não existe mais no disco
-4. Para cada diretório:
-   - Sem entrada no JSON → retorna `PastaResponseDTO` vazia (só `Diretorio`)
+### Pastas centralizadoras (abas)
+Se houver pastas centralizadoras cadastradas na Configuração, a listagem muda:
+
+1. Lê `diretorioRaiz`, `diretoriosOcultos` e `pastasCentralizadoras` da `ConfiguracaoService`
+2. Se `diretorioRaiz` for nulo/vazio → retorna lista vazia (sem fallback)
+3. Se houver pastas centralizadoras:
+   - Lista diretórios **dentro** de cada pasta centralizadora → `NomeAba = nome da PC`
+   - Lista diretórios na **raiz**, excluindo as pastas centralizadoras → `NomeAba = "Raiz"`
+4. Se **não** houver pastas centralizadoras:
+   - Comportamento original: todos os diretórios da raiz → `NomeAba = "Raiz"`
+5. Limpa do `pastas.json` entradas cujo diretório não existe mais no disco
+6. Para cada diretório:
+   - Sem entrada no JSON → retorna `PastaResponseDTO` vazia (só `Diretorio`, com `NomeAba`)
    - Com entrada → busca repositório, monta `ProjetoDisponivelDTO` com comandos
-5. Retorna ordenado por `Indice`
+7. Retorna ordenado por `Indice`
+
+O campo `NomeAba` no `PastaResponseDTO` é usado pelo frontend para exibir as abas (Raiz + pastas centralizadoras).
 
 `ProjetoDisponivelDTO` inclui:
 - `Comandos`: lista de `ETipoComando` (`INSTALAR`, `INICIAR`, `BUILDAR`, `ABRIR_NA_IDE`)
@@ -28,9 +37,12 @@ Lógica do backend:
 public sealed record PastaCadastroRequestDTO(
     Guid Identificador, string Diretorio, string Codigo,
     string Descricao, string Tipo, string Branch, string Git,
-    Guid RepositorioId, int? Indice = null
+    Guid RepositorioId, int? Indice = null, bool Fixada = false, int OrdemFixada = 0
 );
 ```
+
+O `PastaResponseDTO` possui um campo adicional:
+- `NomeAba: string?` — "Raiz" ou nome da pasta centralizadora (usado para abas no frontend)
 
 `PastaJsonService.AddAsync`: upsert — se já existe entrada com mesmo `Diretorio`, substitui.
 

@@ -26,12 +26,14 @@ infra: publicado no IIS local via `dotnet publish`
 
 ## Domínio
 
-- **Repositorio**: repositório Git com URL, projetos filhos, menus, perfis de marcação e IDE padrão.
+- **Repositorio**: repositório Git com URL, projetos filhos, menus, perfis de marcação, IDE padrão, branch base, pasta centralizadora, URL do gestor de tarefas e códigos de tarefa.
 - **Projeto**: subprojeto dentro de um repositório. Tem comandos (abrir IDE, executar scripts), branch, diretório.
-- **Pasta**: diretório físico no disco. Pode ter projetos e menus associados. Suporta ocultação.
+- **Pasta**: diretório físico no disco. Pode ter projetos e menus associados. Suporta ocultação. Agrupada por `NomeAba` (Raiz ou pasta centralizadora).
+- **PastaCentralizadora**: subpasta do diretório raiz que agrupa clones de um mesmo contexto (ex: Forizi, DeepRocket, Pessoal). Cadastrada na Configuração.
+- **CodigoTarefa**: vincula iniciais (ex: FATWEB) a um repositório com flags de clone (branch remoto, agregados, histórico, tipos). Um repositório pode ter vários (monorepo).
 - **IDE**: ferramenta de desenvolvimento (VS Code, Kiro, Delphi). Configurável com comando de abertura.
 - **SiteIIS**: site configurado no IIS local. Tem pastas de deploy e pools de aplicação.
-- **Configuracao**: configuração global — diretório raiz de trabalho, perfis VSCode, diretórios ocultos.
+- **Configuracao**: configuração global — diretório raiz de trabalho, perfis VSCode, diretórios ocultos, pastas centralizadoras, CLIs.
 
 ## Persistência — arquivos JSON
 

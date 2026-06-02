@@ -10,8 +10,9 @@ Model: `frontend/src/models/CloneModel.ts` → `IClone`
 Service: `frontend/src/services/CloneService.ts` → `clonar(clone: IClone)`
 
 Campos do formulário (`IClone`):
+- `codigoTarefaInput` (novo): código completo da tarefa (ex: `FATWEB123`) — no blur dispara `processarCodigoTarefa()`
 - `repositorio`: `IRepositorio` selecionado — obrigatório
-- `diretorioRaiz`: caminho base (vem da ConfiguracaoStore)
+- `diretorioRaiz`: caminho base (vem da ConfiguracaoStore). **Ajustado automaticamente** se o repositório possui `pastaCentralizadora`
 - `codigo`: código do projeto (ex: `PMW-123`) — vira parte do nome da pasta
 - `descricao`: descrição curta — vira parte do nome (espaços → `_`)
 - `tipo`: `'nenhum' | 'feature' | 'bug' | 'hotfix'` — prefixo do branch criado
@@ -21,8 +22,32 @@ Campos do formulário (`IClone`):
 - `historicoCompleto`: se `false` (padrão), usa `--filter=blob:none --single-branch`
 - `salvarNoStorage`: flag de UI — não enviado ao backend
 
+### Autopreenchimento via código de tarefa
+
+1. Ao abrir o modal, lê o clipboard. Se for algo como `FATWEB123` (letras+números), cola no campo código da tarefa.
+2. No blur do campo, extrai as iniciais (`FATWEB`) e busca em `GET /api/repositorios/codigos-tarefa/{iniciais}`
+3. Se encontrado, preenche automaticamente:
+   - **Repositório** (com `pastaCentralizadora` → ajusta `diretorioRaiz`)
+   - **Branch** (`codigoTarefa.branchPrincipal` ou `repositorio.branchBase`)
+   - **Checkboxes** (`criarBranchRemoto`, `clonarAgregados`, `historicoCompleto`)
+   - **Tipo** (se `habilitarTipos` = false, seta 'nenhum')
+4. Usuário pode ajustar manualmente qualquer campo
+5. Se `criarBranchRemoto` = false, valida se branch existe no remote
+
+### Foco automático
+- Se clipboard tiver código → foco vai para **Descrição**
+- Se não → foco vai para **Código da tarefa**
+
+### Pasta centralizadora no diretório
+- Se o repositório selecionado tem `pastaCentralizadora = "Pessoal"`:
+  - `diretorioRaiz = "C:\git\Pessoal\"`
+  - Clone: `C:\git\Pessoal\PMW12_descricao\ProjectManagerWeb\`
+- Se não tem:
+  - `diretorioRaiz = "C:\git\"`
+  - Clone: `C:\git\PMW12_descricao\ProjectManagerWeb\`
+
 Fluxo:
-1. Usuário seleciona repositório, preenche código, descrição, branch e opções
+1. Usuário seleciona repositório (ou digita código da tarefa), preenche descrição, branch e opções
 2. Submit → `CloneService.clonar(clone)` → `POST /api/clones`
 3. Backend retorna a `PastaCadastroRequestDTO` criada
 4. Frontend atualiza a lista de pastas (recarrega `GET /api/pastas`)
@@ -69,8 +94,16 @@ private static bool EhBranchBase(string branch) =>
 {DiretorioRaiz}{Codigo}_{Descricao com espaços substituídos por _}
 ```
 
-Exemplo: `DiretorioRaiz = C:\Dev\`, `Codigo = PMW-123`, `Descricao = "minha feature"`
-→ `C:\Dev\PMW-123_minha_feature`
+### Com pasta centralizadora
+`DiretorioRaiz = C:\git\Pessoal\`, `Codigo = PMW-123`, `Descricao = "minha feature"`
+→ `C:\git\Pessoal\PMW-123_minha_feature\ProjectManagerWeb\`
+
+### Sem pasta centralizadora
+`DiretorioRaiz = C:\git\`, `Codigo = PMW-123`, `Descricao = "minha feature"`
+→ `C:\git\PMW-123_minha_feature\ProjectManagerWeb\`
+
+### Criação automática
+O `Directory.CreateDirectory` cria toda a árvore de diretórios, incluindo a pasta centralizadora se não existir.
 
 ## Problema conhecido: branch principal ausente
 
@@ -89,10 +122,13 @@ Checkout do branch usa `2>$null` para suprimir erro se não existir no agregado.
 frontend/src/components/clone/CloneGit.vue
 frontend/src/models/CloneModel.ts
 frontend/src/services/CloneService.ts
-frontend/src/types/index.ts              → IClone
+frontend/src/services/RepositoriosService.ts   → buscarCodigoTarefa()
+frontend/src/types/index.ts                     → IClone, ICodigoTarefa
 backend/src/Controllers/CloneController.cs
+backend/src/Controllers/RepositorioController.cs → GET codigos-tarefa/{iniciais}
 backend/src/Services/CloneService.cs
 backend/src/DTOs/CloneRequestDTO.cs
+backend/src/DTOs/CodigoTarefaDTO.cs
 backend/src/Services/PastaService.cs
 backend/src/Services/RepositorioJsonService.cs
 backend/src/Utils/ShellExecute.cs
