@@ -71,7 +71,9 @@ Nova migration: adicionar método `Migration_00X_NomeDaMigration()` no `Migratio
 - `Atualizar_PMW.ps1` → script legado de atualização
 - Diretórios: app em `C:\PMW` ou `C:\inetpub\wwwroot\PMW`, scripts em `C:\PMW-Tools/`
 
-**CI/CD:** `.github/workflows/release.yml` — push na `main` gera `PMW_Windows_*.zip` e `PMW_Linux_*.zip`
+**CI/CD:**
+- `.github/workflows/ci.yml` — build frontend + backend em todo **Pull Request** (para `develop` ou `main`)
+- `.github/workflows/release.yml` — push na `main` gera release com `PMW_Windows_*.zip` e `PMW_Linux_*.zip`
 
 ## Onde buscar informação
 
