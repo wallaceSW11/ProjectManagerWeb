@@ -14,20 +14,56 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
     var configuracao = await configuracaoService.ObterConfiguracaoAsync();
     var diretorioRaiz = configuracao.DiretorioRaizEfetivo;
+
+    if (string.IsNullOrWhiteSpace(diretorioRaiz))
+        return [];
+
     var diretoriosOcultos = configuracao.DiretoriosOcultos ?? [];
+    var pastasCentralizadoras = configuracao.PastasCentralizadoras ?? [];
+    var temPastaCentralizadora = pastasCentralizadoras.Count > 0;
 
     var pastaResponseList = new List<PastaResponseDTO>();
+    var listaPastas = new List<(string Diretorio, string NomeAba)>();
 
-    var pastasNoDisco = Directory.GetDirectories(diretorioRaiz)
-        .Where(d => !diretoriosOcultos.Contains(d, StringComparer.OrdinalIgnoreCase))
-        .ToArray();
+    if (temPastaCentralizadora)
+    {
+      var nomesPc = pastasCentralizadoras.Select(pc => pc.Nome).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+      foreach (var pc in pastasCentralizadoras)
+      {
+        var caminhoPc = Path.Combine(diretorioRaiz, pc.Nome);
+        if (!Directory.Exists(caminhoPc)) continue;
+
+        foreach (var subDir in Directory.GetDirectories(caminhoPc))
+            if (!diretoriosOcultos.Contains(subDir, StringComparer.OrdinalIgnoreCase))
+                listaPastas.Add((subDir, pc.Nome));
+      }
+
+      foreach (var dir in Directory.GetDirectories(diretorioRaiz))
+      {
+        if (diretoriosOcultos.Contains(dir, StringComparer.OrdinalIgnoreCase)) continue;
+        var nomeDir = Path.GetFileName(dir);
+        if (nomesPc.Contains(nomeDir)) continue;
+        listaPastas.Add((dir, "Raiz"));
+      }
+    }
+    else
+    {
+      foreach (var dir in Directory.GetDirectories(diretorioRaiz))
+      {
+        if (!diretoriosOcultos.Contains(dir, StringComparer.OrdinalIgnoreCase))
+          listaPastas.Add((dir, "Raiz"));
+      }
+    }
+
+    var pastasNoDisco = listaPastas.Select(lp => lp.Diretorio).ToArray();
 
     await LimparPastasInexistentes(pastasCadastradas, pastasNoDisco);
 
     if (pastasNoDisco.Length == 0)
       return [];
 
-    foreach (var pastaNoDisco in pastasNoDisco)
+    foreach (var (pastaNoDisco, nomeAba) in listaPastas)
     {
       var pasta = pastasCadastradas.FirstOrDefault(p => p.Diretorio.Equals(pastaNoDisco, StringComparison.OrdinalIgnoreCase));
 
@@ -50,7 +86,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
           [],
           null,
           null,
-          indice
+          indice,
+          NomeAba: nomeAba
         );
 
         pastaResponseList.Add(pastaResponse1);
@@ -178,7 +215,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.CliComandoComplementar,
         repositorio.CliComando != null
           ? configuracao.CLIs?.FirstOrDefault(c => c.Comando.Equals(repositorio.CliComando, StringComparison.OrdinalIgnoreCase))?.Nome
-          : null
+          : null,
+        nomeAba
       );
 
       pastaResponseList.Add(pastaResponse);
@@ -337,8 +375,6 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
     // Remover pastas que não existem mais no disco
     foreach (var pastaParaRemover in pastasParaRemover)
-    {
       await pastaJsonService.DeleteAsync(pastaParaRemover.Diretorio);
-    }
   }
 }

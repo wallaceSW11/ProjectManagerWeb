@@ -1,6 +1,29 @@
+html {
+  overflow: hidden;
+  scrollbar-gutter: auto;
+  scrollbar-width: none;
+  height: 100%;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  height: 100%;
+  overflow: hidden;
+}
+
 .link {
   cursor: pointer;
 }
+
 .link:hover {
   color: #1976d2;
   text-decoration: underline;

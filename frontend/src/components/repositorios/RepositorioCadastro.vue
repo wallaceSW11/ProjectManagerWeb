@@ -28,6 +28,28 @@
 
       <v-col cols="12">
         <v-text-field
+          label="Branch base"
+          v-model="repositorio.branchBase"
+          hint="Branch principal do repositório (develop, dev, main)"
+          persistent-hint
+          placeholder="develop"
+          clearable
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <v-select
+          label="Pasta centralizadora"
+          v-model="repositorio.pastaCentralizadora"
+          :items="pastasCentralizadoras"
+          clearable
+          hint="Pasta onde os clones serão criados"
+          persistent-hint
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <v-text-field
           label="Cor"
           v-model="repositorio.cor"
           type="color"
@@ -63,8 +85,9 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, onMounted, ref } from 'vue';
   import type { IRepositorio } from '@/types';
+  import { useConfiguracaoStore } from '@/stores/configuracao';
 
   interface Props {
     repositorios: IRepositorio[];
@@ -73,7 +96,19 @@
   const props = defineProps<Props>();
   const repositorio = defineModel<IRepositorio>({ required: true });
 
+  const configuracaoStore = useConfiguracaoStore();
+
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
+
+  const pastasCentralizadoras = computed(() => {
+    return configuracaoStore.pastasCentralizadoras?.map(p => p.nome) || [];
+  });
+
+  onMounted(() => {
+    if (!configuracaoStore.configuracao.pastasCentralizadoras?.length) {
+      configuracaoStore.carregarConfiguracao();
+    }
+  });
 
   const repositoriosDisponiveis = computed(() => {
     return props.repositorios.filter(

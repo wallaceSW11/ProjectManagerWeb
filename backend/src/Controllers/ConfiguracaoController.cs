@@ -32,5 +32,53 @@ namespace ProjectManagerWeb.src.Controllers
             await repositorioJsonService.RenomearPerfilVSCodeAsync(nomeAntigo, nomeNovo);
             return NoContent();
         }
+
+        [HttpPost("pastas-centralizadoras")]
+        public async Task<IActionResult> AdicionarPastaCentralizadora([FromBody] string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                return BadRequest("Nome é obrigatório");
+
+            try
+            {
+                await configuracaoService.AdicionarPastaCentralizadoraAsync(nome);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("pastas-centralizadoras/{nomeAntigo}")]
+        public async Task<IActionResult> RenomearPastaCentralizadora(string nomeAntigo, [FromBody] string nomeNovo)
+        {
+            if (string.IsNullOrWhiteSpace(nomeNovo))
+                return BadRequest("Nome é obrigatório");
+
+            try
+            {
+                await configuracaoService.RenomearPastaCentralizadoraAsync(nomeAntigo, nomeNovo);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("pastas-centralizadoras/{nome}")]
+        public async Task<IActionResult> RemoverPastaCentralizadora(string nome)
+        {
+            try
+            {
+                await configuracaoService.RemoverPastaCentralizadoraAsync(nome);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

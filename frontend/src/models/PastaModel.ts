@@ -26,6 +26,7 @@ export default class PastaModel implements IPasta {
   ordemFixada: number;
   cliComandoComplementar?: string | null;
   nomeCli?: string | null;
+  nomeAba?: string | null;
 
   constructor(obj: Partial<IPasta> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -52,5 +53,6 @@ export default class PastaModel implements IPasta {
     this.ordemFixada = obj.ordemFixada || 0;
     this.cliComandoComplementar = obj.cliComandoComplementar || null;
     this.nomeCli = obj.nomeCli || null;
+    this.nomeAba = obj.nomeAba || null;
   }
 }
