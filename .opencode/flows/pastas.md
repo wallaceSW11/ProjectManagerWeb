@@ -57,6 +57,21 @@ Lógica por tipo:
 - `BUILDAR` → `cd {dir}\{subdir}; {Comandos.Buildar}`
 - `ABRIR_NA_IDE` → `cd {dir}\{subdir}; {ide.Comando} [--profile "perfil"] .; Exit;`
 
+## Link do gestor de tarefas
+
+O `PastaResponseDTO` possui o campo `UrlBaseGestorTarefas` (vindo do repositório).
+No frontend (`CardPasta.vue`), se a pasta tiver `codigo` e o repositório tiver `urlBaseGestorTarefas`:
+- O título da pasta vira um **link** clicável → abre `{urlBase}/{codigo}` em nova aba
+- Um ícone **📋** ao lado copia a URL completa para o clipboard
+
+### Backend
+- `PastaService.ObterTodas()` preenche `UrlBaseGestorTarefas` a partir de `repositorio.UrlBaseGestorTarefas`
+- Campo adicionado em `PastaResponseDTO`
+
+### Frontend
+- `CardPasta.vue`: `linkTarefa` computed, `temLinkTarefa`, `copiarLink()`
+- `types/index.ts` e `models/PastaModel.ts`: campo `urlBaseGestorTarefas`
+
 ## Abrir pasta na IDE
 
 `POST /api/comandos/abrir-pasta-ide`

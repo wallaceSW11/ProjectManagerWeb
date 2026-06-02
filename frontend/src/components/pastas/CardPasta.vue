@@ -213,9 +213,9 @@
       : pasta.descricao;
   };
 
-  const linkTarefa = computed((): string | null => {
+  const linkTarefa = computed((): string | undefined => {
     const p = props.pasta;
-    if (!p.urlBaseGestorTarefas || !p.codigo) return null;
+    if (!p.urlBaseGestorTarefas || !p.codigo) return undefined;
     const base = p.urlBaseGestorTarefas.replace(/\/+$/, '');
     return `${base}/${p.codigo}`;
   });
