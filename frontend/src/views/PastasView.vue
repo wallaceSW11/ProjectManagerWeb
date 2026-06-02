@@ -4,31 +4,51 @@
       <v-row no-gutters>
         <v-col
           cols="8"
-          class="d-flex justify-space-between align-center pb-2"
+          class="pb-2"
         >
-          <h2>Pastas <span v-if="pastas.length > 0" class="text-medium-emphasis text-body-1">({{ pastas.length }})</span></h2>
+          <div class="d-flex align-center" style="gap: 16px;">
+            <h2 class="flex-shrink-0">Pastas <span v-if="pastas.length > 0" class="text-medium-emphasis text-body-1">({{ pastas.length }})</span></h2>
 
-          <div class="d-flex align-center" style="gap: 8px;">
-            <v-text-field
-              ref="campoPesquisa"
-              v-model="termoPesquisa"
-              placeholder="Código ou descrição"
+            <v-tabs
+              v-model="abaSelecionada"
               density="compact"
-              variant="underlined"
-              hide-details
-              clearable
-              style="width: 220px; min-width: 220px; padding-right: 8px;"
-              prepend-inner-icon="mdi-magnify"
-              @keydown.esc="termoPesquisa = ''"
-            />
+              color="primary"
+              show-arrows
+              style="min-width: 0;"
+            >
+              <v-tab
+                v-for="aba in abasDisponiveis"
+                :key="aba"
+                :value="aba"
+              >
+                {{ aba }}
+              </v-tab>
+            </v-tabs>
 
-            <IconeComTooltip
-              icone="mdi-refresh"
-              texto="Atualizar listagem"
-              :acao="carregarPastas"
-            />
+            <v-spacer />
 
-            <PastasOcultas ref="pastasOcultas" @atualizar="carregarPastas" />
+            <div class="d-flex align-center" style="gap: 8px;">
+              <v-text-field
+                ref="campoPesquisa"
+                v-model="termoPesquisa"
+                placeholder="Código ou descrição"
+                density="compact"
+                variant="underlined"
+                hide-details
+                clearable
+                style="width: 220px; min-width: 220px; padding-right: 8px;"
+                prepend-inner-icon="mdi-magnify"
+                @keydown.esc="termoPesquisa = ''"
+              />
+
+              <IconeComTooltip
+                icone="mdi-refresh"
+                texto="Atualizar listagem"
+                :acao="carregarPastas"
+              />
+
+              <PastasOcultas ref="pastasOcultas" @atualizar="carregarPastas" />
+            </div>
           </div>
         </v-col>
 
@@ -69,22 +89,6 @@
           </div>
         </v-col>
       </v-row>
-
-      <v-tabs
-        v-model="abaSelecionada"
-        density="compact"
-        color="primary"
-        class="mb-2"
-        show-arrows
-      >
-        <v-tab
-          v-for="aba in abasDisponiveis"
-          :key="aba"
-          :value="aba"
-        >
-          {{ aba }}
-        </v-tab>
-      </v-tabs>
 
       <v-row
         no-gutters
