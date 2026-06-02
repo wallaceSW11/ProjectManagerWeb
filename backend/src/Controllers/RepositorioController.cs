@@ -96,13 +96,16 @@ namespace ProjectManagerWeb.src.Controllers
                         repo.Nome,
                         repo.Titulo,
                         repo.Cor,
+                        repo.BranchBase,
                         repo.IDEIdentificador,
                         repo.PerfilVSCode,
                         repo.Subdiretorio,
                         repo.CliComando,
                         repo.PerfilTerminal,
                         repo.AbrirWorkspace,
-                        repo.CliComandoComplementar
+                        repo.CliComandoComplementar,
+                        repo.PastaCentralizadora,
+                        repo.UrlBaseGestorTarefas
                     }
                 });
             }

@@ -168,11 +168,19 @@
     }
   });
 
+  watch(() => clone.repositorio?.identificador, () => {
+    const repo = clone.repositorio;
+    if (!repo?.url) return;
+
+    clone.diretorioRaiz = repo.pastaCentralizadora
+      ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${repo.pastaCentralizadora}${featuresStore.pathSeparator}`
+      : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
+  });
+
   watch(exibirModalClone, async (abriu) => {
     if (!abriu) return;
 
-    clone.diretorioRaiz =
-      configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
+    clone.diretorioRaiz = `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
 
     const texto = await lerClipboard();
     const padrao = /^[A-Za-z]+\d+$/;
@@ -216,11 +224,9 @@
       if (repositorio) {
         clone.repositorio = repositorio;
 
-        if (repositorio.pastaCentralizadora) {
-          clone.diretorioRaiz = configuracaoStore.diretorioRaiz + featuresStore.pathSeparator + repositorio.pastaCentralizadora + featuresStore.pathSeparator;
-        } else {
-          clone.diretorioRaiz = configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
-        }
+        clone.diretorioRaiz = repositorio.pastaCentralizadora
+          ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${repositorio.pastaCentralizadora}${featuresStore.pathSeparator}`
+          : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
       }
 
       if (codigoTarefa.branchPrincipal) {
@@ -318,7 +324,7 @@
   const fecharClone = (): void => {
     exibirModalClone.value = false;
     Object.assign(clone, new CloneModel());
-    clone.diretorioRaiz = configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
+    clone.diretorioRaiz = `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
     codigoTarefaInput.value = '';
     branchInvalida.value = false;
     hintBranch.value = '';
