@@ -216,7 +216,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
         repositorio.CliComando != null
           ? configuracao.CLIs?.FirstOrDefault(c => c.Comando.Equals(repositorio.CliComando, StringComparison.OrdinalIgnoreCase))?.Nome
           : null,
-        nomeAba
+        nomeAba,
+        repositorio.UrlBaseGestorTarefas
       );
 
       pastaResponseList.Add(pastaResponse);

@@ -20,8 +20,28 @@
               sem-botao
             />
           </div>
-          <div class="ml-2">
-            {{ descricaoPasta(pasta) }}
+          <div class="ml-2 d-flex align-center" style="gap: 4px;">
+            <template v-if="temLinkTarefa">
+              <a
+                :href="linkTarefa"
+                target="_blank"
+                rel="noopener"
+                class="link-tarefa"
+                @click.stop
+              >
+                {{ descricaoPasta(pasta) }}
+              </a>
+              <v-icon
+                size="x-small"
+                class="link ml-1"
+                @click.stop="copiarLink"
+              >
+                mdi-content-copy
+              </v-icon>
+            </template>
+            <template v-else>
+              {{ descricaoPasta(pasta) }}
+            </template>
           </div>
         </div>
 
@@ -185,12 +205,33 @@
     menuAberto.value = false;
   };
 
+  import { notificar } from '@/utils/eventBus';
+
   const descricaoPasta = (pasta: IPasta): string => {
     return pasta.codigo
       ? `${pasta.codigo} - ${pasta.descricao}`
       : pasta.descricao;
   };
 
+  const linkTarefa = computed((): string | null => {
+    const p = props.pasta;
+    if (!p.urlBaseGestorTarefas || !p.codigo) return null;
+    const base = p.urlBaseGestorTarefas.replace(/\/+$/, '');
+    return `${base}/${p.codigo}`;
+  });
+
+  const temLinkTarefa = computed((): boolean => !!linkTarefa.value);
+
+  const copiarLink = async (): Promise<void> => {
+    const url = linkTarefa.value;
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      notificar('sucesso', 'Link copiado');
+    } catch {
+      notificar('erro', 'Falha ao copiar link');
+    }
+  };
 
   interface TipoInfo {
     icone: string;
@@ -254,5 +295,13 @@
 </script>
 
 <style scoped>
-  /* Removido - agora é aplicado dinamicamente via computed */
+  .link-tarefa {
+    color: rgb(var(--v-theme-primary));
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .link-tarefa:hover {
+    text-decoration: underline;
+  }
 </style>

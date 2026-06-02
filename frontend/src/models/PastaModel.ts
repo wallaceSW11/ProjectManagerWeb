@@ -27,6 +27,7 @@ export default class PastaModel implements IPasta {
   cliComandoComplementar?: string | null;
   nomeCli?: string | null;
   nomeAba?: string | null;
+  urlBaseGestorTarefas?: string | null;
 
   constructor(obj: Partial<IPasta> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -54,5 +55,6 @@ export default class PastaModel implements IPasta {
     this.cliComandoComplementar = obj.cliComandoComplementar || null;
     this.nomeCli = obj.nomeCli || null;
     this.nomeAba = obj.nomeAba || null;
+    this.urlBaseGestorTarefas = obj.urlBaseGestorTarefas || null;
   }
 }
