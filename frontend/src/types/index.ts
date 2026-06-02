@@ -125,6 +125,7 @@ export interface IPasta {
   cliComandoComplementar?: string | null;
   nomeCli?: string | null;
   nomeAba?: string | null;
+  urlBaseGestorTarefas?: string | null;
 }
 
 export interface IClone {

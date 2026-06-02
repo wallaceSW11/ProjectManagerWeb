@@ -27,7 +27,8 @@ public sealed record PastaResponseDTO(
     int OrdemFixada = 0,
     string? CliComandoComplementar = null,
     string? NomeCli = null,
-    string? NomeAba = null
+    string? NomeAba = null,
+    string? UrlBaseGestorTarefas = null
 );
 
 public sealed record ProjetoDisponivelDTO(
