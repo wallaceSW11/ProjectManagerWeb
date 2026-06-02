@@ -20,6 +20,16 @@
             />
           </v-col>
 
+          <!-- Terminal Linux -->
+          <v-col cols="12" v-if="featuresStore.isLinux">
+            <v-select
+              label="Terminal"
+              v-model="configuracao.terminalLinux"
+              :items="terminaisLinux"
+              @update:model-value="salvarConfiguracao"
+            />
+          </v-col>
+
           <!-- Perfis -->
           <v-col cols="12">
             <h2>Perfis do VS Code</h2>
@@ -127,11 +137,14 @@
   import ConfiguracaoModel from '../models/ConfiguracaoModel';
   import ConfiguracaoService from '../services/ConfiguracaoService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
+  import { useFeaturesStore } from '@/stores/features';
   import { notificar } from '@/utils/eventBus';
 
   const configuracaoStore = useConfiguracaoStore();
+  const featuresStore = useFeaturesStore();
 
   // --- STATE ---
+  const terminaisLinux = ['ptyxis', 'ghostty'];
   const nomePerfil = ref<string>(''); // input do perfil
   const nomeCliNovo = ref<string>('');
   const comandoCliNovo = ref<string>('');

@@ -117,11 +117,12 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
+  import { computed, nextTick, reactive, ref, watch } from 'vue';
   import type { IClone } from '@/types';
   import CloneModel from '@/models/CloneModel';
   import CloneService from '@/services/CloneService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
+  import { useFeaturesStore } from '@/stores/features';
   import {
     notificar,
     atualizarListaPastas,
@@ -134,6 +135,7 @@
 
   const clone = reactive<IClone>(new CloneModel());
   const configuracaoStore = useConfiguracaoStore();
+  const featuresStore = useFeaturesStore();
   const exibirModalClone = defineModel<boolean>({ default: false });
   const formClone = ref<any>(null);
   const adicionarNoLocalStorage = ref<boolean>(false);
@@ -163,8 +165,10 @@
     }
   });
 
-  onMounted(() => {
-    clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
+  watch(exibirModalClone, (abriu) => {
+    if (abriu)
+      clone.diretorioRaiz =
+        configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
   });
 
   const ehBranchBase = (branch: string): boolean =>
@@ -234,7 +238,7 @@
   const fecharClone = (): void => {
     exibirModalClone.value = false;
     Object.assign(clone, new CloneModel());
-    clone.diretorioRaiz = configuracaoStore.diretorioRaiz + '\\';
+    clone.diretorioRaiz = configuracaoStore.diretorioRaiz + featuresStore.pathSeparator;
     branchInvalida.value = false;
     hintBranch.value = '';
   };

@@ -37,16 +37,11 @@ public class CloneService
 
     public async Task<bool> Clonar(CloneRequestDTO clone)
     {
-        StringBuilder diretorioCompleto = new();
+        var nomePasta = $"{clone.Codigo}_{clone.Descricao.Replace(" ", "_")}";
+        var diretorioCompleto = Path.Combine(clone.DiretorioRaiz, nomePasta);
 
-        diretorioCompleto
-            .Append(clone.DiretorioRaiz)
-            .Append(clone.Codigo)
-            .Append('_')
-            .Append(clone.Descricao.Replace(" ", "_"));
-
-        if (!Directory.Exists(diretorioCompleto.ToString()))
-            Directory.CreateDirectory(diretorioCompleto.ToString());
+        if (!Directory.Exists(diretorioCompleto))
+            Directory.CreateDirectory(diretorioCompleto);
 
         var gitPrincipal = await _repositorioJson.GetByIdAsync(clone.RepositorioId);
 
@@ -63,7 +58,7 @@ public class CloneService
             branchPrincipal = await DetectarBranchPrincipalAsync(gitPrincipal.Url!);
         }
 
-        var scriptPrincipal = MontarScript(diretorioCompleto.ToString(), gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal);
+        var scriptPrincipal = MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal);
         ShellExecute.ExecutarComando(scriptPrincipal);
 
         if (clone.BaixarAgregados)
@@ -99,7 +94,7 @@ public class CloneService
                 else
                     cloneAgregado = clone;
 
-                var scriptAgregado = MontarScript(diretorioCompleto.ToString(), agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado);
+                var scriptAgregado = MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado);
                 ShellExecute.ExecutarComando(scriptAgregado);
             });
         }

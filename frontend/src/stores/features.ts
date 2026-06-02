@@ -21,6 +21,7 @@ export const useFeaturesStore = defineStore('features', {
   getters: {
     isWindows: (state): boolean => state.os === 'windows',
     isLinux: (state): boolean => state.os === 'linux',
+    pathSeparator: (state): string => (state.os === 'windows' ? '\\' : '/'),
   },
 
   actions: {

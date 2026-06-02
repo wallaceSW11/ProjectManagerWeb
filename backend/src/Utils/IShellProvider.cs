@@ -6,4 +6,5 @@ public interface IShellProvider
     void ExecutarSemInterface(string command);
     void ExecutarComoAdministrador(string command, string? perfilTerminal = null);
     List<string> ObterPerfisTerminal();
+    void RecarregarTerminal() { }
 }

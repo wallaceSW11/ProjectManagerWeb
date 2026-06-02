@@ -25,7 +25,7 @@ public class VersaoController() : ControllerBase
         {
             Iis = OperatingSystem.IsWindows(),
             Deploy = OperatingSystem.IsWindows(),
-            TerminalProfiles = OperatingSystem.IsWindows(),
+            TerminalProfiles = true,
             Os = OperatingSystem.IsWindows() ? "windows" : "linux"
         });
     }
