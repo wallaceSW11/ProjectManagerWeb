@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "deepseek/deepseek-v4-flash",
+  "default_agent": "fullstack-dev",
+  "instructions": [
+    "AGENTS.md",
+    ".opencode/ecosystem-pmw.md",
+    ".opencode/code-style/backend.md",
+    ".opencode/code-style/frontend.md"
+  ],
+  "shell": "pwsh",
+  "formatter": true
+}
