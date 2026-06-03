@@ -2,7 +2,7 @@
 # PMW - Project Manager Web - Script de gerenciamento (Windows)
 # ============================================================
 # Diretórios:
-#   C:\PMW ou C:\inetpub\wwwroot\PMW → aplicação
+#   C:\inetpub\wwwroot\PMW → aplicação (default)
 #   C:\PMW-Tools                      → scripts de infra (pmw.ps1)
 # ============================================================
 
@@ -31,8 +31,8 @@ function Get-PmwDir {
 
     # 3. Tenta detectar em locais comuns
     $candidatos = @(
-        "C:\PMW",
         "C:\inetpub\wwwroot\PMW",
+        "C:\PMW",
         "C:\wwwroot\PMW",
         "$env:USERPROFILE\pmw"
     )
@@ -51,7 +51,7 @@ function Get-PmwDir {
 
     # 4. Não encontrou
     Write-Host "❌ PMW não encontrado. Informe o caminho:" -ForegroundColor Red
-    Write-Host "   .\pmw.ps1 start -Pasta ""C:\PMW""" -ForegroundColor Yellow
+    Write-Host "   .\pmw.ps1 start -Pasta ""C:\inetpub\wwwroot\PMW""" -ForegroundColor Yellow
     return $null
 }
 
