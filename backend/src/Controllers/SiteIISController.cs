@@ -15,7 +15,7 @@ namespace ProjectManagerWeb.src.Controllers
                 return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
 
             var sites = await siteIISService.GetAllAsync();
-            
+
             var response = sites.Select(s => new SiteIISDeployResponseDTO(
                 s.Identificador,
                 s.Titulo,
@@ -35,7 +35,7 @@ namespace ProjectManagerWeb.src.Controllers
                 return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
 
             var site = await siteIISService.GetByIdAsync(identificador);
-            
+
             if (site == null)
                 return NotFound($"Site com ID {identificador} não encontrado.");
 
@@ -72,7 +72,7 @@ namespace ProjectManagerWeb.src.Controllers
                 return BadRequest("O corpo da requisição não pode ser nulo.");
 
             var sucesso = await siteIISService.UpdateAsync(identificador, siteAtualizado);
-            
+
             if (!sucesso)
                 return NotFound($"Site com ID {identificador} não encontrado.");
 
@@ -86,7 +86,7 @@ namespace ProjectManagerWeb.src.Controllers
                 return StatusCode(501, new { mensagem = "Funcionalidade disponível apenas no Windows" });
 
             var sucesso = await siteIISService.DeleteAsync(identificador);
-            
+
             if (!sucesso)
                 return NotFound($"Site com ID {identificador} não encontrado.");
 
@@ -102,7 +102,7 @@ namespace ProjectManagerWeb.src.Controllers
             try
             {
                 var resultado = await deployService.AtualizarSiteAsync(identificador);
-                
+
                 if (resultado.Sucesso)
                     return Ok(resultado);
                 else

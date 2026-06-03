@@ -43,6 +43,7 @@
       >
         <v-form ref="formProjeto">
           <v-text-field
+            ref="campoNome"
             label="Nome"
             v-model="projetoSelecionado.nome"
             :rules="obrigatorio"
@@ -100,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from 'vue';
+  import { nextTick, onMounted, reactive, ref } from 'vue';
   import type { IRepositorio, IProjeto, IIDE } from '@/types';
   import ProjetoModel from '@/models/ProjetoModel';
   import IDEModel from '@/models/IDEModel';
@@ -146,6 +147,9 @@
 
   const projetoSelecionado = reactive<IProjeto>(new ProjetoModel());
   const formProjeto = ref<any>(null);
+  const campoNome = ref<InstanceType<
+    typeof import('vuetify/components').VTextField
+  > | null>(null);
 
   const abrirModalCadastroProjeto = (): void => {
     exibirModalCadastroProjeto.value = true;
@@ -170,14 +174,21 @@
     definirModoCadastro();
     limparCampos();
     abrirModalCadastroProjeto();
+    nextTick(() => campoNome.value?.focus());
   };
 
   const salvarAlteracoes = async (): Promise<void> => {
     if (!(await formularioProjetoValido())) return;
 
     try {
-      emModoCadastro.value ? adicionarProjeto() : atualizarProjeto();
-      descartarAlteracoes();
+      if (emModoCadastro.value) {
+        adicionarProjeto();
+        limparCampos();
+        nextTick(() => campoNome.value?.focus());
+      } else {
+        atualizarProjeto();
+        descartarAlteracoes();
+      }
     } catch (error) {
       console.error('Falha ao salvar alteracoes do cadastro:', error);
     }

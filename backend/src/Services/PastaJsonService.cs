@@ -43,7 +43,7 @@ namespace ProjectManagerWeb.src.Services
             return pastas.Where(p => p.RepositorioId == repositorioId).ToList();
         }
 
-        
+
         public async Task<PastaCadastroRequestDTO> AddAsync(PastaCadastroRequestDTO novaPasta)
         {
             await _semaphore.WaitAsync();

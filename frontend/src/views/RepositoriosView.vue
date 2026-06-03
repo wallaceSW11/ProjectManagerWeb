@@ -48,6 +48,7 @@
                 <v-tabs-window-item>
                   <div class="conteudo-aba">
                     <RepositorioCadastro
+                      ref="repositorioCadastroRef"
                       v-model="repositorioSelecionado"
                       :repositorios="repositorios"
                       class="pt-4"
@@ -122,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref } from 'vue';
+  import { computed, nextTick, onMounted, reactive, ref } from 'vue';
   import type { IRepositorio } from '@/types';
   import ListaRepositorios from '../components/repositorios/ListaRepositorios.vue';
   import RepositorioCadastro from '../components/repositorios/RepositorioCadastro.vue';
@@ -141,6 +142,7 @@
   const paginaPrincipal = ref<number>(0);
   const paginaCadastro = ref<number>(0);
   const camposObrigatoriosPreenchidos = ref<boolean>(true);
+  const repositorioCadastroRef = ref<{ focarUrl: () => void } | null>(null);
 
   onMounted(async () => {
     await preencherRepositorios();
@@ -203,6 +205,7 @@
     modoOperacao.value = MODO_OPERACAO.NOVO.valor;
     limparCampos();
     irParaCadastro();
+    nextTick(() => repositorioCadastroRef.value?.focarUrl());
   };
 
   const formularioValido = (): boolean => {
@@ -230,7 +233,8 @@
       repositorios.push(new RepositorioModel(repositorioSelecionado.value));
       limparCampos();
       notificar('sucesso', 'Repositorio criado');
-      irParaListagem();
+      irParaCadastro();
+      nextTick(() => repositorioCadastroRef.value?.focarUrl());
     } catch (error) {
       console.error('Falha ao criar repositorio: ' + error);
       notificar('erro', 'Falha ao criar repositorio');

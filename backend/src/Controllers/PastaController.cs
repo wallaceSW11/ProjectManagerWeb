@@ -9,138 +9,138 @@ namespace ProjectManagerWeb.src.Controllers;
 public class PastaController(PastaService pastaService, ConfiguracaoService configuracaoService) : ControllerBase
 {
 
-  [HttpGet]
-  public async Task<IActionResult> ObterTodas()
-  {
-    var pastas = await pastaService.ObterTodas();
-    return Ok(pastas);
-  }
-
-  [HttpPost]
-  public async Task<IActionResult> Cadastrar([FromBody] PastaCadastroRequestDTO pastaCadastro)
-  {
-    if (!ModelState.IsValid)
-      return BadRequest(ModelState);
-
-    var pasta = await pastaService.Cadastrar(pastaCadastro);
-    return CreatedAtAction(nameof(ObterTodas), new { id = pasta.Identificador }, pasta);
-  }
-
-  [HttpPut("indices")]
-  public async Task<IActionResult> AtualizarIndices([FromBody] List<PastaIndiceRequestDTO> indices)
-  {
-    if (!ModelState.IsValid)
-      return BadRequest(ModelState);
-
-    await pastaService.AtualizarIndices(indices);
-    return Ok();
-  }
-
-  [HttpPatch("projetos/expandido")]
-  public async Task<IActionResult> AtualizarExpandidoProjeto([FromBody] AtualizarExpandidoRequestDTO request)
-  {
-    if (!ModelState.IsValid)
-      return BadRequest(ModelState);
-
-    try
+    [HttpGet]
+    public async Task<IActionResult> ObterTodas()
     {
-      await pastaService.AtualizarExpandidoProjeto(request.PastaId, request.ProjetoId, request.Expandido);
-      return Ok();
+        var pastas = await pastaService.ObterTodas();
+        return Ok(pastas);
     }
-    catch (Exception ex)
+
+    [HttpPost]
+    public async Task<IActionResult> Cadastrar([FromBody] PastaCadastroRequestDTO pastaCadastro)
     {
-      return BadRequest(ex.Message);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var pasta = await pastaService.Cadastrar(pastaCadastro);
+        return CreatedAtAction(nameof(ObterTodas), new { id = pasta.Identificador }, pasta);
     }
-  }
 
-  [HttpGet("ocultas")]
-  public async Task<IActionResult> ObterOcultas()
-  {
-    var ocultas = await configuracaoService.ObterDiretoriosOcultosAsync();
-    return Ok(ocultas);
-  }
-
-  [HttpPut("{identificador:guid}/fixar")]
-  public async Task<IActionResult> Fixar(Guid identificador)
-  {
-    try
+    [HttpPut("indices")]
+    public async Task<IActionResult> AtualizarIndices([FromBody] List<PastaIndiceRequestDTO> indices)
     {
-      await pastaService.FixarPasta(identificador);
-      return Ok();
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        await pastaService.AtualizarIndices(indices);
+        return Ok();
     }
-    catch (Exception ex)
+
+    [HttpPatch("projetos/expandido")]
+    public async Task<IActionResult> AtualizarExpandidoProjeto([FromBody] AtualizarExpandidoRequestDTO request)
     {
-      return BadRequest(ex.Message);
-    }
-  }
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-  [HttpPut("{identificador:guid}/desfixar")]
-  public async Task<IActionResult> Desfixar(Guid identificador)
-  {
-    try
+        try
+        {
+            await pastaService.AtualizarExpandidoProjeto(request.PastaId, request.ProjetoId, request.Expandido);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("ocultas")]
+    public async Task<IActionResult> ObterOcultas()
     {
-      await pastaService.DesfixarPasta(identificador);
-      return Ok();
+        var ocultas = await configuracaoService.ObterDiretoriosOcultosAsync();
+        return Ok(ocultas);
     }
-    catch (Exception ex)
+
+    [HttpPut("{identificador:guid}/fixar")]
+    public async Task<IActionResult> Fixar(Guid identificador)
     {
-      return BadRequest(ex.Message);
+        try
+        {
+            await pastaService.FixarPasta(identificador);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
-  }
 
-  [HttpPut("reordenar-fixadas")]
-  public async Task<IActionResult> ReordenarFixadas([FromBody] List<PastaIndiceRequestDTO> indices)
-  {
-    if (!ModelState.IsValid)
-      return BadRequest(ModelState);
-
-    await pastaService.ReordenarFixadas(indices);
-    return Ok();
-  }
-
-  [HttpPost("ocultar")]
-  public async Task<IActionResult> Ocultar([FromBody] DiretorioRequestDTO request)
-  {
-    if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
-    await configuracaoService.OcultarDiretorioAsync(request.Diretorio);
-    return Ok();
-  }
-
-  [HttpPost("restaurar")]
-  public async Task<IActionResult> Restaurar([FromBody] DiretorioRequestDTO request)
-  {
-    if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
-    await configuracaoService.RestaurarDiretorioAsync(request.Diretorio);
-    return Ok();
-  }
-
-  [HttpDelete]
-  public async Task<IActionResult> ExcluirDiretorio([FromBody] DiretorioRequestDTO request)
-  {
-    if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
-
-    if (!Directory.Exists(request.Diretorio))
-      return NotFound("Diretório não encontrado.");
-
-    try
+    [HttpPut("{identificador:guid}/desfixar")]
+    public async Task<IActionResult> Desfixar(Guid identificador)
     {
-      RemoverAtributosReadOnly(new DirectoryInfo(request.Diretorio));
-      Directory.Delete(request.Diretorio, recursive: true);
-      await pastaService.RemoverPorDiretorio(request.Diretorio);
-      return Ok();
+        try
+        {
+            await pastaService.DesfixarPasta(identificador);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
-    catch (Exception ex)
+
+    [HttpPut("reordenar-fixadas")]
+    public async Task<IActionResult> ReordenarFixadas([FromBody] List<PastaIndiceRequestDTO> indices)
     {
-      return BadRequest($"Erro ao excluir o diretório: {ex.Message}");
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        await pastaService.ReordenarFixadas(indices);
+        return Ok();
     }
-  }
 
-  private static void RemoverAtributosReadOnly(DirectoryInfo diretorio)
-  {
-    foreach (var arquivo in diretorio.GetFiles("*", SearchOption.AllDirectories))
-      arquivo.Attributes = FileAttributes.Normal;
+    [HttpPost("ocultar")]
+    public async Task<IActionResult> Ocultar([FromBody] DiretorioRequestDTO request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
+        await configuracaoService.OcultarDiretorioAsync(request.Diretorio);
+        return Ok();
+    }
 
-    foreach (var subDiretorio in diretorio.GetDirectories("*", SearchOption.AllDirectories))
-      subDiretorio.Attributes = FileAttributes.Normal;
-  }
+    [HttpPost("restaurar")]
+    public async Task<IActionResult> Restaurar([FromBody] DiretorioRequestDTO request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
+        await configuracaoService.RestaurarDiretorioAsync(request.Diretorio);
+        return Ok();
+    }
+
+    [HttpDelete]
+    public async Task<IActionResult> ExcluirDiretorio([FromBody] DiretorioRequestDTO request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Diretorio)) return BadRequest();
+
+        if (!Directory.Exists(request.Diretorio))
+            return NotFound("Diretório não encontrado.");
+
+        try
+        {
+            RemoverAtributosReadOnly(new DirectoryInfo(request.Diretorio));
+            Directory.Delete(request.Diretorio, recursive: true);
+            await pastaService.RemoverPorDiretorio(request.Diretorio);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Erro ao excluir o diretório: {ex.Message}");
+        }
+    }
+
+    private static void RemoverAtributosReadOnly(DirectoryInfo diretorio)
+    {
+        foreach (var arquivo in diretorio.GetFiles("*", SearchOption.AllDirectories))
+            arquivo.Attributes = FileAttributes.Normal;
+
+        foreach (var subDiretorio in diretorio.GetDirectories("*", SearchOption.AllDirectories))
+            subDiretorio.Attributes = FileAttributes.Normal;
+    }
 }

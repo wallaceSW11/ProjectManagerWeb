@@ -400,7 +400,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+  import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
   import type {
     IPasta,
     IProjeto,
@@ -454,7 +454,9 @@
   const campoPesquisa = ref<InstanceType<
     typeof import('vuetify/components').VTextField
   > | null>(null);
-  const abaSelecionada = ref<string>('Raiz');
+  const CHAVE_ABA_SELECIONADA = 'AbaSelecionada';
+  const abaSalva = localStorage.getItem(CHAVE_ABA_SELECIONADA);
+  const abaSelecionada = ref<string>(abaSalva || 'Raiz');
   const pastasOcultas = ref<{ recarregar: () => Promise<void> } | null>(null);
   const configuracaoStore = useConfiguracaoStore();
   const featuresStore = useFeaturesStore();
@@ -566,6 +568,10 @@
     window.addEventListener('keydown', focarPesquisa);
   });
 
+  watch(abaSelecionada, novaAba => {
+    localStorage.setItem(CHAVE_ABA_SELECIONADA, novaAba);
+  });
+
   onUnmounted(() => {
     emitter.off('atualizarListaPastas', carregarPastasListener);
     window.removeEventListener('keydown', focarPesquisa);
@@ -573,6 +579,14 @@
 
   const inicializarPagina = async (): Promise<void> => {
     await Promise.all([carregarPastas(), carregarRepositorios()]);
+
+    const abas = new Set<string>();
+    pastas.value.forEach((p: IPasta) => {
+      if (p.nomeAba) abas.add(p.nomeAba);
+    });
+    if (!abas.has(abaSelecionada.value) && abas.size > 0)
+      abaSelecionada.value = 'Raiz';
+
     selecionarPastaSalva();
   };
 

@@ -31,7 +31,7 @@ namespace ProjectManagerWeb.src.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
         // PUT: api/Configuracao/repositorios/{identificador}
         [HttpPut("{identificador:guid}")]
         public async Task<IActionResult> Update(Guid identificador, [FromBody] RepositorioRequestDTO repositorioAtualizado)
@@ -43,7 +43,7 @@ namespace ProjectManagerWeb.src.Controllers
             {
                 return NotFound(); // Retorna 404 se o ID a ser atualizado não existe
             }
-            
+
             return NoContent(); // Retorna 204 para indicar sucesso na atualização
         }
 

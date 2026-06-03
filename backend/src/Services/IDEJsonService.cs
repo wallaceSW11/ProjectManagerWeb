@@ -106,7 +106,7 @@ namespace ProjectManagerWeb.src.Services
         public async Task<bool> IsReferencedByProjectsAsync(Guid identificador, RepositorioJsonService repositorioService)
         {
             var repositorios = await repositorioService.GetAllAsync();
-            
+
             return repositorios
                 .SelectMany(r => r.Projetos)
                 .Any(p => p.Comandos.IDEIdentificador == identificador);

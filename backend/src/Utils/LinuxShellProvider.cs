@@ -21,7 +21,7 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
         var psi = new ProcessStartInfo
         {
             FileName = "bash",
-            Arguments = $"-c \"{EscapeBash(command)}\"",
+            Arguments = $"-l -c \"{EscapeBash(command)}\"",
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,

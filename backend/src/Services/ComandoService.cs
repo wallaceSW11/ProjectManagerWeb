@@ -6,250 +6,285 @@ namespace ProjectManagerWeb.src.Services;
 
 public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJsonService ideJsonService)
 {
-  public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
-  {
-    var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
-    var comandos = new List<(string Comando, string? Perfil)>();
-
-    var diretorio = Path.Combine(pasta.Diretorio, repositorio.Nome);
-
-    foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null))
+    public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
     {
-      var projetoCadastrado = repositorio.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto não encontrado com o identificador {projeto.Identificador}");
+        var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
+        var comandos = new List<(string Comando, string? Perfil)>();
 
-      var pathProjeto = Path.Combine(diretorio, projetoCadastrado.Subdiretorio ?? "");
+        var diretorio = Path.Combine(pasta.Diretorio, repositorio.Nome);
 
-      foreach (var comando in projeto.Comandos)
-      {
-        if (comando == ETipoComando.INICIAR)
+        foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is null))
         {
-          if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && projetoCadastrado.Comandos.Instalar.Contains("npm i"))
-          {
-            if (Directory.Exists(Path.Combine(pathProjeto, "node_modules")))
-              comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
-            else
-              comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal));
-          }
-          else
-            comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
-        }
+            var projetoCadastrado = repositorio.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto não encontrado com o identificador {projeto.Identificador}");
 
-        if (comando == ETipoComando.INSTALAR)
-          comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; ", projetoCadastrado.PerfilTerminal));
+            var pathProjeto = Path.Combine(diretorio, projetoCadastrado.Subdiretorio ?? "");
 
-        if (comando == ETipoComando.BUILDAR)
-          comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Buildar}; ", projetoCadastrado.PerfilTerminal));
-
-        if (comando == ETipoComando.ABRIR_NA_IDE)
-        {
-          if (projetoCadastrado.Comandos.IDEIdentificador != null)
-          {
-            var ide = await ideJsonService.GetByIdAsync(projetoCadastrado.Comandos.IDEIdentificador.Value);
-            if (ide != null)
+            foreach (var comando in projeto.Comandos)
             {
-              var texto = ide.ComandoParaExecutar + " ";
+                if (comando == ETipoComando.INICIAR)
+                {
+                    if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && projetoCadastrado.Comandos.Instalar.Contains("npm i"))
+                    {
+                        if (Directory.Exists(Path.Combine(pathProjeto, "node_modules")))
+                            comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
+                        else
+                            comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal));
+                    }
+                    else
+                        comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
+                }
 
-              if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
-                texto += $"--profile \"{projetoCadastrado.PerfilVSCode}\"";
+                if (comando == ETipoComando.INSTALAR)
+                    comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; ", projetoCadastrado.PerfilTerminal));
 
-              comandos.Add(($"cd \"{pathProjeto}\"; {texto}; Exit;", null));
+                if (comando == ETipoComando.BUILDAR)
+                    comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Buildar}; ", projetoCadastrado.PerfilTerminal));
+
+                if (comando == ETipoComando.ABRIR_NA_IDE)
+                {
+                    if (projetoCadastrado.Comandos.IDEIdentificador != null)
+                    {
+                        var ide = await ideJsonService.GetByIdAsync(projetoCadastrado.Comandos.IDEIdentificador.Value);
+                        if (ide != null)
+                        {
+                            var alvoJaIncluido = ide.ComandoParaExecutar.TrimEnd().EndsWith('.');
+                            var texto = alvoJaIncluido
+                                ? ide.ComandoParaExecutar.TrimEnd()
+                                : $"{ide.ComandoParaExecutar} .";
+
+                            if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoCadastrado.PerfilVSCode))
+                                texto = alvoJaIncluido
+                                    ? $"{ide.ComandoParaExecutar.TrimEnd()} --profile \"{projetoCadastrado.PerfilVSCode}\""
+                                    : $"{ide.ComandoParaExecutar} --profile \"{projetoCadastrado.PerfilVSCode}\" .";
+
+                            comandos.Add(($"cd \"{pathProjeto}\"; {texto}; Exit;", null));
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-    }
-
-    foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is not null))
-    {
-      if (projeto.IdentificadorRepositorioAgregado is null) continue;
-
-      var repositorioAgregado = await repositorioJsonService.GetByIdAsync(projeto.IdentificadorRepositorioAgregado.Value) ?? throw new Exception($"Repositório agregado não encontrado com o identificador {projeto.IdentificadorRepositorioAgregado}");
-
-      var projetoAgregadoCadastrado = repositorioAgregado.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto agregado não encontrado com o identificador {projeto.Identificador}");
-
-      var diretorioAgregado = Path.Combine(pasta.Diretorio, repositorioAgregado.Nome);
-
-      foreach (var comando in projeto.Comandos)
-      {
-        var pathProjetoAgregado = Path.Combine(diretorioAgregado, projetoAgregadoCadastrado.Subdiretorio ?? "");
-
-        if (comando == ETipoComando.INICIAR)
-        {
-          if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && projetoAgregadoCadastrado.Comandos.Instalar.Contains("npm i"))
-          {
-            if (Directory.Exists(Path.Combine(pathProjetoAgregado, "node_modules")))
-              comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
-            else
-              comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal));
-          }
-          else
-            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
         }
 
-        if (comando == ETipoComando.INSTALAR)
-          comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; ", projetoAgregadoCadastrado.PerfilTerminal));
-
-        if (comando == ETipoComando.BUILDAR)
-          comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Buildar}; ", projetoAgregadoCadastrado.PerfilTerminal));
-
-        if (comando == ETipoComando.ABRIR_NA_IDE)
+        foreach (var projeto in pasta.Projetos.Where(p => p.IdentificadorRepositorioAgregado is not null))
         {
-          if (projetoAgregadoCadastrado.Comandos.IDEIdentificador != null)
-          {
-            var ide = await ideJsonService.GetByIdAsync(projetoAgregadoCadastrado.Comandos.IDEIdentificador.Value);
-            if (ide != null)
+            if (projeto.IdentificadorRepositorioAgregado is null) continue;
+
+            var repositorioAgregado = await repositorioJsonService.GetByIdAsync(projeto.IdentificadorRepositorioAgregado.Value) ?? throw new Exception($"Repositório agregado não encontrado com o identificador {projeto.IdentificadorRepositorioAgregado}");
+
+            var projetoAgregadoCadastrado = repositorioAgregado.Projetos.FirstOrDefault(p => p.Identificador.Equals(projeto.Identificador)) ?? throw new Exception($"projeto agregado não encontrado com o identificador {projeto.Identificador}");
+
+            var diretorioAgregado = Path.Combine(pasta.Diretorio, repositorioAgregado.Nome);
+
+            foreach (var comando in projeto.Comandos)
             {
-              var texto = ide.ComandoParaExecutar + " ";
+                var pathProjetoAgregado = Path.Combine(diretorioAgregado, projetoAgregadoCadastrado.Subdiretorio ?? "");
 
-              if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
-                texto += $"--profile \"{projetoAgregadoCadastrado.PerfilVSCode}\"";
+                if (comando == ETipoComando.INICIAR)
+                {
+                    if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && projetoAgregadoCadastrado.Comandos.Instalar.Contains("npm i"))
+                    {
+                        if (Directory.Exists(Path.Combine(pathProjetoAgregado, "node_modules")))
+                            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
+                        else
+                            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal));
+                    }
+                    else
+                        comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
+                }
 
-              comandos.Add(($"cd \"{pathProjetoAgregado}\"; {texto}; Exit;", null));
+                if (comando == ETipoComando.INSTALAR)
+                    comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; ", projetoAgregadoCadastrado.PerfilTerminal));
+
+                if (comando == ETipoComando.BUILDAR)
+                    comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Buildar}; ", projetoAgregadoCadastrado.PerfilTerminal));
+
+                if (comando == ETipoComando.ABRIR_NA_IDE)
+                {
+                    if (projetoAgregadoCadastrado.Comandos.IDEIdentificador != null)
+                    {
+                        var ide = await ideJsonService.GetByIdAsync(projetoAgregadoCadastrado.Comandos.IDEIdentificador.Value);
+                        if (ide != null)
+                        {
+                            var alvoJaIncluido = ide.ComandoParaExecutar.TrimEnd().EndsWith('.');
+                            var texto = alvoJaIncluido
+                                ? ide.ComandoParaExecutar.TrimEnd()
+                                : $"{ide.ComandoParaExecutar} .";
+
+                            if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(projetoAgregadoCadastrado.PerfilVSCode))
+                                texto = alvoJaIncluido
+                                    ? $"{ide.ComandoParaExecutar.TrimEnd()} --profile \"{projetoAgregadoCadastrado.PerfilVSCode}\""
+                                    : $"{ide.ComandoParaExecutar} --profile \"{projetoAgregadoCadastrado.PerfilVSCode}\" .";
+
+                            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {texto}; Exit;", null));
+                        }
+                    }
+                }
             }
-          }
         }
-      }
+
+        try
+        {
+            comandos.ForEach(c => ShellExecute.ExecutarComando(c.Comando, c.Perfil));
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            comandos.Clear();
+        }
+
+        return true;
     }
 
-    try
+    public bool ExecutarComandoAvulso(string comando, string? perfilTerminal = null)
     {
-      comandos.ForEach(c => ShellExecute.ExecutarComando(c.Comando, c.Perfil));
-    }
-    catch
-    {
-      return false;
-    }
-    finally
-    {
-      comandos.Clear();
-    }
+        try
+        {
+            ShellExecute.ExecutarComando(comando, perfilTerminal);
+        }
+        catch
+        {
+            return false;
+        }
 
-    return true;
-  }
-
-  public bool ExecutarComandoAvulso(string comando, string? perfilTerminal = null)
-  {
-    try
-    {
-      ShellExecute.ExecutarComando(comando, perfilTerminal);
-    }
-    catch
-    {
-      return false;
+        return true;
     }
 
-    return true;
-  }
-
-  public async Task<bool> ExecutarComandoMenu(MenuRequestDTO menu)
-  {
-    var repositorio = await repositorioJsonService.GetByIdAsync(menu.RepositorioId) ?? throw new Exception("Repositório não encontrado");
-    var menuRepositorio = repositorio.Menus?.FirstOrDefault(m => m.Identificador == menu.ComandoId) ?? throw new Exception("Comando não encontrado");
-
-    menuRepositorio.Arquivos?.ForEach(a =>
+    public async Task<bool> ExecutarComandoMenu(MenuRequestDTO menu)
     {
-      var nomeArquivo = Path.GetFileName(a.Arquivo);
-      var diretorioDestino = Path.Combine(menu.Diretorio, a.Destino);
-      var caminhoArquivoDestino = Path.Combine(diretorioDestino, nomeArquivo);
+        var repositorio = await repositorioJsonService.GetByIdAsync(menu.RepositorioId) ?? throw new KeyNotFoundException("Repositório não encontrado");
+        var menuRepositorio = repositorio.Menus?.FirstOrDefault(m => m.Identificador == menu.ComandoId) ?? throw new KeyNotFoundException("Comando não encontrado");
 
-      try
-      {
-        if (!Directory.Exists(diretorioDestino))
-          Directory.CreateDirectory(diretorioDestino);
+        menuRepositorio.Arquivos?.ForEach(a =>
+        {
+            try
+            {
+                var nomeArquivo = Path.GetFileName(a.Arquivo);
 
-        File.Copy(a.Arquivo, caminhoArquivoDestino, overwrite: true);
+                var destinoTemNomeArquivo = !string.IsNullOrEmpty(a.Destino)
+                    && Path.GetFileName(a.Destino).IndexOf('.') >= 0;
 
-        _ = ShellExecute.LogComandoAsync($"File.Copy \"{a.Arquivo}\" -> \"{caminhoArquivoDestino}\"", "OK");
+                var caminhoArquivoDestino = destinoTemNomeArquivo
+                    ? Path.Combine(menu.Diretorio, a.Destino)
+                    : Path.Combine(menu.Diretorio, a.Destino ?? "", nomeArquivo);
 
-        if (a.IgnorarGit)
-          IgnorarArquivoNoGit(diretorioDestino, nomeArquivo);
-      }
-      catch (Exception ex)
-      {
-        _ = ShellExecute.LogComandoAsync($"File.Copy \"{a.Arquivo}\" -> \"{caminhoArquivoDestino}\"", $"ERRO: {ex.Message}");
-      }
-    });
+                var diretorioDestino = Path.GetDirectoryName(caminhoArquivoDestino)!;
 
-    menuRepositorio.Pastas?.ForEach(p =>
-    {
-      try
-      {
-        var nomePastaOrigem = Path.GetFileName(p.Origem.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-        var caminhoDestinoCompleto = string.IsNullOrEmpty(p.Destino)
-          ? Path.Combine(menu.Diretorio, nomePastaOrigem)
-          : Path.Combine(menu.Diretorio, p.Destino);
+                if (!Directory.Exists(diretorioDestino))
+                    Directory.CreateDirectory(diretorioDestino);
 
-        CopiarDiretorioRecursivo(p.Origem, caminhoDestinoCompleto);
-        _ = ShellExecute.LogComandoAsync($"CopyDir \"{p.Origem}\" -> \"{caminhoDestinoCompleto}\"", "OK");
-      }
-      catch (Exception ex)
-      {
-        _ = ShellExecute.LogComandoAsync($"CopyDir \"{p.Origem}\" -> ...", $"ERRO: {ex.Message}");
-      }
-    });
+                File.Copy(a.Arquivo, caminhoArquivoDestino, overwrite: true);
 
-    return true;
-  }
+                _ = ShellExecute.LogComandoAsync($"File.Copy \"{a.Arquivo}\" -> \"{caminhoArquivoDestino}\"", "OK");
 
-  private static void CopiarDiretorioRecursivo(string origem, string destino)
-  {
-    Directory.CreateDirectory(destino);
+                if (a.IgnorarGit)
+                    IgnorarArquivoNoGit(diretorioDestino, nomeArquivo);
+            }
+            catch (Exception ex)
+            {
+                _ = ShellExecute.LogComandoAsync($"File.Copy \"{a.Arquivo}\" -> ...", $"ERRO: {ex.Message}");
+            }
+        });
 
-    foreach (var arquivo in Directory.GetFiles(origem))
-      File.Copy(arquivo, Path.Combine(destino, Path.GetFileName(arquivo)), true);
+        menuRepositorio.Pastas?.ForEach(p =>
+        {
+            try
+            {
+                var nomePastaOrigem = Path.GetFileName(p.Origem.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+                var caminhoDestinoCompleto = string.IsNullOrEmpty(p.Destino)
+              ? Path.Combine(menu.Diretorio, nomePastaOrigem)
+              : Path.Combine(menu.Diretorio, p.Destino);
 
-    foreach (var subDir in Directory.GetDirectories(origem))
-      CopiarDiretorioRecursivo(subDir, Path.Combine(destino, Path.GetFileName(subDir)));
-  }
+                CopiarDiretorioRecursivo(p.Origem, caminhoDestinoCompleto);
+                _ = ShellExecute.LogComandoAsync($"CopyDir \"{p.Origem}\" -> \"{caminhoDestinoCompleto}\"", "OK");
+            }
+            catch (Exception ex)
+            {
+                _ = ShellExecute.LogComandoAsync($"CopyDir \"{p.Origem}\" -> ...", $"ERRO: {ex.Message}");
+            }
+        });
 
-  private static void IgnorarArquivoNoGit(string diretorio, string nomeArquivo)
-  {
-    try
-    {
-      var comando = $"cd \"{diretorio}\"; git update-index --assume-unchanged {nomeArquivo}; Exit;";
-      ShellExecute.ExecutarComando(comando);
-    }
-    catch
-    {
-      // Ignora erro de git — não é crítico
-    }
-  }
+        menuRepositorio.Comandos?.ForEach(c =>
+        {
+            try
+            {
+                ShellExecute.ExecutarComando(c);
+                _ = ShellExecute.LogComandoAsync(c, "OK");
+            }
+            catch (Exception ex)
+            {
+                _ = ShellExecute.LogComandoAsync(c, $"ERRO: {ex.Message}");
+            }
+        });
 
-  public async Task<bool> AbrirPastaIDE(AbrirPastaIDERequestDTO request)
-  {
-    var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");
-
-    var alvo = ObterAlvoIDE(request.Diretorio, request.AbrirWorkspace);
-    var comandoBase = alvo == "." ? ide.ComandoParaExecutar : ide.ComandoParaExecutar.TrimEnd(' ', '.');
-
-    var texto = $"{comandoBase} {alvo}";
-
-    if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(request.PerfilVSCode))
-      texto = $"{comandoBase} --profile \"{request.PerfilVSCode}\" {alvo}";
-
-    var comando = $"cd \"{request.Diretorio}\"; {texto}; Exit;";
-
-    try
-    {
-      ShellExecute.ExecutarComandoSemInterface(comando);
-    }
-    catch
-    {
-      return false;
+        return true;
     }
 
-    return true;
-  }
-
-  private static string ObterAlvoIDE(string diretorio, bool abrirWorkspace)
-  {
-    if (abrirWorkspace && Directory.Exists(diretorio))
+    private static void CopiarDiretorioRecursivo(string origem, string destino)
     {
-      var workspace = Directory.GetFiles(diretorio, "*.code-workspace").FirstOrDefault();
-      if (workspace != null)
-        return $"\"{workspace}\"";
+        Directory.CreateDirectory(destino);
+
+        foreach (var arquivo in Directory.GetFiles(origem))
+            File.Copy(arquivo, Path.Combine(destino, Path.GetFileName(arquivo)), true);
+
+        foreach (var subDir in Directory.GetDirectories(origem))
+            CopiarDiretorioRecursivo(subDir, Path.Combine(destino, Path.GetFileName(subDir)));
     }
 
-    return ".";
-  }
+    private static void IgnorarArquivoNoGit(string diretorio, string nomeArquivo)
+    {
+        try
+        {
+            var comando = $"cd \"{diretorio}\"; git update-index --assume-unchanged {nomeArquivo}; Exit;";
+            ShellExecute.ExecutarComando(comando);
+        }
+        catch
+        {
+            // Ignora erro de git — não é crítico
+        }
+    }
+
+    public async Task<bool> AbrirPastaIDE(AbrirPastaIDERequestDTO request)
+    {
+        var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");
+
+        var alvo = ObterAlvoIDE(request.Diretorio, request.AbrirWorkspace);
+        var comandoBase = alvo == "." ? ide.ComandoParaExecutar : ide.ComandoParaExecutar.TrimEnd(' ', '.');
+
+        var alvoJaIncluido = alvo == "." && comandoBase.TrimEnd().EndsWith('.');
+        var texto = alvoJaIncluido
+            ? comandoBase.TrimEnd()
+            : $"{comandoBase} {alvo}";
+
+        if (ide.AceitaPerfilPersonalizado && !string.IsNullOrEmpty(request.PerfilVSCode))
+            texto = alvoJaIncluido
+                ? $"{comandoBase.TrimEnd()} --profile \"{request.PerfilVSCode}\""
+                : $"{comandoBase} --profile \"{request.PerfilVSCode}\" {alvo}";
+
+        var comando = $"cd \"{request.Diretorio}\"; {texto}; Exit;";
+
+        try
+        {
+            ShellExecute.ExecutarComandoSemInterface(comando);
+        }
+        catch
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static string ObterAlvoIDE(string diretorio, bool abrirWorkspace)
+    {
+        if (abrirWorkspace && Directory.Exists(diretorio))
+        {
+            var workspace = Directory.GetFiles(diretorio, "*.code-workspace").FirstOrDefault();
+            if (workspace != null)
+                return $"\"{workspace}\"";
+        }
+
+        return ".";
+    }
 }
