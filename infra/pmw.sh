@@ -84,14 +84,8 @@ case "$1" in
     fi
 
     # Obtém URL do último release do GitHub
-    REPO_URL=$(git -C "$PMW_DIR" remote get-url origin 2>/dev/null | sed 's|.*github.com/||;s|\.git$||')
-    if [ -z "$REPO_URL" ]; then
-      # Fallback: tenta detectar do próprio script ou usa fixo
-      echo "Aviso: não foi possível detectar o repositório git. Usando fallback."
-      REPO_URL="PMW/ProjectManagerWeb"
-    fi
-
-    LATEST_URL=$(curl -s "https://api.github.com/repos/$REPO_URL/releases/latest" | grep "browser_download_url.*Linux" | cut -d '"' -f 4)
+    REPO_URL="wallaceSW11/ProjectManagerWeb"
+    LATEST_URL=$(curl -s "https://api.github.com/repos/$REPO_URL/releases/latest" | grep -oP '"browser_download_url":\s*"\K[^"]+' | grep -i linux | head -1)
 
     if [ -z "$LATEST_URL" ]; then
       echo "Erro: não foi possível obter a URL do release."
