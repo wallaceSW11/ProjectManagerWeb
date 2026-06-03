@@ -45,7 +45,7 @@
         />
       </v-col>
 
-      <v-col cols="12">
+      <v-col cols="12" class="pb-3">
         <v-select
           label="Pasta centralizadora"
           v-model="repositorio.pastaCentralizadora"
