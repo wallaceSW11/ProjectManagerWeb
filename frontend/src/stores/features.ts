@@ -15,13 +15,13 @@ export const useFeaturesStore = defineStore('features', {
     deploy: true,
     terminalProfiles: true,
     os: 'windows',
-    carregado: false,
+    carregado: false
   }),
 
   getters: {
     isWindows: (state): boolean => state.os === 'windows',
     isLinux: (state): boolean => state.os === 'linux',
-    pathSeparator: (state): string => (state.os === 'windows' ? '\\' : '/'),
+    pathSeparator: (state): string => (state.os === 'windows' ? '\\' : '/')
   },
 
   actions: {
@@ -38,6 +38,6 @@ export const useFeaturesStore = defineStore('features', {
       } catch {
         // Em caso de erro, mantém defaults (Windows) para não quebrar
       }
-    },
-  },
+    }
+  }
 });

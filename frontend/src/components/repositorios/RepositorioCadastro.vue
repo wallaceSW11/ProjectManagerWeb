@@ -1,5 +1,8 @@
 <template>
-  <v-form ref="formRepositorio" autocomplete="off">
+  <v-form
+    ref="formRepositorio"
+    autocomplete="off"
+  >
     <v-row no-gutters>
       <v-col cols="12">
         <v-text-field
@@ -7,7 +10,7 @@
           v-model="repositorio.url"
           :rules="obrigatorio"
           autocomplete="off"
-          :name="'r-url-' + uid"
+          name="pmw-url"
           @change="atualizarNomeRepositorio()"
         />
       </v-col>
@@ -18,7 +21,7 @@
           v-model="repositorio.nome"
           :rules="obrigatorio"
           autocomplete="off"
-          :name="'r-nome-' + uid"
+          name="pmw-nome"
         />
       </v-col>
 
@@ -28,7 +31,7 @@
           v-model="repositorio.titulo"
           :rules="obrigatorio"
           autocomplete="off"
-          :name="'r-titulo-' + uid"
+          name="pmw-titulo"
         />
       </v-col>
 
@@ -41,11 +44,14 @@
           placeholder="develop"
           clearable
           autocomplete="off"
-          :name="'r-branch-' + uid"
+          name="pmw-branch"
         />
       </v-col>
 
-      <v-col cols="12" class="pb-3">
+      <v-col
+        cols="12"
+        class="pb-3"
+      >
         <v-select
           label="Pasta centralizadora"
           v-model="repositorio.pastaCentralizadora"
@@ -87,7 +93,7 @@
           persistent-hint
           clearable
           autocomplete="off"
-          :name="'r-subdir-' + uid"
+          name="pmw-subdir"
         />
       </v-col>
     </v-row>
@@ -108,7 +114,6 @@
 
   const configuracaoStore = useConfiguracaoStore();
 
-  const uid = Math.random().toString(36).substring(2, 10);
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 
   const pastasCentralizadoras = computed(() => {
@@ -136,8 +141,7 @@
     const partesUrl = repositorio.value.url.split('/');
     let nomeExtraido = partesUrl.pop() || '';
 
-    if (nomeExtraido.endsWith('.git'))
-      nomeExtraido = nomeExtraido.slice(0, -4);
+    if (nomeExtraido.endsWith('.git')) nomeExtraido = nomeExtraido.slice(0, -4);
 
     repositorio.value.nome = nomeExtraido;
   };

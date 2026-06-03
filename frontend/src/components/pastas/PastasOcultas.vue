@@ -14,7 +14,10 @@
     textoBotaoSecundario="Fechar"
     :acaoBotaoSecundario="fechar"
   >
-    <div v-if="diretoriosOcultos.length === 0" class="text-medium-emphasis py-2">
+    <div
+      v-if="diretoriosOcultos.length === 0"
+      class="text-medium-emphasis py-2"
+    >
       Nenhuma pasta oculta.
     </div>
 
@@ -30,7 +33,12 @@
         style="background-color: #2d2d30"
       >
         <div class="d-flex align-center gap-2">
-          <v-icon size="small" color="grey">mdi-folder-off</v-icon>
+          <v-icon
+            size="small"
+            color="grey"
+          >
+            mdi-folder-off
+          </v-icon>
           <span class="text-body-2 pl-2">{{ diretorio }}</span>
         </div>
 
@@ -74,12 +82,16 @@
   };
 
   const restaurar = async (diretorio: string): Promise<void> => {
-    const confirmar = confirm(`Deseja exibir novamente a pasta "${diretorio}"?`);
+    const confirmar = confirm(
+      `Deseja exibir novamente a pasta "${diretorio}"?`
+    );
     if (!confirmar) return;
 
     try {
       await PastasService.restaurar(diretorio);
-      diretoriosOcultos.value = diretoriosOcultos.value.filter(d => d !== diretorio);
+      diretoriosOcultos.value = diretoriosOcultos.value.filter(
+        d => d !== diretorio
+      );
       notificar('sucesso', 'Pasta restaurada');
       emit('atualizar');
 

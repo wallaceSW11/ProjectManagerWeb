@@ -42,7 +42,7 @@
 
   const colunas = reactive([
     { title: 'Comando', value: 'comando' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '100px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '100px' }
   ]);
 
   const menuSelecionado = defineModel(new MenuModel());

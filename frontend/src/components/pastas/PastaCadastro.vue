@@ -96,7 +96,7 @@
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    pasta: () => new PastaModel(),
+    pasta: () => new PastaModel()
   });
 
   const pasta = reactive<IPasta>(new PastaModel());
@@ -133,7 +133,7 @@
     if (match) {
       return {
         codigo: match[1].toUpperCase(),
-        descricao: match[2].replace(/_/g, ' '),
+        descricao: match[2].replace(/_/g, ' ')
       };
     }
 
@@ -143,13 +143,13 @@
     if (matchCodigo && matchCodigo[2]) {
       return {
         codigo: matchCodigo[1].toUpperCase(),
-        descricao: matchCodigo[2],
+        descricao: matchCodigo[2]
       };
     }
 
     return {
       codigo: '',
-      descricao: diretorio,
+      descricao: diretorio
     };
   };
 
@@ -168,7 +168,7 @@
     try {
       pasta.repositorioId = repositorio.value.identificador;
       await PastaService.criar(pasta);
-      
+
       adicionarNoLocalStorage.value = true;
       await nextTick(() => (adicionarNoLocalStorage.value = false));
 

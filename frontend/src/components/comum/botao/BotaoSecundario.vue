@@ -7,8 +7,9 @@
     <v-icon
       v-if="icone"
       class="pr-2"
-      >{{ icone }}</v-icon
     >
+      {{ icone }}
+    </v-icon>
     {{ texto }}
   </v-btn>
 </template>
@@ -25,6 +26,6 @@
     texto: 'Salvar',
     icone: null,
     desabilitar: false,
-    acao: null,
+    acao: null
   });
 </script>

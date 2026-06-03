@@ -16,13 +16,16 @@
 
   const perfil = defineModel<string | null>({ default: null });
 
-  withDefaults(defineProps<{
-    label?: string;
-    hint?: string;
-  }>(), {
-    label: 'Perfil do Terminal',
-    hint: 'Perfil do Windows Terminal'
-  });
+  withDefaults(
+    defineProps<{
+      label?: string;
+      hint?: string;
+    }>(),
+    {
+      label: 'Perfil do Terminal',
+      hint: 'Perfil do Windows Terminal'
+    }
+  );
 
   const perfisTerminal = ref<string[]>([]);
   const loading = ref(false);

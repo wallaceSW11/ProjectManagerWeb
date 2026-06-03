@@ -134,14 +134,14 @@
     emModoCadastro,
     definirModoInicial,
     definirModoCadastro,
-    definirModoEdicao,
+    definirModoEdicao
   } = useModoOperacao();
 
   const colunas = [
     { title: 'Nome', key: 'nome', align: 'start' },
     { title: 'Subdiretorio', key: 'subdiretorio', align: 'start' },
     { title: 'Perfil VS Code', key: 'perfilVSCode', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ] as const;
 
   const projetoSelecionado = reactive<IProjeto>(new ProjetoModel());

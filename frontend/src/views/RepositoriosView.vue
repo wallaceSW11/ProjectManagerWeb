@@ -45,53 +45,53 @@
               </v-tabs>
 
               <v-tabs-window v-model="paginaCadastro">
-            <v-tabs-window-item>
-              <div class="conteudo-aba">
-                <RepositorioCadastro
-                  v-model="repositorioSelecionado"
-                  :repositorios="repositorios"
-                  class="pt-4"
-                />
-              </div>
-            </v-tabs-window-item>
-            <v-tabs-window-item>
-              <div class="conteudo-aba">
-                <TarefasCadastro
-                  v-model="repositorioSelecionado"
-                  class="pt-4"
-                />
-              </div>
-            </v-tabs-window-item>
-            <v-tabs-window-item>
-              <div class="conteudo-aba">
-                <IDETerminalCadastro
-                  v-model="repositorioSelecionado"
-                  class="pt-4"
-                />
-              </div>
-            </v-tabs-window-item>
-            <v-tabs-window-item>
-              <div class="conteudo-aba">
-                <ProjetoCadastro v-model="repositorioSelecionado" />
-              </div>
-            </v-tabs-window-item>
-            <v-tabs-window-item>
-              <div class="conteudo-aba">
-                <MenuCadastro
-                  v-model="repositorioSelecionado"
-                  class="pt-4"
-                />
-              </div>
-            </v-tabs-window-item>
-            <v-tabs-window-item>
-              <div class="conteudo-aba">
-                <PerfilMarcacaoCadastro
-                  v-model="repositorioSelecionado"
-                  :repositorios="repositorios"
-                  class="pt-4"
-                />
-              </div>
-            </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <div class="conteudo-aba">
+                    <RepositorioCadastro
+                      v-model="repositorioSelecionado"
+                      :repositorios="repositorios"
+                      class="pt-4"
+                    />
+                  </div>
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <div class="conteudo-aba">
+                    <TarefasCadastro
+                      v-model="repositorioSelecionado"
+                      class="pt-4"
+                    />
+                  </div>
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <div class="conteudo-aba">
+                    <IDETerminalCadastro
+                      v-model="repositorioSelecionado"
+                      class="pt-4"
+                    />
+                  </div>
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <div class="conteudo-aba">
+                    <ProjetoCadastro v-model="repositorioSelecionado" />
+                  </div>
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <div class="conteudo-aba">
+                    <MenuCadastro
+                      v-model="repositorioSelecionado"
+                      class="pt-4"
+                    />
+                  </div>
+                </v-tabs-window-item>
+                <v-tabs-window-item>
+                  <div class="conteudo-aba">
+                    <PerfilMarcacaoCadastro
+                      v-model="repositorioSelecionado"
+                      :repositorios="repositorios"
+                      class="pt-4"
+                    />
+                  </div>
+                </v-tabs-window-item>
               </v-tabs-window>
             </v-tabs-window-item>
           </v-tabs-window>
@@ -224,7 +224,9 @@
 
   const criarRepositorio = async (): Promise<void> => {
     try {
-      await RepositoriosService.adicionarRepositorio(repositorioSelecionado.value);
+      await RepositoriosService.adicionarRepositorio(
+        repositorioSelecionado.value
+      );
       repositorios.push(new RepositorioModel(repositorioSelecionado.value));
       limparCampos();
       notificar('sucesso', 'Repositorio criado');
@@ -237,7 +239,9 @@
 
   const atualizarRepositorio = async (): Promise<void> => {
     try {
-      await RepositoriosService.atualizarRepositorio(repositorioSelecionado.value);
+      await RepositoriosService.atualizarRepositorio(
+        repositorioSelecionado.value
+      );
 
       const indice = repositorios.findIndex(
         r => r.identificador === repositorioSelecionado.value.identificador

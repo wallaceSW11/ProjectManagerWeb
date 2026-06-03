@@ -36,7 +36,12 @@
       </v-list-item>
     </v-list>
 
-    <v-alert v-else type="info" variant="tonal" class="mt-4">
+    <v-alert
+      v-else
+      type="info"
+      variant="tonal"
+      class="mt-4"
+    >
       Nenhum pool de aplicação configurado
     </v-alert>
   </v-col>

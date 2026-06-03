@@ -49,7 +49,11 @@ export interface IProjeto {
   expandido: boolean;
   nomeIDE?: string | null; // Nome da IDE vindo do backend
   perfilTerminal?: string | null;
-  getComandosDisponiveis?(): Array<{ titulo: string; valor: string; ativo: boolean }>;
+  getComandosDisponiveis?(): Array<{
+    titulo: string;
+    valor: string;
+    ativo: boolean;
+  }>;
 }
 
 export interface ICodigoTarefa {
@@ -61,6 +65,7 @@ export interface ICodigoTarefa {
   baixarHistoricoCompleto: boolean;
   habilitarTipos: boolean;
   tiposHabilitados: string[];
+  pastaCentralizadora?: string | null;
 }
 
 export interface IRepositorio {

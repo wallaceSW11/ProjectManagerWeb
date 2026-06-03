@@ -15,7 +15,10 @@
 
         <v-card-text>
           <v-row no-gutters>
-            <v-col cols="12" class="d-flex align-center">
+            <v-col
+              cols="12"
+              class="d-flex align-center"
+            >
               <span class="flex-grow-1">{{ repositorio.url }}</span>
               <IconeComTooltip
                 v-if="repositorio.url"

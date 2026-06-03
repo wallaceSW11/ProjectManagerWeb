@@ -105,7 +105,9 @@
                 :key="comando.valor"
                 :label="comando.titulo"
                 :value="comando.valor"
-                v-model="comandosSelecionadosPorProjeto[grupo.projeto.identificador]"
+                v-model="
+                  comandosSelecionadosPorProjeto[grupo.projeto.identificador]
+                "
                 hide-details
                 height="40px"
                 color="primary"
@@ -134,18 +136,24 @@
   const props = defineProps<Props>();
   const repositorio = defineModel<IRepositorio>({ required: true });
 
-  const { emModoCadastro, definirModoCadastro, definirModoEdicao, definirModoInicial } =
-    useModoOperacao();
+  const {
+    emModoCadastro,
+    definirModoCadastro,
+    definirModoEdicao,
+    definirModoInicial
+  } = useModoOperacao();
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
   const exibirModal = ref<boolean>(false);
   const formPerfil = ref<any>(null);
-  const perfilSelecionado = reactive<IPerfilMarcacao>(new PerfilMarcacaoModel());
+  const perfilSelecionado = reactive<IPerfilMarcacao>(
+    new PerfilMarcacaoModel()
+  );
   const comandosSelecionadosPorProjeto = reactive<Record<string, string[]>>({});
 
   const colunas = [
     { title: 'Nome', key: 'nome', align: 'start' },
-    { title: 'Ações', key: 'actions', align: 'center', width: '120px' },
+    { title: 'Ações', key: 'actions', align: 'center', width: '120px' }
   ] as const;
 
   interface GrupoProjeto {
@@ -160,11 +168,17 @@
     repositorio.value.projetos.forEach(projeto => {
       const comandos = resolverComandosDisponiveis(projeto);
       if (comandos.length)
-        grupos.push({ projeto, nomeRepositorio: null, comandosDisponiveis: comandos });
+        grupos.push({
+          projeto,
+          nomeRepositorio: null,
+          comandosDisponiveis: comandos
+        });
     });
 
     repositorio.value.agregados.forEach(agregadoId => {
-      const repoAgregado = props.repositorios.find(r => r.identificador === agregadoId);
+      const repoAgregado = props.repositorios.find(
+        r => r.identificador === agregadoId
+      );
       if (!repoAgregado) return;
 
       repoAgregado.projetos.forEach(projeto => {
@@ -173,7 +187,7 @@
           grupos.push({
             projeto,
             nomeRepositorio: repoAgregado.titulo,
-            comandosDisponiveis: comandos,
+            comandosDisponiveis: comandos
           });
       });
     });
@@ -187,10 +201,26 @@
     const disponiveis = [];
     const obj = (projeto as any).comandosObj;
 
-    if (obj?.instalar) disponiveis.push({ titulo: TIPO_COMANDO.INSTALAR.titulo, valor: TIPO_COMANDO.INSTALAR.valor });
-    if (obj?.iniciar) disponiveis.push({ titulo: TIPO_COMANDO.INICIAR.titulo, valor: TIPO_COMANDO.INICIAR.valor });
-    if (obj?.buildar) disponiveis.push({ titulo: TIPO_COMANDO.BUILDAR.titulo, valor: TIPO_COMANDO.BUILDAR.valor });
-    if (obj?.ideIdentificador) disponiveis.push({ titulo: TIPO_COMANDO.ABRIR_NA_IDE.titulo, valor: TIPO_COMANDO.ABRIR_NA_IDE.valor });
+    if (obj?.instalar)
+      disponiveis.push({
+        titulo: TIPO_COMANDO.INSTALAR.titulo,
+        valor: TIPO_COMANDO.INSTALAR.valor
+      });
+    if (obj?.iniciar)
+      disponiveis.push({
+        titulo: TIPO_COMANDO.INICIAR.titulo,
+        valor: TIPO_COMANDO.INICIAR.valor
+      });
+    if (obj?.buildar)
+      disponiveis.push({
+        titulo: TIPO_COMANDO.BUILDAR.titulo,
+        valor: TIPO_COMANDO.BUILDAR.valor
+      });
+    if (obj?.ideIdentificador)
+      disponiveis.push({
+        titulo: TIPO_COMANDO.ABRIR_NA_IDE.titulo,
+        valor: TIPO_COMANDO.ABRIR_NA_IDE.valor
+      });
 
     return disponiveis;
   };
@@ -225,8 +255,9 @@
 
     perfilSelecionado.projetos = Object.entries(comandosSelecionadosPorProjeto)
       .filter(([, comandos]) => comandos.length > 0)
-      .map(([identificadorProjeto, comandos]) =>
-        new PerfilMarcacaoProjetoModel({ identificadorProjeto, comandos })
+      .map(
+        ([identificadorProjeto, comandos]) =>
+          new PerfilMarcacaoProjetoModel({ identificadorProjeto, comandos })
       );
 
     if (emModoCadastro.value) {
@@ -235,7 +266,11 @@
       const indice = repositorio.value.perfis.findIndex(
         p => p.identificador === perfilSelecionado.identificador
       );
-      indice !== -1 && Object.assign(repositorio.value.perfis[indice], new PerfilMarcacaoModel(perfilSelecionado));
+      indice !== -1 &&
+        Object.assign(
+          repositorio.value.perfis[indice],
+          new PerfilMarcacaoModel(perfilSelecionado)
+        );
     }
 
     descartarAlteracoes();

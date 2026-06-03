@@ -35,7 +35,7 @@
       const handleNotificar = ({
         tipo,
         titulo,
-        mensagem,
+        mensagem
       }: NotificacaoTipo): void => {
         const id = idCounter++;
         toasts.value.push({ id, tipo, titulo, mensagem });
@@ -50,7 +50,7 @@
       onBeforeUnmount(() => eventBus.off('notificar', handleNotificar));
 
       return { toasts };
-    },
+    }
   });
 </script>
 

@@ -11,7 +11,8 @@ export default class PerfilMarcacaoModel implements IPerfilMarcacao {
   constructor(obj: Partial<IPerfilMarcacao> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
     this.nome = obj.nome || '';
-    this.projetos = obj.projetos?.map(p => new PerfilMarcacaoProjetoModel(p)) || [];
+    this.projetos =
+      obj.projetos?.map(p => new PerfilMarcacaoProjetoModel(p)) || [];
     this.abrirIDE = obj.abrirIDE || false;
     this.abrirCLI = obj.abrirCLI || false;
   }

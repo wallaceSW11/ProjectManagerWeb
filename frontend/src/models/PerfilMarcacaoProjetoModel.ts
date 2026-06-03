@@ -1,6 +1,8 @@
 import type { IPerfilMarcacaoProjeto } from '@/types';
 
-export default class PerfilMarcacaoProjetoModel implements IPerfilMarcacaoProjeto {
+export default class PerfilMarcacaoProjetoModel
+  implements IPerfilMarcacaoProjeto
+{
   identificadorProjeto: string;
   comandos: string[];
 

@@ -1,6 +1,9 @@
 <template>
   <v-row no-gutters>
-    <v-col cols="12" class="mb-4">
+    <v-col
+      cols="12"
+      class="mb-4"
+    >
       <v-select
         label="IDE para abrir"
         v-model="repositorio.ideIdentificador"
@@ -13,7 +16,10 @@
       />
     </v-col>
 
-    <v-col cols="12" class="mb-4">
+    <v-col
+      cols="12"
+      class="mb-4"
+    >
       <v-checkbox
         v-model="repositorio.abrirWorkspace"
         label="Abrir workspace"
@@ -23,7 +29,10 @@
       />
     </v-col>
 
-    <v-col cols="12" class="mb-4">
+    <v-col
+      cols="12"
+      class="mb-4"
+    >
       <v-select
         :items="configuracaoStore.perfisVSCode"
         label="Perfil da IDE"
@@ -36,7 +45,10 @@
       />
     </v-col>
 
-    <v-col cols="12" class="mb-4">
+    <v-col
+      cols="12"
+      class="mb-4"
+    >
       <v-select
         label="CLI de IA"
         v-model="repositorio.cliComando"
@@ -49,17 +61,23 @@
       />
     </v-col>
 
-    <v-col cols="12" class="mb-4">
+    <v-col
+      cols="12"
+      class="mb-4"
+    >
       <v-text-field
         label="Comando complementar da CLI"
         v-model="repositorio.cliComandoComplementar"
-        hint="Concatenado ao comando da CLI (ex: chat --agent &quot;delphi-dev&quot;)"
+        hint='Concatenado ao comando da CLI (ex: chat --agent "delphi-dev")'
         persistent-hint
         clearable
       />
     </v-col>
 
-    <v-col cols="12" class="mb-4">
+    <v-col
+      cols="12"
+      class="mb-4"
+    >
       <SelectPerfilTerminal
         v-model="repositorio.perfilTerminal"
         hint="Perfil do Windows Terminal usado ao abrir a CLI de IA"

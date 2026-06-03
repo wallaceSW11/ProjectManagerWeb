@@ -22,20 +22,20 @@
             <span class="pl-2">{{ site.nome }}</span>
           </v-card-title>
 
-      <v-card-text class="pt-2">
-        <div>
-          <div>
-            <v-icon>mdi-gate</v-icon>
-            <span class="titulo pl-2">Porta: </span>
-            <span>{{ site.porta }}</span>
-          </div>
+          <v-card-text class="pt-2">
+            <div>
+              <div>
+                <v-icon>mdi-gate</v-icon>
+                <span class="titulo pl-2">Porta:</span>
+                <span>{{ site.porta }}</span>
+              </div>
 
-          <div class="pt-2">
-            <span class="titulo">status: </span>
-            <span>{{ site.status }}</span>
-          </div>
-        </div>
-      </v-card-text>
+              <div class="pt-2">
+                <span class="titulo">status:</span>
+                <span>{{ site.status }}</span>
+              </div>
+            </div>
+          </v-card-text>
 
           <v-card-actions class="d-flex justify-end">
             <IconeComTooltip
@@ -51,7 +51,9 @@
               icone="mdi-stop"
               texto="Parar"
               :acao="() => pararSite(site)"
-              :desabilitado="site.status === PARADO || site.status === REINICIANDO"
+              :desabilitado="
+                site.status === PARADO || site.status === REINICIANDO
+              "
             />
 
             <IconeComTooltip
@@ -89,9 +91,13 @@
     if (novoValor) consultarSites();
   });
 
-  watch(sites, () => {
-    carregarOrdem();
-  }, { deep: true });
+  watch(
+    sites,
+    () => {
+      carregarOrdem();
+    },
+    { deep: true }
+  );
 
   const consultarSites = async (): Promise<void> => {
     try {
@@ -110,7 +116,7 @@
   // Carregar ordem salva do localStorage
   const carregarOrdem = (): void => {
     const ordemSalva = localStorage.getItem(CHAVE_ORDEM_SITES);
-    
+
     if (!ordemSalva || !sites.value.length) {
       sitesOrdenados.value = [...sites.value];
       return;
@@ -118,24 +124,24 @@
 
     try {
       const ordem: string[] = JSON.parse(ordemSalva);
-      
+
       // Ordenar sites baseado na ordem salva
       const sitesOrdenadosTemp: ISite[] = [];
-      
+
       ordem.forEach((nome: string) => {
-        const site = sites.value.find((s) => s.nome === nome);
+        const site = sites.value.find(s => s.nome === nome);
         if (site) {
           sitesOrdenadosTemp.push(site);
         }
       });
-      
+
       // Adicionar sites novos que não estão na ordem salva
-      sites.value.forEach((site) => {
-        if (!sitesOrdenadosTemp.find((s) => s.nome === site.nome)) {
+      sites.value.forEach(site => {
+        if (!sitesOrdenadosTemp.find(s => s.nome === site.nome)) {
           sitesOrdenadosTemp.push(site);
         }
       });
-      
+
       sitesOrdenados.value = sitesOrdenadosTemp;
     } catch (error) {
       console.error('Erro ao carregar ordem dos sites:', error);
@@ -145,7 +151,7 @@
 
   // Salvar ordem no localStorage
   const salvarOrdem = (): void => {
-    const ordem = sitesOrdenados.value.map((site) => site.nome);
+    const ordem = sitesOrdenados.value.map(site => site.nome);
     localStorage.setItem(CHAVE_ORDEM_SITES, JSON.stringify(ordem));
   };
 
@@ -193,7 +199,7 @@
       }, `Reiniciando site ${site.nome}...`);
 
       notificar('sucesso', `Site ${site.nome} reiniciado.`);
-      
+
       // Após reiniciar, volta para "Iniciado"
       sitesOrdenados.value = sitesOrdenados.value.map((s: ISite) =>
         s.nome === site.nome ? { ...s, status: INICIADO } : s
@@ -201,7 +207,7 @@
     } catch (error) {
       console.error(`Erro ao reiniciar site ${site.nome}:`, error);
       notificar('erro', `Erro ao reiniciar site ${site.nome}.`);
-      
+
       // Em caso de erro, tenta restaurar o status original
       sitesOrdenados.value = sitesOrdenados.value.map((s: ISite) =>
         s.nome === site.nome ? { ...s, status: site.status } : s

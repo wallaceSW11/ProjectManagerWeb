@@ -1,4 +1,10 @@
-import type { IRepositorio, IProjeto, IMenu, IPerfilMarcacao, ICodigoTarefa } from '@/types';
+import type {
+  IRepositorio,
+  IProjeto,
+  IMenu,
+  IPerfilMarcacao,
+  ICodigoTarefa
+} from '@/types';
 import MenuModel from './MenuModel';
 import ProjetoModel from './ProjetoModel';
 import PerfilMarcacaoModel from './PerfilMarcacaoModel';
@@ -43,7 +49,8 @@ export default class RepositorioModel implements IRepositorio {
     this.subdiretorio = obj.subdiretorio || null;
     this.cliComando = obj.cliComando || null;
     this.perfilTerminal = obj.perfilTerminal || null;
-    this.abrirWorkspace = obj.abrirWorkspace !== undefined ? obj.abrirWorkspace : true;
+    this.abrirWorkspace =
+      obj.abrirWorkspace !== undefined ? obj.abrirWorkspace : true;
     this.cliComandoComplementar = obj.cliComandoComplementar || null;
     this.branchBase = obj.branchBase || null;
     this.urlBaseGestorTarefas = obj.urlBaseGestorTarefas || null;

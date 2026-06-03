@@ -1,7 +1,10 @@
 <template>
   <v-form ref="formSite">
     <v-row no-gutters>
-      <v-col cols="12" class="mb-4">
+      <v-col
+        cols="12"
+        class="mb-4"
+      >
         <v-text-field
           label="Título"
           v-model="site.titulo"
@@ -11,7 +14,10 @@
         />
       </v-col>
 
-      <v-col cols="12" class="mb-4">
+      <v-col
+        cols="12"
+        class="mb-4"
+      >
         <v-text-field
           label="Nome"
           v-model="site.nome"
@@ -22,7 +28,10 @@
         />
       </v-col>
 
-      <v-col cols="12" class="mb-4">
+      <v-col
+        cols="12"
+        class="mb-4"
+      >
         <v-text-field
           label="Pasta Raiz"
           v-model="site.pastaRaiz"
@@ -33,7 +42,10 @@
         />
       </v-col>
 
-      <v-col cols="12" class="mb-4">
+      <v-col
+        cols="12"
+        class="mb-4"
+      >
         <SelectPerfilTerminal
           v-model="site.perfilTerminalAdmin"
           label="Perfil do Terminal (Admin)"

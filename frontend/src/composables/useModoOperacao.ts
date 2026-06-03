@@ -53,6 +53,6 @@ export function useModoOperacao(
     emModoCadastroEdicao,
     definirModoInicial,
     definirModoCadastro,
-    definirModoEdicao,
+    definirModoEdicao
   };
 }
