@@ -1,11 +1,16 @@
 <template>
-  <v-form ref="formRepositorio">
+  <v-form
+    ref="formRepositorio"
+    autocomplete="off"
+  >
     <v-row no-gutters>
       <v-col cols="12">
         <v-text-field
           label="Url"
           v-model="repositorio.url"
           :rules="obrigatorio"
+          autocomplete="off"
+          name="pmw-url"
           @change="atualizarNomeRepositorio()"
         />
       </v-col>
@@ -15,6 +20,8 @@
           label="Nome"
           v-model="repositorio.nome"
           :rules="obrigatorio"
+          autocomplete="off"
+          name="pmw-nome"
         />
       </v-col>
 
@@ -23,6 +30,8 @@
           label="Título"
           v-model="repositorio.titulo"
           :rules="obrigatorio"
+          autocomplete="off"
+          name="pmw-titulo"
         />
       </v-col>
 
@@ -34,10 +43,15 @@
           persistent-hint
           placeholder="develop"
           clearable
+          autocomplete="off"
+          name="pmw-branch"
         />
       </v-col>
 
-      <v-col cols="12">
+      <v-col
+        cols="12"
+        class="pb-3"
+      >
         <v-select
           label="Pasta centralizadora"
           v-model="repositorio.pastaCentralizadora"
@@ -78,6 +92,8 @@
           hint="Subpasta de trabalho para monorepos (ex: ProjectManagerWeb). Deixe vazio para abrir na raiz."
           persistent-hint
           clearable
+          autocomplete="off"
+          name="pmw-subdir"
         />
       </v-col>
     </v-row>
@@ -125,8 +141,7 @@
     const partesUrl = repositorio.value.url.split('/');
     let nomeExtraido = partesUrl.pop() || '';
 
-    if (nomeExtraido.endsWith('.git'))
-      nomeExtraido = nomeExtraido.slice(0, -4);
+    if (nomeExtraido.endsWith('.git')) nomeExtraido = nomeExtraido.slice(0, -4);
 
     repositorio.value.nome = nomeExtraido;
   };

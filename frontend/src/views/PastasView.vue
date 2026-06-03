@@ -6,15 +6,26 @@
           cols="8"
           class="pb-2"
         >
-          <div class="d-flex align-center" style="gap: 16px;">
-            <h2 class="flex-shrink-0">Pastas <span v-if="pastas.length > 0" class="text-medium-emphasis text-body-1">({{ pastas.length }})</span></h2>
+          <div
+            class="d-flex align-center"
+            style="gap: 16px"
+          >
+            <h2 class="flex-shrink-0">
+              Pastas
+              <span
+                v-if="pastas.length > 0"
+                class="text-medium-emphasis text-body-1"
+              >
+                ({{ pastas.length }})
+              </span>
+            </h2>
 
             <v-tabs
               v-model="abaSelecionada"
               density="compact"
               color="primary"
               show-arrows
-              style="min-width: 0;"
+              style="min-width: 0"
             >
               <v-tab
                 v-for="aba in abasDisponiveis"
@@ -27,7 +38,10 @@
 
             <v-spacer />
 
-            <div class="d-flex align-center" style="gap: 8px;">
+            <div
+              class="d-flex align-center"
+              style="gap: 8px"
+            >
               <v-text-field
                 ref="campoPesquisa"
                 v-model="termoPesquisa"
@@ -36,7 +50,7 @@
                 variant="underlined"
                 hide-details
                 clearable
-                style="width: 220px; min-width: 220px; padding-right: 8px;"
+                style="width: 220px; min-width: 220px; padding-right: 8px"
                 prepend-inner-icon="mdi-magnify"
                 @keydown.esc="termoPesquisa = ''"
               />
@@ -47,7 +61,10 @@
                 :acao="carregarPastas"
               />
 
-              <PastasOcultas ref="pastasOcultas" @atualizar="carregarPastas" />
+              <PastasOcultas
+                ref="pastasOcultas"
+                @atualizar="carregarPastas"
+              />
             </div>
           </div>
         </v-col>
@@ -68,7 +85,7 @@
               variant="underlined"
               hide-details
               clearable
-              style="width: 180px; min-width: 180px; padding-right: 8px;"
+              style="width: 180px; min-width: 180px; padding-right: 8px"
               @update:modelValue="aplicarPerfil"
             />
             <v-tooltip text="Desmarcar todos">
@@ -130,7 +147,10 @@
               </template>
             </draggable>
 
-            <v-divider v-if="pastasFixadas.length > 0" class="my-2 mx-2" />
+            <v-divider
+              v-if="pastasFixadas.length > 0"
+              class="my-2 mx-2"
+            />
 
             <draggable
               v-model="pastasNaoFixadas"
@@ -161,12 +181,21 @@
         </v-col>
 
         <v-col>
-          <div class="ml-2" style="height: calc(100dvh - 140px)">
+          <div
+            class="ml-2"
+            style="height: calc(100dvh - 140px)"
+          >
             <div
               class="pr-2"
               style="height: calc(100% - 48px); overflow-y: auto"
             >
-              <div v-if="pastaSelecionada?.projetos.length === 0 && !ideDisponivel && !cliDisponivel">
+              <div
+                v-if="
+                  pastaSelecionada?.projetos.length === 0 &&
+                  !ideDisponivel &&
+                  !cliDisponivel
+                "
+              >
                 Não há projetos disponíveis.
               </div>
 
@@ -183,7 +212,11 @@
                         size="small"
                         class="mr-2"
                       >
-                        {{ diretorioExpandido ? 'mdi-chevron-down' : 'mdi-chevron-right' }}
+                        {{
+                          diretorioExpandido
+                            ? 'mdi-chevron-down'
+                            : 'mdi-chevron-right'
+                        }}
                       </v-icon>
                       <span>Diretório</span>
                     </div>
@@ -202,7 +235,9 @@
                           color="primary"
                           density="compact"
                           append-icon="mdi-open-in-new"
-                          @click:append="abrirPastaNaIDE(pastaSelecionada as IPasta)"
+                          @click:append="
+                            abrirPastaNaIDE(pastaSelecionada as IPasta)
+                          "
                         />
                         <v-switch
                           v-if="cliDisponivel"
@@ -214,111 +249,123 @@
                           color="primary"
                           density="compact"
                           append-icon="mdi-flash"
-                          @click:append="abrirPastaKiroCli(pastaSelecionada as IPasta)"
+                          @click:append="
+                            abrirPastaKiroCli(pastaSelecionada as IPasta)
+                          "
                         />
                       </div>
                     </v-expand-transition>
                   </v-card-text>
                 </v-card>
 
-              <div
-                v-for="projeto in pastaSelecionada.projetos"
-                :key="projeto.identificador"
-              >
-                <v-card
-                  class="mb-2"
-                  style="background-color: #2d2d30"
+                <div
+                  v-for="projeto in pastaSelecionada.projetos"
+                  :key="projeto.identificador"
                 >
-                  <v-card-title class="pb-0 d-flex align-center">
-                    <div
-                      class="d-flex flex-grow-1 justify-space-between align-center"
-                    >
-                      <div>
-                        <v-icon
-                          @click="toggleExpandirProjeto(projeto)"
-                          size="small"
-                          class="mr-2"
-                        >
-                          {{
-                            projeto.expandido
-                              ? 'mdi-chevron-down'
-                              : 'mdi-chevron-right'
-                          }}
-                        </v-icon>
-                      </div>
-
+                  <v-card
+                    class="mb-2"
+                    style="background-color: #2d2d30"
+                  >
+                    <v-card-title class="pb-0 d-flex align-center">
                       <div
                         class="d-flex flex-grow-1 justify-space-between align-center"
                       >
-                        <div class="d-flex align-center">
-                          {{ projeto.nome }}
-                          <v-chip
-                            v-if="
-                              !projeto.expandido &&
-                              projeto.comandosSelecionados &&
-                              projeto.comandosSelecionados.length > 0
-                            "
-                            color="primary"
-                            size="x-small"
-                            class="ml-2"
-                            variant="elevated"
-                          >
-                            {{ projeto.comandosSelecionados?.length || 0 }}
-                          </v-chip>
-                        </div>
-
                         <div>
-                          <v-menu location="bottom">
-                            <template #activator="{ props }">
-                              <v-btn
-                                v-bind="props"
-                                icon
-                                size="small"
-                                variant="text"
-                              >
-                                <v-icon small>mdi-dots-vertical</v-icon>
-                              </v-btn>
-                            </template>
+                          <v-icon
+                            @click="toggleExpandirProjeto(projeto)"
+                            size="small"
+                            class="mr-2"
+                          >
+                            {{
+                              projeto.expandido
+                                ? 'mdi-chevron-down'
+                                : 'mdi-chevron-right'
+                            }}
+                          </v-icon>
+                        </div>
 
-                            <v-list dense>
-                              <v-list-item
-                                v-for="menu in menusProjetoDisponiveis(projeto)"
-                                :key="menu.identificador"
-                                @click="menu.acao(projeto)"
-                              >
-                                <v-list-item-title>
-                                  <v-icon class="pr-1" color="primary">{{ menu.icone }}</v-icon>
-                                  {{ menu.titulo }}
-                                </v-list-item-title>
-                              </v-list-item>
-                            </v-list>
-                          </v-menu>
+                        <div
+                          class="d-flex flex-grow-1 justify-space-between align-center"
+                        >
+                          <div class="d-flex align-center">
+                            {{ projeto.nome }}
+                            <v-chip
+                              v-if="
+                                !projeto.expandido &&
+                                projeto.comandosSelecionados &&
+                                projeto.comandosSelecionados.length > 0
+                              "
+                              color="primary"
+                              size="x-small"
+                              class="ml-2"
+                              variant="elevated"
+                            >
+                              {{ projeto.comandosSelecionados?.length || 0 }}
+                            </v-chip>
+                          </div>
+
+                          <div>
+                            <v-menu location="bottom">
+                              <template #activator="{ props }">
+                                <v-btn
+                                  v-bind="props"
+                                  icon
+                                  size="small"
+                                  variant="text"
+                                >
+                                  <v-icon small>mdi-dots-vertical</v-icon>
+                                </v-btn>
+                              </template>
+
+                              <v-list dense>
+                                <v-list-item
+                                  v-for="menu in menusProjetoDisponiveis(
+                                    projeto
+                                  )"
+                                  :key="menu.identificador"
+                                  @click="menu.acao(projeto)"
+                                >
+                                  <v-list-item-title>
+                                    <v-icon
+                                      class="pr-1"
+                                      color="primary"
+                                    >
+                                      {{ menu.icone }}
+                                    </v-icon>
+                                    {{ menu.titulo }}
+                                  </v-list-item-title>
+                                </v-list-item>
+                              </v-list>
+                            </v-menu>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </v-card-title>
+                    </v-card-title>
 
-                  <v-card-text class="pa-0 ma-0 ml-4 pr-4">
-                    <v-expand-transition>
-                      <div v-if="projeto.expandido">
-                        <v-switch
-                          v-for="comando in projeto.getComandosDisponiveis?.()"
-                          :key="comando.valor"
-                          :label="comando.titulo"
-                          :value="comando.valor"
-                          v-model="projeto.comandosSelecionados"
-                          hide-details
-                          height="40px"
-                          color="primary"
-                          density="compact"
-                          :append-icon="iconeAcaoMenu(comando.valor)"
-                          @click:append="() => executarAcaoMenuAvulso(projeto, comando.valor)"
-                        />
-                      </div>
-                    </v-expand-transition>
-                  </v-card-text>
-                </v-card>
-              </div>
+                    <v-card-text class="pa-0 ma-0 ml-4 pr-4">
+                      <v-expand-transition>
+                        <div v-if="projeto.expandido">
+                          <v-switch
+                            v-for="comando in projeto.getComandosDisponiveis?.()"
+                            :key="comando.valor"
+                            :label="comando.titulo"
+                            :value="comando.valor"
+                            v-model="projeto.comandosSelecionados"
+                            hide-details
+                            height="40px"
+                            color="primary"
+                            density="compact"
+                            :append-icon="iconeAcaoMenu(comando.valor)"
+                            @click:append="
+                              () =>
+                                executarAcaoMenuAvulso(projeto, comando.valor)
+                            "
+                          />
+                        </div>
+                      </v-expand-transition>
+                    </v-card-text>
+                  </v-card>
+                </div>
               </template>
             </div>
 
@@ -354,7 +401,12 @@
 
 <script setup lang="ts">
   import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
-  import type { IPasta, IProjeto, IRepositorio, IPerfilMarcacao } from '@/types';
+  import type {
+    IPasta,
+    IProjeto,
+    IRepositorio,
+    IPerfilMarcacao
+  } from '@/types';
   import PastasService from '@/services/PastasService';
   import PastaModel from '@/models/PastaModel';
   import ProjetoModel from '@/models/ProjetoModel';
@@ -364,7 +416,8 @@
   import emitter, { carregandoAsync, notificar } from '@/utils/eventBus';
   import CadastroPasta from '@/components/pastas/PastaCadastro.vue';
   import CardPasta from '@/components/pastas/CardPasta.vue';
-  import PastasOcultas from '@/components/pastas/PastasOcultas.vue';  import draggable from 'vuedraggable';
+  import PastasOcultas from '@/components/pastas/PastasOcultas.vue';
+  import draggable from 'vuedraggable';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { useFeaturesStore } from '@/stores/features';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
@@ -398,7 +451,9 @@
   const pastaSelecionada = reactive<IPasta>(new PastaModel());
   const exibirModalPasta = ref<boolean>(false);
   const termoPesquisa = ref<string>('');
-  const campoPesquisa = ref<InstanceType<typeof import('vuetify/components').VTextField> | null>(null);
+  const campoPesquisa = ref<InstanceType<
+    typeof import('vuetify/components').VTextField
+  > | null>(null);
   const abaSelecionada = ref<string>('Raiz');
   const pastasOcultas = ref<{ recarregar: () => Promise<void> } | null>(null);
   const configuracaoStore = useConfiguracaoStore();
@@ -413,7 +468,9 @@
 
   const abasDisponiveis = computed(() => {
     const abas = new Set<string>();
-    pastas.value.forEach((p: IPasta) => { if (p.nomeAba) abas.add(p.nomeAba); });
+    pastas.value.forEach((p: IPasta) => {
+      if (p.nomeAba) abas.add(p.nomeAba);
+    });
     const ordenadas = Array.from(abas).sort((a, b) => {
       if (a === 'Raiz') return -1;
       if (b === 'Raiz') return 1;
@@ -424,14 +481,18 @@
 
   const perfisDisponiveis = computed((): IPerfilMarcacao[] => {
     if (!pastaSelecionada.repositorioId) return [];
-    const repo = repositorios.value.find(r => r.identificador === pastaSelecionada.repositorioId);
+    const repo = repositorios.value.find(
+      r => r.identificador === pastaSelecionada.repositorioId
+    );
     return repo?.perfis || [];
   });
 
   const aplicarPerfil = (identificadorPerfil: string | null): void => {
     if (!identificadorPerfil) return;
 
-    const perfil = perfisDisponiveis.value.find(p => p.identificador === identificadorPerfil);
+    const perfil = perfisDisponiveis.value.find(
+      p => p.identificador === identificadorPerfil
+    );
     if (!perfil) return;
 
     const acoes: string[] = [];
@@ -460,20 +521,26 @@
     get: () => {
       return pastas.value
         .filter((p: IPasta) => p.fixada && p.nomeAba === abaSelecionada.value)
-        .sort((a: IPasta, b: IPasta) => (a.ordemFixada || 0) - (b.ordemFixada || 0));
+        .sort(
+          (a: IPasta, b: IPasta) => (a.ordemFixada || 0) - (b.ordemFixada || 0)
+        );
     },
     set: (valor: IPasta[]) => {
       valor.forEach((p, index) => {
-        const pasta = pastas.value.find((x: IPasta) => x.diretorio === p.diretorio);
+        const pasta = pastas.value.find(
+          (x: IPasta) => x.diretorio === p.diretorio
+        );
         if (pasta) (pasta as any).ordemFixada = index;
       });
-    },
+    }
   });
 
   const pastasNaoFixadas = computed({
     get: () => {
       let naoFixadas = pastas.value.filter((p: IPasta) => !p.fixada);
-      naoFixadas = naoFixadas.filter((p: IPasta) => p.nomeAba === abaSelecionada.value);
+      naoFixadas = naoFixadas.filter(
+        (p: IPasta) => p.nomeAba === abaSelecionada.value
+      );
       if (!termoPesquisa.value) return naoFixadas;
 
       const termo = termoPesquisa.value.toLowerCase();
@@ -486,7 +553,7 @@
     set: (valor: IPasta[]) => {
       const fixadas = pastas.value.filter((p: IPasta) => p.fixada);
       pastas.value = [...fixadas, ...valor];
-    },
+    }
   });
 
   const carregarPastasListener = (): void => {
@@ -566,7 +633,8 @@
       pastas.value = resposta.map((pasta: any) => {
         const pastaModel = new PastaModel(pasta);
         pastaModel.projetos =
-          pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) || [];
+          pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) ||
+          [];
         return pastaModel;
       });
     } catch (error) {
@@ -594,10 +662,9 @@
 
     if (pastaSelecionada.projetos) {
       pastaSelecionada.projetos.forEach((projeto: any) => {
-        const comandos = acaoPasta
-          ?.projetos?.find(
-            (p: any) => p.identificador === projeto.identificador
-          )?.comandos;
+        const comandos = acaoPasta?.projetos?.find(
+          (p: any) => p.identificador === projeto.identificador
+        )?.comandos;
 
         projeto.comandosSelecionados = comandos || [];
       });
@@ -646,14 +713,14 @@
         nome: p.nome,
         comandos: p.comandosSelecionados || [],
         identificadorRepositorioAgregado: p.identificadorRepositorioAgregado,
-        nomeRepositorio: p.nomeRepositorio,
-      })),
+        nomeRepositorio: p.nomeRepositorio
+      }))
     };
 
     try {
       salvarAcoesSelecionadas(payload);
       notificar('sucesso', 'Comando solicitado');
-      
+
       await carregandoAsync(async () => {
         await ComandosService.executarComando(payload);
       });
@@ -666,7 +733,10 @@
   const CHAVE_ACOES_SELECIONADAS = 'AcoesSelecionadas';
 
   const salvarAcoesSelecionadas = (payload: PayloadComando): void => {
-    const payloadComDiretorioAcoes = { ...payload, diretorioAcoes: diretorioAcoes.value };
+    const payloadComDiretorioAcoes = {
+      ...payload,
+      diretorioAcoes: diretorioAcoes.value
+    };
 
     const salvarNoLocalStorage = (valor: any[]): void => {
       localStorage.setItem(CHAVE_ACOES_SELECIONADAS, JSON.stringify(valor));
@@ -683,7 +753,9 @@
       (a: any) => a.diretorio === payload.diretorio
     );
 
-    indice === -1 ? acoes.push(payloadComDiretorioAcoes) : acoes.splice(indice, 1, payloadComDiretorioAcoes);
+    indice === -1
+      ? acoes.push(payloadComDiretorioAcoes)
+      : acoes.splice(indice, 1, payloadComDiretorioAcoes);
 
     salvarNoLocalStorage(acoes);
   };
@@ -698,7 +770,7 @@
     const payload: PayloadMenuComando = {
       diretorio: pasta.diretorio,
       repositorioId: pasta.repositorioId || '',
-      comandoId: menuId,
+      comandoId: menuId
     };
 
     notificar('sucesso', 'Comando solicitado');
@@ -711,7 +783,10 @@
     }
   };
 
-  const executarMenusMultiplos = async (pasta: IPasta, menuIds: string[]): Promise<void> => {
+  const executarMenusMultiplos = async (
+    pasta: IPasta,
+    menuIds: string[]
+  ): Promise<void> => {
     if (!menuIds.length) return;
 
     notificar('sucesso', `${menuIds.length} comando(s) solicitado(s)`);
@@ -721,7 +796,7 @@
         const payload: PayloadMenuComando = {
           diretorio: pasta.diretorio,
           repositorioId: pasta.repositorioId || '',
-          comandoId: menuId,
+          comandoId: menuId
         };
         await ComandosService.executarComandoMenu(payload);
       }
@@ -743,7 +818,7 @@
       icone: 'mdi-close-box-multiple-outline',
       acao: (projeto: any) => {
         projeto.comandosSelecionados = [];
-      },
+      }
     },
     {
       identificador: 2,
@@ -756,7 +831,7 @@
           ? `cd ${dir}; explorer .; Exit;`
           : `cd "${dir}"; xdg-open .; Exit;`;
         executarComandoAvulso(comando);
-      },
+      }
     },
     {
       identificador: 3,
@@ -769,7 +844,7 @@
           ? `cd ${dir}; pwsh.exe;`
           : `cd "${dir}";`;
         executarComandoAvulso(comando);
-      },
+      }
     },
     {
       identificador: 4,
@@ -779,8 +854,8 @@
         const sep = featuresStore.pathSeparator;
         const diretorio = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}`;
         executarComandoAvulso(`cd "${diretorio}"; git fetch --unshallow;`);
-      },
-    },
+      }
+    }
   ];
 
   const menusProjetoDisponiveis = (projeto: any): MenuProjeto[] => {
@@ -795,7 +870,7 @@
           const sep = featuresStore.pathSeparator;
           const comando = `cd "${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.arquivoCoverage}"`;
           executarComandoAvulso(comando);
-        },
+        }
       });
     }
 
@@ -805,7 +880,7 @@
   const executarComandoAvulso = (comando: string): void => {
     try {
       ComandosService.executarComandoAvulso({
-        comando,
+        comando
       });
     } catch (error) {
       console.error('Falha ao executar o comando avulso: ', error);
@@ -819,7 +894,7 @@
           .filter((p: IPasta) => p.identificador)
           .map((p: IPasta, index: number) => ({
             identificador: p.identificador,
-            indice: index,
+            indice: index
           }))
       );
     } catch (error) {
@@ -846,7 +921,7 @@
       await PastasService.reordenarFixadas(
         pastasFixadas.value.map((p: IPasta, index: number) => ({
           identificador: p.identificador,
-          indice: index,
+          indice: index
         }))
       );
     } catch (error) {
@@ -861,7 +936,7 @@
       await PastasService.atualizarExpandido({
         pastaId: pastaSelecionada.identificador || '',
         projetoId: projeto.identificador,
-        expandido: novoEstado,
+        expandido: novoEstado
       });
 
       projeto.expandido = novoEstado;
@@ -888,7 +963,7 @@
     const payload: PayloadComando = {
       diretorio: pastaSelecionada.diretorio,
       repositorioId: pastaSelecionada.repositorioId || '',
-      projetos: [projetoComando],
+      projetos: [projetoComando]
     };
 
     notificar('sucesso', 'Comando solicitado');
@@ -917,7 +992,9 @@
   const ocultarPasta = async (diretorio: string): Promise<void> => {
     try {
       await PastasService.ocultar(diretorio);
-      pastas.value = pastas.value.filter((p: IPasta) => p.diretorio !== diretorio);
+      pastas.value = pastas.value.filter(
+        (p: IPasta) => p.diretorio !== diretorio
+      );
       notificar('sucesso', 'Pasta ocultada');
       await pastasOcultas.value?.recarregar();
     } catch (error) {
@@ -934,7 +1011,9 @@
 
     try {
       await PastasService.excluir(diretorio);
-      pastas.value = pastas.value.filter((p: IPasta) => p.diretorio !== diretorio);
+      pastas.value = pastas.value.filter(
+        (p: IPasta) => p.diretorio !== diretorio
+      );
       notificar('sucesso', 'Pasta excluída');
     } catch (error) {
       console.error('Falha ao excluir pasta:', error);
@@ -958,7 +1037,7 @@
           diretorio: diretorioCompleto,
           ideIdentificador: pasta.ideIdentificador!,
           perfilVSCode: pasta.perfilVSCode,
-          abrirWorkspace: pasta.abrirWorkspace,
+          abrirWorkspace: pasta.abrirWorkspace
         });
       });
 
@@ -985,7 +1064,10 @@
         : pasta.cliComando;
 
       const comando = `cd ${diretorio}; ${comandoCli}`;
-      ComandosService.executarComandoAvulso({ comando, perfilTerminal: pasta.perfilTerminal });
+      ComandosService.executarComandoAvulso({
+        comando,
+        perfilTerminal: pasta.perfilTerminal
+      });
       notificar('sucesso', `Abrindo ${comandoCli}`);
     } catch (error) {
       notificar('erro', 'Falha ao abrir CLI', String(error));

@@ -3,8 +3,8 @@
     :class="[
       'mb-4 mr-2',
       {
-        'card-selecionado': pastaSelecionada.diretorio === pasta.diretorio,
-      },
+        'card-selecionado': pastaSelecionada.diretorio === pasta.diretorio
+      }
     ]"
     :style="estiloBorda"
     @click="selecionarPasta(pasta)"
@@ -20,7 +20,10 @@
               sem-botao
             />
           </div>
-          <div class="ml-2 d-flex align-center" style="gap: 4px;">
+          <div
+            class="ml-2 d-flex align-center"
+            style="gap: 4px"
+          >
             <template v-if="temLinkTarefa">
               <a
                 :href="linkTarefa"
@@ -45,7 +48,10 @@
           </div>
         </div>
 
-        <div v-if="!pasta.descricao" class="d-flex align-center gap-1">
+        <div
+          v-if="!pasta.descricao"
+          class="d-flex align-center gap-1"
+        >
           <IconeComTooltip
             icone="mdi-plus"
             texto="Cadastrar pasta"
@@ -74,7 +80,10 @@
             :acao="() => emit('toggleFixar', pasta)"
             top
           />
-          <v-menu location="bottom" v-model="menuAberto">
+          <v-menu
+            location="bottom"
+            v-model="menuAberto"
+          >
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -94,19 +103,29 @@
               >
                 <template #prepend>
                   <v-checkbox
-                    :model-value="menusSelecionados.includes(menu.identificador)"
+                    :model-value="
+                      menusSelecionados.includes(menu.identificador)
+                    "
                     hide-details
                     density="compact"
                     @click.stop="toggleMenuSelecionado(menu.identificador)"
                   />
                 </template>
                 <v-list-item-title>
-                  <v-icon color="primary" class="px-3">{{ obterIconeMenu(menu.tipo) }}</v-icon>
+                  <v-icon
+                    color="primary"
+                    class="px-3"
+                  >
+                    {{ obterIconeMenu(menu.tipo) }}
+                  </v-icon>
                   {{ menu.titulo }}
                 </v-list-item-title>
               </v-list-item>
 
-              <v-divider v-if="menusSelecionados.length > 0" class="my-2" />
+              <v-divider
+                v-if="menusSelecionados.length > 0"
+                class="my-2"
+              />
 
               <v-list-item
                 v-if="menusSelecionados.length > 0"
@@ -119,11 +138,19 @@
                 </v-list-item-title>
               </v-list-item>
 
-              <v-divider v-if="menusAtivos.length > 0" class="my-2" />
+              <v-divider
+                v-if="menusAtivos.length > 0"
+                class="my-2"
+              />
 
               <v-list-item @click.stop="emit('excluirPasta', pasta.diretorio)">
                 <v-list-item-title>
-                  <v-icon color="error" class="px-3">mdi-delete</v-icon>
+                  <v-icon
+                    color="error"
+                    class="px-3"
+                  >
+                    mdi-delete
+                  </v-icon>
                   Excluir pasta
                 </v-list-item-title>
               </v-list-item>
@@ -134,13 +161,21 @@
     </v-card-title>
 
     <v-card-text class="pb-2">
-      <v-row no-gutters class="pt-2">
+      <v-row
+        no-gutters
+        class="pt-2"
+      >
         <v-col
           cols="12"
           class="pb-1"
         >
           <v-icon>mdi-folder</v-icon>
-          <span @click="() => abrirDiretorio(pasta.diretorio)" class="link pl-1">{{ pasta.diretorio }}</span>
+          <span
+            @click="() => abrirDiretorio(pasta.diretorio)"
+            class="link pl-1"
+          >
+            {{ pasta.diretorio }}
+          </span>
         </v-col>
       </v-row>
     </v-card-text>
@@ -167,7 +202,7 @@
     ocultarPasta: [diretorio: string];
     excluirPasta: [diretorio: string];
     toggleFixar: [pasta: IPasta];
-  }>(); 
+  }>();
 
   const menuAberto = ref<boolean>(false);
   const menusSelecionados = ref<string[]>([]);
@@ -199,7 +234,7 @@
 
   const executarMenusSelecionados = (): void => {
     if (menusSelecionados.value.length === 0) return;
-    
+
     emit('executarMenusMultiplos', props.pasta, [...menusSelecionados.value]);
     menusSelecionados.value = [];
     menuAberto.value = false;
@@ -243,23 +278,23 @@
     NENHUM: {
       icone: 'mdi-set-none',
       titulo: 'Nenhum',
-      cor: 'grey',
+      cor: 'grey'
     },
     FEATURE: {
       icone: 'mdi-creation',
       titulo: 'Melhoria',
-      cor: 'green',
+      cor: 'green'
     },
     BUG: {
       icone: 'mdi-bug',
       titulo: 'Erro',
-      cor: 'red',
+      cor: 'red'
     },
     HOTFIX: {
       icone: 'mdi-ambulance',
       titulo: 'Hotfix',
-      cor: 'purple',
-    },
+      cor: 'purple'
+    }
   };
 
   const dadosTipo = computed((): TipoInfo => {
@@ -268,11 +303,12 @@
 
   const estiloBorda = computed(() => {
     const cor = props.pasta.cor || 'rgb(var(--v-theme-primary))';
-    const isSelected = props.pastaSelecionada.diretorio === props.pasta.diretorio;
-    
+    const isSelected =
+      props.pastaSelecionada.diretorio === props.pasta.diretorio;
+
     return {
       borderLeft: `6px solid ${cor}`,
-      ...(isSelected && { 
+      ...(isSelected && {
         borderTop: `1px solid ${cor}`,
         borderRight: `1px solid ${cor}`,
         borderBottom: `1px solid ${cor}`
@@ -286,9 +322,9 @@
 
   const obterIconeMenu = (tipo: string): string => {
     const icones: Record<string, string> = {
-      'APLICAR_ARQUIVO': 'mdi-file',
-      'APLICAR_PASTA': 'mdi-folder',
-      'COMANDO_AVULSO': 'mdi-console'
+      APLICAR_ARQUIVO: 'mdi-file',
+      APLICAR_PASTA: 'mdi-folder',
+      COMANDO_AVULSO: 'mdi-console'
     };
     return icones[tipo] || 'mdi-cog';
   };

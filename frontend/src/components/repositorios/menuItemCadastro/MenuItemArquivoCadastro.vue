@@ -3,7 +3,7 @@
     <div
       :class="[
         'd-flex align-center',
-        emModoInicial ? 'justify-space-between' : 'justify-end',
+        emModoInicial ? 'justify-space-between' : 'justify-end'
       ]"
       style="height: 70px"
     >
@@ -90,7 +90,7 @@
     { title: 'Arquivo', key: 'arquivo', align: 'start' },
     { title: 'Destino', key: 'destino', align: 'start' },
     { title: 'Ignorar Git Diff', key: 'ignorarGit', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ]);
 
   const arquivoSelecionado = reactive(new ArquivoModel());
@@ -106,16 +106,16 @@
   const MODO_OPERACAO = {
     INICIAL: {
       titulo: 'Adicionar',
-      valor: 'ADICIONAR',
+      valor: 'ADICIONAR'
     },
     NOVO: {
       titulo: 'Novo',
-      valor: 'NOVO',
+      valor: 'NOVO'
     },
     EDICAO: {
       titulo: 'Editar',
-      valor: 'EDITAR',
-    },
+      valor: 'EDITAR'
+    }
   };
 
   let modoOperacao = ref(MODO_OPERACAO.INICIAL.valor);

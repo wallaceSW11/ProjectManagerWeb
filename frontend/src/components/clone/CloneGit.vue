@@ -7,13 +7,18 @@
       <v-card-title>Clonar</v-card-title>
 
       <v-card-text class="pt-0">
-        <v-form ref="formClone">
+        <v-form
+          ref="formClone"
+          autocomplete="off"
+        >
           <v-text-field
             ref="campoCodigoTarefa"
             label="Código da tarefa"
             v-model.uppercase="codigoTarefaInput"
             class="uppercase-input"
             :rules="obrigatorio"
+            autocomplete="off"
+            name="pmw-clone-codigo"
             @blur="processarCodigoTarefa"
           />
 
@@ -22,6 +27,8 @@
             label="Descrição"
             v-model="clone.descricao"
             :rules="obrigatorio"
+            autocomplete="off"
+            name="pmw-clone-desc"
           />
 
           <SelectRepositorio
@@ -124,10 +131,7 @@
   import RepositoriosService from '@/services/RepositoriosService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { useFeaturesStore } from '@/stores/features';
-  import {
-    notificar,
-    atualizarListaPastas,
-  } from '@/utils/eventBus';
+  import { notificar, atualizarListaPastas } from '@/utils/eventBus';
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
   import SelectBranch from '@/components/comum/SelectBranch.vue';
 
@@ -151,16 +155,19 @@
 
   const repositorioSelecionado = computed(() => !!clone.repositorio?.url);
 
-  watch(codigoTarefaInput, (valor) => {
+  watch(codigoTarefaInput, valor => {
     clone.codigo = valor;
   });
 
-  watch(() => clone.branch, () => {
-    branchInvalida.value = false;
-    hintBranch.value = '';
-  });
+  watch(
+    () => clone.branch,
+    () => {
+      branchInvalida.value = false;
+      hintBranch.value = '';
+    }
+  );
 
-  watch(repositorioSelecionado, (temRepositorio) => {
+  watch(repositorioSelecionado, temRepositorio => {
     if (!temRepositorio) {
       clone.branch = '';
       branchInvalida.value = false;
@@ -168,16 +175,19 @@
     }
   });
 
-  watch(() => clone.repositorio?.identificador, () => {
-    const repo = clone.repositorio;
-    if (!repo?.url) return;
+  watch(
+    () => clone.repositorio?.identificador,
+    () => {
+      const repo = clone.repositorio;
+      if (!repo?.url) return;
 
-    clone.diretorioRaiz = repo.pastaCentralizadora
-      ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${repo.pastaCentralizadora}${featuresStore.pathSeparator}`
-      : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
-  });
+      clone.diretorioRaiz = repo.pastaCentralizadora
+        ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${repo.pastaCentralizadora}${featuresStore.pathSeparator}`
+        : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
+    }
+  );
 
-  watch(exibirModalClone, async (abriu) => {
+  watch(exibirModalClone, async abriu => {
     if (!abriu) return;
 
     clone.diretorioRaiz = `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
@@ -223,11 +233,14 @@
 
       if (repositorio) {
         clone.repositorio = repositorio;
-
-        clone.diretorioRaiz = repositorio.pastaCentralizadora
-          ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${repositorio.pastaCentralizadora}${featuresStore.pathSeparator}`
-          : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
       }
+
+      // Prioriza pasta centralizadora do código de tarefa, senão usa a do repositório
+      const pastaCentralizadora =
+        codigoTarefa.pastaCentralizadora || repositorio.pastaCentralizadora;
+      clone.diretorioRaiz = pastaCentralizadora
+        ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${pastaCentralizadora}${featuresStore.pathSeparator}`
+        : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
 
       if (codigoTarefa.branchPrincipal) {
         clone.branch = codigoTarefa.branchPrincipal;
@@ -292,7 +305,7 @@
 
     const payload = {
       ...clone,
-      repositorioId: clone.repositorio.identificador,
+      repositorioId: clone.repositorio.identificador
     };
     payload.codigo = clone.codigo.toUpperCase();
 

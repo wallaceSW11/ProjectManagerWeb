@@ -10,8 +10,8 @@ class BaseApiService {
     this.api = axios.create({
       baseURL: this.baseUrl,
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     });
   }
 

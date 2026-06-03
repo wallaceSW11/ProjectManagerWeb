@@ -14,7 +14,7 @@ Roda localmente na máquina do desenvolvedor — sem autenticação, sem banco r
 | Persistência | Arquivos JSON em `%APPDATA%\PMW\Banco\` |
 | Package Manager | pnpm |
 | Infra (Linux) | systemd user service + scripts em `/opt/pmw-tools/` |
-| Infra (Windows) | IIS local via `dotnet publish` |
+| Infra (Windows) | Scripts PowerShell em `C:\PMW-Tools` |
 
 ---
 
@@ -75,12 +75,79 @@ Acesse: [http://localhost:2025](http://localhost:2025)
 
 ## 🪟 Instalação no Windows
 
-### Pré-requisitos (desenvolvimento)
+**Pré-requisito:** [.NET 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (o pacote Windows é framework-dependent — o runtime precisa estar instalado)
+
+### Instalação do zero (automática)
+
+Abra o **PowerShell** e execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -Command "iwr -Uri 'https://raw.githubusercontent.com/wallaceSW11/ProjectManagerWeb/main/bootstrap.ps1' -OutFile '$env:TEMP\bootstrap.ps1'; & '$env:TEMP\bootstrap.ps1'"
+```
+
+O script baixa o último release, extrai em `C:\inetpub\wwwroot\PMW`, copia os scripts de gerenciamento para `C:\PMW-Tools` e adiciona ao PATH do usuário.
+
+> Para instalar em outro diretório:
+> ```powershell
+> # Após baixar o bootstrap.ps1:
+> .\$env:TEMP\bootstrap.ps1 -Pasta "C:\inetpub\wwwroot\PMW"
+> ```
+
+### Instalação manual
+
+1. Acesse [GitHub Releases](https://github.com/wallaceSW11/ProjectManagerWeb/releases/latest)
+2. Baixe o arquivo `PMW_Windows_*.zip`
+3. Extraia para `C:\inetpub\wwwroot\PMW`
+4. Execute a configuração:
+
+```powershell
+# Configura a infraestrutura (copia scripts para C:\PMW-Tools, adiciona ao PATH):
+C:\inetpub\wwwroot\PMW\infra\pmw.ps1 install
+
+# Reabra o terminal e use o comando:
+pmw start
+```
+
+### Comandos disponíveis após a instalação
+
+```powershell
+pmw start     # Inicia o PMW em segundo plano
+pmw stop      # Para o PMW
+pmw restart   # Reinicia
+pmw status    # Mostra se está rodando
+pmw update    # Atualiza para o último release (com backup automático)
+```
+
+Acesse: [http://localhost:2025](http://localhost:2025)
+
+> **Nota:** O PMW para Windows é publicado como **framework-dependent** — precisa do .NET Runtime 9 instalado.  
+> Para iniciar sem janela de console (ideal para inicialização do Windows):
+> ```powershell
+> wscript.exe "C:\PMW-Tools\pmw-start.vbs"
+> ```
+> Coloque esse comando em `shell:startup` para iniciar automaticamente.
+
+### Estrutura de diretórios no Windows
+
+```
+C:\inetpub\wwwroot\PMW          → Aplicação (backend + frontend)
+C:\PMW-Tools                    → Scripts de infra — nunca sobrescritos
+│   ├── pmw.ps1                 →   gerenciamento (start, stop, update...)
+│   ├── pmw-start.vbs           →   inicia sem janela de terminal
+│   └── pmw-start.bat           →   atalho para o .vbs
+C:\PMW-backup-*                 → Backups automáticos com data/hora
+```
+
+---
+
+## 🛠️ Desenvolvimento local
+
+### Pré-requisitos
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js](https://nodejs.org/) + [pnpm](https://pnpm.io/installation)
-- IIS (Internet Information Services)
+- IIS (Internet Information Services) — apenas para testar deploy
 
-### Desenvolvimento local
+### Setup
 
 ```bash
 git clone https://github.com/wallaceSW11/ProjectManagerWeb.git
@@ -99,61 +166,28 @@ dotnet run
 
 Acesse: [http://localhost:5173](http://localhost:5173)
 
-### Instalação "produção" no Windows
-
-```powershell
-# 1. Baixe o último release com o script (informe a pasta de destino):
-.\Atualizar_PMW.ps1 -Pasta "C:\inetpub\wwwroot\PMW"
-
-# 2. Configure a infraestrutura (copiar scripts, detectar caminho, adicionar ao PATH):
-C:\inetpub\wwwroot\PMW\infra\pmw.ps1 install
-
-# 3. Use o comando para gerenciar:
-pmw start     # Inicia (via PowerShell, sem console: pmw-start.vbs)
-pmw stop      # Para
-pmw restart   # Reinicia
-pmw status    # Status
-pmw update    # Atualiza (com backup automático)
-```
-
-### Estrutura de diretórios no Windows
-
-```
-C:\PMW ou C:\inetpub\wwwroot\PMW   → Aplicação (backend + frontend)
-C:\PMW-Tools/                      → Scripts de infra — nunca sobrescritos
-│   ├── pmw.ps1                    →   gerenciamento (start, stop, update...)
-│   ├── pmw-start.vbs              →   inicia sem janela de terminal
-│   └── pmw-start.bat              →   atalho para o .vbs
-C:\PMW-backup-PMW-*                → Backups automáticos com data/hora
-```
-
-> Para iniciar o PMW sem console visível (ideal para inicialização do Windows):
-> ```powershell
-> wscript.exe "C:\PMW-Tools\pmw-start.vbs"
-> ```
-> Ou coloque esse comando na **inicialização do Windows** (`shell:startup`).
-
 ---
 
-## 📦 Build e publicação (dev)
+## 📦 Build (CI/CD)
 
-```bash
-# Build completo + publicação no IIS
-cd frontend
-pnpm run publish:all
-```
+O build completo é feito via **GitHub Actions** (`.github/workflows/release.yml`):
 
-Ou manualmente:
+1. **Frontend:** `pnpm install --frozen-lockfile` + `pnpm run build`
+2. **Backend:**
+   - **Windows:** `dotnet publish -c Release -r win-x64 --self-contained false`
+   - **Linux:** `dotnet publish -c Release -r linux-x64 --self-contained true`
+3. **Artefatos:** `PMW_Windows_*.zip` e `PMW_Linux_*.zip`
+
+Para build manual durante o desenvolvimento:
 
 ```bash
 # Frontend
 cd frontend
 pnpm run build
-pnpm run copy:to:backend
 
-# Backend
+# Backend (compilar apenas, sem publicar)
 cd ../backend
-dotnet publish ProjectManagerWeb.csproj -c Release -o C:\inetpub\wwwroot\PMW
+dotnet build
 ```
 
 ---
@@ -189,8 +223,9 @@ ProjectManagerWeb/
 │   └── pmw-start.bat       #   Windows: atalho para o .vbs
 │
 ├── bootstrap.sh             # Instalação do zero no Linux
+├── bootstrap.ps1            # Instalação do zero no Windows
 ├── .github/workflows/       # CI/CD (release.yml)
-├── Atualizar_PMW.ps1        # Script de atualização Windows
+├── Atualizar_PMW.ps1        # Script de atualização Windows (legado)
 └── README.md
 ```
 
@@ -209,12 +244,14 @@ Pipeline em `.github/workflows/release.yml` — dispara em push para `main`:
 5. Gera dois artefatos: `PMW_Windows_*.zip` e `PMW_Linux_*.zip`
 6. Cria GitHub Release com ambos os artefatos
 
-### Atualização local
+### Instalação / Atualização local
 
-**Windows:** `Atualizar_PMW.ps1` ou `pmw update` (via `C:\PMW-Tools\pmw.ps1`)
-**Linux:** `pmw update` (via `/opt/pmw-tools/pmw.sh`)
+| | Primeira instalação | Atualização |
+|---|---|---|
+| **Linux** | `curl ... \| bash` (via `bootstrap.sh`) | `pmw update` |
+| **Windows** | `bootstrap.ps1` (one-liner) | `pmw update` |
 
-Ambos fazem backup automático com data/hora antes de atualizar.
+> Ambos fazem **backup automático com data/hora** antes de atualizar.
 
 ---
 
@@ -276,3 +313,36 @@ Ambos fazem backup automático com data/hora antes de atualizar.
 - Frontend: Component → Store → Service → API
 - Models com `constructor(Partial<I>)` + `toDTO()`
 - Commits: `tipo(escopo): descrição em pt-br`
+
+### 🎨 Padrão de scroll em telas com abas
+
+Telas que usam `v-tabs` + `v-tabs-window` devem ter o scroll **dentro do conteúdo da aba**, não na página inteira.
+
+**Regra:** Cada `v-tabs-window-item` deve envolver seu conteúdo em uma `<div class="conteudo-aba">`:
+
+```html
+<v-tabs-window>
+  <v-tabs-window-item>
+    <div class="conteudo-aba">
+      <!-- conteúdo da aba aqui -->
+    </div>
+  </v-tabs-window-item>
+</v-tabs-window>
+```
+
+**CSS obrigatório:**
+
+```css
+.conteudo-aba {
+  height: calc(100dvh - 320px);  /* 320px = header + tabs + toolbar */
+  overflow: auto;
+}
+
+/* Para o primeiro nível de abas (sem tabs internas): */
+.altura-limitada {
+  height: calc(100dvh - 220px);  /* 220px = header + toolbar */
+  overflow: auto;
+}
+```
+
+Ajuste o `calc()` conforme a altura ocupada por headers, toolbars e tabs acima do conteúdo. Se houver abas aninhadas, use `conteudo-aba` nas abas internas e `altura-limitada` no container externo.

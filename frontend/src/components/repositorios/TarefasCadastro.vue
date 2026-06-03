@@ -11,51 +11,74 @@
       />
     </v-col>
 
-    <v-col cols="12" class="mt-4">
+    <v-col
+      cols="12"
+      class="mt-4"
+    >
       <h3>Códigos de Tarefa</h3>
       <v-divider class="mb-2" />
 
-      <div v-if="!editandoCodigoTarefa" class="d-flex align-center mb-2">
-        <v-text-field
-          v-model="novoCodigoTarefa.iniciais"
-          label="Iniciais"
-          density="compact"
+      <div class="d-flex align-center mb-2">
+        <v-btn
           variant="outlined"
-          hide-details
-          class="mr-2"
-          style="max-width: 120px;"
-        />
-        <v-btn variant="outlined" @click="iniciarCadastroCodigoTarefa">
+          @click="iniciarCadastroCodigoTarefa"
+        >
           <v-icon>mdi-plus</v-icon>
-          Adicionar
+          Adicionar código
         </v-btn>
       </div>
 
-      <v-card v-if="editandoCodigoTarefa" class="pa-4 mb-3" variant="outlined">
+      <!-- Modal de cadastro/edição de código de tarefa -->
+      <ModalPadrao
+        v-model="exibirModalCodigoTarefa"
+        :titulo="
+          codigoTarefaEditandoId
+            ? 'Editar Código de Tarefa'
+            : 'Cadastro de Código de Tarefa'
+        "
+        textoBotaoPrimario="Salvar"
+        :acaoBotaoPrimario="salvarCodigoTarefa"
+        :acaoBotaoSecundario="cancelarEdicaoCodigoTarefa"
+        larguraMinima="700px"
+      >
         <v-row>
-          <v-col cols="4">
+          <v-col cols="5">
             <v-text-field
+              ref="campoIniciais"
               v-model="codigoTarefaForm.iniciais"
               label="Iniciais"
               density="compact"
-              variant="outlined"
-              hide-details
+              variant="underlined"
             />
           </v-col>
-          <v-col cols="4" class="d-flex align-center">
-            <v-switch
-              v-model="codigoTarefaForm.criarBranchRemoto"
-              label="Criar branch remoto"
+          <v-col cols="7">
+            <v-select
+              v-model="codigoTarefaForm.pastaCentralizadora"
+              label="Pasta centralizadora"
+              :items="pastasCentralizadoras"
               density="compact"
-              hide-details
+              variant="underlined"
+              clearable
+              hint="Se vazio, usa a pasta do repositório"
+              persistent-hint
             />
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="4">
             <v-switch
+              v-model="codigoTarefaForm.criarBranchRemoto"
+              label="Criar branch remoto"
+              color="primary"
+              density="compact"
+              hide-details
+            />
+          </v-col>
+          <v-col cols="4">
+            <v-switch
               v-model="codigoTarefaForm.clonarAgregados"
               label="Clonar agregados"
+              color="primary"
               density="compact"
               hide-details
             />
@@ -64,30 +87,24 @@
             <v-switch
               v-model="codigoTarefaForm.baixarHistoricoCompleto"
               label="Histórico completo"
+              color="primary"
               density="compact"
               hide-details
             />
           </v-col>
+        </v-row>
+        <v-row>
           <v-col cols="4">
             <v-switch
               v-model="codigoTarefaForm.habilitarTipos"
               label="Habilitar tipos"
+              color="primary"
               density="compact"
               hide-details
             />
           </v-col>
         </v-row>
-        <v-row class="mt-2">
-          <v-col cols="12" class="d-flex justify-end">
-            <v-btn variant="outlined" class="mr-2" @click="cancelarEdicaoCodigoTarefa">
-              Cancelar
-            </v-btn>
-            <v-btn color="primary" @click="salvarCodigoTarefa">
-              Salvar
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card>
+      </ModalPadrao>
 
       <v-data-table
         :items="repositorio.codigosTarefa || []"
@@ -95,16 +112,57 @@
         hide-default-footer
       >
         <template #[`item.criarBranchRemoto`]="{ item }">
-          <v-icon v-if="item.criarBranchRemoto" color="success">mdi-check</v-icon>
-          <v-icon v-else color="grey">mdi-close</v-icon>
+          <v-icon
+            v-if="item.criarBranchRemoto"
+            color="success"
+          >
+            mdi-check
+          </v-icon>
+          <v-icon
+            v-else
+            color="grey"
+          >
+            mdi-close
+          </v-icon>
         </template>
         <template #[`item.clonarAgregados`]="{ item }">
-          <v-icon v-if="item.clonarAgregados" color="success">mdi-check</v-icon>
-          <v-icon v-else color="grey">mdi-close</v-icon>
+          <v-icon
+            v-if="item.clonarAgregados"
+            color="success"
+          >
+            mdi-check
+          </v-icon>
+          <v-icon
+            v-else
+            color="grey"
+          >
+            mdi-close
+          </v-icon>
         </template>
         <template #[`item.habilitarTipos`]="{ item }">
-          <v-icon v-if="item.habilitarTipos" color="success">mdi-check</v-icon>
-          <v-icon v-else color="grey">mdi-close</v-icon>
+          <v-icon
+            v-if="item.habilitarTipos"
+            color="success"
+          >
+            mdi-check
+          </v-icon>
+          <v-icon
+            v-else
+            color="grey"
+          >
+            mdi-close
+          </v-icon>
+        </template>
+        <template #[`item.pastaCentralizadora`]="{ item }">
+          <span v-if="item.pastaCentralizadora">
+            {{ item.pastaCentralizadora }}
+          </span>
+          <span
+            v-else
+            class="text-grey"
+          >
+            (herdado do repo)
+          </span>
         </template>
         <template #[`item.actions`]="{ item }">
           <IconeComTooltip
@@ -126,16 +184,30 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive } from 'vue';
+  import { computed, ref, reactive, watch, nextTick } from 'vue';
   import type { IRepositorio, ICodigoTarefa } from '@/types';
+  import { useConfiguracaoStore } from '@/stores/configuracao';
   import { notificar } from '@/utils/eventBus';
   import IconeComTooltip from '@/components/comum/botao/IconeComTooltip.vue';
+  import ModalPadrao from '@/components/comum/ModalPadrao.vue';
 
   const repositorio = defineModel<IRepositorio>({ required: true });
+  const configuracaoStore = useConfiguracaoStore();
 
-  const editandoCodigoTarefa = ref(false);
+  const pastasCentralizadoras = computed(
+    () => configuracaoStore.pastasCentralizadoras?.map((p: any) => p.nome) || []
+  );
+
+  const exibirModalCodigoTarefa = ref(false);
   const codigoTarefaEditandoId = ref<string | null>(null);
-  const novoCodigoTarefa = reactive({ iniciais: '' });
+  const campoIniciais = ref<any>(null);
+
+  watch(exibirModalCodigoTarefa, async abriu => {
+    if (abriu) {
+      await nextTick();
+      campoIniciais.value?.focus();
+    }
+  });
   const codigoTarefaForm = reactive<ICodigoTarefa>({
     identificador: crypto.randomUUID(),
     iniciais: '',
@@ -145,40 +217,38 @@
     baixarHistoricoCompleto: false,
     habilitarTipos: false,
     tiposHabilitados: [],
+    pastaCentralizadora: null
   });
 
   const colunasCodigosTarefa = [
     { title: 'Iniciais', key: 'iniciais', align: 'start' as const },
-    { title: 'Branch remoto', key: 'criarBranchRemoto', align: 'center' as const },
+    { title: 'Pasta', key: 'pastaCentralizadora', align: 'start' as const },
+    {
+      title: 'Branch remoto',
+      key: 'criarBranchRemoto',
+      align: 'center' as const
+    },
     { title: 'Agregados', key: 'clonarAgregados', align: 'center' as const },
     { title: 'Tipos', key: 'habilitarTipos', align: 'center' as const },
-    { title: 'Ações', key: 'actions', align: 'center' as const, width: '200px' },
+    {
+      title: 'Ações',
+      key: 'actions',
+      align: 'center' as const,
+      width: '200px'
+    }
   ];
 
   const iniciarCadastroCodigoTarefa = (): void => {
-    if (!novoCodigoTarefa.iniciais.trim()) {
-      alert('Informe as iniciais do código de tarefa');
-      return;
-    }
-
-    const jaExiste = (repositorio.value.codigosTarefa || []).some(
-      (c: ICodigoTarefa) => c.iniciais === novoCodigoTarefa.iniciais.trim()
-    );
-    if (jaExiste) {
-      alert('Já existe um código de tarefa com essas iniciais');
-      return;
-    }
-
     codigoTarefaForm.identificador = crypto.randomUUID();
-    codigoTarefaForm.iniciais = novoCodigoTarefa.iniciais.trim().toUpperCase();
+    codigoTarefaForm.iniciais = '';
     codigoTarefaForm.branchPrincipal = 'develop';
     codigoTarefaForm.criarBranchRemoto = false;
     codigoTarefaForm.clonarAgregados = false;
     codigoTarefaForm.baixarHistoricoCompleto = false;
     codigoTarefaForm.habilitarTipos = false;
+    codigoTarefaForm.pastaCentralizadora = null;
     codigoTarefaEditandoId.value = null;
-    editandoCodigoTarefa.value = true;
-    novoCodigoTarefa.iniciais = '';
+    exibirModalCodigoTarefa.value = true;
   };
 
   const editarCodigoTarefa = (item: ICodigoTarefa): void => {
@@ -190,12 +260,13 @@
     codigoTarefaForm.baixarHistoricoCompleto = item.baixarHistoricoCompleto;
     codigoTarefaForm.habilitarTipos = item.habilitarTipos;
     codigoTarefaForm.tiposHabilitados = [...(item.tiposHabilitados || [])];
+    codigoTarefaForm.pastaCentralizadora = item.pastaCentralizadora || null;
     codigoTarefaEditandoId.value = item.identificador;
-    editandoCodigoTarefa.value = true;
+    exibirModalCodigoTarefa.value = true;
   };
 
   const cancelarEdicaoCodigoTarefa = (): void => {
-    editandoCodigoTarefa.value = false;
+    exibirModalCodigoTarefa.value = false;
     codigoTarefaEditandoId.value = null;
   };
 
@@ -205,12 +276,27 @@
       return;
     }
 
+    // Verifica duplicidade (ignora se for edição do mesmo código)
+    const duplicado = (repositorio.value.codigosTarefa || []).some(
+      (c: ICodigoTarefa) =>
+        c.iniciais === codigoTarefaForm.iniciais.trim().toUpperCase() &&
+        c.identificador !== codigoTarefaEditandoId.value
+    );
+    if (duplicado) {
+      alert('Já existe um código de tarefa com essas iniciais');
+      return;
+    }
+
+    codigoTarefaForm.iniciais = codigoTarefaForm.iniciais.trim().toUpperCase();
+
     if (codigoTarefaEditandoId.value) {
       const indice = repositorio.value.codigosTarefa.findIndex(
         (c: ICodigoTarefa) => c.identificador === codigoTarefaEditandoId.value
       );
       if (indice !== -1) {
-        repositorio.value.codigosTarefa.splice(indice, 1, { ...codigoTarefaForm });
+        repositorio.value.codigosTarefa.splice(indice, 1, {
+          ...codigoTarefaForm
+        });
       }
     } else {
       if (!repositorio.value.codigosTarefa) {
@@ -219,13 +305,15 @@
       repositorio.value.codigosTarefa.push({ ...codigoTarefaForm });
     }
 
-    editandoCodigoTarefa.value = false;
+    exibirModalCodigoTarefa.value = false;
     codigoTarefaEditandoId.value = null;
     notificar('sucesso', 'Código de tarefa salvo');
   };
 
   const removerCodigoTarefa = (item: ICodigoTarefa): void => {
-    const confirmado = confirm(`Deseja remover o código de tarefa "${item.iniciais}"?`);
+    const confirmado = confirm(
+      `Deseja remover o código de tarefa "${item.iniciais}"?`
+    );
     if (!confirmado) return;
 
     repositorio.value.codigosTarefa = repositorio.value.codigosTarefa.filter(

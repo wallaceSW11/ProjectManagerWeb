@@ -24,14 +24,19 @@ export default class ProjetoModel implements IProjeto {
     this.comandos = obj.comandos || [];
     this.arquivoCoverage = obj.arquivoCoverage || '';
     this.expandido = obj.expandido || false;
-    this.identificadorRepositorioAgregado = obj.identificadorRepositorioAgregado;
+    this.identificadorRepositorioAgregado =
+      obj.identificadorRepositorioAgregado;
     this.nomeIDE = obj.nomeIDE;
     this.perfilTerminal = obj.perfilTerminal || null;
-    
+
     // Handle comandosObj from backend or frontend
     if (obj.comandosObj) {
       this.comandosObj = obj.comandosObj;
-    } else if ((obj as any).comandos && typeof (obj as any).comandos === 'object' && !(obj as any).comandos.length) {
+    } else if (
+      (obj as any).comandos &&
+      typeof (obj as any).comandos === 'object' &&
+      !(obj as any).comandos.length
+    ) {
       // Repository backend sends comandos as ComandoDTO object
       this.comandosObj = (obj as any).comandos;
       // Auto-sync comandos array for display
@@ -52,7 +57,7 @@ export default class ProjetoModel implements IProjeto {
    */
   syncComandosFromObj(): void {
     this.comandos = [];
-    
+
     if (this.comandosObj.instalar) {
       this.comandos.push(TIPO_COMANDO.INSTALAR.valor);
     }
@@ -70,7 +75,11 @@ export default class ProjetoModel implements IProjeto {
   /**
    * Converte os comandos do projeto em um array de objetos para exibição na interface
    */
-  getComandosDisponiveis(): Array<{ titulo: string; valor: string; ativo: boolean }> {
+  getComandosDisponiveis(): Array<{
+    titulo: string;
+    valor: string;
+    ativo: boolean;
+  }> {
     const comandosDisponiveis = [];
 
     for (const comando of this.comandos) {
@@ -98,8 +107,8 @@ export default class ProjetoModel implements IProjeto {
           break;
         case TIPO_COMANDO.ABRIR_NA_IDE.valor:
           // Usa o nome da IDE que veio do backend
-          const tituloIDE = this.nomeIDE 
-            ? `Abrir no ${this.nomeIDE}` 
+          const tituloIDE = this.nomeIDE
+            ? `Abrir no ${this.nomeIDE}`
             : TIPO_COMANDO.ABRIR_NA_IDE.titulo;
           comandosDisponiveis.push({
             titulo: tituloIDE,

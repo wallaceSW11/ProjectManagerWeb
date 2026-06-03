@@ -9,8 +9,9 @@
         small
         :color="cor"
         v-bind="props"
-        >{{ icone }}</v-icon
       >
+        {{ icone }}
+      </v-icon>
       <v-btn
         v-else
         v-bind="props"
@@ -23,8 +24,9 @@
         <v-icon
           small
           :color="cor"
-          >{{ icone }}</v-icon
         >
+          {{ icone }}
+        </v-icon>
       </v-btn>
     </template>
   </v-tooltip>
@@ -54,7 +56,7 @@
     right: false,
     desabilitado: false,
     cor: undefined,
-    semBotao: false,
+    semBotao: false
   });
 
   const getLocation = (): LocationType => {

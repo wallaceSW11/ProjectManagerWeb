@@ -7,7 +7,7 @@
     <div
       :class="[
         'd-flex align-center',
-        emModoInicial ? 'justify-space-between' : 'justify-end',
+        emModoInicial ? 'justify-space-between' : 'justify-end'
       ]"
       style="height: 70px"
     >
@@ -90,7 +90,7 @@
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    initialForm: () => ({}),
+    initialForm: () => ({})
   });
 
   const emit = defineEmits<{
@@ -161,7 +161,7 @@
           target = target[keys[i]];
         }
         target[keys[keys.length - 1]] = val;
-      },
+      }
     };
   }
 </script>

@@ -9,7 +9,7 @@
 # ============================================================
 
 param(
-    [string]$Pasta = "C:\PMW"
+    [string]$Pasta = "C:\inetpub\wwwroot\PMW"
 )
 
 $Repo     = "wallaceSW11/ProjectManagerWeb"

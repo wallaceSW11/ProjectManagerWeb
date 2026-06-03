@@ -10,39 +10,57 @@
       </v-col>
 
       <v-col cols="12">
-        <v-row no-gutters>
-          <!-- Diretório Raiz -->
-          <v-col cols="12">
-            <v-text-field
-              label="Diretório raiz"
-              v-model="configuracao.diretorioRaiz"
-              @change="salvarConfiguracao"
-            />
-          </v-col>
+        <v-tabs v-model="abaAtiva">
+          <v-tab>Geral</v-tab>
+          <v-tab>Perfis IDE</v-tab>
+          <v-tab>Pasta Centralizadora</v-tab>
+          <v-tab>CLI de IA</v-tab>
+        </v-tabs>
 
-          <!-- Terminal Linux -->
-          <v-col cols="12" v-if="featuresStore.isLinux">
-            <v-select
-              label="Terminal"
-              v-model="configuracao.terminalLinux"
-              :items="terminaisLinux"
-              @update:model-value="salvarConfiguracao"
-            />
-          </v-col>
+        <v-tabs-window
+          v-model="abaAtiva"
+          class="conteudo-aba"
+        >
+          <!-- Aba: Geral -->
+          <v-tabs-window-item>
+            <v-row no-gutters>
+              <v-col
+                cols="12"
+                class="pt-4"
+              >
+                <v-text-field
+                  label="Diretório raiz"
+                  v-model="configuracao.diretorioRaiz"
+                  @change="salvarConfiguracao"
+                  autocomplete="off"
+                  name="pmw-dir-raiz"
+                />
+              </v-col>
 
-          <!-- Perfis -->
-          <v-col cols="12">
-            <h2>Perfis do VS Code</h2>
+              <v-col
+                cols="12"
+                v-if="featuresStore.isLinux"
+              >
+                <v-select
+                  label="Terminal"
+                  v-model="configuracao.terminalLinux"
+                  :items="terminaisLinux"
+                  @update:model-value="salvarConfiguracao"
+                />
+              </v-col>
+            </v-row>
+          </v-tabs-window-item>
 
-            <v-divider />
-
-            <div class="d-flex flex-column justify-center">
-              <!-- Input e botão de adicionar perfil -->
+          <!-- Aba: Perfis IDE -->
+          <v-tabs-window-item>
+            <div class="d-flex flex-column justify-center pt-4">
               <div class="d-flex align-center">
                 <v-text-field
                   label="Perfil"
                   v-model="nomePerfil"
-                  autocomplete="new-password"
+                  autocomplete="off"
+                  name="pmw-perfil"
+                  @keydown.enter.prevent="adicionarPerfil"
                 />
                 <v-btn
                   class="ml-2"
@@ -53,7 +71,6 @@
                 </v-btn>
               </div>
 
-              <!-- Tabela de perfis -->
               <div>
                 <v-data-table
                   :items="configuracao.perfisVSCode"
@@ -77,20 +94,18 @@
                 </v-data-table>
               </div>
             </div>
-          </v-col>
+          </v-tabs-window-item>
 
-          <!-- Pastas Centralizadoras -->
-          <v-col cols="12" class="mt-6">
-            <h2>Pastas Centralizadoras</h2>
-
-            <v-divider />
-
-            <div class="d-flex flex-column justify-center">
+          <!-- Aba: Pasta Centralizadora -->
+          <v-tabs-window-item>
+            <div class="d-flex flex-column justify-center pt-4">
               <div class="d-flex align-center">
                 <v-text-field
                   label="Nome da pasta"
                   v-model="nomePastaCentralizadora"
-                  autocomplete="new-password"
+                  autocomplete="off"
+                  name="pmw-pasta"
+                  @keydown.enter.prevent="adicionarPastaCentralizadora"
                 />
                 <v-btn
                   class="ml-2"
@@ -124,26 +139,27 @@
                 </v-data-table>
               </div>
             </div>
-          </v-col>
+          </v-tabs-window-item>
 
-          <!-- CLIs -->
-          <v-col cols="12" class="mt-6">
-            <h2>CLIs de IA</h2>
-
-            <v-divider />
-
-            <div class="d-flex flex-column justify-center">
+          <!-- Aba: CLI de IA -->
+          <v-tabs-window-item>
+            <div class="d-flex flex-column justify-center pt-4">
               <div class="d-flex align-center">
                 <v-text-field
+                  ref="campoNomeCli"
                   label="Nome"
                   v-model="nomeCliNovo"
-                  autocomplete="new-password"
+                  autocomplete="off"
+                  name="pmw-cli-nome"
                   class="mr-2"
+                  @keydown.enter.prevent="adicionarCli"
                 />
                 <v-text-field
                   label="Comando"
                   v-model="comandoCliNovo"
-                  autocomplete="new-password"
+                  autocomplete="off"
+                  name="pmw-cli-comando"
+                  @keydown.enter.prevent="adicionarCli"
                 />
                 <v-btn
                   class="ml-2"
@@ -171,16 +187,20 @@
                 </v-data-table>
               </div>
             </div>
-          </v-col>
-        </v-row>
+          </v-tabs-window-item>
+        </v-tabs-window>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from 'vue';
-  import type { IConfiguracao, IPastaCentralizadora, IPerfilVSCode } from '@/types';
+  import { onMounted, reactive, ref, nextTick } from 'vue';
+  import type {
+    IConfiguracao,
+    IPastaCentralizadora,
+    IPerfilVSCode
+  } from '@/types';
   import ConfiguracaoModel from '../models/ConfiguracaoModel';
   import ConfiguracaoService from '../services/ConfiguracaoService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
@@ -191,11 +211,13 @@
   const featuresStore = useFeaturesStore();
 
   // --- STATE ---
+  const abaAtiva = ref<number>(0);
   const terminaisLinux = ['ptyxis', 'ghostty'];
   const nomePerfil = ref<string>(''); // input do perfil
   const nomeCliNovo = ref<string>('');
   const comandoCliNovo = ref<string>('');
   const nomePastaCentralizadora = ref<string>('');
+  const campoNomeCli = ref<any>(null);
   const configuracao = reactive<IConfiguracao>(new ConfiguracaoModel());
 
   onMounted(() => {
@@ -204,18 +226,18 @@
 
   const colunas = reactive([
     { title: 'Perfil', key: 'nome', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ] as const);
 
   const colunasCli = reactive([
     { title: 'Nome', key: 'nome', align: 'start' },
     { title: 'Comando', key: 'comando', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ] as const);
 
   const colunasPastasCentralizadoras = reactive([
     { title: 'Nome', key: 'nome', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ] as const);
 
   const salvarConfiguracao = async (): Promise<void> => {
@@ -268,7 +290,10 @@
       await ConfiguracaoService.renomearPerfil(nomeAntigo, nomeTrimado);
       item.nome = nomeTrimado;
       configuracaoStore.salvarConfiguracao(configuracao);
-      notificar('sucesso', 'Perfil renomeado e atualizado em todos os projetos');
+      notificar(
+        'sucesso',
+        'Perfil renomeado e atualizado em todos os projetos'
+      );
     } catch (error: any) {
       notificar('erro', 'Falha ao renomear perfil', error.message);
     }
@@ -292,10 +317,14 @@
       return;
     }
 
-    configuracao.clis.push({ nome: nomeCliNovo.value, comando: comandoCliNovo.value });
+    configuracao.clis.push({
+      nome: nomeCliNovo.value,
+      comando: comandoCliNovo.value
+    });
     nomeCliNovo.value = '';
     comandoCliNovo.value = '';
     salvarConfiguracao();
+    nextTick(() => campoNomeCli.value?.focus());
   };
 
   const removerCli = (item: { nome: string; comando: string }): void => {
@@ -323,16 +352,26 @@
     }
 
     try {
-      await ConfiguracaoService.adicionarPastaCentralizadora(nomePastaCentralizadora.value.trim());
-      configuracao.pastasCentralizadoras.push({ nome: nomePastaCentralizadora.value.trim() });
+      await ConfiguracaoService.adicionarPastaCentralizadora(
+        nomePastaCentralizadora.value.trim()
+      );
+      configuracao.pastasCentralizadoras.push({
+        nome: nomePastaCentralizadora.value.trim()
+      });
       nomePastaCentralizadora.value = '';
       notificar('sucesso', 'Pasta centralizadora adicionada');
     } catch (error: any) {
-      notificar('erro', 'Falha ao adicionar pasta centralizadora', error.message);
+      notificar(
+        'erro',
+        'Falha ao adicionar pasta centralizadora',
+        error.message
+      );
     }
   };
 
-  const editarPastaCentralizadora = async (item: IPastaCentralizadora): Promise<void> => {
+  const editarPastaCentralizadora = async (
+    item: IPastaCentralizadora
+  ): Promise<void> => {
     const novoNome = prompt('Editar nome da pasta centralizadora:', item.nome);
     if (!novoNome || !novoNome.trim()) return;
 
@@ -340,26 +379,43 @@
     const nomeTrimado = novoNome.trim();
 
     try {
-      await ConfiguracaoService.renomearPastaCentralizadora(nomeAntigo, nomeTrimado);
+      await ConfiguracaoService.renomearPastaCentralizadora(
+        nomeAntigo,
+        nomeTrimado
+      );
       item.nome = nomeTrimado;
       notificar('sucesso', 'Pasta centralizadora renomeada');
     } catch (error: any) {
-      notificar('erro', 'Falha ao renomear pasta centralizadora', error.message);
+      notificar(
+        'erro',
+        'Falha ao renomear pasta centralizadora',
+        error.message
+      );
     }
   };
 
-  const removerPastaCentralizadora = async (item: IPastaCentralizadora): Promise<void> => {
-    const confirmado = confirm(`Deseja remover a pasta centralizadora "${item.nome}"?`);
+  const removerPastaCentralizadora = async (
+    item: IPastaCentralizadora
+  ): Promise<void> => {
+    const confirmado = confirm(
+      `Deseja remover a pasta centralizadora "${item.nome}"?`
+    );
     if (!confirmado) return;
 
     try {
       await ConfiguracaoService.removerPastaCentralizadora(item.nome);
-      configuracao.pastasCentralizadoras = configuracao.pastasCentralizadoras.filter(
-        p => p !== item
-      );
+      configuracao.pastasCentralizadoras =
+        configuracao.pastasCentralizadoras.filter(p => p !== item);
       notificar('sucesso', 'Pasta centralizadora removida');
     } catch (error: any) {
       notificar('erro', 'Falha ao remover pasta centralizadora', error.message);
     }
   };
 </script>
+
+<style scoped>
+  .conteudo-aba {
+    height: calc(100dvh - 220px);
+    overflow: auto;
+  }
+</style>

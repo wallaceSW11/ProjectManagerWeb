@@ -1,5 +1,9 @@
 import BaseApiService from './BaseApiService';
-import type { ISiteIIS, ISiteIISDeployResponse, IAtualizarSiteResponse } from '@/models/SiteIISModel';
+import type {
+  ISiteIIS,
+  ISiteIISDeployResponse,
+  IAtualizarSiteResponse
+} from '@/models/SiteIISModel';
 
 class SiteIISService extends BaseApiService {
   async getSites(): Promise<ISiteIISDeployResponse[]> {

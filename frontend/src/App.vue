@@ -136,7 +136,10 @@
                 Gerenciar sites
               </v-list-item-title>
             </v-list-item>
-            <v-divider v-if="sitesParaDeploy.length > 0" class="my-1" />
+            <v-divider
+              v-if="sitesParaDeploy.length > 0"
+              class="my-1"
+            />
             <v-list-item
               v-for="site in sitesParaDeploy"
               :key="site.identificador"
@@ -162,13 +165,13 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        
+
         <v-divider
           vertical
           class="mx-2"
-          style="height: 32px; align-self: center;"
+          style="height: 32px; align-self: center"
         />
-        
+
         <v-btn
           icon
           :to="{ name: 'configuracao' }"
@@ -185,10 +188,8 @@
 
     <v-main>
       <router-view />
-      
-      <div class="watermark-footer">
-        Compilado em: {{ compiladoEm }}
-      </div>
+
+      <div class="watermark-footer">Compilado em: {{ compiladoEm }}</div>
     </v-main>
   </v-app>
 
@@ -300,21 +301,21 @@
 </script>
 
 <style>
-.v-main {
-  overflow: hidden;
-}
+  .v-main {
+    overflow: hidden;
+  }
 </style>
 
 <style scoped>
-.watermark-footer {
-  position: fixed;
-  bottom: 8px;
-  left: 16px;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.15);
-  pointer-events: none;
-  user-select: none;
-  font-weight: 300;
-  letter-spacing: 0.5px;
-}
+  .watermark-footer {
+    position: fixed;
+    bottom: 8px;
+    left: 16px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.15);
+    pointer-events: none;
+    user-select: none;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
 </style>

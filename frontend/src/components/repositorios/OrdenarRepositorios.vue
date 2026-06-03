@@ -15,7 +15,8 @@
     larguraMinima="400px"
   >
     <p class="text-caption text-medium-emphasis mb-3">
-      Arraste para reordenar. A ordem será salva e refletida no select de repositórios.
+      Arraste para reordenar. A ordem será salva e refletida no select de
+      repositórios.
     </p>
 
     <draggable
@@ -29,7 +30,11 @@
           class="mb-2 d-flex align-center px-3 py-2"
           style="background-color: #2d2d30; cursor: default"
         >
-          <v-icon class="drag-handle mr-3" style="cursor: grab" color="grey">
+          <v-icon
+            class="drag-handle mr-3"
+            style="cursor: grab"
+            color="grey"
+          >
             mdi-drag
           </v-icon>
           <div
@@ -40,7 +45,7 @@
               height: '32px',
               borderRadius: '3px',
               backgroundColor: element.cor,
-              flexShrink: 0,
+              flexShrink: 0
             }"
           />
           <span>{{ element.titulo }}</span>
@@ -67,7 +72,7 @@
   const exibirModal = ref<boolean>(false);
   const listaLocal = ref<IRepositorio[]>([]);
 
-  watch(exibirModal, (aberto) => {
+  watch(exibirModal, aberto => {
     if (aberto) listaLocal.value = [...props.repositorios];
   });
 
@@ -79,7 +84,7 @@
     try {
       const indices = listaLocal.value.map((r, index) => ({
         identificador: r.identificador,
-        indice: index,
+        indice: index
       }));
 
       await RepositoriosService.atualizarOrdem(indices);

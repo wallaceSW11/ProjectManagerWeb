@@ -49,7 +49,8 @@ export default class PastaModel implements IPasta {
     this.subdiretorio = obj.subdiretorio || null;
     this.cliComando = obj.cliComando || null;
     this.perfilTerminal = obj.perfilTerminal || null;
-    this.abrirWorkspace = obj.abrirWorkspace !== undefined ? obj.abrirWorkspace : true;
+    this.abrirWorkspace =
+      obj.abrirWorkspace !== undefined ? obj.abrirWorkspace : true;
     this.fixada = obj.fixada || false;
     this.ordemFixada = obj.ordemFixada || 0;
     this.cliComandoComplementar = obj.cliComandoComplementar || null;

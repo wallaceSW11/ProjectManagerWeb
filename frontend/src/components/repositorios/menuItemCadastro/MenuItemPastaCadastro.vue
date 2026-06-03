@@ -3,7 +3,7 @@
     <div
       :class="[
         'd-flex align-center',
-        emModoInicial ? 'justify-space-between' : 'justify-end',
+        emModoInicial ? 'justify-space-between' : 'justify-end'
       ]"
       style="height: 70px"
     >
@@ -89,7 +89,7 @@
   const colunas = reactive([
     { title: 'Origem', key: 'origem', align: 'start' },
     { title: 'Destino', key: 'destino', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ]);
 
   const pastaSelecionada = reactive(new PastaMenuModel());
@@ -105,16 +105,16 @@
   const MODO_OPERACAO = {
     INICIAL: {
       titulo: 'Adicionar',
-      valor: 'ADICIONAR',
+      valor: 'ADICIONAR'
     },
     NOVO: {
       titulo: 'Novo',
-      valor: 'NOVO',
+      valor: 'NOVO'
     },
     EDICAO: {
       titulo: 'Editar',
-      valor: 'EDITAR',
-    },
+      valor: 'EDITAR'
+    }
   };
 
   let modoOperacao = ref(MODO_OPERACAO.INICIAL.valor);
@@ -145,7 +145,7 @@
     limparCampos();
     irParaCadastro();
   };
-  
+
   const salvarAlteracoes = async () => {
     if (!(await formularioPastaValido())) return;
 

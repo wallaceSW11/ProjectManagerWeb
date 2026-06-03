@@ -45,7 +45,10 @@
       >
         <v-form ref="formPasta">
           <v-row no-gutters>
-            <v-col cols="12" class="mb-4">
+            <v-col
+              cols="12"
+              class="mb-4"
+            >
               <v-text-field
                 label="Nome da Pasta Destino"
                 v-model="pastaEmEdicao.nomePastaDestino"
@@ -55,8 +58,11 @@
                 @blur="sugerirCaminhosComBaseNaPasta"
               />
             </v-col>
-            
-            <v-col cols="12" class="mb-4">
+
+            <v-col
+              cols="12"
+              class="mb-4"
+            >
               <v-text-field
                 label="Diretório de Trabalho"
                 v-model="pastaEmEdicao.diretorioTrabalho"
@@ -67,8 +73,11 @@
                 @blur="sugerirCaminhoOrigem"
               />
             </v-col>
-            
-            <v-col cols="12" class="mb-4">
+
+            <v-col
+              cols="12"
+              class="mb-4"
+            >
               <v-text-field
                 label="Comando de Publish"
                 v-model="pastaEmEdicao.comandoPublish"
@@ -78,8 +87,11 @@
                 persistent-hint
               />
             </v-col>
-            
-            <v-col cols="12" class="mb-4">
+
+            <v-col
+              cols="12"
+              class="mb-4"
+            >
               <v-text-field
                 label="Caminho Origem"
                 v-model="pastaEmEdicao.caminhoOrigem"
@@ -89,8 +101,11 @@
                 persistent-hint
               />
             </v-col>
-            
-            <v-col cols="12" class="mb-4">
+
+            <v-col
+              cols="12"
+              class="mb-4"
+            >
               <v-text-field
                 label="Caminho Destino"
                 v-model="pastaEmEdicao.caminhoDestino"
@@ -118,7 +133,12 @@
     { title: 'Nome Pasta', key: 'nomePastaDestino' },
     { title: 'Diretório', key: 'diretorioTrabalho' },
     { title: 'Comando', key: 'comandoPublish' },
-    { title: 'Ações', key: 'actions', sortable: false, align: 'center' as const },
+    {
+      title: 'Ações',
+      key: 'actions',
+      sortable: false,
+      align: 'center' as const
+    }
   ];
 
   const obrigatorio = [(v: any) => !!v || 'Campo obrigatório'];
@@ -130,12 +150,12 @@
 
   const prepararParaCadastro = () => {
     Object.assign(pastaEmEdicao, new PastaDeployModel());
-    
+
     // Sugerir caminho de destino baseado na pasta raiz do site
     if (site.value.pastaRaiz) {
       pastaEmEdicao.caminhoDestino = site.value.pastaRaiz;
     }
-    
+
     emModoCadastro.value = true;
     exibirModalCadastroPasta.value = true;
   };
@@ -169,7 +189,7 @@
     if (!valid) return;
 
     const index = site.value.pastas.findIndex(
-      (p) => p.identificador === pastaEmEdicao.identificador
+      p => p.identificador === pastaEmEdicao.identificador
     );
 
     if (index >= 0) {
@@ -183,7 +203,7 @@
 
   const excluirPasta = (pasta: IPastaDeploy) => {
     const index = site.value.pastas.findIndex(
-      (p) => p.identificador === pasta.identificador
+      p => p.identificador === pasta.identificador
     );
     if (index >= 0) {
       site.value.pastas.splice(index, 1);

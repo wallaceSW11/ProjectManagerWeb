@@ -9,7 +9,7 @@ interface ConfiguracaoState {
 
 export const useConfiguracaoStore = defineStore('configuracao', {
   state: (): ConfiguracaoState => ({
-    configuracao: new ConfiguracaoModel(),
+    configuracao: new ConfiguracaoModel()
   }),
 
   getters: {
@@ -19,7 +19,7 @@ export const useConfiguracaoStore = defineStore('configuracao', {
     clis: (state): Array<{ nome: string; comando: string }> =>
       state.configuracao.clis,
     pastasCentralizadoras: (state): IPastaCentralizadora[] =>
-      state.configuracao.pastasCentralizadoras,
+      state.configuracao.pastasCentralizadoras
   },
 
   actions: {
@@ -40,6 +40,6 @@ export const useConfiguracaoStore = defineStore('configuracao', {
         console.error('Falha ao salvar configurações:', error);
         throw error;
       }
-    },
-  },
+    }
+  }
 });

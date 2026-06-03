@@ -12,16 +12,16 @@ interface ModoOperacaoConstants {
 export const MODO_OPERACAO: ModoOperacaoConstants = {
   INICIAL: {
     titulo: 'Adicionar',
-    valor: 'ADICIONAR',
+    valor: 'ADICIONAR'
   },
   NOVO: {
     titulo: 'Novo',
-    valor: 'NOVO',
+    valor: 'NOVO'
   },
   EDICAO: {
     titulo: 'Editar',
-    valor: 'EDITAR',
-  },
+    valor: 'EDITAR'
+  }
 };
 
 interface TipoComandoItem {
@@ -39,23 +39,23 @@ interface TipoComandoConstants {
 export const TIPO_COMANDO: TipoComandoConstants = {
   INSTALAR: {
     titulo: 'Instalar',
-    valor: 'INSTALAR',
+    valor: 'INSTALAR'
   },
   INICIAR: {
     titulo: 'Iniciar',
-    valor: 'INICIAR',
+    valor: 'INICIAR'
   },
   BUILDAR: {
     titulo: 'Buildar',
-    valor: 'BUILDAR',
+    valor: 'BUILDAR'
   },
   ABRIR_NA_IDE: {
     titulo: 'Abrir na IDE',
-    valor: 'ABRIR_NA_IDE',
-  },
+    valor: 'ABRIR_NA_IDE'
+  }
 };
 
 // Configurações de UX
 export const UX_CONFIG = {
-  DELAY_LOADING_MS: 300, // Delay para exibir conteúdo de carregamento
+  DELAY_LOADING_MS: 300 // Delay para exibir conteúdo de carregamento
 } as const;

@@ -99,7 +99,11 @@
                       </template>
                       <template #[`item.ignorarGit`]="{ item }">
                         <v-icon :color="item.ignorarGit ? 'success' : 'error'">
-                          {{ item.ignorarGit ? 'mdi-check-circle' : 'mdi-close-circle' }}
+                          {{
+                            item.ignorarGit
+                              ? 'mdi-check-circle'
+                              : 'mdi-close-circle'
+                          }}
                         </v-icon>
                       </template>
                       <template #[`item.actions`]="{ item }">
@@ -220,11 +224,11 @@
     emModoCadastro,
     definirModoCadastro,
     definirModoEdicao,
-    definirModoInicial,
+    definirModoInicial
   } = useModoOperacao();
 
   const repositorio = defineModel<IRepositorio>({
-    default: () => new RepositorioModel(),
+    default: () => new RepositorioModel()
   });
   const menuSelecionado = reactive<IMenu>(new MenuModel());
   const arquivoSelecionado = reactive<IArquivo>(new ArquivoModel());
@@ -237,7 +241,7 @@
   const tiposMenu = [
     { texto: 'Aplicar Arquivo', valor: 'APLICAR_ARQUIVO' },
     { texto: 'Aplicar Pasta', valor: 'APLICAR_PASTA' },
-    { texto: 'Comando Avulso', valor: 'COMANDO_AVULSO' },
+    { texto: 'Comando Avulso', valor: 'COMANDO_AVULSO' }
   ];
 
   const exibirModalMenuCadastro = ref<boolean>(false);
@@ -247,20 +251,20 @@
     { title: 'Título', key: 'titulo', align: 'start' },
     { title: 'Tipo', key: 'tipo', align: 'start' },
     { title: 'Ativo', key: 'ativo', align: 'center' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ] as const);
 
   const colunasMenuArquivos = reactive([
     { title: 'Arquivo', key: 'arquivo', align: 'start' },
     { title: 'Destino', key: 'destino', align: 'start' },
     { title: 'Ignorar Git Diff', key: 'ignorarGit', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ] as const);
 
   const colunasMenuPastas = reactive([
     { title: 'Origem', key: 'origem', align: 'start' },
     { title: 'Destino', key: 'destino', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' },
+    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
   ] as const);
 
   const paginaTabela = computed(() => paginaMenu.value === 0);
@@ -451,9 +455,7 @@
   };
 
   const excluirPasta = (item: IPastaMenu): void => {
-    const confirmDelete = confirm(
-      `Deseja remover a pasta "${item.origem}"?`
-    );
+    const confirmDelete = confirm(`Deseja remover a pasta "${item.origem}"?`);
 
     if (!confirmDelete) return;
 
@@ -483,7 +485,10 @@
   // Extrai apenas a última pasta do caminho
   const obterUltimaPasta = (caminhoCompleto: string): string => {
     if (!caminhoCompleto) return '';
-    const partes = caminhoCompleto.replace(/\\/g, '/').split('/').filter(p => p);
+    const partes = caminhoCompleto
+      .replace(/\\/g, '/')
+      .split('/')
+      .filter(p => p);
     return partes[partes.length - 1] || '';
   };
 

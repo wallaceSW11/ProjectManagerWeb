@@ -42,7 +42,7 @@
   const props = withDefaults(defineProps<Props>(), {
     obrigatorio: false,
     carregarUltimoSelecionado: false,
-    chaveLocalStorage: '',
+    chaveLocalStorage: ''
   });
 
   const repositorios = ref<IRepositorio[]>([]);
@@ -62,7 +62,7 @@
     if (!identificadorSalvo) return;
 
     const repositorioEncontrado = repositorios.value.find(
-      (repo) => repo.identificador === identificadorSalvo
+      repo => repo.identificador === identificadorSalvo
     );
 
     if (repositorioEncontrado) {

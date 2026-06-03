@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia';
 import SiteIISService from '@/services/SiteIISService';
-import SiteIISModel, { type ISiteIIS, type ISiteIISDeployResponse } from '@/models/SiteIISModel';
+import SiteIISModel, {
+  type ISiteIIS,
+  type ISiteIISDeployResponse
+} from '@/models/SiteIISModel';
 
 interface SiteIISState {
   sites: ISiteIISDeployResponse[];
@@ -18,7 +21,7 @@ export const useSiteIISStore = defineStore('siteIIS', {
   }),
 
   getters: {
-    getSiteById: (state) => (identificador: string) => {
+    getSiteById: state => (identificador: string) => {
       return state.sites.find(s => s.identificador === identificador);
     },
 

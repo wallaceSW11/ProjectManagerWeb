@@ -65,6 +65,6 @@
     larguraMaxima: '800px',
     persistent: true,
     iconeBotaoPrimario: 'mdi-plus',
-    iconeBotaoSecundario: 'mdi-cancel',
+    iconeBotaoSecundario: 'mdi-cancel'
   });
 </script>

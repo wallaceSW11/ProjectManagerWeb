@@ -8,5 +8,6 @@ public sealed record CodigoTarefaDTO(
     bool ClonarAgregados = false,
     bool BaixarHistoricoCompleto = false,
     bool HabilitarTipos = false,
-    List<string>? TiposHabilitados = null
+    List<string>? TiposHabilitados = null,
+    string? PastaCentralizadora = null
 );

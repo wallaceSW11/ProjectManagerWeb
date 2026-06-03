@@ -150,21 +150,42 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     {
       var nomeArquivo = Path.GetFileName(a.Arquivo);
       var diretorioDestino = Path.Combine(menu.Diretorio, a.Destino);
-
-      if (!Directory.Exists(diretorioDestino))
-        Directory.CreateDirectory(diretorioDestino);
-
       var caminhoArquivoDestino = Path.Combine(diretorioDestino, nomeArquivo);
-      File.Copy(a.Arquivo, caminhoArquivoDestino, overwrite: true);
 
-      if (a.IgnorarGit)
-        IgnorarArquivoNoGit(diretorioDestino, nomeArquivo);
+      try
+      {
+        if (!Directory.Exists(diretorioDestino))
+          Directory.CreateDirectory(diretorioDestino);
+
+        File.Copy(a.Arquivo, caminhoArquivoDestino, overwrite: true);
+
+        _ = ShellExecute.LogComandoAsync($"File.Copy \"{a.Arquivo}\" -> \"{caminhoArquivoDestino}\"", "OK");
+
+        if (a.IgnorarGit)
+          IgnorarArquivoNoGit(diretorioDestino, nomeArquivo);
+      }
+      catch (Exception ex)
+      {
+        _ = ShellExecute.LogComandoAsync($"File.Copy \"{a.Arquivo}\" -> \"{caminhoArquivoDestino}\"", $"ERRO: {ex.Message}");
+      }
     });
 
     menuRepositorio.Pastas?.ForEach(p =>
     {
-      var caminhoDestinoCompleto = Path.Combine(menu.Diretorio, p.Destino);
-      CopiarDiretorioRecursivo(p.Origem, caminhoDestinoCompleto);
+      try
+      {
+        var nomePastaOrigem = Path.GetFileName(p.Origem.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        var caminhoDestinoCompleto = string.IsNullOrEmpty(p.Destino)
+          ? Path.Combine(menu.Diretorio, nomePastaOrigem)
+          : Path.Combine(menu.Diretorio, p.Destino);
+
+        CopiarDiretorioRecursivo(p.Origem, caminhoDestinoCompleto);
+        _ = ShellExecute.LogComandoAsync($"CopyDir \"{p.Origem}\" -> \"{caminhoDestinoCompleto}\"", "OK");
+      }
+      catch (Exception ex)
+      {
+        _ = ShellExecute.LogComandoAsync($"CopyDir \"{p.Origem}\" -> ...", $"ERRO: {ex.Message}");
+      }
     });
 
     return true;

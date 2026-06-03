@@ -63,7 +63,7 @@
 
   const itemsFiltrados = computed(() => {
     if (!branch.value) return branchs.value;
-    return branchs.value.filter(item => 
+    return branchs.value.filter(item =>
       item.toLowerCase().includes(branch.value.toLowerCase())
     );
   });
