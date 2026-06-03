@@ -72,7 +72,7 @@ public class ShellExecute
         }
     }
 
-    private static async Task LogComandoAsync(string command, string status = "SOLICITADO", string? perfilTerminal = null)
+    public static async Task LogComandoAsync(string command, string status = "SOLICITADO", string? perfilTerminal = null)
     {
         try
         {

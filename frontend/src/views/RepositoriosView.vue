@@ -45,41 +45,53 @@
               </v-tabs>
 
               <v-tabs-window v-model="paginaCadastro">
-                <v-tabs-window-item>
-                  <RepositorioCadastro
-                    v-model="repositorioSelecionado"
-                    :repositorios="repositorios"
-                    class="pt-4"
-                  />
-                </v-tabs-window-item>
-                <v-tabs-window-item>
-                  <TarefasCadastro
-                    v-model="repositorioSelecionado"
-                    class="pt-4"
-                  />
-                </v-tabs-window-item>
-                <v-tabs-window-item>
-                  <IDETerminalCadastro
-                    v-model="repositorioSelecionado"
-                    class="pt-4"
-                  />
-                </v-tabs-window-item>
-                <v-tabs-window-item>
-                  <ProjetoCadastro v-model="repositorioSelecionado" />
-                </v-tabs-window-item>
-                <v-tabs-window-item>
-                  <MenuCadastro
-                    v-model="repositorioSelecionado"
-                    class="pt-4"
-                  />
-                </v-tabs-window-item>
-                <v-tabs-window-item>
-                  <PerfilMarcacaoCadastro
-                    v-model="repositorioSelecionado"
-                    :repositorios="repositorios"
-                    class="pt-4"
-                  />
-                </v-tabs-window-item>
+            <v-tabs-window-item>
+              <div class="conteudo-aba">
+                <RepositorioCadastro
+                  v-model="repositorioSelecionado"
+                  :repositorios="repositorios"
+                  class="pt-4"
+                />
+              </div>
+            </v-tabs-window-item>
+            <v-tabs-window-item>
+              <div class="conteudo-aba">
+                <TarefasCadastro
+                  v-model="repositorioSelecionado"
+                  class="pt-4"
+                />
+              </div>
+            </v-tabs-window-item>
+            <v-tabs-window-item>
+              <div class="conteudo-aba">
+                <IDETerminalCadastro
+                  v-model="repositorioSelecionado"
+                  class="pt-4"
+                />
+              </div>
+            </v-tabs-window-item>
+            <v-tabs-window-item>
+              <div class="conteudo-aba">
+                <ProjetoCadastro v-model="repositorioSelecionado" />
+              </div>
+            </v-tabs-window-item>
+            <v-tabs-window-item>
+              <div class="conteudo-aba">
+                <MenuCadastro
+                  v-model="repositorioSelecionado"
+                  class="pt-4"
+                />
+              </div>
+            </v-tabs-window-item>
+            <v-tabs-window-item>
+              <div class="conteudo-aba">
+                <PerfilMarcacaoCadastro
+                  v-model="repositorioSelecionado"
+                  :repositorios="repositorios"
+                  class="pt-4"
+                />
+              </div>
+            </v-tabs-window-item>
               </v-tabs-window>
             </v-tabs-window-item>
           </v-tabs-window>
@@ -277,6 +289,11 @@
 <style scoped>
   .altura-limitada {
     height: calc(100dvh - 220px);
+    overflow: auto;
+  }
+
+  .conteudo-aba {
+    height: calc(100dvh - 320px);
     overflow: auto;
   }
 </style>

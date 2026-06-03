@@ -7,13 +7,15 @@
       <v-card-title>Clonar</v-card-title>
 
       <v-card-text class="pt-0">
-        <v-form ref="formClone">
+        <v-form ref="formClone" autocomplete="off">
           <v-text-field
             ref="campoCodigoTarefa"
             label="Código da tarefa"
             v-model.uppercase="codigoTarefaInput"
             class="uppercase-input"
             :rules="obrigatorio"
+            autocomplete="off"
+            :name="'clone-codigo-' + uid"
             @blur="processarCodigoTarefa"
           />
 
@@ -22,6 +24,8 @@
             label="Descrição"
             v-model="clone.descricao"
             :rules="obrigatorio"
+            autocomplete="off"
+            :name="'clone-desc-' + uid"
           />
 
           <SelectRepositorio
@@ -131,6 +135,7 @@
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
   import SelectBranch from '@/components/comum/SelectBranch.vue';
 
+  const uid = Math.random().toString(36).substring(2, 10);
   const CHAVE_ULTIMO_REPOSITORIO = 'pmw_ultimo_repositorio_selecionado';
   const BRANCHES_BASE = ['develop', 'dev', 'main', 'master'];
 

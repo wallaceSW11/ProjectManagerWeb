@@ -10,34 +10,40 @@
       </v-col>
 
       <v-col cols="12">
-        <v-row no-gutters>
-          <!-- Diretório Raiz -->
-          <v-col cols="12">
-            <v-text-field
-              label="Diretório raiz"
-              v-model="configuracao.diretorioRaiz"
-              @change="salvarConfiguracao"
-            />
-          </v-col>
+        <v-tabs v-model="abaAtiva">
+          <v-tab>Geral</v-tab>
+          <v-tab>Perfis IDE</v-tab>
+          <v-tab>Pasta Centralizadora</v-tab>
+          <v-tab>CLI de IA</v-tab>
+        </v-tabs>
 
-          <!-- Terminal Linux -->
-          <v-col cols="12" v-if="featuresStore.isLinux">
-            <v-select
-              label="Terminal"
-              v-model="configuracao.terminalLinux"
-              :items="terminaisLinux"
-              @update:model-value="salvarConfiguracao"
-            />
-          </v-col>
+        <v-tabs-window v-model="abaAtiva" class="conteudo-aba">
+          <!-- Aba: Geral -->
+          <v-tabs-window-item>
+            <v-row no-gutters>
+              <v-col cols="12" class="pt-4">
+                <v-text-field
+                  label="Diretório raiz"
+                  v-model="configuracao.diretorioRaiz"
+                  @change="salvarConfiguracao"
+                  autocomplete="new-password"
+                />
+              </v-col>
 
-          <!-- Perfis -->
-          <v-col cols="12">
-            <h2>Perfis do VS Code</h2>
+              <v-col cols="12" v-if="featuresStore.isLinux">
+                <v-select
+                  label="Terminal"
+                  v-model="configuracao.terminalLinux"
+                  :items="terminaisLinux"
+                  @update:model-value="salvarConfiguracao"
+                />
+              </v-col>
+            </v-row>
+          </v-tabs-window-item>
 
-            <v-divider />
-
-            <div class="d-flex flex-column justify-center">
-              <!-- Input e botão de adicionar perfil -->
+          <!-- Aba: Perfis IDE -->
+          <v-tabs-window-item>
+            <div class="d-flex flex-column justify-center pt-4">
               <div class="d-flex align-center">
                 <v-text-field
                   label="Perfil"
@@ -53,7 +59,6 @@
                 </v-btn>
               </div>
 
-              <!-- Tabela de perfis -->
               <div>
                 <v-data-table
                   :items="configuracao.perfisVSCode"
@@ -77,15 +82,11 @@
                 </v-data-table>
               </div>
             </div>
-          </v-col>
+          </v-tabs-window-item>
 
-          <!-- Pastas Centralizadoras -->
-          <v-col cols="12" class="mt-6">
-            <h2>Pastas Centralizadoras</h2>
-
-            <v-divider />
-
-            <div class="d-flex flex-column justify-center">
+          <!-- Aba: Pasta Centralizadora -->
+          <v-tabs-window-item>
+            <div class="d-flex flex-column justify-center pt-4">
               <div class="d-flex align-center">
                 <v-text-field
                   label="Nome da pasta"
@@ -124,15 +125,11 @@
                 </v-data-table>
               </div>
             </div>
-          </v-col>
+          </v-tabs-window-item>
 
-          <!-- CLIs -->
-          <v-col cols="12" class="mt-6">
-            <h2>CLIs de IA</h2>
-
-            <v-divider />
-
-            <div class="d-flex flex-column justify-center">
+          <!-- Aba: CLI de IA -->
+          <v-tabs-window-item>
+            <div class="d-flex flex-column justify-center pt-4">
               <div class="d-flex align-center">
                 <v-text-field
                   label="Nome"
@@ -171,8 +168,8 @@
                 </v-data-table>
               </div>
             </div>
-          </v-col>
-        </v-row>
+          </v-tabs-window-item>
+        </v-tabs-window>
       </v-col>
     </v-row>
   </v-container>
@@ -191,6 +188,7 @@
   const featuresStore = useFeaturesStore();
 
   // --- STATE ---
+  const abaAtiva = ref<number>(0);
   const terminaisLinux = ['ptyxis', 'ghostty'];
   const nomePerfil = ref<string>(''); // input do perfil
   const nomeCliNovo = ref<string>('');
@@ -363,3 +361,10 @@
     }
   };
 </script>
+
+<style scoped>
+  .conteudo-aba {
+    height: calc(100dvh - 220px);
+    overflow: auto;
+  }
+</style>

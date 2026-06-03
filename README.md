@@ -313,3 +313,36 @@ Pipeline em `.github/workflows/release.yml` — dispara em push para `main`:
 - Frontend: Component → Store → Service → API
 - Models com `constructor(Partial<I>)` + `toDTO()`
 - Commits: `tipo(escopo): descrição em pt-br`
+
+### 🎨 Padrão de scroll em telas com abas
+
+Telas que usam `v-tabs` + `v-tabs-window` devem ter o scroll **dentro do conteúdo da aba**, não na página inteira.
+
+**Regra:** Cada `v-tabs-window-item` deve envolver seu conteúdo em uma `<div class="conteudo-aba">`:
+
+```html
+<v-tabs-window>
+  <v-tabs-window-item>
+    <div class="conteudo-aba">
+      <!-- conteúdo da aba aqui -->
+    </div>
+  </v-tabs-window-item>
+</v-tabs-window>
+```
+
+**CSS obrigatório:**
+
+```css
+.conteudo-aba {
+  height: calc(100dvh - 320px);  /* 320px = header + tabs + toolbar */
+  overflow: auto;
+}
+
+/* Para o primeiro nível de abas (sem tabs internas): */
+.altura-limitada {
+  height: calc(100dvh - 220px);  /* 220px = header + toolbar */
+  overflow: auto;
+}
+```
+
+Ajuste o `calc()` conforme a altura ocupada por headers, toolbars e tabs acima do conteúdo. Se houver abas aninhadas, use `conteudo-aba` nas abas internas e `altura-limitada` no container externo.

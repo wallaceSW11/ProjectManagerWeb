@@ -1,11 +1,13 @@
 <template>
-  <v-form ref="formRepositorio">
+  <v-form ref="formRepositorio" autocomplete="off">
     <v-row no-gutters>
       <v-col cols="12">
         <v-text-field
           label="Url"
           v-model="repositorio.url"
           :rules="obrigatorio"
+          autocomplete="off"
+          :name="'r-url-' + uid"
           @change="atualizarNomeRepositorio()"
         />
       </v-col>
@@ -15,6 +17,8 @@
           label="Nome"
           v-model="repositorio.nome"
           :rules="obrigatorio"
+          autocomplete="off"
+          :name="'r-nome-' + uid"
         />
       </v-col>
 
@@ -23,6 +27,8 @@
           label="Título"
           v-model="repositorio.titulo"
           :rules="obrigatorio"
+          autocomplete="off"
+          :name="'r-titulo-' + uid"
         />
       </v-col>
 
@@ -34,6 +40,8 @@
           persistent-hint
           placeholder="develop"
           clearable
+          autocomplete="off"
+          :name="'r-branch-' + uid"
         />
       </v-col>
 
@@ -78,6 +86,8 @@
           hint="Subpasta de trabalho para monorepos (ex: ProjectManagerWeb). Deixe vazio para abrir na raiz."
           persistent-hint
           clearable
+          autocomplete="off"
+          :name="'r-subdir-' + uid"
         />
       </v-col>
     </v-row>
@@ -98,6 +108,7 @@
 
   const configuracaoStore = useConfiguracaoStore();
 
+  const uid = Math.random().toString(36).substring(2, 10);
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 
   const pastasCentralizadoras = computed(() => {
