@@ -43,6 +43,7 @@
     >
       <v-form ref="formPerfil">
         <v-text-field
+          ref="campoNome"
           label="Nome do perfil"
           v-model="perfilSelecionado.nome"
           :rules="obrigatorio"
@@ -122,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, reactive, ref } from 'vue';
+  import { computed, nextTick, reactive, ref } from 'vue';
   import type { IRepositorio, IPerfilMarcacao, IProjeto } from '@/types';
   import PerfilMarcacaoModel from '@/models/PerfilMarcacaoModel';
   import PerfilMarcacaoProjetoModel from '@/models/PerfilMarcacaoProjetoModel';
@@ -146,6 +147,9 @@
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
   const exibirModal = ref<boolean>(false);
   const formPerfil = ref<any>(null);
+  const campoNome = ref<InstanceType<
+    typeof import('vuetify/components').VTextField
+  > | null>(null);
   const perfilSelecionado = reactive<IPerfilMarcacao>(
     new PerfilMarcacaoModel()
   );
@@ -240,6 +244,7 @@
     Object.assign(perfilSelecionado, new PerfilMarcacaoModel());
     inicializarComandosSelecionados();
     exibirModal.value = true;
+    nextTick(() => campoNome.value?.focus());
   };
 
   const mudarParaEdicao = (item: IPerfilMarcacao): void => {
@@ -262,6 +267,9 @@
 
     if (emModoCadastro.value) {
       repositorio.value.perfis.push(new PerfilMarcacaoModel(perfilSelecionado));
+      Object.assign(perfilSelecionado, new PerfilMarcacaoModel());
+      inicializarComandosSelecionados();
+      nextTick(() => campoNome.value?.focus());
     } else {
       const indice = repositorio.value.perfis.findIndex(
         p => p.identificador === perfilSelecionado.identificador
@@ -271,9 +279,8 @@
           repositorio.value.perfis[indice],
           new PerfilMarcacaoModel(perfilSelecionado)
         );
+      descartarAlteracoes();
     }
-
-    descartarAlteracoes();
   };
 
   const excluirPerfil = (item: IPerfilMarcacao): void => {

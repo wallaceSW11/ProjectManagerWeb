@@ -6,6 +6,7 @@
     <v-row no-gutters>
       <v-col cols="12">
         <v-text-field
+          ref="campoUrl"
           label="Url"
           v-model="repositorio.url"
           :rules="obrigatorio"
@@ -101,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, nextTick, onMounted, ref } from 'vue';
   import type { IRepositorio } from '@/types';
   import { useConfiguracaoStore } from '@/stores/configuracao';
 
@@ -115,6 +116,15 @@
   const configuracaoStore = useConfiguracaoStore();
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
+  const campoUrl = ref<InstanceType<
+    typeof import('vuetify/components').VTextField
+  > | null>(null);
+
+  function focarUrl(): void {
+    nextTick(() => campoUrl.value?.focus());
+  }
+
+  defineExpose({ focarUrl });
 
   const pastasCentralizadoras = computed(() => {
     return configuracaoStore.pastasCentralizadoras?.map(p => p.nome) || [];

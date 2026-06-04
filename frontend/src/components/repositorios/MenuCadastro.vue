@@ -54,6 +54,7 @@
             <v-tabs-window-item>
               <v-form ref="formProjeto">
                 <v-text-field
+                  ref="campoTitulo"
                   label="Título"
                   v-model="menuSelecionado.titulo"
                   :rules="obrigatorio"
@@ -169,6 +170,7 @@
             <v-tabs-window-item>
               <v-form ref="formArquivo">
                 <v-text-field
+                  ref="campoArquivo"
                   label="Arquivo"
                   v-model="arquivoSelecionado.arquivo"
                   :rules="obrigatorio"
@@ -189,6 +191,7 @@
             <v-tabs-window-item>
               <v-form ref="formPasta">
                 <v-text-field
+                  ref="campoPastaOrigem"
                   label="Pasta Origem"
                   v-model="pastaSelecionada.origem"
                   :rules="obrigatorio"
@@ -211,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, reactive, ref } from 'vue';
+  import { computed, nextTick, reactive, ref } from 'vue';
   import type { IRepositorio, IMenu, IArquivo, IPastaMenu } from '@/types';
   import RepositorioModel from '@/models/RepositorioModel';
   import MenuModel from '@/models/MenuModel';
@@ -303,16 +306,19 @@
     definirModoCadastro();
     limparCampos();
     abrirModalMenuCadastro();
+    nextTick(() => campoTitulo.value?.focus());
   };
 
   const prepararParaCadastroArquivos = (): void => {
     paginaMenu.value = 1;
     limparCamposArquivos();
+    nextTick(() => campoArquivo.value?.focus());
   };
 
   const prepararParaCadastroPastas = (): void => {
     paginaMenu.value = 2;
     limparCamposPastas();
+    nextTick(() => campoPastaOrigem.value?.focus());
   };
 
   const limparCamposArquivos = (): void => {
@@ -348,6 +354,15 @@
   const formProjeto = ref<any>(null);
   const formArquivo = ref<any>(null);
   const formPasta = ref<any>(null);
+  const campoTitulo = ref<InstanceType<
+    typeof import('vuetify/components').VTextField
+  > | null>(null);
+  const campoArquivo = ref<InstanceType<
+    typeof import('vuetify/components').VTextField
+  > | null>(null);
+  const campoPastaOrigem = ref<InstanceType<
+    typeof import('vuetify/components').VTextField
+  > | null>(null);
 
   const formularioProjetoValido = async (): Promise<boolean> => {
     const resposta = await formProjeto.value.validate();
@@ -368,8 +383,14 @@
     if (!(await formularioProjetoValido())) return;
 
     try {
-      emModoCadastro.value ? adicionarMenu() : atualizarProjeto();
-      descartarAlteracoes();
+      if (emModoCadastro.value) {
+        adicionarMenu();
+        limparCampos();
+        nextTick(() => campoTitulo.value?.focus());
+      } else {
+        atualizarProjeto();
+        descartarAlteracoes();
+      }
     } catch (error) {
       console.error('Falha ao salvar alteracoes do cadastro:', error);
     }
@@ -394,7 +415,8 @@
     }
 
     menuSelecionado.arquivos.push(new ArquivoModel(arquivoSelecionado));
-    mudarParaPaginaTabela();
+    limparCamposArquivos();
+    nextTick(() => campoArquivo.value?.focus());
   };
 
   const salvarAlteracoesPastas = async (): Promise<void> => {
@@ -416,7 +438,8 @@
     }
 
     menuSelecionado.pastas.push(new PastaMenuModel(pastaSelecionada));
-    mudarParaPaginaTabela();
+    limparCamposPastas();
+    nextTick(() => campoPastaOrigem.value?.focus());
   };
 
   const adicionarMenu = (): void => {

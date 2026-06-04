@@ -5,6 +5,8 @@ public class ShellExecute
     private static readonly string LogFilePath =
         Path.Combine(PathHelper.BancoPath, "comandos-executados.txt");
 
+    private static readonly object _logLock = new();
+
     private static IShellProvider _provider = null!;
 
     public static void Configure(IShellProvider provider) =>
@@ -26,14 +28,15 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
+        LogComando(command, "SOLICITADO", perfilTerminal);
+
         try
         {
-            _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO", perfilTerminal));
             _provider.ExecutarComInterface(command, perfilTerminal);
         }
         catch (Exception ex)
         {
-            _ = Task.Run(() => LogComandoAsync(command, $"ERRO: {ex.Message}", perfilTerminal));
+            LogComando(command, $"ERRO: {ex.Message}", perfilTerminal);
             throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
     }
@@ -43,14 +46,15 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
+        LogComando(command, "ADMIN SOLICITADO", perfilTerminal);
+
         try
         {
-            _ = Task.Run(() => LogComandoAsync(command, "ADMIN SOLICITADO", perfilTerminal));
             _provider.ExecutarComoAdministrador(command, perfilTerminal);
         }
         catch (Exception ex)
         {
-            _ = Task.Run(() => LogComandoAsync(command, $"ADMIN ERRO: {ex.Message}", perfilTerminal));
+            LogComando(command, $"ADMIN ERRO: {ex.Message}", perfilTerminal);
             throw new Exception($"Erro ao executar o comando como administrador: {ex.Message}", ex);
         }
     }
@@ -60,19 +64,20 @@ public class ShellExecute
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
+        LogComando(command, "SOLICITADO");
+
         try
         {
-            _ = Task.Run(() => LogComandoAsync(command, "SOLICITADO"));
             _provider.ExecutarSemInterface(command);
         }
         catch (Exception ex)
         {
-            _ = Task.Run(() => LogComandoAsync(command, $"ERRO: {ex.Message}"));
+            LogComando(command, $"ERRO: {ex.Message}");
             throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
     }
 
-    public static async Task LogComandoAsync(string command, string status = "SOLICITADO", string? perfilTerminal = null)
+    public static void LogComando(string command, string status = "SOLICITADO", string? perfilTerminal = null)
     {
         try
         {
@@ -80,10 +85,14 @@ public class ShellExecute
             var perfil = !string.IsNullOrWhiteSpace(perfilTerminal) ? $" [Perfil: {perfilTerminal}]" : "";
             var logEntry = $"[{timestamp}] {status}{perfil} - {command}{Environment.NewLine}";
 
-            await File.AppendAllTextAsync(LogFilePath, logEntry);
+            lock (_logLock)
+            {
+                File.AppendAllText(LogFilePath, logEntry);
+            }
         }
-        catch
+        catch (Exception ex)
         {
+            Console.Error.WriteLine($"Erro ao registrar comando no log: {ex.Message}");
         }
     }
 }

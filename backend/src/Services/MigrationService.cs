@@ -57,7 +57,7 @@ namespace ProjectManagerWeb.src.Services
             try
             {
                 var migrations = await LerMigrationsDoArquivoAsync(locked: true);
-                
+
                 // Evitar duplicatas
                 if (!migrations.ExecutedMigrations.Any(m => m.Name == migrationName))
                 {
@@ -157,7 +157,7 @@ namespace ProjectManagerWeb.src.Services
 
                 // 2. Atualizar repositórios existentes
                 var repositorios = await _repositorioService.GetAllAsync();
-                
+
                 foreach (var repo in repositorios)
                 {
                     bool repoModificado = false;
@@ -170,15 +170,15 @@ namespace ProjectManagerWeb.src.Services
                         if (projeto.Comandos.IDEIdentificador == null)
                         {
                             // Criar novo ComandoDTO com IDEIdentificador
-                            var novosComandos = projeto.Comandos with 
-                            { 
+                            var novosComandos = projeto.Comandos with
+                            {
                                 IDEIdentificador = vsCodeId
                             };
 
                             // Criar novo ProjetoDTO com comandos atualizados
                             var projetoAtualizado = projeto with { Comandos = novosComandos };
                             projetosAtualizados.Add(projetoAtualizado);
-                            
+
                             repoModificado = true;
                         }
                         else

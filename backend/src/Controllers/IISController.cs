@@ -49,7 +49,7 @@ public class IISController(IISService iisService) : ControllerBase
                 return BadRequest(new { erro = "Nome do site é obrigatório" });
 
             var sucesso = await iisService.IniciarSiteAsync(nomeSite);
-            
+
             if (sucesso)
                 return Ok(new { mensagem = $"Site '{nomeSite}' iniciado com sucesso" });
             else
@@ -78,7 +78,7 @@ public class IISController(IISService iisService) : ControllerBase
                 return BadRequest(new { erro = "Nome do site é obrigatório" });
 
             var sucesso = await iisService.PararSiteAsync(nomeSite);
-            
+
             if (sucesso)
                 return Ok(new { mensagem = $"Site '{nomeSite}' parado com sucesso" });
             else
@@ -107,7 +107,7 @@ public class IISController(IISService iisService) : ControllerBase
                 return BadRequest(new { erro = "Nome do site é obrigatório" });
 
             var sucesso = await iisService.ReiniciarSiteAsync(nomeSite);
-            
+
             if (sucesso)
                 return Ok(new { mensagem = $"Site '{nomeSite}' reiniciado com sucesso" });
             else
@@ -145,7 +145,7 @@ public class IISController(IISService iisService) : ControllerBase
                 return BadRequest(new { erro = "Ação é obrigatória" });
 
             var sucesso = await iisService.ExecutarAcaoSiteAsync(request);
-            
+
             if (sucesso)
                 return Ok(new { mensagem = $"Ação '{request.Acao}' executada com sucesso no site '{request.NomeSite}'" });
             else

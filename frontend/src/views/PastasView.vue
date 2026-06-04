@@ -400,7 +400,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+  import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
   import type {
     IPasta,
     IProjeto,
@@ -454,7 +454,9 @@
   const campoPesquisa = ref<InstanceType<
     typeof import('vuetify/components').VTextField
   > | null>(null);
-  const abaSelecionada = ref<string>('Raiz');
+  const CHAVE_ABA_SELECIONADA = 'AbaSelecionada';
+  const abaSalva = localStorage.getItem(CHAVE_ABA_SELECIONADA);
+  const abaSelecionada = ref<string>(abaSalva || 'Raiz');
   const pastasOcultas = ref<{ recarregar: () => Promise<void> } | null>(null);
   const configuracaoStore = useConfiguracaoStore();
   const featuresStore = useFeaturesStore();
@@ -566,6 +568,10 @@
     window.addEventListener('keydown', focarPesquisa);
   });
 
+  watch(abaSelecionada, novaAba => {
+    localStorage.setItem(CHAVE_ABA_SELECIONADA, novaAba);
+  });
+
   onUnmounted(() => {
     emitter.off('atualizarListaPastas', carregarPastasListener);
     window.removeEventListener('keydown', focarPesquisa);
@@ -573,6 +579,14 @@
 
   const inicializarPagina = async (): Promise<void> => {
     await Promise.all([carregarPastas(), carregarRepositorios()]);
+
+    const abas = new Set<string>();
+    pastas.value.forEach((p: IPasta) => {
+      if (p.nomeAba) abas.add(p.nomeAba);
+    });
+    if (!abas.has(abaSelecionada.value) && abas.size > 0)
+      abaSelecionada.value = 'Raiz';
+
     selecionarPastaSalva();
   };
 
@@ -693,7 +707,7 @@
   const executarAcoes = async (): Promise<void> => {
     // Executar ações do diretório (IDE/CLI)
     if (diretorioAcoes.value.includes('IDE')) {
-      abrirPastaNaIDE(pastaSelecionada as IPasta);
+      await abrirPastaNaIDE(pastaSelecionada as IPasta);
     }
     if (diretorioAcoes.value.includes('CLI')) {
       abrirPastaKiroCli(pastaSelecionada as IPasta);
@@ -828,7 +842,7 @@
         const sep = featuresStore.pathSeparator;
         const dir = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`;
         const comando = featuresStore.isWindows
-          ? `cd ${dir}; explorer .; Exit;`
+          ? `cd "${dir}"; explorer .; Exit;`
           : `cd "${dir}"; xdg-open .; Exit;`;
         executarComandoAvulso(comando);
       }
@@ -980,7 +994,8 @@
 
   const abrirDiretorio = (diretorio: string): void => {
     try {
-      const comando = `cd ${diretorio}; explorer .; Exit;`;
+      const explorador = featuresStore.isWindows ? 'explorer' : 'xdg-open';
+      const comando = `cd "${diretorio}"; ${explorador} .; Exit;`;
       ComandosService.executarComandoAvulso({ comando });
       notificar('sucesso', 'Comando solicitado');
     } catch (error) {
@@ -1063,7 +1078,7 @@
         ? `${pasta.cliComando} ${pasta.cliComandoComplementar}`
         : pasta.cliComando;
 
-      const comando = `cd ${diretorio}; ${comandoCli}`;
+      const comando = `cd "${diretorio}"; ${comandoCli}`;
       ComandosService.executarComandoAvulso({
         comando,
         perfilTerminal: pasta.perfilTerminal

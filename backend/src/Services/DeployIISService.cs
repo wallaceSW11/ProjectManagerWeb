@@ -22,11 +22,11 @@ namespace ProjectManagerWeb.src.Services
         public async Task<AtualizarSiteResponseDTO> AtualizarSiteAsync(Guid siteId)
         {
             var log = new List<string>();
-            
+
             try
             {
                 log.Add($"=== INICIANDO DEPLOY - {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===");
-                
+
                 // 1. Buscar configuração do site
                 var site = await siteIISService.GetByIdAsync(siteId);
                 if (site == null)
@@ -142,10 +142,10 @@ namespace ProjectManagerWeb.src.Services
             foreach (var pasta in site.Pastas)
             {
                 script.AppendLine($"Write-Host 'Processando: {pasta.NomePastaDestino}' -ForegroundColor Yellow");
-                
+
                 // Monta o caminho real da pasta (PastaRaiz + NomePastaDestino)
                 script.AppendLine($"$caminhoRealPasta = Join-Path '{site.PastaRaiz}' '{pasta.NomePastaDestino}'");
-                
+
                 // Backup da pasta atual (renomeia adicionando timestamp)
                 script.AppendLine("if (Test-Path $caminhoRealPasta) {");
                 script.AppendLine($"    Write-Host 'Fazendo backup de {pasta.NomePastaDestino}...' -ForegroundColor Gray");
@@ -153,7 +153,7 @@ namespace ProjectManagerWeb.src.Services
                 script.AppendLine("    Rename-Item $caminhoRealPasta $pastaBackup");
                 script.AppendLine($"    Write-Host 'Backup salvo como: {pasta.NomePastaDestino}_$timestamp' -ForegroundColor Green");
                 script.AppendLine("}");
-                
+
                 // Copiar nova versão
                 script.AppendLine($"Write-Host 'Copiando arquivos de {pasta.CaminhoOrigem}...' -ForegroundColor Gray");
                 script.AppendLine($"Copy-Item '{pasta.CaminhoOrigem}' $caminhoRealPasta -Recurse -Force");
@@ -223,13 +223,13 @@ namespace ProjectManagerWeb.src.Services
                 log.Add("Abrindo PowerShell como ADMINISTRADOR para execução...");
                 log.Add($"Comando: {comando}");
                 log.Add("IMPORTANTE: Aceite o UAC e acompanhe o progresso na janela do PowerShell que será aberta.");
-                
+
                 // Executar como Administrador para ter acesso ao IIS
                 ShellExecute.ExecutarComandoComoAdministrador(comando, perfilTerminalAdmin);
-                
+
                 log.Add("PowerShell iniciado com privilégios administrativos!");
                 log.Add("O processo está rodando em segundo plano.");
-                
+
                 return await Task.FromResult(true);
             }
             catch (Exception ex)

@@ -32,8 +32,9 @@ Você é um desenvolvedor fullstack sênior com 15 anos de experiência no PMW.
 2. **INVESTIGAR** — Leia os arquivos envolvidos e similares existentes.
 3. **IMPLEMENTAR** — Código completo. Sem placeholder ou TODO.
 4. **REVISAR** — Confira se segue o code-style. Corrija violações antes de entregar.
-5. **VALIDAR** — Get diagnostics nos arquivos modificados.
-6. **ENTREGAR** — Resumo conciso do que foi feito.
+5. **FORMATAR** — Rode `pnpm run format` no diretório `frontend/` para garantir formatação padrão.
+6. **VALIDAR** — Get diagnostics nos arquivos modificados.
+7. **ENTREGAR** — Resumo conciso do que foi feito.
 
 ## Delegação
 

@@ -19,7 +19,7 @@ namespace ProjectManagerWeb.src.Controllers
         public async Task<IActionResult> ConsultarPorId(Guid identificador)
         {
             var ide = await ideService.GetByIdAsync(identificador);
-            
+
             if (ide == null)
                 return NotFound($"IDE com identificador {identificador} não encontrada");
 
@@ -62,7 +62,7 @@ namespace ProjectManagerWeb.src.Controllers
                 return BadRequest("O comando para executar é obrigatório");
 
             var sucesso = await ideService.UpdateAsync(identificador, ideAtualizada);
-            
+
             if (!sucesso)
                 return NotFound($"IDE com identificador {identificador} não encontrada");
 
@@ -74,12 +74,12 @@ namespace ProjectManagerWeb.src.Controllers
         {
             // Verificar se a IDE está sendo usada por algum projeto
             var estaEmUso = await ideService.IsReferencedByProjectsAsync(identificador, repositorioService);
-            
+
             if (estaEmUso)
                 return Conflict("Não é possível excluir esta IDE pois ela está sendo utilizada por um ou mais projetos");
 
             var sucesso = await ideService.DeleteAsync(identificador);
-            
+
             if (!sucesso)
                 return NotFound($"IDE com identificador {identificador} não encontrada");
 
