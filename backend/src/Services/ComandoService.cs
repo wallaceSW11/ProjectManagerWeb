@@ -23,13 +23,8 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
             {
                 if (comando == ETipoComando.INICIAR)
                 {
-                    if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && projetoCadastrado.Comandos.Instalar.Contains("npm i"))
-                    {
-                        if (Directory.Exists(Path.Combine(pathProjeto, "node_modules")))
-                            comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
-                        else
-                            comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal));
-                    }
+                    if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && !Directory.Exists(Path.Combine(pathProjeto, "node_modules")))
+                        comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal));
                     else
                         comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal));
                 }
@@ -80,13 +75,8 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
                 if (comando == ETipoComando.INICIAR)
                 {
-                    if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && projetoAgregadoCadastrado.Comandos.Instalar.Contains("npm i"))
-                    {
-                        if (Directory.Exists(Path.Combine(pathProjetoAgregado, "node_modules")))
-                            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
-                        else
-                            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal));
-                    }
+                    if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && !Directory.Exists(Path.Combine(pathProjetoAgregado, "node_modules")))
+                        comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal));
                     else
                         comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal));
                 }
@@ -176,14 +166,14 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
                 File.Copy(a.Arquivo, caminhoArquivoDestino, overwrite: true);
 
-                _ = ShellExecute.LogComandoAsync($"File.Copy \"{a.Arquivo}\" -> \"{caminhoArquivoDestino}\"", "OK");
+                ShellExecute.LogComando($"File.Copy \"{a.Arquivo}\" -> \"{caminhoArquivoDestino}\"", "OK");
 
                 if (a.IgnorarGit)
                     IgnorarArquivoNoGit(diretorioDestino, nomeArquivo);
             }
             catch (Exception ex)
             {
-                _ = ShellExecute.LogComandoAsync($"File.Copy \"{a.Arquivo}\" -> ...", $"ERRO: {ex.Message}");
+                ShellExecute.LogComando($"File.Copy \"{a.Arquivo}\" -> ...", $"ERRO: {ex.Message}");
             }
         });
 
@@ -197,11 +187,11 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
               : Path.Combine(menu.Diretorio, p.Destino);
 
                 CopiarDiretorioRecursivo(p.Origem, caminhoDestinoCompleto);
-                _ = ShellExecute.LogComandoAsync($"CopyDir \"{p.Origem}\" -> \"{caminhoDestinoCompleto}\"", "OK");
+                ShellExecute.LogComando($"CopyDir \"{p.Origem}\" -> \"{caminhoDestinoCompleto}\"", "OK");
             }
             catch (Exception ex)
             {
-                _ = ShellExecute.LogComandoAsync($"CopyDir \"{p.Origem}\" -> ...", $"ERRO: {ex.Message}");
+                ShellExecute.LogComando($"CopyDir \"{p.Origem}\" -> ...", $"ERRO: {ex.Message}");
             }
         });
 
@@ -210,11 +200,11 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
             try
             {
                 ShellExecute.ExecutarComando(c);
-                _ = ShellExecute.LogComandoAsync(c, "OK");
+                ShellExecute.LogComando(c, "OK");
             }
             catch (Exception ex)
             {
-                _ = ShellExecute.LogComandoAsync(c, $"ERRO: {ex.Message}");
+                ShellExecute.LogComando(c, $"ERRO: {ex.Message}");
             }
         });
 

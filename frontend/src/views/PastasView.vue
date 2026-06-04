@@ -707,7 +707,7 @@
   const executarAcoes = async (): Promise<void> => {
     // Executar ações do diretório (IDE/CLI)
     if (diretorioAcoes.value.includes('IDE')) {
-      abrirPastaNaIDE(pastaSelecionada as IPasta);
+      await abrirPastaNaIDE(pastaSelecionada as IPasta);
     }
     if (diretorioAcoes.value.includes('CLI')) {
       abrirPastaKiroCli(pastaSelecionada as IPasta);
@@ -842,7 +842,7 @@
         const sep = featuresStore.pathSeparator;
         const dir = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`;
         const comando = featuresStore.isWindows
-          ? `cd ${dir}; explorer .; Exit;`
+          ? `cd "${dir}"; explorer .; Exit;`
           : `cd "${dir}"; xdg-open .; Exit;`;
         executarComandoAvulso(comando);
       }
@@ -994,7 +994,8 @@
 
   const abrirDiretorio = (diretorio: string): void => {
     try {
-      const comando = `cd ${diretorio}; explorer .; Exit;`;
+      const explorador = featuresStore.isWindows ? 'explorer' : 'xdg-open';
+      const comando = `cd "${diretorio}"; ${explorador} .; Exit;`;
       ComandosService.executarComandoAvulso({ comando });
       notificar('sucesso', 'Comando solicitado');
     } catch (error) {
@@ -1077,7 +1078,7 @@
         ? `${pasta.cliComando} ${pasta.cliComandoComplementar}`
         : pasta.cliComando;
 
-      const comando = `cd ${diretorio}; ${comandoCli}`;
+      const comando = `cd "${diretorio}"; ${comandoCli}`;
       ComandosService.executarComandoAvulso({
         comando,
         perfilTerminal: pasta.perfilTerminal
