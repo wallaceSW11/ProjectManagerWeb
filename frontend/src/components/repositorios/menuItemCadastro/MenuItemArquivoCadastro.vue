@@ -35,6 +35,8 @@
           :headers="colunas"
           :items="menu.arquivos"
           hide-default-footer
+          fixed-header
+          height="300"
         >
           <template #[`item.actions`]="{ item }">
             <IconeComTooltip

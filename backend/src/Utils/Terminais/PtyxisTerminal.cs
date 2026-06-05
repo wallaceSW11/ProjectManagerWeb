@@ -12,11 +12,11 @@ public class PtyxisTerminal : ITerminalEmulator
         if (!string.IsNullOrWhiteSpace(perfilTerminal))
         {
             var uuid = ResolverUuidPerfil(perfilTerminal);
-            args = $"--tab-with-profile=\"{uuid}\" -- bash -l -i -c \"{EscapeBash(trimmed)}; exec bash\"";
+            args = $"--tab-with-profile=\"{uuid}\" -- bash -l -i -c \"trap '' INT; {EscapeBash(trimmed)}; exec bash\"";
         }
         else
         {
-            args = $"--tab -- bash -l -i -c \"{EscapeBash(trimmed)}; exec bash\"";
+            args = $"--tab -- bash -l -i -c \"trap '' INT; {EscapeBash(trimmed)}; exec bash\"";
         }
 
         Process.Start(new ProcessStartInfo
