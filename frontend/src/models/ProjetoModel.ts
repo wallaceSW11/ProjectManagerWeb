@@ -14,6 +14,7 @@ export default class ProjetoModel implements IProjeto {
   comandosObj: IComandos;
   nomeIDE?: string | null;
   perfilTerminal?: string | null;
+  comandosSelecionados: string[];
 
   constructor(obj: Partial<IProjeto> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -24,6 +25,7 @@ export default class ProjetoModel implements IProjeto {
     this.comandos = obj.comandos || [];
     this.arquivoCoverage = obj.arquivoCoverage || '';
     this.expandido = obj.expandido || false;
+    this.comandosSelecionados = obj.comandosSelecionados || [];
     this.identificadorRepositorioAgregado =
       obj.identificadorRepositorioAgregado;
     this.nomeIDE = obj.nomeIDE;
