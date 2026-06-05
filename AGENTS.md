@@ -51,6 +51,17 @@ dotnet publish            # publicar para IIS
 .\Atualizar_PMW.ps1      # atualizar do último release
 ```
 
+## Proibições (valem pra todo o repositório)
+
+- **Sem comentários no código** — nomes auto-documentados. Zero comentários, inclusive comentários de seção/bloco.
+- **If de uma linha SEM chaves** — early return incluso.  
+  ✅ `if (!item) return;`  
+  ❌ `if (!item) { return; }`
+- **Evite if/else** — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
+- NUNCA hardcodar secrets, API keys ou connection strings
+- NUNCA git commit/push/pull/merge/rebase — responsabilidade do usuário
+- NUNCA inventar informação — investigue antes
+
 ## Git
 
 Branches: `main`, `develop`, `feature/*`, `fix/*`, `chore/*`

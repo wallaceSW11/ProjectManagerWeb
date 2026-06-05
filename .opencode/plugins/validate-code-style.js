@@ -1,4 +1,47 @@
-export const PluginValidarCodeStyle = async () => ({
+function contarStatementNoBloco(bloco) {
+  const body = bloco.replace(/^\{/, '').replace(/\}$/, '').trim();
+  if (!body) return 0;
+  const stmts = body.split(';').filter(s => s.trim());
+  return stmts.length;
+}
+
+function detectarIfComChaves(conteudo) {
+  const violacoes = [];
+  const regexIf = /if\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
+  let match;
+  while ((match = regexIf.exec(conteudo)) !== null) {
+    const total = contarStatementNoBloco(match[0]);
+    if (total <= 1) {
+      const linha = conteudo.substring(0, match.index).split('\n').length;
+      violacoes.push(`PROIBIDO: If com chaves desnecessárias (linha ${linha}). Corpo tem ${total} statement. Use if sem chaves.`);
+    }
+  }
+  return violacoes;
+}
+
+function detectarComentarios(conteudo) {
+  const violacoes = [];
+  const linhas = conteudo.split('\n');
+  linhas.forEach((linha, i) => {
+    const trimmed = linha.trim();
+    if (!trimmed.startsWith('//')) return;
+    if (/^\/\/\s*(https?:\/\/|Copyright|License|MIT|Apache)/.test(trimmed)) return;
+    if (/^\s*\/\/ errado|^\s*\/\/ certo/.test(linha)) return;
+    if (/^\s*\/\/\s*$/.test(linha)) return;
+    violacoes.push(`PROIBIDO: Comentário no código (linha ${i + 1}). Zero comentários.`);
+  });
+  return violacoes;
+}
+
+function detectarIfElseDesnecessario(conteudo) {
+  const violacoes = [];
+  const regex = /if\s*\([^)]*\)\s*\{[^}]*\}\s*else\s*(if\s*\([^)]*\)\s*\{[^}]*\}|)/g;
+  if (regex.test(conteudo))
+    violacoes.push("AVISO: if/else detectado. Use ternário pra 2 caminhos ou objetos mapeados.");
+  return violacoes;
+}
+
+export default async () => ({
   "tool.execute.after": async (input, _output) => {
     if (input.tool !== "write" && input.tool !== "apply_patch") return;
 
@@ -16,6 +59,10 @@ export const PluginValidarCodeStyle = async () => ({
     }
 
     const violacoes = [];
+
+    violacoes.push(...detectarComentarios(conteudo));
+    violacoes.push(...detectarIfComChaves(conteudo));
+    violacoes.push(...detectarIfElseDesnecessario(conteudo));
 
     if (ext === "cs") {
       if (/AutoMapper|CreateMap|IMapper/.test(conteudo))
