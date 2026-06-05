@@ -60,7 +60,7 @@ pmw update    # Atualiza para o último release (com backup automático)
 
 Acesse: [http://localhost:2025](http://localhost:2025)
 
-> **Nota:** O PMW para Linux é publicado como **self-contained** — não precisa instalar o .NET runtime separadamente. Tudo já vem no pacote.
+> **Nota:** O PMW é publicado como **self-contained** (Windows e Linux) — não precisa instalar o .NET runtime separadamente. Tudo já vem no pacote.
 
 ### Estrutura de diretórios no Linux
 
@@ -74,8 +74,6 @@ Acesse: [http://localhost:2025](http://localhost:2025)
 ---
 
 ## 🪟 Instalação no Windows
-
-**Pré-requisito:** [.NET 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (o pacote Windows é framework-dependent — o runtime precisa estar instalado)
 
 ### Instalação do zero (automática)
 
@@ -120,7 +118,7 @@ pmw update    # Atualiza para o último release (com backup automático)
 
 Acesse: [http://localhost:2025](http://localhost:2025)
 
-> **Nota:** O PMW para Windows é publicado como **framework-dependent** — precisa do .NET Runtime 9 instalado.  
+> **Nota:** O PMW para Windows é **self-contained** — não precisa instalar o .NET Runtime separadamente.  
 > Para iniciar sem janela de console (ideal para inicialização do Windows):
 > ```powershell
 > wscript.exe "C:\inetpub\wwwroot\PMW-Tools\pmw-start.vbs"
@@ -174,7 +172,7 @@ O build completo é feito via **GitHub Actions** (`.github/workflows/release.yml
 
 1. **Frontend:** `pnpm install --frozen-lockfile` + `pnpm run build`
 2. **Backend:**
-   - **Windows:** `dotnet publish -c Release -r win-x64 --self-contained false`
+   - **Windows:** `dotnet publish -c Release -r win-x64 --self-contained true`
    - **Linux:** `dotnet publish -c Release -r linux-x64 --self-contained true`
 3. **Artefatos:** `PMW_Windows_*.zip` e `PMW_Linux_*.zip`
 
@@ -238,7 +236,7 @@ Pipeline em `.github/workflows/release.yml` — dispara em push para `main`:
 1. Build frontend (`pnpm install --frozen-lockfile` + `pnpm run build`)
 2. Copia `dist/` para `backend/frontend/`
 3. `dotnet publish`:
-   - **Windows:** `-r win-x64 --self-contained false` (precisa do runtime)
+   - **Windows:** `-r win-x64 --self-contained true` (runtime incluso)
    - **Linux:** `-r linux-x64 --self-contained true` (runtime incluso)
 4. Copia `infra/` para ambos os pacotes
 5. Gera dois artefatos: `PMW_Windows_*.zip` e `PMW_Linux_*.zip`
@@ -268,7 +266,7 @@ Pipeline em `.github/workflows/release.yml` — dispara em push para `main`:
 ## 📋 Versão atual — Features recentes
 
 ### 🏗️ Infraestrutura
-- ✅ **Self-contained Linux** — não precisa de .NET runtime
+- ✅ **Self-contained (Windows e Linux)** — não precisa de .NET runtime
 - ✅ **Script Windows** (`pmw.ps1`) — gerenciamento completo com detecção automática
 - ✅ **Inicialização sem console** — `.vbs` invisível, ideal para startup do Windows
 - ✅ **Backup automático** — antes de atualizar, salva com data/hora

@@ -120,10 +120,14 @@ function Install-PMW {
     if (-not (Test-Path $PMW_TOOLS)) { New-Item -ItemType Directory -Path $PMW_TOOLS -Force | Out-Null }
 
     # Copia scripts de infra para PMW_TOOLS
-    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-    Copy-Item "$scriptDir\pmw.ps1" $PMW_TOOLS -Force
-    Copy-Item "$scriptDir\pmw-start.vbs" $PMW_TOOLS -Force
-    Copy-Item "$scriptDir\pmw-start.bat" $PMW_TOOLS -Force
+    $infraDir = Join-Path $dir "infra"
+    if (-not (Test-Path $infraDir)) {
+        Write-Host "   Diretório infra não encontrado em $dir" -ForegroundColor Yellow
+        return
+    }
+    Copy-Item "$infraDir\pmw.ps1" $PMW_TOOLS -Force
+    Copy-Item "$infraDir\pmw-start.vbs" $PMW_TOOLS -Force
+    Copy-Item "$infraDir\pmw-start.bat" $PMW_TOOLS -Force
     Write-Host "   Scripts copiados para $PMW_TOOLS"
 
     # Salva o diretório da aplicação
