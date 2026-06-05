@@ -8,6 +8,9 @@
     ".opencode/code-style/backend.md",
     ".opencode/code-style/frontend.md"
   ],
+  "plugin": [
+    ".opencode/plugins/validate-code-style.js"
+  ],
   "shell": "pwsh",
   "formatter": true
 }

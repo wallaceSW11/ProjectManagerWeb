@@ -116,19 +116,27 @@ chmod +x "$PMW_DIR/ProjectManagerWeb" 2>/dev/null
 chown -R "$USER:$USER" "$PMW_DIR"
 
 # ------------------------------------------------------------------
-# 7. Mensagem final
+# 7. Inicia o serviço automaticamente
+# ------------------------------------------------------------------
+echo ""
+echo "🚀 Iniciando PMW..."
+if command -v pmw &>/dev/null; then
+  pmw start
+else
+  "$PMW_DIR/infra/pmw.sh" start
+fi
+
+# ------------------------------------------------------------------
+# 8. Mensagem final
 # ------------------------------------------------------------------
 echo ""
 echo "========================================"
-echo "  ✅ PMW instalado com sucesso!"
+echo "  ✅ PMW instalado e iniciado com sucesso!"
 echo "========================================"
 echo ""
 echo "   📍 Aplicação:  $PMW_DIR"
 echo "   📍 Scripts:    $PMW_TOOLS"
 echo "   🔗 Comando:    pmw"
-echo ""
-echo "   Para iniciar:"
-echo "     pmw start"
 echo ""
 echo "   Acesse: http://localhost:2025"
 echo ""

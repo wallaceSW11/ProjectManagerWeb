@@ -12,6 +12,10 @@
 - Hardcodar cores — variáveis do Vuetify
 - `console.log` — snackbar/notify para erros
 - Prefixo `is`/`has` em booleanos: `loading`, não `isLoading`
+- **If de uma linha COM chaves `{}`** — early return incluso.
+  ✅ `if (!item) return;`
+  ❌ `if (!item) { return; }`
+- **Evite if/else** — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
 
 ## Async
 

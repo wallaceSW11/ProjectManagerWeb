@@ -136,6 +136,7 @@
   import SelectBranch from '@/components/comum/SelectBranch.vue';
 
   const CHAVE_ULTIMO_REPOSITORIO = 'pmw_ultimo_repositorio_selecionado';
+  const CHAVE_BRANCH_BASE_PREFIXO = 'pmw_branch_base_';
   const BRANCHES_BASE = ['develop', 'dev', 'main', 'master'];
 
   const clone = reactive<IClone>(new CloneModel());
@@ -179,11 +180,21 @@
     () => clone.repositorio?.identificador,
     () => {
       const repo = clone.repositorio;
-      if (!repo?.url) return;
+      if (!repo?.url) {
+        clone.branch = '';
+        branchInvalida.value = false;
+        hintBranch.value = '';
+        return;
+      }
 
       clone.diretorioRaiz = repo.pastaCentralizadora
         ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${repo.pastaCentralizadora}${featuresStore.pathSeparator}`
         : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
+
+      if (!codigoTarefaInput.value) {
+        const branchSalva = recuperarBranchDoLocalStorage();
+        if (branchSalva && !clone.branch) clone.branch = branchSalva;
+      }
     }
   );
 
@@ -191,6 +202,11 @@
     if (!abriu) return;
 
     clone.diretorioRaiz = `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
+
+    if (clone.repositorio?.identificador) {
+      const branchSalva = recuperarBranchDoLocalStorage();
+      if (branchSalva && !clone.branch) clone.branch = branchSalva;
+    }
 
     const texto = await lerClipboard();
     const padrao = /^[A-Za-z]+\d+$/;
@@ -242,23 +258,20 @@
         ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${pastaCentralizadora}${featuresStore.pathSeparator}`
         : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
 
-      if (codigoTarefa.branchPrincipal) {
-        clone.branch = codigoTarefa.branchPrincipal;
-      } else if (repositorio.branchBase) {
-        clone.branch = repositorio.branchBase;
+      clone.branch = repositorio.branchBase || codigoTarefa.branchPrincipal || clone.branch;
+
+      if (clone.branch) {
+        salvarBranchNoLocalStorage(clone.branch);
+        salvarBranchBaseRepositorio(clone.branch);
       }
 
       clone.criarBranchRemoto = codigoTarefa.criarBranchRemoto;
       clone.baixarAgregados = codigoTarefa.clonarAgregados;
       clone.historicoCompleto = codigoTarefa.baixarHistoricoCompleto;
 
-      if (!codigoTarefa.habilitarTipos) {
-        clone.tipo = 'nenhum';
-      }
+      if (!codigoTarefa.habilitarTipos) clone.tipo = 'nenhum';
 
-      if (!clone.criarBranchRemoto) {
-        await validarBranch();
-      }
+      if (!clone.criarBranchRemoto) await validarBranch();
     } catch {
       notificar('erro', 'Erro ao buscar código da tarefa');
     }
@@ -323,6 +336,34 @@
     CloneService.clonar(payload).catch(() => {
       notificar('erro', 'Falha ao clonar');
     });
+  };
+
+  const salvarBranchNoLocalStorage = (branch: string): void => {
+    if (!branch) return;
+
+    const chaveBranchs = 'branchs';
+    const branchsSalvas = localStorage.getItem(chaveBranchs);
+    const lista: string[] = branchsSalvas ? JSON.parse(branchsSalvas) : [];
+
+    if (!lista.includes(branch)) {
+      lista.push(branch);
+      localStorage.setItem(chaveBranchs, JSON.stringify(lista));
+    }
+  };
+
+  const recuperarBranchDoLocalStorage = (): string | null => {
+    if (!clone.repositorio?.identificador) return null;
+    return localStorage.getItem(
+      `${CHAVE_BRANCH_BASE_PREFIXO}${clone.repositorio.identificador}`
+    );
+  };
+
+  const salvarBranchBaseRepositorio = (branch: string): void => {
+    if (!clone.repositorio?.identificador || !branch) return;
+    localStorage.setItem(
+      `${CHAVE_BRANCH_BASE_PREFIXO}${clone.repositorio.identificador}`,
+      branch
+    );
   };
 
   const salvarUltimoRepositorio = (): void => {

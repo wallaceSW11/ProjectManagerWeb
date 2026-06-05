@@ -2,6 +2,11 @@
 
 ## Proibido
 
+- Comentários no código — nomes auto-documentados. Zero comentários, inclusive comentários de seção/bloco.
+- If de uma linha COM chaves `{}` — early return incluso.
+  ✅ `if (item is null) return NotFound();`
+  ❌ `if (item is null) { return NotFound(); }`
+- If/else — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
 - AutoMapper — mapeamento manual sempre
 - Expor entidade na response — use DTO
 - Lógica de negócio no controller
