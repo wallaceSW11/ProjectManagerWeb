@@ -68,8 +68,9 @@ Nova migration: adicionar método `Migration_00X_NomeDaMigration()` no `Migratio
 - `infra/pmw.ps1` → gerenciamento (start, stop, update, install) com detecção automática do diretório
 - `infra/pmw-start.vbs` → inicialização sem console visível (WScript)
 - `infra/pmw-start.bat` → atalho para o .vbs
+- `bootstrap.ps1` → script de instalação inicial (baixa release + configura infra + inicia)
 - `Atualizar_PMW.ps1` → script legado de atualização
-- Diretórios: app em `C:\PMW` ou `C:\inetpub\wwwroot\PMW`, scripts em `C:\PMW-Tools/`
+- Diretórios: app em `C:\inetpub\wwwroot\PMW`, scripts em `C:\inetpub\wwwroot\PMW-Tools/`
 
 **CI/CD:**
 - `.github/workflows/ci.yml` — build frontend + backend em todo **Pull Request** (para `develop` ou `main`)
@@ -85,7 +86,7 @@ Nova migration: adicionar método `Migration_00X_NomeDaMigration()` no `Migratio
 | IDEs | `.opencode/flows/ides.md` |
 | Sites IIS / Deploy | `.opencode/flows/sitesiis.md` |
 | Deploy Linux | `infra/pmw.sh`, `bootstrap.sh` |
-| Deploy Windows | `infra/pmw.ps1`, `Atualizar_PMW.ps1` |
+| Deploy Windows | `bootstrap.ps1`, `infra/pmw.ps1`, `Atualizar_PMW.ps1` |
 | Code style backend | `.opencode/code-style/backend.md` |
 | Code style frontend | `.opencode/code-style/frontend.md` |
 | Git / commits | `AGENTS.md` (seção Git) |

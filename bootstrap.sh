@@ -23,7 +23,7 @@ ARCH="$(uname -m)"
 
 if [ "$OS" != "Linux" ]; then
   echo "❌ Este script é apenas para Linux."
-  echo "   Windows: use Atualizar_PMW.ps1"
+  echo "   Windows: use bootstrap.ps1 ou Atualizar_PMW.ps1"
   exit 1
 fi
 

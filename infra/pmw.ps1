@@ -3,7 +3,7 @@
 # ============================================================
 # Diretórios:
 #   C:\inetpub\wwwroot\PMW → aplicação (default)
-#   C:\PMW-Tools                      → scripts de infra (pmw.ps1)
+#   C:\inetpub\wwwroot\PMW-Tools → scripts de infra (pmw.ps1)
 # ============================================================
 
 param(
@@ -11,7 +11,7 @@ param(
     [string]$Pasta = ""    # opcional: diretório da aplicação
 )
 
-$PMW_TOOLS = "C:\PMW-Tools"
+$PMW_TOOLS = "C:\inetpub\wwwroot\PMW-Tools"
 $CONFIG_FILE = Join-Path $PMW_TOOLS "pmw-dir.txt"
 $REPO      = "wallaceSW11/ProjectManagerWeb"
 
@@ -34,7 +34,7 @@ function Get-PmwDir {
         "C:\inetpub\wwwroot\PMW",
         "C:\PMW",
         "C:\wwwroot\PMW",
-        "$env:USERPROFILE\pmw"
+        "$env:USERPROFILE\PMW"
     )
     foreach ($c in $candidatos) {
         # Novo layout: executável na raiz
@@ -102,13 +102,19 @@ function Status-PMW {
 }
 
 function Install-PMW {
-    Write-Host "🔧 Instalando PMW..." -ForegroundColor Cyan
+    Write-Host "🔧 Configurando infraestrutura do PMW..." -ForegroundColor Cyan
 
     $dir = Get-PmwDir
     if (-not $dir) {
         Write-Host "   Informe o diretório da aplicação:" -ForegroundColor Yellow
         Write-Host "   .\pmw.ps1 install -Pasta ""C:\inetpub\wwwroot\PMW""" -ForegroundColor Yellow
         return
+    }
+
+    # Cria o diretório da aplicação se não existir
+    if (-not (Test-Path $dir)) {
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        Write-Host "   Diretório criado: $dir"
     }
 
     if (-not (Test-Path $PMW_TOOLS)) { New-Item -ItemType Directory -Path $PMW_TOOLS -Force | Out-Null }
@@ -146,7 +152,12 @@ function Update-PMW {
     if (-not $dir) { return }
 
     # Para o processo
-    Stop-PMW
+    $proc = Get-Process -Name "ProjectManagerWeb" -ErrorAction SilentlyContinue
+    if ($proc) {
+        Stop-Process -Name "ProjectManagerWeb" -Force
+        Write-Host "   PMW parado."
+        Start-Sleep -Seconds 2
+    }
 
     # Backup com data/hora
     $dataHora = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -198,6 +209,7 @@ function Update-PMW {
     # Atualiza scripts de infra
     $infraDir = Join-Path $tempDir "infra"
     if (Test-Path $infraDir) {
+        if (-not (Test-Path $PMW_TOOLS)) { New-Item -ItemType Directory -Path $PMW_TOOLS -Force | Out-Null }
         Copy-Item "$infraDir\pmw.ps1" $PMW_TOOLS -Force
         Copy-Item "$infraDir\pmw-start.vbs" $PMW_TOOLS -Force
         Copy-Item "$infraDir\pmw-start.bat" $PMW_TOOLS -Force

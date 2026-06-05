@@ -1,21 +1,16 @@
-# ============================================================
 # PMW - Project Manager Web - Bootstrap de instalação (Windows)
-# ============================================================
-# Uso (PowerShell 5+):
+# Uso (PowerShell como administrador):
+#   irm https://raw.githubusercontent.com/wallaceSW11/ProjectManagerWeb/main/bootstrap.ps1 -OutFile "$env:TEMP\bootstrap.ps1"; & "$env:TEMP\bootstrap.ps1"
 #
-#   # Opção 1 — Baixar e executar direto:
-#   powershell -ExecutionPolicy Bypass -Command "iwr -Uri 'https://raw.githubusercontent.com/wallaceSW11/ProjectManagerWeb/main/bootstrap.ps1' -OutFile '$env:TEMP\bootstrap.ps1'; & '$env:TEMP\bootstrap.ps1'"
-#
-#   # Opção 2 — Git clone + executar local:
-#   git clone https://github.com/wallaceSW11/ProjectManagerWeb.git
-#   .\ProjectManagerWeb\bootstrap.ps1 -Pasta "C:\inetpub\wwwroot\PMW"
-# ============================================================
+# Parâmetros opcionais:
+#   .\bootstrap.ps1 -Pasta "C:\inetpub\wwwroot\PMW"
 
 param(
     [string]$Pasta = "C:\inetpub\wwwroot\PMW"
 )
 
 $Repo     = "wallaceSW11/ProjectManagerWeb"
+$PMW_TOOLS = "C:\inetpub\wwwroot\PMW-Tools"
 $ApiUrl   = "https://api.github.com/repos/$Repo/releases/latest"
 $TempZip  = "$env:TEMP\PMW_install.zip"
 $TempDir  = "$env:TEMP\PMW_install"
@@ -26,128 +21,186 @@ Write-Host "  PMW - Project Manager Web" -ForegroundColor Cyan
 Write-Host "  Instalação automatizada (Windows)" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Pasta de destino: $Pasta"
-Write-Host ""
 
 # ------------------------------------------------------------------
 # 1. Detecta sistema operacional
 # ------------------------------------------------------------------
-$isWin = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
-if (-not $isWin) {
-    Write-Host "❌ Este script é apenas para Windows." -ForegroundColor Red
-    Write-Host "   Linux: use bootstrap.sh" -ForegroundColor Yellow
+if ($env:OS -notlike "*Windows*") {
+    Write-Host "Este script é apenas para Windows." -ForegroundColor Red
+    Write-Host "Linux: use o bootstrap.sh" -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host "✅ Sistema: Windows $([Environment]::OSVersion.Version)"
+Write-Host "Sistema: Windows $([Environment]::OSVersion.Version)"
+
+# ------------------------------------------------------------------
+# 2. Verifica elevação (admin)
+# ------------------------------------------------------------------
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if (-not $isAdmin) {
+    $driveRoot = [System.IO.Path]::GetPathRoot($Pasta).TrimEnd('\')
+    $systemDrive = [Environment]::GetEnvironmentVariable("SystemDrive").TrimEnd('\')
+    if ($driveRoot -eq $systemDrive) {
+        Write-Host "A instalação em $Pasta requer privilégios de administrador." -ForegroundColor Yellow
+        Write-Host "Reiniciando como administrador..." -ForegroundColor Yellow
+        Start-Sleep -Seconds 2
+
+        $scriptPath = $MyInvocation.MyCommand.Path
+        if (-not $scriptPath) {
+            $scriptPath = Join-Path $env:TEMP "bootstrap.ps1"
+            $url = "https://raw.githubusercontent.com/$Repo/main/bootstrap.ps1"
+            Invoke-WebRequest -Uri $url -OutFile $scriptPath -Headers @{ "User-Agent" = "PMW-Bootstrap" }
+        }
+
+        $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -Pasta `"$Pasta`""
+        Start-Process -FilePath "powershell" -ArgumentList $argList -Verb RunAs
+        exit 0
+    }
+}
+
 Write-Host ""
 
 # ------------------------------------------------------------------
-# 2. Obtém URL do último release
+# 3. Verifica se já existe instalação
 # ------------------------------------------------------------------
-Write-Host "📡 Buscando último release do PMW..." -ForegroundColor Yellow
+$instalacaoExistente = Test-Path (Join-Path $Pasta "ProjectManagerWeb.exe")
+
+if ($instalacaoExistente) {
+    Write-Host "PMW já está instalado em $Pasta" -ForegroundColor Yellow
+    $resposta = Read-Host "Deseja atualizar para o último release? (S/n)"
+    if ($resposta -ne "" -and $resposta -ne "s" -and $resposta -ne "S") {
+        Write-Host "Instalação cancelada." -ForegroundColor Red
+        exit 0
+    }
+    Write-Host ""
+    Write-Host "Atualizando PMW..." -ForegroundColor Cyan
+
+    # Para o processo se estiver rodando
+    $proc = Get-Process -Name "ProjectManagerWeb" -ErrorAction SilentlyContinue
+    if ($proc) {
+        Write-Host "Parando PMW em execução..." -ForegroundColor Yellow
+        Stop-Process -Name "ProjectManagerWeb" -Force
+        Start-Sleep -Seconds 2
+    }
+
+    # Backup com data/hora
+    $dataHora = Get-Date -Format "yyyyMMdd_HHmmss"
+    $nomeDir = Split-Path $Pasta -Leaf
+    $backupDir = "C:\PMW-backup-$nomeDir-$dataHora"
+    Write-Host "Criando backup em $backupDir ..." -ForegroundColor Yellow
+    Copy-Item -Path $Pasta -Destination $backupDir -Recurse -Force
+    Write-Host "Backup concluído."
+    Write-Host ""
+}
+
+# ------------------------------------------------------------------
+# 4. Busca último release
+# ------------------------------------------------------------------
+Write-Host "Buscando último release do PMW..." -ForegroundColor Yellow
 Write-Host "   $ApiUrl"
 
 try {
     $release = Invoke-RestMethod -Uri $ApiUrl -Headers @{ "User-Agent" = "PMW-Bootstrap" }
 } catch {
-    Write-Host "❌ Falha ao buscar release: $_" -ForegroundColor Red
-    Write-Host "   Verifique sua conexão com a internet."
+    Write-Host "Falha ao buscar release: $_" -ForegroundColor Red
     exit 1
 }
 
-$versao = $release.tag_name
-$asset  = $release.assets | Where-Object { $_.name -like "PMW_Windows_*.zip" } | Select-Object -First 1
+$versao   = $release.tag_name
+$asset    = $release.assets | Where-Object { $_.name -like "PMW_Windows_*.zip" } | Select-Object -First 1
 
 if (-not $asset) {
-    Write-Host "❌ Nenhum artefato Windows encontrado no release $versao" -ForegroundColor Red
+    Write-Host "Nenhum artefato Windows encontrado no release $versao" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "✅ Release encontrado: $versao"
-Write-Host "   Arquivo: $($asset.name)"
+Write-Host "Release encontrado: $versao"
 Write-Host ""
 
 # ------------------------------------------------------------------
-# 3. Baixa o release
+# 5. Baixa o zip
 # ------------------------------------------------------------------
-Write-Host "📥 Baixando $versao ..." -ForegroundColor Yellow
+Write-Host "Baixando $($asset.name) ..." -ForegroundColor Yellow
 
 try {
     Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $TempZip -Headers @{ "User-Agent" = "PMW-Bootstrap" }
 } catch {
-    Write-Host "❌ Falha ao baixar: $_" -ForegroundColor Red
+    Write-Host "Falha ao baixar: $_" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "✅ Download concluído."
-Write-Host ""
+# ------------------------------------------------------------------
+# 6. Extrai para o diretório de instalação
+# ------------------------------------------------------------------
+Write-Host "Extraindo para $Pasta ..." -ForegroundColor Yellow
 
-# ------------------------------------------------------------------
-# 4. Extrai para a pasta de destino
-# ------------------------------------------------------------------
-Write-Host "📂 Extraindo para $Pasta ..." -ForegroundColor Yellow
+if (-not (Test-Path $Pasta)) {
+    New-Item -ItemType Directory -Path $Pasta -Force | Out-Null
+}
 
 if (Test-Path $TempDir) { Remove-Item $TempDir -Recurse -Force }
 Expand-Archive -Path $TempZip -DestinationPath $TempDir -Force
 
-if (-not (Test-Path $Pasta)) { New-Item -ItemType Directory -Path $Pasta -Force | Out-Null }
-
-# Copia tudo (preserva appsettings.json se já existir)
-if (Test-Path (Join-Path $Pasta "appsettings.json")) {
-    Get-ChildItem -Path $TempDir | Where-Object { $_.Name -ne "appsettings.json" } | ForEach-Object {
-        Copy-Item -Path $_.FullName -Destination $Pasta -Recurse -Force
-    }
-} else {
-    Get-ChildItem -Path $TempDir | ForEach-Object {
-        Copy-Item -Path $_.FullName -Destination $Pasta -Recurse -Force
-    }
+# Copia tudo (preserva appsettings.json se já existir localmente)
+Get-ChildItem -Path $TempDir | Where-Object { $_.Name -ne "appsettings.json" } | ForEach-Object {
+    Copy-Item -Path $_.FullName -Destination $Pasta -Recurse -Force
 }
 
-Write-Host "✅ Extraído com sucesso."
-Write-Host ""
-
-# ------------------------------------------------------------------
-# 5. Configura infraestrutura
-# ------------------------------------------------------------------
-Write-Host "🔧 Configurando infraestrutura..." -ForegroundColor Yellow
-
-$infraScript = Join-Path $Pasta "infra\pmw.ps1"
-if (Test-Path $infraScript) {
-    # Executa o install do pmw.ps1 (copia scripts para C:\PMW-Tools, adiciona ao PATH)
-    & $infraScript install -Pasta $Pasta
-} else {
-    Write-Host "⚠️  Script de infra não encontrado em $infraScript" -ForegroundColor Yellow
-    Write-Host "   Configuração manual necessária."
-}
-
-# ------------------------------------------------------------------
-# 6. Limpa temporários
-# ------------------------------------------------------------------
 Remove-Item $TempZip -Force -ErrorAction SilentlyContinue
 Remove-Item $TempDir -Recurse -Force -ErrorAction SilentlyContinue
 
+Write-Host ""
+
 # ------------------------------------------------------------------
-# 7. Mensagem final
+# 7. Configura infraestrutura
+# ------------------------------------------------------------------
+Write-Host "Configurando infraestrutura..." -ForegroundColor Yellow
+
+$infraScript = Join-Path $Pasta "infra\pmw.ps1"
+
+if (-not (Test-Path $infraScript)) {
+    Write-Host "Release antigo detectado. Configuração manual necessária:" -ForegroundColor Yellow
+    Write-Host "   1. Abra PowerShell como administrador" -ForegroundColor Yellow
+    Write-Host "   2. Execute: $infraScript install -Pasta `"$Pasta`"" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "PMW $versao instalado em $Pasta" -ForegroundColor Green
+    Write-Host "Acesse http://localhost:2025" -ForegroundColor Green
+    exit 0
+}
+
+# Executa o install do pmw.ps1
+& $infraScript install -Pasta $Pasta
+
+# ------------------------------------------------------------------
+# 8. Inicia o PMW
 # ------------------------------------------------------------------
 Write-Host ""
-Write-Host "========================================" -ForegroundColor Green
-Write-Host "  ✅ PMW instalado com sucesso!" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Green
+Write-Host "Iniciando PMW..." -ForegroundColor Yellow
+
+$toolsScript = Join-Path $PMW_TOOLS "pmw.ps1"
+if (Test-Path $toolsScript) {
+    & $toolsScript start
+} else {
+    & $infraScript start
+}
+
+# ------------------------------------------------------------------
+# 9. Mensagem final
+# ------------------------------------------------------------------
 Write-Host ""
-Write-Host "   📍 Aplicação:  $Pasta"
-Write-Host "   📍 Scripts:    C:\PMW-Tools"
-Write-Host "   🔗 Comando:    pmw"
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  PMW instalado e iniciado com sucesso!" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "   Para iniciar:"
-Write-Host "     pmw start"
+Write-Host "   Aplicação:  $Pasta" -ForegroundColor White
+Write-Host "   Scripts:    $PMW_TOOLS" -ForegroundColor White
+Write-Host "   Comando:    pmw" -ForegroundColor White
 Write-Host ""
-Write-Host "   Acesse: http://localhost:2025"
+Write-Host "   Acesse: http://localhost:2025" -ForegroundColor Green
 Write-Host ""
-Write-Host "   Para ver o status:"
-Write-Host "     pmw status"
+Write-Host "   Para parar:          pmw stop" -ForegroundColor Yellow
+Write-Host "   Para iniciar:        pmw start" -ForegroundColor Yellow
+Write-Host "   Para atualizar:      pmw update" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "   Para atualizar:"
-Write-Host "     pmw update"
-Write-Host ""
-Write-Host "========================================"
+Write-Host "========================================" -ForegroundColor Cyan

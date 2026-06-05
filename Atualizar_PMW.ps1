@@ -79,10 +79,10 @@ Get-ChildItem -Path $TempDir | Where-Object { $_.Name -ne "appsettings.json" } |
     Copy-Item -Path $_.FullName -Destination $Pasta -Recurse -Force
 }
 
-# --- 7. Copiar infra para C:\PMW-Tools (se existir no pacote) ---
+# --- 7. Copiar infra para C:\inetpub\wwwroot\PMW-Tools (se existir no pacote) ---
 $infraDir = Join-Path $TempDir "infra"
 if (Test-Path $infraDir) {
-    $toolsDir = "C:\PMW-Tools"
+    $toolsDir = "C:\inetpub\wwwroot\PMW-Tools"
     if (-not (Test-Path $toolsDir)) { New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null }
     Copy-Item "$infraDir\pmw.ps1" $toolsDir -Force
     Copy-Item "$infraDir\pmw-start.vbs" $toolsDir -Force
@@ -113,5 +113,5 @@ Write-Host ""
 Write-Host "✅ PMW $versao instalado com sucesso em $Pasta" -ForegroundColor Green
 Write-Host ""
 Write-Host "Comandos:"
-Write-Host "  C:\PMW-Tools\pmw.ps1 {start|stop|restart|status|update}"
-Write-Host "  (adicione C:\PMW-Tools ao PATH para usar só 'pmw')"
+Write-Host "  C:\inetpub\wwwroot\PMW-Tools\pmw.ps1 {start|stop|restart|status|update}"
+Write-Host "  (adicione C:\inetpub\wwwroot\PMW-Tools ao PATH para usar só 'pmw')"
