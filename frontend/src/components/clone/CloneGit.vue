@@ -258,7 +258,8 @@
         ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${pastaCentralizadora}${featuresStore.pathSeparator}`
         : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
 
-      clone.branch = repositorio.branchBase || codigoTarefa.branchPrincipal || clone.branch;
+      clone.branch =
+        repositorio.branchBase || codigoTarefa.branchPrincipal || clone.branch;
 
       if (clone.branch) {
         salvarBranchNoLocalStorage(clone.branch);

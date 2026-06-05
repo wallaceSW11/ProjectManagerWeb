@@ -30,12 +30,14 @@
             label="Número da tarefa"
             v-model.uppercase="pasta.codigo"
             class="uppercase-input"
-            :rules="obrigatorio"
+            hint="Extraído automaticamente do nome da pasta"
+            persistent-hint
           />
           <v-text-field
             label="Descrição"
             v-model="pasta.descricao"
-            :rules="obrigatorio"
+            hint="Opcional"
+            persistent-hint
           />
 
           <v-radio-group

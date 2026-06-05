@@ -3,7 +3,7 @@
     <div class="d-flex flex-column">
       <v-row no-gutters>
         <v-col
-          cols="8"
+          cols="9"
           class="pb-2"
         >
           <div
@@ -112,7 +112,7 @@
         class="d-flex"
       >
         <v-col
-          cols="8"
+          cols="9"
           class="altura-limitada mr-2"
         >
           <div v-if="pastas.length === 0">

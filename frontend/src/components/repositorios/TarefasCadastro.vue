@@ -81,6 +81,7 @@
               color="primary"
               density="compact"
               hide-details
+              :disabled="!repositorio?.agregados?.length"
             />
           </v-col>
           <v-col cols="4">
