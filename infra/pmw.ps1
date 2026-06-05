@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # PMW - Project Manager Web - Script de gerenciamento (Windows)
 # ============================================================
 # Diretórios:
@@ -142,7 +142,7 @@ function Install-PMW {
     Write-Host "   Scripts de infra em $PMW_TOOLS"
     Write-Host ""
     Write-Host "   Use 'pmw start' para iniciar."
-    Write-Host "   Ou: powershell -File "$PMW_TOOLS\pmw.ps1" start"
+    Write-Host "   Ou: powershell -File ""$PMW_TOOLS\pmw.ps1"" start"
 }
 
 function Update-PMW {

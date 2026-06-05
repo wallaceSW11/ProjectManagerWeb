@@ -1,4 +1,4 @@
-# PMW - Project Manager Web - Bootstrap de instalação (Windows)
+﻿# PMW - Project Manager Web - Bootstrap de instalação (Windows)
 # Uso (PowerShell como administrador):
 #   irm https://raw.githubusercontent.com/wallaceSW11/ProjectManagerWeb/main/bootstrap.ps1 -OutFile "$env:TEMP\bootstrap.ps1"; & "$env:TEMP\bootstrap.ps1"
 #

@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # Atualizar_PMW.ps1
 # Baixa o último release do GitHub e instala na pasta informada
 # Com backup automático e preservação de appsettings.json
