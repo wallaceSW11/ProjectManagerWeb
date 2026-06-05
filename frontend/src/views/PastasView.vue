@@ -69,7 +69,7 @@
           </div>
         </v-col>
 
-        <v-col class="ml-4 d-flex align-center justify-space-between">
+        <v-col class="d-flex align-center justify-space-between pl-4">
           <div>
             <h3>Projetos / Ações</h3>
           </div>
@@ -109,11 +109,11 @@
 
       <v-row
         no-gutters
-        class="d-flex"
+        class="flex-nowrap"
       >
         <v-col
           cols="9"
-          class="altura-limitada mr-2"
+          class="altura-limitada"
         >
           <div v-if="pastas.length === 0">
             Não há pastas no diretório raiz informado.
@@ -180,11 +180,8 @@
           </div>
         </v-col>
 
-        <v-col>
-          <div
-            class="ml-2"
-            style="height: calc(100dvh - 140px)"
-          >
+        <v-col class="pl-2">
+          <div style="height: calc(100dvh - 140px)">
             <div
               class="pr-2"
               style="height: calc(100% - 48px); overflow-y: auto"
@@ -400,7 +397,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+  import { computed, onMounted, onUnmounted, ref, triggerRef, watch } from 'vue';
   import type {
     IPasta,
     IProjeto,
@@ -448,7 +445,7 @@
   }
 
   const pastas = ref<IPasta[]>([]);
-  const pastaSelecionada = reactive<IPasta>(new PastaModel());
+  const pastaSelecionada = ref<IPasta>(new PastaModel());
   const exibirModalPasta = ref<boolean>(false);
   const termoPesquisa = ref<string>('');
   const campoPesquisa = ref<InstanceType<
@@ -465,8 +462,10 @@
   const diretorioExpandido = ref<boolean>(true);
   const diretorioAcoes = ref<string[]>([]);
 
-  const ideDisponivel = computed(() => !!pastaSelecionada.ideIdentificador);
-  const cliDisponivel = computed(() => !!pastaSelecionada.cliComando);
+  const ideDisponivel = computed(
+    () => !!pastaSelecionada.value.ideIdentificador
+  );
+  const cliDisponivel = computed(() => !!pastaSelecionada.value.cliComando);
 
   const abasDisponiveis = computed(() => {
     const abas = new Set<string>();
@@ -482,9 +481,9 @@
   });
 
   const perfisDisponiveis = computed((): IPerfilMarcacao[] => {
-    if (!pastaSelecionada.repositorioId) return [];
+    if (!pastaSelecionada.value.repositorioId) return [];
     const repo = repositorios.value.find(
-      r => r.identificador === pastaSelecionada.repositorioId
+      r => r.identificador === pastaSelecionada.value.repositorioId
     );
     return repo?.perfis || [];
   });
@@ -502,7 +501,7 @@
     if (perfil.abrirCLI && cliDisponivel.value) acoes.push('CLI');
     diretorioAcoes.value = acoes;
 
-    pastaSelecionada.projetos.forEach((projeto: any) => {
+    pastaSelecionada.value.projetos.forEach((projeto: any) => {
       const marcacao = perfil.projetos.find(
         pp => pp.identificadorProjeto === projeto.identificador
       );
@@ -665,7 +664,7 @@
     pastaComProjetosModels.projetos =
       pasta.projetos?.map((projeto: any) => new ProjetoModel(projeto)) || [];
 
-    Object.assign(pastaSelecionada, pastaComProjetosModels);
+    pastaSelecionada.value = pastaComProjetosModels;
 
     const acoes = consultarAcoesSelecionadas();
     const acaoPasta = acoes?.find((a: any) => a.diretorio === pasta.diretorio);
@@ -674,8 +673,8 @@
       diretorioAcoes.value = acaoPasta.diretorioAcoes;
     }
 
-    if (pastaSelecionada.projetos) {
-      pastaSelecionada.projetos.forEach((projeto: any) => {
+    if (pastaSelecionada.value.projetos) {
+      pastaSelecionada.value.projetos.forEach((projeto: any) => {
         const comandos = acaoPasta?.projetos?.find(
           (p: any) => p.identificador === projeto.identificador
         )?.comandos;
@@ -684,6 +683,7 @@
       });
     }
 
+    triggerRef(pastaSelecionada);
     salvarPastaSelecionadaNoStorage();
   };
 
@@ -692,7 +692,7 @@
   const salvarPastaSelecionadaNoStorage = (): void => {
     localStorage.setItem(
       CHAVE_PASTA_SELECIONADA,
-      JSON.stringify(pastaSelecionada.diretorio)
+      JSON.stringify(pastaSelecionada.value.diretorio)
     );
   };
 
@@ -707,21 +707,21 @@
   const executarAcoes = async (): Promise<void> => {
     // Executar ações do diretório (IDE/CLI)
     if (diretorioAcoes.value.includes('IDE')) {
-      await abrirPastaNaIDE(pastaSelecionada as IPasta);
+      await abrirPastaNaIDE(pastaSelecionada.value as IPasta);
     }
     if (diretorioAcoes.value.includes('CLI')) {
-      abrirPastaKiroCli(pastaSelecionada as IPasta);
+      abrirPastaKiroCli(pastaSelecionada.value as IPasta);
     }
 
-    const projetosComComandos = pastaSelecionada.projetos.filter(
+    const projetosComComandos = pastaSelecionada.value.projetos.filter(
       (p: any) => p.comandosSelecionados && p.comandosSelecionados.length > 0
     );
 
     if (projetosComComandos.length === 0) return;
 
     const payload: PayloadComando = {
-      diretorio: pastaSelecionada.diretorio,
-      repositorioId: pastaSelecionada.repositorioId || '',
+      diretorio: pastaSelecionada.value.diretorio,
+      repositorioId: pastaSelecionada.value.repositorioId || '',
       projetos: projetosComComandos.map((p: any) => ({
         identificador: p.identificador,
         nome: p.nome,
@@ -822,7 +822,7 @@
 
   const exibirCadastroPasta = (pasta: IPasta): void => {
     exibirModalPasta.value = true;
-    Object.assign(pastaSelecionada, pasta);
+    Object.assign(pastaSelecionada.value, pasta);
   };
 
   const menusProjetos: MenuProjeto[] = [
@@ -840,7 +840,7 @@
       icone: 'mdi-folder-open',
       acao: (projeto: any) => {
         const sep = featuresStore.pathSeparator;
-        const dir = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`;
+        const dir = `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`;
         const comando = featuresStore.isWindows
           ? `cd "${dir}"; explorer .; Exit;`
           : `cd "${dir}"; xdg-open .; Exit;`;
@@ -853,7 +853,7 @@
       icone: 'mdi-console',
       acao: (projeto: any) => {
         const sep = featuresStore.pathSeparator;
-        const dir = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`;
+        const dir = `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`;
         const comando = featuresStore.isWindows
           ? `cd ${dir}; pwsh.exe;`
           : `cd "${dir}";`;
@@ -866,7 +866,7 @@
       icone: 'mdi-source-branch-sync',
       acao: (projeto: any) => {
         const sep = featuresStore.pathSeparator;
-        const diretorio = `${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}`;
+        const diretorio = `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}`;
         executarComandoAvulso(`cd "${diretorio}"; git fetch --unshallow;`);
       }
     }
@@ -882,7 +882,7 @@
         icone: 'mdi-file-chart',
         acao: (projeto: any) => {
           const sep = featuresStore.pathSeparator;
-          const comando = `cd "${pastaSelecionada.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.arquivoCoverage}"`;
+          const comando = `cd "${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.arquivoCoverage}"`;
           executarComandoAvulso(comando);
         }
       });
@@ -948,7 +948,7 @@
 
     try {
       await PastasService.atualizarExpandido({
-        pastaId: pastaSelecionada.identificador || '',
+        pastaId: pastaSelecionada.value.identificador || '',
         projetoId: projeto.identificador,
         expandido: novoEstado
       });
@@ -975,8 +975,8 @@
     projetoComando.comandos = [comando];
 
     const payload: PayloadComando = {
-      diretorio: pastaSelecionada.diretorio,
-      repositorioId: pastaSelecionada.repositorioId || '',
+      diretorio: pastaSelecionada.value.diretorio,
+      repositorioId: pastaSelecionada.value.repositorioId || '',
       projetos: [projetoComando]
     };
 

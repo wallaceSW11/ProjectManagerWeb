@@ -25,6 +25,8 @@
           :items="menuSelecionado.comandos"
           :headers="colunas"
           hide-default-footer
+          fixed-header
+          height="250"
         >
           <template #[`item.actions`]="{ item }">
             <v-icon @click="editarComando(item)">mdi-pencil</v-icon>

@@ -111,6 +111,8 @@
         :items="repositorio.codigosTarefa || []"
         :headers="colunasCodigosTarefa"
         hide-default-footer
+        fixed-header
+        height="300"
       >
         <template #[`item.criarBranchRemoto`]="{ item }">
           <v-icon

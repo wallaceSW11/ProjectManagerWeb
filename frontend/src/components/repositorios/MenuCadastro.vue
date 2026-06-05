@@ -15,6 +15,8 @@
           :headers="colunas"
           :items="repositorio.menus"
           hide-default-footer
+          fixed-header
+          height="300"
         >
           <template #[`item.tipo`]="{ item }">
             {{ formatarTipo(item.tipo) }}
@@ -91,6 +93,8 @@
                       :headers="colunasMenuArquivos"
                       :items="menuSelecionado.arquivos"
                       hide-default-footer
+                      fixed-header
+                      height="250"
                     >
                       <template #[`item.arquivo`]="{ item }">
                         {{ obterNomeArquivo(item.arquivo) }}
@@ -140,6 +144,8 @@
                       :headers="colunasMenuPastas"
                       :items="menuSelecionado.pastas"
                       hide-default-footer
+                      fixed-header
+                      height="250"
                     >
                       <template #[`item.origem`]="{ item }">
                         {{ obterUltimaPasta(item.origem) }}
