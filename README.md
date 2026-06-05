@@ -14,7 +14,7 @@ Roda localmente na máquina do desenvolvedor — sem autenticação, sem banco r
 | Persistência | Arquivos JSON em `%APPDATA%\PMW\Banco\` |
 | Package Manager | pnpm |
 | Infra (Linux) | systemd user service + scripts em `/opt/pmw-tools/` |
-| Infra (Windows) | Scripts PowerShell em `C:\PMW-Tools` |
+| Infra (Windows) | Scripts PowerShell em `C:\inetpub\wwwroot\PMW-Tools` |
 
 ---
 
@@ -85,7 +85,7 @@ Abra o **PowerShell** e execute:
 powershell -ExecutionPolicy Bypass -Command "iwr -Uri 'https://raw.githubusercontent.com/wallaceSW11/ProjectManagerWeb/main/bootstrap.ps1' -OutFile '$env:TEMP\bootstrap.ps1'; & '$env:TEMP\bootstrap.ps1'"
 ```
 
-O script baixa o último release, extrai em `C:\inetpub\wwwroot\PMW`, copia os scripts de gerenciamento para `C:\PMW-Tools` e adiciona ao PATH do usuário.
+O script baixa o último release, extrai em `C:\inetpub\wwwroot\PMW`, copia os scripts de gerenciamento para `C:\inetpub\wwwroot\PMW-Tools` e adiciona ao PATH do usuário.
 
 > Para instalar em outro diretório:
 > ```powershell
@@ -101,7 +101,7 @@ O script baixa o último release, extrai em `C:\inetpub\wwwroot\PMW`, copia os s
 4. Execute a configuração:
 
 ```powershell
-# Configura a infraestrutura (copia scripts para C:\PMW-Tools, adiciona ao PATH):
+# Configura a infraestrutura (copia scripts para C:\inetpub\wwwroot\PMW-Tools, adiciona ao PATH):
 C:\inetpub\wwwroot\PMW\infra\pmw.ps1 install
 
 # Reabra o terminal e use o comando:
@@ -123,7 +123,7 @@ Acesse: [http://localhost:2025](http://localhost:2025)
 > **Nota:** O PMW para Windows é publicado como **framework-dependent** — precisa do .NET Runtime 9 instalado.  
 > Para iniciar sem janela de console (ideal para inicialização do Windows):
 > ```powershell
-> wscript.exe "C:\PMW-Tools\pmw-start.vbs"
+> wscript.exe "C:\inetpub\wwwroot\PMW-Tools\pmw-start.vbs"
 > ```
 > Coloque esse comando em `shell:startup` para iniciar automaticamente.
 
@@ -131,7 +131,7 @@ Acesse: [http://localhost:2025](http://localhost:2025)
 
 ```
 C:\inetpub\wwwroot\PMW          → Aplicação (backend + frontend)
-C:\PMW-Tools                    → Scripts de infra — nunca sobrescritos
+C:\inetpub\wwwroot\PMW-Tools    → Scripts de infra — nunca sobrescritos
 │   ├── pmw.ps1                 →   gerenciamento (start, stop, update...)
 │   ├── pmw-start.vbs           →   inicia sem janela de terminal
 │   └── pmw-start.bat           →   atalho para o .vbs
@@ -272,7 +272,7 @@ Pipeline em `.github/workflows/release.yml` — dispara em push para `main`:
 - ✅ **Script Windows** (`pmw.ps1`) — gerenciamento completo com detecção automática
 - ✅ **Inicialização sem console** — `.vbs` invisível, ideal para startup do Windows
 - ✅ **Backup automático** — antes de atualizar, salva com data/hora
-- ✅ **Separação infra/aplicação** — scripts de gerenciamento em `/opt/pmw-tools` ou `C:\PMW-Tools`
+- ✅ **Separação infra/aplicação** — scripts de gerenciamento em `/opt/pmw-tools` ou `C:\inetpub\wwwroot\PMW-Tools`
 
 ### 🚀 Funcionalidades
 - ✅ **Pastas centralizadoras** — agrupa clones por contexto (ex: Forizi, Pessoal)

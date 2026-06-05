@@ -5,12 +5,12 @@
 ' Ideal para colocar na inicialização do Windows.
 '
 ' Uso:
-'   wscript.exe "C:\PMW-Tools\pmw-start.vbs"
+'   wscript.exe "C:\inetpub\wwwroot\PMW-Tools\pmw-start.vbs"
 ' ============================================================
 
 Dim shell, pmwTools, psCmd
 
-pmwTools = "C:\PMW-Tools"
+pmwTools = "C:\inetpub\wwwroot\PMW-Tools"
 psCmd = "powershell -ExecutionPolicy Bypass -NoProfile -File """ & pmwTools & "\pmw.ps1"" start"
 
 Set shell = CreateObject("WScript.Shell")
