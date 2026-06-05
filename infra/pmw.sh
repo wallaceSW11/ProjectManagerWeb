@@ -52,10 +52,8 @@ case "$1" in
     # Ajusta permissões dos scripts
     chmod +x "$PMW_TOOLS/pmw.sh"
 
-    # Cria link simbólico para o comando pmw (se não existir)
-    if [ ! -L "/usr/local/bin/pmw" ]; then
-      sudo ln -s "$PMW_TOOLS/pmw.sh" /usr/local/bin/pmw
-    fi
+    # Cria link simbólico para o comando pmw (recria se perdido)
+    sudo ln -sf "$PMW_TOOLS/pmw.sh" /usr/local/bin/pmw
 
     # Instala o systemd service
     mkdir -p ~/.config/systemd/user/
@@ -105,19 +103,27 @@ case "$1" in
     chmod +x "$PMW_DIR/ProjectManagerWeb" 2>/dev/null
     chown -R "$USER:$USER" "$PMW_DIR"
 
+    # Garante que o diretório de tools existe
+    mkdir -p "$PMW_TOOLS"
+
     # Atualiza scripts de infra (se o pacote tiver a pasta infra)
     if [ -d "$PMW_DIR/infra" ]; then
       echo "Atualizando scripts de infra em $PMW_TOOLS ..."
-      cp "$PMW_DIR/infra/pmw.service" "$PMW_TOOLS/" 2>/dev/null
-      cp "$PMW_DIR/infra/pmw.sh" "$PMW_TOOLS/" 2>/dev/null
+      cp "$PMW_DIR/infra/pmw.service" "$PMW_TOOLS/"
+      cp "$PMW_DIR/infra/pmw.sh" "$PMW_TOOLS/"
       chmod +x "$PMW_TOOLS/pmw.sh"
-
-      # Atualiza o systemd service
-      cp "$PMW_TOOLS/pmw.service" ~/.config/systemd/user/
-      systemctl --user daemon-reload
 
       # Remove a pasta infra do diretório da aplicação (já está em tools)
       rm -rf "$PMW_DIR/infra"
+    fi
+
+    # Atualiza o systemd service
+    cp "$PMW_TOOLS/pmw.service" ~/.config/systemd/user/
+    systemctl --user daemon-reload
+
+    # Recria o link simbólico se não existir
+    if [ ! -L "/usr/local/bin/pmw" ]; then
+      sudo ln -s "$PMW_TOOLS/pmw.sh" /usr/local/bin/pmw
     fi
 
     # Limpa temporários
