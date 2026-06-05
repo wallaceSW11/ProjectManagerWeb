@@ -12,5 +12,11 @@
     ".opencode/plugins/validate-code-style.js"
   ],
   "shell": "pwsh",
-  "formatter": true
+  "formatter": true,
+  "command": {
+    "criar-mr": {
+      "template": "Use the criar-mr skill to create a Pull Request. Follow the skill workflow: check git status, commit if needed, push, and create PR.",
+      "description": "Cria um Pull Request no GitHub (commit, push e PR)"
+    }
+  }
 }
