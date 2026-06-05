@@ -116,9 +116,13 @@ chmod +x "$PMW_DIR/ProjectManagerWeb" 2>/dev/null
 chown -R "$USER:$USER" "$PMW_DIR"
 
 # ------------------------------------------------------------------
-# 7. Inicia o serviço automaticamente
+# 7. Garante o link simbólico e inicia o serviço
 # ------------------------------------------------------------------
 echo ""
+echo "🔗 Garantindo link simbólico..."
+sudo ln -sf "$PMW_TOOLS/pmw.sh" /usr/local/bin/pmw
+hash -r 2>/dev/null || true
+
 echo "🚀 Iniciando PMW..."
 if command -v pmw &>/dev/null; then
   pmw start
