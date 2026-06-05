@@ -332,12 +332,24 @@
 
 <style scoped>
   .link-tarefa {
-    color: rgb(var(--v-theme-primary));
+    color: inherit;
     text-decoration: none;
     cursor: pointer;
   }
 
   .link-tarefa:hover {
+    color: rgb(var(--v-theme-primary));
+    text-decoration: underline;
+  }
+
+  .link {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .link:hover {
+    color: rgb(var(--v-theme-primary));
     text-decoration: underline;
   }
 </style>

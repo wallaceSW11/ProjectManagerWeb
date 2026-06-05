@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace ProjectManagerWeb.src.Utils;
 
@@ -90,26 +91,43 @@ public class WindowsShellProvider : IShellProvider
     {
         try
         {
-            var psi = new ProcessStartInfo
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            var possiblePaths = new[]
             {
-                FileName = "wt.exe",
-                Arguments = "--list-profiles",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
+                Path.Combine(localAppData, "Packages", "Microsoft.WindowsTerminal_8wekyb3d8bbwe", "LocalState", "settings.json"),
+                Path.Combine(localAppData, "Packages", "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe", "LocalState", "settings.json"),
+                Path.Combine(localAppData, "Microsoft", "Windows Terminal", "settings.json")
             };
 
-            using var process = Process.Start(psi);
-            if (process is null) return [];
+            foreach (var settingsPath in possiblePaths)
+            {
+                if (!File.Exists(settingsPath)) continue;
 
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit(5000);
+                var json = File.ReadAllText(settingsPath);
+                if (string.IsNullOrWhiteSpace(json)) continue;
 
-            return output
-                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .Where(p => !string.IsNullOrWhiteSpace(p))
-                .ToList();
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                if (!root.TryGetProperty("profiles", out var profiles)) continue;
+                if (!profiles.TryGetProperty("list", out var list)) continue;
+
+                var nomes = new List<string>();
+                foreach (var item in list.EnumerateArray())
+                {
+                    if (item.TryGetProperty("name", out var nameProp))
+                    {
+                        var nome = nameProp.GetString();
+                        if (!string.IsNullOrWhiteSpace(nome))
+                            nomes.Add(nome);
+                    }
+                }
+
+                if (nomes.Count > 0) return nomes;
+            }
+
+            return [];
         }
         catch
         {

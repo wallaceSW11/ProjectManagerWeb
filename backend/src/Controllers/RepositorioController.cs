@@ -96,6 +96,7 @@ namespace ProjectManagerWeb.src.Controllers
                         repo.Nome,
                         repo.Titulo,
                         repo.Cor,
+                        repo.Agregados,
                         repo.BranchBase,
                         repo.IDEIdentificador,
                         repo.PerfilVSCode,
