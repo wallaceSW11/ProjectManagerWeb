@@ -334,9 +334,14 @@
     validandoBranch.value = true;
     try {
       const url = clone.repositorio.url ?? '';
-      const existe = await CloneService.verificarBranch(url, clone.branch);
+      const { existe, erro } = await CloneService.verificarBranch(
+        url,
+        clone.branch
+      );
       branchInvalida.value = !existe;
-      hintBranch.value = existe ? '' : 'Branch não encontrada no remote';
+      if (existe) hintBranch.value = '';
+      else if (erro) hintBranch.value = `Branch não encontrada: ${erro}`;
+      else hintBranch.value = 'Branch não encontrada no remote';
     } catch {
       branchInvalida.value = false;
       hintBranch.value = '';

@@ -15,8 +15,8 @@ public class CloneController(CloneService cloneService, PastaService pastaServic
         if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(branch))
             return BadRequest("URL e branch são obrigatórios.");
 
-        var existe = await cloneService.VerificarBranchExisteAsync(url, branch);
-        return Ok(new { existe });
+        var (existe, erro) = await cloneService.VerificarBranchExisteAsync(url, branch);
+        return Ok(new { existe, erro });
     }
 
     [HttpPost]

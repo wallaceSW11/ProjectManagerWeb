@@ -17,16 +17,28 @@ public class CloneService
         _repositorioJson = repositorioJson;
     }
 
-    public async Task<bool> VerificarBranchExisteAsync(string url, string branch)
+    public async Task<(bool Existe, string? Erro)> VerificarBranchExisteAsync(string url, string branch)
     {
         var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --heads \"{url}\" \"{branch}\"");
-        return !string.IsNullOrWhiteSpace(resultado);
+
+        if (resultado.ExitCode != 0)
+        {
+            var erro = string.IsNullOrWhiteSpace(resultado.Error)
+                ? "Falha ao consultar repositório remoto"
+                : resultado.Error.Trim();
+            return (false, erro);
+        }
+
+        return (!string.IsNullOrWhiteSpace(resultado.Output), null);
     }
 
     public async Task<string> DetectarBranchPrincipalAsync(string url)
     {
         var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --symref \"{url}\" HEAD");
-        var linha = resultado
+
+        if (resultado.ExitCode != 0) return string.Empty;
+
+        var linha = resultado.Output
             .Split('\n')
             .FirstOrDefault(l => l.StartsWith("ref: refs/heads/"));
 
@@ -51,9 +63,14 @@ public class CloneService
         string branchPrincipal = string.Empty;
         if (!EhBranchBase(clone.Branch))
         {
-            var existe = await VerificarBranchExisteAsync(gitPrincipal.Url!, clone.Branch);
+            var (existe, erro) = await VerificarBranchExisteAsync(gitPrincipal.Url!, clone.Branch);
             if (!existe)
-                throw new Exception($"Branch '{clone.Branch}' não encontrada no remote.");
+            {
+                var mensagem = erro is not null
+                    ? $"Branch '{clone.Branch}' não encontrada no remote. {erro}"
+                    : $"Branch '{clone.Branch}' não encontrada no remote.";
+                throw new Exception(mensagem);
+            }
 
             branchPrincipal = await DetectarBranchPrincipalAsync(gitPrincipal.Url!);
         }
@@ -74,7 +91,7 @@ public class CloneService
 
                 if (!EhBranchBase(clone.Branch))
                 {
-                    var existeNoAgregado = await VerificarBranchExisteAsync(agregado.Url!, clone.Branch);
+                    var (existeNoAgregado, _) = await VerificarBranchExisteAsync(agregado.Url!, clone.Branch);
                     if (existeNoAgregado)
                     {
                         branchPrincipalAgregado = await DetectarBranchPrincipalAsync(agregado.Url!);
@@ -137,7 +154,7 @@ public class CloneService
     private static bool EhBranchBase(string branch) =>
         branch is "develop" or "dev" or "main" or "master";
 
-    private static async Task<string> ExecutarComandoComRetornoAsync(string comando)
+    private static async Task<ComandoResultado> ExecutarComandoComRetornoAsync(string comando)
     {
         var psi = new ProcessStartInfo
         {
@@ -150,10 +167,14 @@ public class CloneService
         };
 
         using var processo = Process.Start(psi);
-        if (processo is null) return string.Empty;
+        if (processo is null) return new ComandoResultado(string.Empty, "Processo não iniciado", -1);
 
         var output = await processo.StandardOutput.ReadToEndAsync();
+        var error = await processo.StandardError.ReadToEndAsync();
         await processo.WaitForExitAsync();
-        return output;
+
+        return new ComandoResultado(output, error, processo.ExitCode);
     }
+
+    private sealed record ComandoResultado(string Output, string Error, int ExitCode);
 }

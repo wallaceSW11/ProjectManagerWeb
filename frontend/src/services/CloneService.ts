@@ -6,11 +6,13 @@ class CloneService extends BaseApiService {
     return await this.post('clones', clone);
   }
 
-  async verificarBranch(url: string, branch: string): Promise<boolean> {
-    const response = await this.get<{ existe: boolean }>(
+  async verificarBranch(
+    url: string,
+    branch: string
+  ): Promise<{ existe: boolean; erro?: string }> {
+    return await this.get<{ existe: boolean; erro?: string }>(
       `clones/verificar-branch?url=${encodeURIComponent(url)}&branch=${encodeURIComponent(branch)}`
     );
-    return response.existe;
   }
 }
 
