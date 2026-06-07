@@ -156,10 +156,12 @@ public class CloneService
 
     private static async Task<ComandoResultado> ExecutarComandoComRetornoAsync(string comando)
     {
+        var useShell = OperatingSystem.IsWindows();
+
         var psi = new ProcessStartInfo
         {
-            FileName = "git",
-            Arguments = comando["git ".Length..],
+            FileName = useShell ? "git" : "bash",
+            Arguments = useShell ? comando["git ".Length..] : $"-l -c \"{comando.Replace("\"", "\\\"")}\"",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
