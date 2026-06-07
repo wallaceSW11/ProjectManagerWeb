@@ -35,6 +35,7 @@ builder.Services.AddSingleton<DeployIISService>();
 builder.Services.AddSingleton<IDEJsonService>();
 builder.Services.AddSingleton<MigrationService>();
 builder.Services.AddSingleton<TerminalService>();
+builder.Services.AddHttpClient<VersaoService>();
 
 if (OperatingSystem.IsWindows())
     builder.Services.AddSingleton<IShellProvider, WindowsShellProvider>();
