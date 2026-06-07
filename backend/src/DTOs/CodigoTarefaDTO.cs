@@ -9,5 +9,6 @@ public sealed record CodigoTarefaDTO(
     bool BaixarHistoricoCompleto = false,
     bool HabilitarTipos = false,
     List<string>? TiposHabilitados = null,
-    string? PastaCentralizadora = null
+    string? PastaCentralizadora = null,
+    bool UsarTarefaComoBranch = false
 );

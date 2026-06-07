@@ -104,6 +104,17 @@
               hide-details
             />
           </v-col>
+          <v-col cols="4">
+            <v-switch
+              v-model="codigoTarefaForm.usarTarefaComoBranch"
+              label="Usar tarefa como branch"
+              color="primary"
+              density="compact"
+              hide-details
+              hint="No clone, usa o código da tarefa como nome da branch"
+              persistent-hint
+            />
+          </v-col>
         </v-row>
       </ModalPadrao>
 
@@ -145,6 +156,20 @@
         <template #[`item.habilitarTipos`]="{ item }">
           <v-icon
             v-if="item.habilitarTipos"
+            color="success"
+          >
+            mdi-check
+          </v-icon>
+          <v-icon
+            v-else
+            color="grey"
+          >
+            mdi-close
+          </v-icon>
+        </template>
+        <template #[`item.usarTarefaComoBranch`]="{ item }">
+          <v-icon
+            v-if="item.usarTarefaComoBranch"
             color="success"
           >
             mdi-check
@@ -220,7 +245,8 @@
     baixarHistoricoCompleto: false,
     habilitarTipos: false,
     tiposHabilitados: [],
-    pastaCentralizadora: null
+    pastaCentralizadora: null,
+    usarTarefaComoBranch: false
   });
 
   const colunasCodigosTarefa = [
@@ -233,6 +259,11 @@
     },
     { title: 'Agregados', key: 'clonarAgregados', align: 'center' as const },
     { title: 'Tipos', key: 'habilitarTipos', align: 'center' as const },
+    {
+      title: 'Branch = código',
+      key: 'usarTarefaComoBranch',
+      align: 'center' as const
+    },
     {
       title: 'Ações',
       key: 'actions',
@@ -249,6 +280,7 @@
     codigoTarefaForm.clonarAgregados = false;
     codigoTarefaForm.baixarHistoricoCompleto = false;
     codigoTarefaForm.habilitarTipos = false;
+    codigoTarefaForm.usarTarefaComoBranch = false;
     codigoTarefaForm.pastaCentralizadora = null;
     codigoTarefaEditandoId.value = null;
     exibirModalCodigoTarefa.value = true;
@@ -262,6 +294,7 @@
     codigoTarefaForm.clonarAgregados = item.clonarAgregados;
     codigoTarefaForm.baixarHistoricoCompleto = item.baixarHistoricoCompleto;
     codigoTarefaForm.habilitarTipos = item.habilitarTipos;
+    codigoTarefaForm.usarTarefaComoBranch = item.usarTarefaComoBranch;
     codigoTarefaForm.tiposHabilitados = [...(item.tiposHabilitados || [])];
     codigoTarefaForm.pastaCentralizadora = item.pastaCentralizadora || null;
     codigoTarefaEditandoId.value = item.identificador;

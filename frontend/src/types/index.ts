@@ -66,6 +66,7 @@ export interface ICodigoTarefa {
   habilitarTipos: boolean;
   tiposHabilitados: string[];
   pastaCentralizadora?: string | null;
+  usarTarefaComoBranch: boolean;
 }
 
 export interface IRepositorio {

@@ -139,6 +139,10 @@
   const CHAVE_BRANCH_BASE_PREFIXO = 'pmw_branch_base_';
   const BRANCHES_BASE = ['develop', 'dev', 'main', 'master'];
 
+  const props = defineProps<{
+    clipboardTexto?: string;
+  }>();
+
   const clone = reactive<IClone>(new CloneModel());
   const configuracaoStore = useConfiguracaoStore();
   const featuresStore = useFeaturesStore();
@@ -208,7 +212,7 @@
       if (branchSalva && !clone.branch) clone.branch = branchSalva;
     }
 
-    const texto = await lerClipboard();
+    const texto = props.clipboardTexto || '';
     const padrao = /^[A-Za-z]+\d+$/;
     if (padrao.test(texto.trim())) {
       codigoTarefaInput.value = texto.trim().toUpperCase();
@@ -224,14 +228,6 @@
   function extrairIniciais(codigo: string): string {
     const match = codigo.match(/^([A-Za-z]+)/);
     return match ? match[1].toUpperCase() : '';
-  }
-
-  async function lerClipboard(): Promise<string> {
-    try {
-      return await navigator.clipboard.readText();
-    } catch {
-      return '';
-    }
   }
 
   async function processarCodigoTarefa(): Promise<void> {
@@ -258,8 +254,12 @@
         ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${pastaCentralizadora}${featuresStore.pathSeparator}`
         : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
 
-      clone.branch =
-        repositorio.branchBase || codigoTarefa.branchPrincipal || clone.branch;
+      if (codigoTarefa.usarTarefaComoBranch) clone.branch = codigo;
+      else
+        clone.branch =
+          repositorio.branchBase ||
+          codigoTarefa.branchPrincipal ||
+          clone.branch;
 
       if (clone.branch) {
         salvarBranchNoLocalStorage(clone.branch);
