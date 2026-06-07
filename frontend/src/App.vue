@@ -184,7 +184,7 @@
           </v-icon>
         </v-btn>
 
-        <v-menu v-if="versaoStore.versaoAtual">
+        <v-menu>
           <template v-slot:activator="{ props }">
             <v-btn
               icon
@@ -208,10 +208,16 @@
           </template>
 
           <v-list density="compact">
-            <v-list-item>
+            <v-list-item v-if="versaoStore.versaoAtual">
               <v-list-item-title class="text-body-2">
                 Versão atual:
                 <strong>{{ versaoStore.versaoAtual }}</strong>
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item v-if="verificandoVersao">
+              <v-list-item-title class="text-body-2 text-grey">
+                Verificando...
               </v-list-item-title>
             </v-list-item>
 
@@ -219,7 +225,27 @@
               <v-list-item-title
                 class="text-body-2 text-success font-weight-bold"
               >
+                <v-icon
+                  size="small"
+                  class="mr-1"
+                  color="success"
+                >
+                  mdi-alert
+                </v-icon>
                 Nova versão: {{ versaoStore.versaoNova }}
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item v-if="atualizado">
+              <v-list-item-title class="text-body-2 text-grey">
+                <v-icon
+                  size="small"
+                  class="mr-1"
+                  color="grey"
+                >
+                  mdi-check
+                </v-icon>
+                Você está atualizado
               </v-list-item-title>
             </v-list-item>
 
@@ -241,12 +267,15 @@
               </v-list-item-title>
             </v-list-item>
 
-            <v-list-item
-              v-else
-              disabled
-            >
-              <v-list-item-title class="text-body-2 text-grey">
-                Você está atualizado
+            <v-list-item @click="versaoStore.verificarAtualizacao()">
+              <v-list-item-title class="text-body-2">
+                <v-icon
+                  size="small"
+                  class="mr-1"
+                >
+                  mdi-refresh
+                </v-icon>
+                Verificar atualizações
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -266,7 +295,7 @@
 </template>
 
 <script setup>
-  import { onBeforeUnmount, onMounted, ref } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
   import logo from '@/assets/logo.svg';
   import VersaoService from './services/VersaoService';
   import ComandosService from '@/services/ComandosService';
@@ -287,6 +316,17 @@
   const siteIISStore = useSiteIISStore();
   const versaoStore = useVersaoStore();
   const sitesParaDeploy = ref([]);
+
+  const verificandoVersao = computed(
+    () => versaoStore.carregando && !versaoStore.versaoAtual
+  );
+
+  const atualizado = computed(
+    () =>
+      versaoStore.versaoAtual &&
+      !versaoStore.temAtualizacao &&
+      !versaoStore.carregando
+  );
 
   const carregarSitesParaDeploy = async () => {
     try {
