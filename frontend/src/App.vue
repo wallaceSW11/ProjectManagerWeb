@@ -48,7 +48,7 @@
       <div>
         <v-btn
           class="text-none"
-          @click="abrirClone"
+          @click="exibirModalClone = true"
         >
           <v-icon
             class="pr-2"
@@ -261,10 +261,7 @@
     </v-main>
   </v-app>
 
-  <CloneGit
-    v-model="exibirModalClone"
-    :clipboard-texto="clipboardTexto"
-  />
+  <CloneGit v-model="exibirModalClone" />
   <SitesGerenciamento v-model="exibirModalSites" />
 </template>
 
@@ -285,16 +282,6 @@
   const compiladoEm = ref();
   const exibirModalClone = ref(false);
   const exibirModalSites = ref(false);
-  const clipboardTexto = ref('');
-
-  const abrirClone = async () => {
-    try {
-      clipboardTexto.value = await navigator.clipboard.readText();
-    } catch {
-      clipboardTexto.value = '';
-    }
-    exibirModalClone.value = true;
-  };
 
   const featuresStore = useFeaturesStore();
   const siteIISStore = useSiteIISStore();
