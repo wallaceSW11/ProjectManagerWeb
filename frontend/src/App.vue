@@ -371,7 +371,7 @@
     if (versaoStore.erro)
       notificar('erro', 'Falha ao verificar atualizações', versaoStore.erro);
     else if (versaoStore.temAtualizacao)
-      notificar('sucesso', 'Nova versão disponível', versaoStore.versaoNova!);
+      notificar('sucesso', 'Nova versão disponível', versaoStore.versaoNova ?? '');
     else
       notificar('sucesso', 'Você está na versão mais recente');
   };
