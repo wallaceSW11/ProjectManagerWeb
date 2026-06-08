@@ -9,7 +9,8 @@
     ".opencode/code-style/frontend.md"
   ],
   "plugin": [
-    ".opencode/plugins/validate-code-style.js"
+    ".opencode/plugins/validate-code-style.js",
+    ".opencode/plugins/validate-infra.js"
   ],
   "shell": "pwsh",
   "formatter": true,
