@@ -183,6 +183,103 @@
             mdi-cog
           </v-icon>
         </v-btn>
+
+        <v-menu>
+          <template v-slot:activator="{ props }">
+            <v-btn
+              icon
+              v-bind="props"
+              :loading="versaoStore.carregando"
+            >
+              <v-badge
+                v-if="versaoStore.temAtualizacao"
+                dot
+                color="error"
+              >
+                <v-icon color="primary">mdi-download</v-icon>
+              </v-badge>
+              <v-icon
+                v-else
+                color="primary"
+              >
+                mdi-download
+              </v-icon>
+            </v-btn>
+          </template>
+
+          <v-list density="compact">
+            <v-list-item v-if="versaoStore.versaoAtual">
+              <v-list-item-title class="text-body-2">
+                Versão atual:
+                <strong>{{ versaoStore.versaoAtual }}</strong>
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item v-if="verificandoVersao">
+              <v-list-item-title class="text-body-2 text-grey">
+                Verificando...
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item v-if="versaoStore.temAtualizacao">
+              <v-list-item-title
+                class="text-body-2 text-success font-weight-bold"
+              >
+                <v-icon
+                  size="small"
+                  class="mr-1"
+                  color="success"
+                >
+                  mdi-alert
+                </v-icon>
+                Nova versão: {{ versaoStore.versaoNova }}
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item v-if="atualizado">
+              <v-list-item-title class="text-body-2 text-grey">
+                <v-icon
+                  size="small"
+                  class="mr-1"
+                  color="grey"
+                >
+                  mdi-check
+                </v-icon>
+                Você está atualizado
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-divider class="my-1" />
+
+            <v-list-item
+              v-if="versaoStore.temAtualizacao"
+              @click="atualizarAgora"
+            >
+              <v-list-item-title class="text-body-2">
+                <v-icon
+                  size="small"
+                  class="mr-1"
+                  color="success"
+                >
+                  mdi-update
+                </v-icon>
+                Atualizar agora
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item @click="versaoStore.verificarAtualizacao()">
+              <v-list-item-title class="text-body-2">
+                <v-icon
+                  size="small"
+                  class="mr-1"
+                >
+                  mdi-refresh
+                </v-icon>
+                Verificar atualizações
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
     </v-app-bar>
 
@@ -198,9 +295,10 @@
 </template>
 
 <script setup>
-  import { onBeforeUnmount, onMounted, ref } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
   import logo from '@/assets/logo.svg';
   import VersaoService from './services/VersaoService';
+  import ComandosService from '@/services/ComandosService';
   import SnackbarNotificacao from '@/components/comum/SnackbarNotificacao.vue';
   import CloneGit from '@/components/clone/CloneGit.vue';
   import eventBus, { carregandoAsync } from '@/utils/eventBus';
@@ -208,6 +306,7 @@
   import { UX_CONFIG } from '@/constants/geral-constants';
   import { useSiteIISStore } from '@/stores/siteIIS';
   import { useFeaturesStore } from '@/stores/features';
+  import { useVersaoStore } from '@/stores/useVersaoStore';
 
   const compiladoEm = ref();
   const exibirModalClone = ref(false);
@@ -215,7 +314,19 @@
 
   const featuresStore = useFeaturesStore();
   const siteIISStore = useSiteIISStore();
+  const versaoStore = useVersaoStore();
   const sitesParaDeploy = ref([]);
+
+  const verificandoVersao = computed(
+    () => versaoStore.carregando && !versaoStore.versaoAtual
+  );
+
+  const atualizado = computed(
+    () =>
+      versaoStore.versaoAtual &&
+      !versaoStore.temAtualizacao &&
+      !versaoStore.carregando
+  );
 
   const carregarSitesParaDeploy = async () => {
     try {
@@ -238,17 +349,21 @@
     }
   };
 
-  const consultarVersao = async () => {
+  const consultarCompilacao = async () => {
     try {
       const response = await carregandoAsync(async () => {
-        const res = await VersaoService.obterVersao();
+        const res = await VersaoService.obterCompilacao();
         return res;
       }, 'Consultando a versão...');
 
       compiladoEm.value = response;
-    } catch (error) {
-      console.error('Falha ao consultar a versão:', error);
+    } catch {
+      compiladoEm.value = 'desconhecida';
     }
+  };
+
+  const atualizarAgora = () => {
+    ComandosService.executarComandoAvulso({ comando: 'pmw update' });
   };
 
   const exibirCarregando = ref(true);
@@ -282,7 +397,8 @@
     eventBus.on('carregando', handleCarregando);
 
     await featuresStore.carregar();
-    await consultarVersao();
+    await consultarCompilacao();
+    versaoStore.carregar();
 
     if (featuresStore.iis) {
       await carregarSitesParaDeploy();

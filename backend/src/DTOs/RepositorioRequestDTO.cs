@@ -34,7 +34,9 @@ namespace ProjectManagerWeb.src.DTOs
         string? CliComandoComplementar = null,
         List<CodigoTarefaDTO>? CodigosTarefa = null,
         string? UrlBaseGestorTarefas = null,
-        string? PastaCentralizadora = null
+        string? PastaCentralizadora = null,
+        string? CaminhoChaveSSH = null,
+        string? GitHubToken = null
     );
 
     /// <summary>

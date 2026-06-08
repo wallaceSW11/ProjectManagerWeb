@@ -10,13 +10,13 @@ public class CloneController(CloneService cloneService, PastaService pastaServic
 {
 
     [HttpGet("verificar-branch")]
-    public async Task<IActionResult> VerificarBranch([FromQuery] string url, [FromQuery] string branch)
+    public async Task<IActionResult> VerificarBranch([FromQuery] string url, [FromQuery] string branch, [FromQuery] string? caminhoChaveSSH = null)
     {
         if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(branch))
             return BadRequest("URL e branch são obrigatórios.");
 
-        var existe = await cloneService.VerificarBranchExisteAsync(url, branch);
-        return Ok(new { existe });
+        var (existe, erro) = await cloneService.VerificarBranchExisteAsync(url, branch, caminhoChaveSSH);
+        return Ok(new { existe, erro });
     }
 
     [HttpPost]

@@ -1,32 +1,32 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
-using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Services;
 
 namespace ProjectManagerWeb.src.Controllers;
 
 [ApiController]
 [Route("api/versao")]
-public class VersaoController() : ControllerBase
+public class VersaoController(VersaoService versaoService) : ControllerBase
 {
-
     [HttpGet]
-    public IActionResult Versao()
+    public async Task<IActionResult> Versao() =>
+        Ok(await versaoService.ObterVersaoAsync());
+
+    [HttpGet("compilacao")]
+    public IActionResult Compilacao()
     {
-        var service = new InformacaoBuildService();
-        DateTime dataCompilacao = service.ObterDataCompilacao();
-        return Ok(dataCompilacao.ToString("dd/MM/yyyy HH:mm:ss"));
+        var assembly = Assembly.GetExecutingAssembly();
+        var data = System.IO.File.GetLastWriteTime(assembly.Location);
+        return Ok(data.ToString("dd/MM/yyyy HH:mm:ss"));
     }
 
     [HttpGet("features")]
-    public IActionResult Features()
-    {
-        return Ok(new
+    public IActionResult Features() =>
+        Ok(new
         {
             Iis = OperatingSystem.IsWindows(),
             Deploy = OperatingSystem.IsWindows(),
             TerminalProfiles = true,
             Os = OperatingSystem.IsWindows() ? "windows" : "linux"
         });
-    }
 }

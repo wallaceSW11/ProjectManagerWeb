@@ -66,6 +66,7 @@ export interface ICodigoTarefa {
   habilitarTipos: boolean;
   tiposHabilitados: string[];
   pastaCentralizadora?: string | null;
+  usarTarefaComoBranch: boolean;
 }
 
 export interface IRepositorio {
@@ -89,6 +90,8 @@ export interface IRepositorio {
   branchBase?: string | null;
   urlBaseGestorTarefas?: string | null;
   pastaCentralizadora?: string | null;
+  caminhoChaveSSH?: string | null;
+  githubToken?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {
@@ -131,6 +134,7 @@ export interface IPasta {
   nomeCli?: string | null;
   nomeAba?: string | null;
   urlBaseGestorTarefas?: string | null;
+  githubToken?: string | null;
 }
 
 export interface IClone {

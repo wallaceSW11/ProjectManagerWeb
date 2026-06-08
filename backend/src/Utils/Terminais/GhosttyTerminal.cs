@@ -11,7 +11,7 @@ public class GhosttyTerminal : ITerminalEmulator
         Process.Start(new ProcessStartInfo
         {
             FileName = "ghostty",
-            Arguments = $"-e bash -l -i -c \"trap '' INT; {EscapeBash(trimmed)}; exec bash\"",
+            Arguments = $"-e bash -l -i -c \"{EscapeBash(trimmed)}; exec bash\"",
             UseShellExecute = false
         });
     }

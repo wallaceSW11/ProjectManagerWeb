@@ -1,5 +1,12 @@
 import BaseApiService from './BaseApiService';
 
+export interface VersaoResponse {
+  versaoAtual: string;
+  versaoNova: string | null;
+  urlRelease: string | null;
+  urlDownload: string | null;
+}
+
 export interface FeaturesResponse {
   iis: boolean;
   deploy: boolean;
@@ -8,8 +15,12 @@ export interface FeaturesResponse {
 }
 
 class VersaoService extends BaseApiService {
-  async obterVersao(): Promise<string> {
-    return await this.get<string>('versao');
+  async obterVersao(): Promise<VersaoResponse> {
+    return await this.get<VersaoResponse>('versao');
+  }
+
+  async obterCompilacao(): Promise<string> {
+    return await this.get<string>('versao/compilacao');
   }
 
   async obterFeatures(): Promise<FeaturesResponse> {

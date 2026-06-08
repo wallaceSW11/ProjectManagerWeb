@@ -11,16 +11,24 @@
           ref="formClone"
           autocomplete="off"
         >
-          <v-text-field
-            ref="campoCodigoTarefa"
-            label="Código da tarefa"
-            v-model.uppercase="codigoTarefaInput"
-            class="uppercase-input"
-            :rules="obrigatorio"
-            autocomplete="off"
-            name="pmw-clone-codigo"
-            @blur="processarCodigoTarefa"
-          />
+          <div class="d-flex align-center gap-1">
+            <v-text-field
+              ref="campoCodigoTarefa"
+              label="Código da tarefa"
+              v-model.uppercase="codigoTarefaInput"
+              class="uppercase-input flex-grow-1"
+              :rules="obrigatorio"
+              autocomplete="off"
+              name="pmw-clone-codigo"
+              @blur="processarCodigoTarefa"
+              @paste="aoColar"
+            />
+            <IconeComTooltip
+              icone="mdi-clipboard-outline"
+              texto="Colar da área de transferência"
+              :acao="colarDoClipboard"
+            />
+          </div>
 
           <v-text-field
             ref="campoDescricao"
@@ -134,6 +142,7 @@
   import { notificar, atualizarListaPastas } from '@/utils/eventBus';
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
   import SelectBranch from '@/components/comum/SelectBranch.vue';
+  import IconeComTooltip from '@/components/comum/botao/IconeComTooltip.vue';
 
   const CHAVE_ULTIMO_REPOSITORIO = 'pmw_ultimo_repositorio_selecionado';
   const CHAVE_BRANCH_BASE_PREFIXO = 'pmw_branch_base_';
@@ -208,30 +217,60 @@
       if (branchSalva && !clone.branch) clone.branch = branchSalva;
     }
 
-    const texto = await lerClipboard();
-    const padrao = /^[A-Za-z]+\d+$/;
-    if (padrao.test(texto.trim())) {
-      codigoTarefaInput.value = texto.trim().toUpperCase();
-      await processarCodigoTarefa();
-      await nextTick();
-      campoDescricao.value?.focus();
-    } else {
-      await nextTick();
-      campoCodigoTarefa.value?.focus();
+    await nextTick();
+    campoCodigoTarefa.value?.focus();
+
+    try {
+      const texto = await navigator.clipboard.readText();
+      const padrao = /^[A-Za-z]+\d+$/;
+      if (padrao.test(texto.trim())) {
+        codigoTarefaInput.value = texto.trim().toUpperCase();
+        await processarCodigoTarefa();
+        await nextTick();
+        campoDescricao.value?.focus();
+      }
+    } catch {
+      // Clipboard API sem permissão — usuário cola manualmente com Ctrl+V
     }
   });
+
+  const aoColar = async (event: ClipboardEvent) => {
+    const texto = event.clipboardData?.getData('text') || '';
+    const padrao = /^[A-Za-z]+\d+$/;
+    if (!padrao.test(texto.trim())) return;
+
+    event.preventDefault();
+    codigoTarefaInput.value = texto.trim().toUpperCase();
+    await processarCodigoTarefa();
+    await nextTick();
+    campoDescricao.value?.focus();
+  };
+
+  const colarDoClipboard = async () => {
+    try {
+      let texto = '';
+      if (navigator.clipboard) {
+        texto = await navigator.clipboard.readText();
+      }
+      const padrao = /^[A-Za-z]+\d+$/;
+      if (padrao.test(texto.trim())) {
+        codigoTarefaInput.value = texto.trim().toUpperCase();
+        await processarCodigoTarefa();
+        await nextTick();
+        campoDescricao.value?.focus();
+        return;
+      }
+    } catch {
+      // clipboard sem permissão
+    }
+    await nextTick();
+    campoCodigoTarefa.value?.focus();
+    notificar('aviso', 'Use Ctrl+V para colar o código da tarefa');
+  };
 
   function extrairIniciais(codigo: string): string {
     const match = codigo.match(/^([A-Za-z]+)/);
     return match ? match[1].toUpperCase() : '';
-  }
-
-  async function lerClipboard(): Promise<string> {
-    try {
-      return await navigator.clipboard.readText();
-    } catch {
-      return '';
-    }
   }
 
   async function processarCodigoTarefa(): Promise<void> {
@@ -258,8 +297,12 @@
         ? `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}${pastaCentralizadora}${featuresStore.pathSeparator}`
         : `${configuracaoStore.diretorioRaiz}${featuresStore.pathSeparator}`;
 
-      clone.branch =
-        repositorio.branchBase || codigoTarefa.branchPrincipal || clone.branch;
+      if (codigoTarefa.usarTarefaComoBranch) clone.branch = codigo;
+      else
+        clone.branch =
+          repositorio.branchBase ||
+          codigoTarefa.branchPrincipal ||
+          clone.branch;
 
       if (clone.branch) {
         salvarBranchNoLocalStorage(clone.branch);
@@ -298,9 +341,16 @@
     validandoBranch.value = true;
     try {
       const url = clone.repositorio.url ?? '';
-      const existe = await CloneService.verificarBranch(url, clone.branch);
+      const caminhoChaveSSH = clone.repositorio.caminhoChaveSSH;
+      const { existe, erro } = await CloneService.verificarBranch(
+        url,
+        clone.branch,
+        caminhoChaveSSH
+      );
       branchInvalida.value = !existe;
-      hintBranch.value = existe ? '' : 'Branch não encontrada no remote';
+      if (existe) hintBranch.value = '';
+      else if (erro) hintBranch.value = `Branch não encontrada: ${erro}`;
+      else hintBranch.value = 'Branch não encontrada no remote';
     } catch {
       branchInvalida.value = false;
       hintBranch.value = '';

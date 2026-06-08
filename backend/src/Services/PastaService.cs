@@ -217,7 +217,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
                 ? configuracao.CLIs?.FirstOrDefault(c => c.Comando.Equals(repositorio.CliComando, StringComparison.OrdinalIgnoreCase))?.Nome
                 : null,
               nomeAba,
-              repositorio.UrlBaseGestorTarefas
+              repositorio.UrlBaseGestorTarefas,
+              repositorio.GitHubToken
             );
 
             pastaResponseList.Add(pastaResponse);

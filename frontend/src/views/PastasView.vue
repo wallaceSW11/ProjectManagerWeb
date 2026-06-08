@@ -397,7 +397,14 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, ref, triggerRef, watch } from 'vue';
+  import {
+    computed,
+    onMounted,
+    onUnmounted,
+    ref,
+    triggerRef,
+    watch
+  } from 'vue';
   import type {
     IPasta,
     IProjeto,
@@ -1081,7 +1088,8 @@
       const comando = `cd "${diretorio}"; ${comandoCli}`;
       ComandosService.executarComandoAvulso({
         comando,
-        perfilTerminal: pasta.perfilTerminal
+        perfilTerminal: pasta.perfilTerminal,
+        githubToken: pasta.githubToken
       });
       notificar('sucesso', `Abrindo ${comandoCli}`);
     } catch (error) {

@@ -5,9 +5,43 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump version
+        id: bump
+        run: |
+          VERSAO_ATUAL=$(jq -r '.version' frontend/package.json)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSAO_ATUAL"
+          NOVA_VERSAO="$MAJOR.$MINOR.$((PATCH + 1))"
+          echo "version=$NOVA_VERSAO" >> "$GITHUB_OUTPUT"
+
+          jq ".version = \"$NOVA_VERSAO\"" frontend/package.json > frontend/package.json.tmp
+          mv frontend/package.json.tmp frontend/package.json
+
+          sed -i "s/<Version>[0-9.]*<\/Version>/<Version>$NOVA_VERSAO<\/Version>/" backend/ProjectManagerWeb.csproj
+
+          git config user.name "PMW CI"
+          git config user.email "ci@pmw.local"
+          git add frontend/package.json backend/ProjectManagerWeb.csproj
+          git commit -m "chore(release): bump version to $NOVA_VERSAO"
+          git push
+
   build-frontend:
     runs-on: ubuntu-latest
+    needs: bump-version
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,12 +73,12 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: build-frontend
-    permissions:
-      contents: write
+    needs: [bump-version, build-frontend]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -75,23 +109,19 @@ jobs:
           cp -r infra publish-linux/
           cp -r infra publish-win/
 
-      - name: Gerar versão
-        id: versao
-        run: echo "VERSAO=v$(date -u +'%Y.%m.%d.%H%M')" >> "$GITHUB_OUTPUT"
-
       - name: Compactar artefatos
         run: |
-          cd publish-win && zip -r ../PMW_Windows_${{ steps.versao.outputs.VERSAO }}.zip .
-          cd ../publish-linux && zip -r ../PMW_Linux_${{ steps.versao.outputs.VERSAO }}.zip .
+          cd publish-win && zip -r ../PMW_Windows_${{ needs.bump-version.outputs.version }}.zip .
+          cd ../publish-linux && zip -r ../PMW_Linux_${{ needs.bump-version.outputs.version }}.zip .
 
       - name: Criar Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.versao.outputs.VERSAO }}
-          name: PMW ${{ steps.versao.outputs.VERSAO }}
+          tag_name: v${{ needs.bump-version.outputs.version }}
+          name: PMW v${{ needs.bump-version.outputs.version }}
           files: |
-            PMW_Windows_${{ steps.versao.outputs.VERSAO }}.zip
-            PMW_Linux_${{ steps.versao.outputs.VERSAO }}.zip
+            PMW_Windows_${{ needs.bump-version.outputs.version }}.zip
+            PMW_Linux_${{ needs.bump-version.outputs.version }}.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
