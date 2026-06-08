@@ -41,7 +41,11 @@ git commit -m "tipo(escopo): descrição"
 git push origin <branch-atual>
 ```
 
-### 4. Criar PR
+### 4. Se não houver commits a enviar (working tree limpo e up-to-date)
+
+Pular direto para o passo 5. Usar `git log main..HEAD` para obter os commits e `git diff --stat main..HEAD` para o resumo dos arquivos modificados. Extrair o tipo/escopo do commit mais recente para o título do PR.
+
+### 5. Criar PR
 
 Usar `gh pr create` com o template abaixo. Extrair informações do `git log` e do contexto.
 

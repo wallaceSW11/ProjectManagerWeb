@@ -267,7 +267,7 @@
               </v-list-item-title>
             </v-list-item>
 
-            <v-list-item @click="versaoStore.verificarAtualizacao()">
+            <v-list-item @click="verificarAtualizacaoManual">
               <v-list-item-title class="text-body-2">
                 <v-icon
                   size="small"
@@ -301,7 +301,7 @@
   import ComandosService from '@/services/ComandosService';
   import SnackbarNotificacao from '@/components/comum/SnackbarNotificacao.vue';
   import CloneGit from '@/components/clone/CloneGit.vue';
-  import eventBus, { carregandoAsync } from '@/utils/eventBus';
+  import eventBus, { carregandoAsync, notificar } from '@/utils/eventBus';
   import SitesGerenciamento from '@/components/sites/SitesGerenciamento.vue';
   import { UX_CONFIG } from '@/constants/geral-constants';
   import { useSiteIISStore } from '@/stores/siteIIS';
@@ -364,6 +364,16 @@
 
   const atualizarAgora = () => {
     ComandosService.executarComandoAvulso({ comando: 'pmw update' });
+  };
+
+  const verificarAtualizacaoManual = async () => {
+    await versaoStore.verificarAtualizacao();
+    if (versaoStore.erro)
+      notificar('erro', 'Falha ao verificar atualizações', versaoStore.erro);
+    else if (versaoStore.temAtualizacao)
+      notificar('sucesso', 'Nova versão disponível', versaoStore.versaoNova!);
+    else
+      notificar('sucesso', 'Você está na versão mais recente');
   };
 
   const exibirCarregando = ref(true);
