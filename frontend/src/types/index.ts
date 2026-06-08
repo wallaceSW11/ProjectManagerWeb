@@ -91,6 +91,7 @@ export interface IRepositorio {
   urlBaseGestorTarefas?: string | null;
   pastaCentralizadora?: string | null;
   caminhoChaveSSH?: string | null;
+  githubToken?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {
@@ -133,6 +134,7 @@ export interface IPasta {
   nomeCli?: string | null;
   nomeAba?: string | null;
   urlBaseGestorTarefas?: string | null;
+  githubToken?: string | null;
 }
 
 export interface IClone {

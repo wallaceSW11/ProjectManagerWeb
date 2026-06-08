@@ -1088,7 +1088,8 @@
       const comando = `cd "${diretorio}"; ${comandoCli}`;
       ComandosService.executarComandoAvulso({
         comando,
-        perfilTerminal: pasta.perfilTerminal
+        perfilTerminal: pasta.perfilTerminal,
+        githubToken: pasta.githubToken
       });
       notificar('sucesso', `Abrindo ${comandoCli}`);
     } catch (error) {

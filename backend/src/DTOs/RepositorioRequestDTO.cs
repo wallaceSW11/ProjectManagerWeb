@@ -35,7 +35,8 @@ namespace ProjectManagerWeb.src.DTOs
         List<CodigoTarefaDTO>? CodigosTarefa = null,
         string? UrlBaseGestorTarefas = null,
         string? PastaCentralizadora = null,
-        string? CaminhoChaveSSH = null
+        string? CaminhoChaveSSH = null,
+        string? GitHubToken = null
     );
 
     /// <summary>

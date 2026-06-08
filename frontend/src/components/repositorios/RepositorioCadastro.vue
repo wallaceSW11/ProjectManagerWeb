@@ -77,6 +77,19 @@
 
       <v-col cols="12">
         <v-text-field
+          label="Token GitHub"
+          v-model="repositorio.githubToken"
+          type="password"
+          hint="Usado pelo gh CLI nos comandos deste repositório. Deixe vazio para usar a auth padrão."
+          persistent-hint
+          clearable
+          autocomplete="off"
+          name="pmw-github-token"
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <v-text-field
           label="Cor"
           v-model="repositorio.cor"
           type="color"

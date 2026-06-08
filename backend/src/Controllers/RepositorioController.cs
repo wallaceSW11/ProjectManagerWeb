@@ -107,7 +107,8 @@ namespace ProjectManagerWeb.src.Controllers
                         repo.CliComandoComplementar,
                         repo.PastaCentralizadora,
                         repo.UrlBaseGestorTarefas,
-                        repo.CaminhoChaveSSH
+                        repo.CaminhoChaveSSH,
+                        repo.GitHubToken
                     }
                 });
             }

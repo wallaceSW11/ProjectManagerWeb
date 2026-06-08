@@ -12,15 +12,17 @@ public class ShellExecute
     public static void Configure(IShellProvider provider) =>
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
-    public static void ExecutarComando(string command, string? perfilTerminal = null)
+    public static void ExecutarComando(string command, string? perfilTerminal = null, string? githubToken = null)
     {
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
-        if (command.Contains("Exit;", StringComparison.OrdinalIgnoreCase))
-            ExecutarComandoSemInterface(command);
+        var comandoFinal = InjetarToken(command, githubToken);
+
+        if (comandoFinal.Contains("Exit;", StringComparison.OrdinalIgnoreCase))
+            ExecutarComandoSemInterface(comandoFinal);
         else
-            ExecutarComandoComInterface(command, perfilTerminal);
+            ExecutarComandoComInterface(comandoFinal, perfilTerminal);
     }
 
     public static void ExecutarComandoComInterface(string command, string? perfilTerminal = null)
@@ -75,6 +77,17 @@ public class ShellExecute
             LogComando(command, $"ERRO: {ex.Message}");
             throw new Exception($"Erro ao executar o comando: {ex.Message}", ex);
         }
+    }
+
+    private static string InjetarToken(string command, string? githubToken)
+    {
+        if (string.IsNullOrWhiteSpace(githubToken)) return command;
+
+        var prefix = OperatingSystem.IsWindows()
+            ? $"$env:GH_TOKEN=\"{githubToken}\"; "
+            : $"export GH_TOKEN=\"{githubToken}\"; ";
+
+        return prefix + command;
     }
 
     public static void LogComando(string command, string status = "SOLICITADO", string? perfilTerminal = null)

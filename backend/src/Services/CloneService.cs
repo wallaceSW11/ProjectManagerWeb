@@ -75,12 +75,16 @@ public class CloneService
             branchPrincipal = await DetectarBranchPrincipalAsync(gitPrincipal.Url!, gitPrincipal.CaminhoChaveSSH);
         }
 
+        var tokenExport = string.IsNullOrEmpty(gitPrincipal.GitHubToken)
+            ? string.Empty
+            : $"export GH_TOKEN=\"{gitPrincipal.GitHubToken}\"; ";
+
         var sshExport = string.IsNullOrEmpty(gitPrincipal.CaminhoChaveSSH)
             ? string.Empty
             : $"export GIT_SSH_COMMAND=\"ssh -i {gitPrincipal.CaminhoChaveSSH}\"; ";
 
-        var scriptPrincipal = sshExport + MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal);
-        ShellExecute.ExecutarComando(scriptPrincipal);
+        var scriptPrincipal = tokenExport + sshExport + MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal);
+        ShellExecute.ExecutarComando(scriptPrincipal, githubToken: gitPrincipal.GitHubToken);
 
         if (clone.BaixarAgregados)
         {
@@ -88,6 +92,10 @@ public class CloneService
             {
                 var agregado = await _repositorioJson.GetByIdAsync(identificadorAgregado);
                 if (agregado is null) return;
+
+                var tokenExportAgregado = string.IsNullOrEmpty(agregado.GitHubToken)
+                    ? string.Empty
+                    : $"export GH_TOKEN=\"{agregado.GitHubToken}\"; ";
 
                 var sshExportAgregado = string.IsNullOrEmpty(agregado.CaminhoChaveSSH)
                     ? string.Empty
@@ -119,8 +127,8 @@ public class CloneService
                 else
                     cloneAgregado = clone;
 
-                var scriptAgregado = sshExportAgregado + MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado);
-                ShellExecute.ExecutarComando(scriptAgregado);
+                var scriptAgregado = tokenExportAgregado + sshExportAgregado + MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado);
+                ShellExecute.ExecutarComando(scriptAgregado, githubToken: agregado.GitHubToken);
             });
         }
 

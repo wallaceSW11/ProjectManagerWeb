@@ -113,7 +113,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
         try
         {
-            comandos.ForEach(c => ShellExecute.ExecutarComando(c.Comando, c.Perfil));
+            comandos.ForEach(c => ShellExecute.ExecutarComando(c.Comando, c.Perfil, repositorio.GitHubToken));
         }
         catch
         {
@@ -127,11 +127,11 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
         return true;
     }
 
-    public bool ExecutarComandoAvulso(string comando, string? perfilTerminal = null)
+    public bool ExecutarComandoAvulso(string comando, string? perfilTerminal = null, string? githubToken = null)
     {
         try
         {
-            ShellExecute.ExecutarComando(comando, perfilTerminal);
+            ShellExecute.ExecutarComando(comando, perfilTerminal, githubToken);
         }
         catch
         {
@@ -199,7 +199,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
         {
             try
             {
-                ShellExecute.ExecutarComando(c);
+                ShellExecute.ExecutarComando(c, githubToken: repositorio.GitHubToken);
                 ShellExecute.LogComando(c, "OK");
             }
             catch (Exception ex)

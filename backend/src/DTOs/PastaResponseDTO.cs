@@ -28,7 +28,8 @@ public sealed record PastaResponseDTO(
     string? CliComandoComplementar = null,
     string? NomeCli = null,
     string? NomeAba = null,
-    string? UrlBaseGestorTarefas = null
+    string? UrlBaseGestorTarefas = null,
+    string? GitHubToken = null
 );
 
 public sealed record ProjetoDisponivelDTO(
