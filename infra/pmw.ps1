@@ -4,6 +4,7 @@
 # Diretórios:
 #   C:\inetpub\wwwroot\PMW → aplicação (default)
 #   C:\inetpub\wwwroot\PMW-Tools → scripts de infra (pmw.ps1)
+#   C:\inetpub\wwwroot\PMW-Bkps → backups de atualização
 # ============================================================
 
 param(
@@ -119,6 +120,10 @@ function Install-PMW {
 
     if (-not (Test-Path $PMW_TOOLS)) { New-Item -ItemType Directory -Path $PMW_TOOLS -Force | Out-Null }
 
+    $pastaPai = Split-Path $dir -Parent
+    $pmwBkps = Join-Path $pastaPai "PMW-Bkps"
+    if (-not (Test-Path $pmwBkps)) { New-Item -ItemType Directory -Path $pmwBkps -Force | Out-Null }
+
     # Copia scripts de infra para PMW_TOOLS
     $infraDir = Join-Path $dir "infra"
     if (-not (Test-Path $infraDir)) {
@@ -144,6 +149,7 @@ function Install-PMW {
     Write-Host ""
     Write-Host "✅ PMW instalado em $dir" -ForegroundColor Green
     Write-Host "   Scripts de infra em $PMW_TOOLS"
+    Write-Host "   Backups em $pmwBkps"
     Write-Host ""
     Write-Host "   Use 'pmw start' para iniciar."
     Write-Host "   Ou: powershell -File ""$PMW_TOOLS\pmw.ps1"" start"
@@ -165,13 +171,27 @@ function Update-PMW {
 
     # Backup com data/hora
     $dataHora = Get-Date -Format "yyyyMMdd_HHmmss"
-    $nomeDir = Split-Path $dir -Leaf
-    $backupDir = "C:\PMW-backup-$nomeDir-$dataHora"
+    $pastaPai = Split-Path $dir -Parent
+    $pmwBkps = Join-Path $pastaPai "PMW-Bkps"
+    if (-not (Test-Path $pmwBkps)) { New-Item -ItemType Directory -Path $pmwBkps -Force | Out-Null }
+    $backupDir = Join-Path $pmwBkps $dataHora
+    $appBkp = Join-Path $backupDir "app"
+    $bancoBkp = Join-Path $backupDir "banco"
+
     if (Test-Path $dir) {
-        Write-Host "   Criando backup em $backupDir ..."
-        Copy-Item -Path $dir -Destination $backupDir -Recurse -Force
-        Write-Host "   Backup concluído."
+        Write-Host "   Criando backup da aplicação em $appBkp ..."
+        New-Item -ItemType Directory -Path $appBkp -Force | Out-Null
+        Copy-Item -Path "$dir\*" -Destination $appBkp -Recurse -Force
     }
+
+    $bancoOrigem = Join-Path $env:APPDATA "PMW\Banco"
+    if (Test-Path $bancoOrigem) {
+        Write-Host "   Criando backup do banco em $bancoBkp ..."
+        New-Item -ItemType Directory -Path $bancoBkp -Force | Out-Null
+        Copy-Item -Path "$bancoOrigem\*" -Destination $bancoBkp -Recurse -Force
+    }
+
+    Write-Host "   Backup concluído em $backupDir"
 
     # Buscar último release
     $apiUrl = "https://api.github.com/repos/$REPO/releases/latest"
