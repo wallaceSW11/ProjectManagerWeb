@@ -3,10 +3,12 @@
 # Diretórios:
 #   /opt/pmw          → aplicação (backup + frontend + dlls)
 #   /opt/pmw-tools    → scripts de infra (pmw.sh, pmw.service)
+#   /opt/pmw-bkps     → backups de atualização
 #   O script em /opt/pmw-tools/pmw.sh gerencia a aplicação em /opt/pmw
 
 PMW_DIR="/opt/pmw"
 PMW_TOOLS="/opt/pmw-tools"
+PMW_BKPS="/opt/pmw-bkps"
 SERVICE_NAME="pmw"
 
 case "$1" in
@@ -44,6 +46,10 @@ case "$1" in
     sudo mkdir -p "$PMW_TOOLS"
     sudo chown "$USER:$USER" "$PMW_TOOLS"
 
+    # Cria diretório de backups
+    sudo mkdir -p "$PMW_BKPS"
+    sudo chown "$USER:$USER" "$PMW_BKPS"
+
     # Copia scripts de infra para PMW_TOOLS
     SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
     cp "$SCRIPT_DIR/pmw.service" "$PMW_TOOLS/"
@@ -63,6 +69,7 @@ case "$1" in
 
     echo "PMW instalado em $PMW_DIR"
     echo "Scripts de infra em $PMW_TOOLS"
+    echo "Backups em $PMW_BKPS"
     echo "Use 'pmw start' para iniciar."
     ;;
 
@@ -74,12 +81,30 @@ case "$1" in
 
     # Backup da instalação atual com data e hora
     DATA_HORA=$(date +"%Y%m%d_%H%M%S")
-    BACKUP_DIR="/opt/pmw-backup-$DATA_HORA"
+    BACKUP_DIR="$PMW_BKPS/$DATA_HORA"
+    APP_BKP="$BACKUP_DIR/app"
+    BANCO_BKP="$BACKUP_DIR/banco"
+
     if [ -d "$PMW_DIR" ]; then
-      echo "Criando backup em $BACKUP_DIR ..."
-      cp -a "$PMW_DIR" "$BACKUP_DIR"
-      echo "Backup concluído."
+      echo "Criando backup da aplicação em $APP_BKP ..."
+      mkdir -p "$APP_BKP"
+      cp -a "$PMW_DIR/." "$APP_BKP/"
     fi
+
+    BANCO_ORIGEM=""
+    if [ -d "$HOME/.config/PMW/Banco" ]; then
+      BANCO_ORIGEM="$HOME/.config/PMW/Banco"
+    elif [ -d "$HOME/.local/share/PMW/Banco" ]; then
+      BANCO_ORIGEM="$HOME/.local/share/PMW/Banco"
+    fi
+
+    if [ -n "$BANCO_ORIGEM" ] && [ -d "$BANCO_ORIGEM" ]; then
+      echo "Criando backup do banco em $BANCO_BKP ..."
+      mkdir -p "$BANCO_BKP"
+      cp -a "$BANCO_ORIGEM/." "$BANCO_BKP/"
+    fi
+
+    echo "Backup concluído em $BACKUP_DIR"
 
     # Obtém URL do último release do GitHub
     REPO_URL="wallaceSW11/ProjectManagerWeb"

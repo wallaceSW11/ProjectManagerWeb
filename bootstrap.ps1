@@ -9,11 +9,13 @@ param(
     [string]$Pasta = "C:\inetpub\wwwroot\PMW"
 )
 
-$Repo     = "wallaceSW11/ProjectManagerWeb"
-$PMW_TOOLS = "C:\inetpub\wwwroot\PMW-Tools"
-$ApiUrl   = "https://api.github.com/repos/$Repo/releases/latest"
-$TempZip  = "$env:TEMP\PMW_install.zip"
-$TempDir  = "$env:TEMP\PMW_install"
+$Repo       = "wallaceSW11/ProjectManagerWeb"
+$PastaPai   = Split-Path $Pasta -Parent
+$PMW_TOOLS  = Join-Path $PastaPai "PMW-Tools"
+$PMW_BKPS   = Join-Path $PastaPai "PMW-Bkps"
+$ApiUrl     = "https://api.github.com/repos/$Repo/releases/latest"
+$TempZip    = "$env:TEMP\PMW_install.zip"
+$TempDir    = "$env:TEMP\PMW_install"
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
@@ -86,11 +88,23 @@ if ($instalacaoExistente) {
 
     # Backup com data/hora
     $dataHora = Get-Date -Format "yyyyMMdd_HHmmss"
-    $nomeDir = Split-Path $Pasta -Leaf
-    $backupDir = "C:\PMW-backup-$nomeDir-$dataHora"
-    Write-Host "Criando backup em $backupDir ..." -ForegroundColor Yellow
-    Copy-Item -Path $Pasta -Destination $backupDir -Recurse -Force
-    Write-Host "Backup concluído."
+    if (-not (Test-Path $PMW_BKPS)) { New-Item -ItemType Directory -Path $PMW_BKPS -Force | Out-Null }
+    $backupDir = Join-Path $PMW_BKPS $dataHora
+    $appBkp = Join-Path $backupDir "app"
+    $bancoBkp = Join-Path $backupDir "banco"
+
+    Write-Host "Criando backup da aplicação em $appBkp ..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Path $appBkp -Force | Out-Null
+    Copy-Item -Path "$Pasta\*" -Destination $appBkp -Recurse -Force
+
+    $bancoOrigem = Join-Path $env:APPDATA "PMW\Banco"
+    if (Test-Path $bancoOrigem) {
+        Write-Host "Criando backup do banco em $bancoBkp ..." -ForegroundColor Yellow
+        New-Item -ItemType Directory -Path $bancoBkp -Force | Out-Null
+        Copy-Item -Path "$bancoOrigem\*" -Destination $bancoBkp -Recurse -Force
+    }
+
+    Write-Host "Backup concluído em $backupDir" -ForegroundColor Green
     Write-Host ""
 }
 
@@ -157,6 +171,8 @@ Write-Host ""
 # ------------------------------------------------------------------
 Write-Host "Configurando infraestrutura..." -ForegroundColor Yellow
 
+if (-not (Test-Path $PMW_BKPS)) { New-Item -ItemType Directory -Path $PMW_BKPS -Force | Out-Null }
+
 $infraScript = Join-Path $Pasta "infra\pmw.ps1"
 
 if (-not (Test-Path $infraScript)) {
@@ -195,6 +211,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "   Aplicação:  $Pasta" -ForegroundColor White
 Write-Host "   Scripts:    $PMW_TOOLS" -ForegroundColor White
+Write-Host "   Backups:    $PMW_BKPS" -ForegroundColor White
 Write-Host "   Comando:    pmw" -ForegroundColor White
 Write-Host ""
 Write-Host "   Acesse: http://localhost:2025" -ForegroundColor Green

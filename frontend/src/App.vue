@@ -285,8 +285,6 @@
 
     <v-main>
       <router-view />
-
-      <div class="watermark-footer">Compilado em: {{ compiladoEm }}</div>
     </v-main>
   </v-app>
 
@@ -297,18 +295,16 @@
 <script setup>
   import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
   import logo from '@/assets/logo.svg';
-  import VersaoService from './services/VersaoService';
   import ComandosService from '@/services/ComandosService';
   import SnackbarNotificacao from '@/components/comum/SnackbarNotificacao.vue';
   import CloneGit from '@/components/clone/CloneGit.vue';
-  import eventBus, { carregandoAsync, notificar } from '@/utils/eventBus';
+  import eventBus, { notificar } from '@/utils/eventBus';
   import SitesGerenciamento from '@/components/sites/SitesGerenciamento.vue';
   import { UX_CONFIG } from '@/constants/geral-constants';
   import { useSiteIISStore } from '@/stores/siteIIS';
   import { useFeaturesStore } from '@/stores/features';
   import { useVersaoStore } from '@/stores/useVersaoStore';
 
-  const compiladoEm = ref();
   const exibirModalClone = ref(false);
   const exibirModalSites = ref(false);
 
@@ -349,19 +345,6 @@
     }
   };
 
-  const consultarCompilacao = async () => {
-    try {
-      const response = await carregandoAsync(async () => {
-        const res = await VersaoService.obterCompilacao();
-        return res;
-      }, 'Consultando a versão...');
-
-      compiladoEm.value = response;
-    } catch {
-      compiladoEm.value = 'desconhecida';
-    }
-  };
-
   const atualizarAgora = () => {
     ComandosService.executarComandoAvulso({ comando: 'pmw update' });
   };
@@ -371,9 +354,12 @@
     if (versaoStore.erro)
       notificar('erro', 'Falha ao verificar atualizações', versaoStore.erro);
     else if (versaoStore.temAtualizacao)
-      notificar('sucesso', 'Nova versão disponível', versaoStore.versaoNova ?? '');
-    else
-      notificar('sucesso', 'Você está na versão mais recente');
+      notificar(
+        'sucesso',
+        'Nova versão disponível',
+        versaoStore.versaoNova ?? ''
+      );
+    else notificar('sucesso', 'Você está na versão mais recente');
   };
 
   const exibirCarregando = ref(true);
@@ -407,7 +393,6 @@
     eventBus.on('carregando', handleCarregando);
 
     await featuresStore.carregar();
-    await consultarCompilacao();
     versaoStore.carregar();
 
     if (featuresStore.iis) {
@@ -429,19 +414,5 @@
 <style>
   .v-main {
     overflow: hidden;
-  }
-</style>
-
-<style scoped>
-  .watermark-footer {
-    position: fixed;
-    bottom: 8px;
-    left: 16px;
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.15);
-    pointer-events: none;
-    user-select: none;
-    font-weight: 300;
-    letter-spacing: 0.5px;
   }
 </style>

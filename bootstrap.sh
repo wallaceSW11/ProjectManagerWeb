@@ -8,6 +8,7 @@ set -e
 REPO="wallaceSW11/ProjectManagerWeb"
 PMW_DIR="/opt/pmw"
 PMW_TOOLS="/opt/pmw-tools"
+PMW_BKPS="/opt/pmw-bkps"
 
 echo "========================================"
 echo "  PMW - Project Manager Web"
@@ -96,6 +97,9 @@ rm -rf "$TMP_DIR"
 echo ""
 echo "🔧 Configurando infraestrutura..."
 
+sudo mkdir -p "$PMW_BKPS"
+sudo chown "$USER:$USER" "$PMW_BKPS"
+
 cd "$PMW_DIR"
 
 # Se não tiver a pasta infra no zip (release antigo), sai com instruções manuais
@@ -140,6 +144,7 @@ echo "========================================"
 echo ""
 echo "   📍 Aplicação:  $PMW_DIR"
 echo "   📍 Scripts:    $PMW_TOOLS"
+echo "   📍 Backups:    $PMW_BKPS"
 echo "   🔗 Comando:    pmw"
 echo ""
 echo "   Acesse: http://localhost:2025"

@@ -12,10 +12,13 @@ param(
     [string]$Pasta = "C:\inetpub\wwwroot\PMW"
 )
 
-$Repo     = "wallaceSW11/ProjectManagerWeb"
-$ApiUrl   = "https://api.github.com/repos/$Repo/releases/latest"
-$TempZip  = "$env:TEMP\PMW_update.zip"
-$TempDir  = "$env:TEMP\PMW_update"
+$Repo       = "wallaceSW11/ProjectManagerWeb"
+$PastaPai   = Split-Path $Pasta -Parent
+$PMW_TOOLS  = Join-Path $PastaPai "PMW-Tools"
+$PMW_BKPS   = Join-Path $PastaPai "PMW-Bkps"
+$ApiUrl     = "https://api.github.com/repos/$Repo/releases/latest"
+$TempZip    = "$env:TEMP\PMW_update.zip"
+$TempDir    = "$env:TEMP\PMW_update"
 
 Write-Host ""
 Write-Host "=== Atualizador PMW ===" -ForegroundColor Cyan
@@ -46,10 +49,23 @@ Write-Host ""
 # --- 2. Backup com data/hora ---
 if (Test-Path $Pasta) {
     $dataHora = Get-Date -Format "yyyyMMdd_HHmmss"
-    $backupDir = "C:\PMW-backup-$dataHora"
-    Write-Host "Criando backup em $backupDir ..." -ForegroundColor Yellow
-    Copy-Item -Path $Pasta -Destination $backupDir -Recurse -Force
-    Write-Host "Backup concluído."
+    if (-not (Test-Path $PMW_BKPS)) { New-Item -ItemType Directory -Path $PMW_BKPS -Force | Out-Null }
+    $backupDir = Join-Path $PMW_BKPS $dataHora
+    $appBkp = Join-Path $backupDir "app"
+    $bancoBkp = Join-Path $backupDir "banco"
+
+    Write-Host "Criando backup da aplicação em $appBkp ..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Path $appBkp -Force | Out-Null
+    Copy-Item -Path "$Pasta\*" -Destination $appBkp -Recurse -Force
+
+    $bancoOrigem = Join-Path $env:APPDATA "PMW\Banco"
+    if (Test-Path $bancoOrigem) {
+        Write-Host "Criando backup do banco em $bancoBkp ..." -ForegroundColor Yellow
+        New-Item -ItemType Directory -Path $bancoBkp -Force | Out-Null
+        Copy-Item -Path "$bancoOrigem\*" -Destination $bancoBkp -Recurse -Force
+    }
+
+    Write-Host "Backup concluído em $backupDir" -ForegroundColor Green
 }
 
 # --- 3. Parar processo ---
@@ -82,13 +98,12 @@ Get-ChildItem -Path $TempDir | Where-Object { $_.Name -ne "appsettings.json" } |
 # --- 7. Copiar infra para C:\inetpub\wwwroot\PMW-Tools (se existir no pacote) ---
 $infraDir = Join-Path $TempDir "infra"
 if (Test-Path $infraDir) {
-    $toolsDir = "C:\inetpub\wwwroot\PMW-Tools"
-    if (-not (Test-Path $toolsDir)) { New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null }
-    Copy-Item "$infraDir\pmw.ps1" $toolsDir -Force
-    Copy-Item "$infraDir\pmw-start.vbs" $toolsDir -Force
-    Copy-Item "$infraDir\pmw-start.bat" $toolsDir -Force
+    if (-not (Test-Path $PMW_TOOLS)) { New-Item -ItemType Directory -Path $PMW_TOOLS -Force | Out-Null }
+    Copy-Item "$infraDir\pmw.ps1" $PMW_TOOLS -Force
+    Copy-Item "$infraDir\pmw-start.vbs" $PMW_TOOLS -Force
+    Copy-Item "$infraDir\pmw-start.bat" $PMW_TOOLS -Force
     Remove-Item "$Pasta\infra" -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Host "Scripts de infra copiados para $toolsDir"
+    Write-Host "Scripts de infra copiados para $PMW_TOOLS"
 }
 
 # --- 8. Iniciar processo ---
@@ -113,5 +128,5 @@ Write-Host ""
 Write-Host "✅ PMW $versao instalado com sucesso em $Pasta" -ForegroundColor Green
 Write-Host ""
 Write-Host "Comandos:"
-Write-Host "  C:\inetpub\wwwroot\PMW-Tools\pmw.ps1 {start|stop|restart|status|update}"
-Write-Host "  (adicione C:\inetpub\wwwroot\PMW-Tools ao PATH para usar só 'pmw')"
+Write-Host "  $PMW_TOOLS\pmw.ps1 {start|stop|restart|status|update}"
+Write-Host "  (adicione $PMW_TOOLS ao PATH para usar só 'pmw')"
