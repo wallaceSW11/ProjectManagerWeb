@@ -17,9 +17,9 @@ public class CloneService
         _repositorioJson = repositorioJson;
     }
 
-    public async Task<(bool Existe, string? Erro)> VerificarBranchExisteAsync(string url, string branch)
+    public async Task<(bool Existe, string? Erro)> VerificarBranchExisteAsync(string url, string branch, string? caminhoChaveSSH = null)
     {
-        var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --heads \"{url}\" \"{branch}\"");
+        var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --heads \"{url}\" \"{branch}\"", caminhoChaveSSH);
 
         if (resultado.ExitCode != 0)
         {
@@ -32,9 +32,9 @@ public class CloneService
         return (!string.IsNullOrWhiteSpace(resultado.Output), null);
     }
 
-    public async Task<string> DetectarBranchPrincipalAsync(string url)
+    public async Task<string> DetectarBranchPrincipalAsync(string url, string? caminhoChaveSSH = null)
     {
-        var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --symref \"{url}\" HEAD");
+        var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --symref \"{url}\" HEAD", caminhoChaveSSH);
 
         if (resultado.ExitCode != 0) return string.Empty;
 
@@ -63,7 +63,7 @@ public class CloneService
         string branchPrincipal = string.Empty;
         if (!EhBranchBase(clone.Branch))
         {
-            var (existe, erro) = await VerificarBranchExisteAsync(gitPrincipal.Url!, clone.Branch);
+            var (existe, erro) = await VerificarBranchExisteAsync(gitPrincipal.Url!, clone.Branch, gitPrincipal.CaminhoChaveSSH);
             if (!existe)
             {
                 var mensagem = erro is not null
@@ -72,10 +72,14 @@ public class CloneService
                 throw new Exception(mensagem);
             }
 
-            branchPrincipal = await DetectarBranchPrincipalAsync(gitPrincipal.Url!);
+            branchPrincipal = await DetectarBranchPrincipalAsync(gitPrincipal.Url!, gitPrincipal.CaminhoChaveSSH);
         }
 
-        var scriptPrincipal = MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal);
+        var sshExport = string.IsNullOrEmpty(gitPrincipal.CaminhoChaveSSH)
+            ? string.Empty
+            : $"export GIT_SSH_COMMAND=\"ssh -i {gitPrincipal.CaminhoChaveSSH}\"; ";
+
+        var scriptPrincipal = sshExport + MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal);
         ShellExecute.ExecutarComando(scriptPrincipal);
 
         if (clone.BaixarAgregados)
@@ -85,21 +89,25 @@ public class CloneService
                 var agregado = await _repositorioJson.GetByIdAsync(identificadorAgregado);
                 if (agregado is null) return;
 
+                var sshExportAgregado = string.IsNullOrEmpty(agregado.CaminhoChaveSSH)
+                    ? string.Empty
+                    : $"export GIT_SSH_COMMAND=\"ssh -i {agregado.CaminhoChaveSSH}\"; ";
+
                 var branchPrincipalAgregado = string.Empty;
                 var branchNaoBaseAgregado = string.Empty;
                 var branchBaseAgregado = string.Empty;
 
                 if (!EhBranchBase(clone.Branch))
                 {
-                    var (existeNoAgregado, _) = await VerificarBranchExisteAsync(agregado.Url!, clone.Branch);
+                    var (existeNoAgregado, _) = await VerificarBranchExisteAsync(agregado.Url!, clone.Branch, agregado.CaminhoChaveSSH);
                     if (existeNoAgregado)
                     {
-                        branchPrincipalAgregado = await DetectarBranchPrincipalAsync(agregado.Url!);
+                        branchPrincipalAgregado = await DetectarBranchPrincipalAsync(agregado.Url!, agregado.CaminhoChaveSSH);
                         branchNaoBaseAgregado = clone.Branch;
                     }
                     else
                     {
-                        branchBaseAgregado = await DetectarBranchPrincipalAsync(agregado.Url!);
+                        branchBaseAgregado = await DetectarBranchPrincipalAsync(agregado.Url!, agregado.CaminhoChaveSSH);
                     }
                 }
 
@@ -111,7 +119,7 @@ public class CloneService
                 else
                     cloneAgregado = clone;
 
-                var scriptAgregado = MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado);
+                var scriptAgregado = sshExportAgregado + MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado);
                 ShellExecute.ExecutarComando(scriptAgregado);
             });
         }
@@ -154,19 +162,33 @@ public class CloneService
     private static bool EhBranchBase(string branch) =>
         branch is "develop" or "dev" or "main" or "master";
 
-    private static async Task<ComandoResultado> ExecutarComandoComRetornoAsync(string comando)
+    private static async Task<ComandoResultado> ExecutarComandoComRetornoAsync(string comando, string? caminhoChaveSSH = null)
     {
         var useShell = OperatingSystem.IsWindows();
 
         var psi = new ProcessStartInfo
         {
             FileName = useShell ? "git" : "bash",
-            Arguments = useShell ? comando["git ".Length..] : $"-l -c \"{comando.Replace("\"", "\\\"")}\"",
+            Arguments = useShell ? comando["git ".Length..] : $"-c \"{comando.Replace("\"", "\\\"")}\"",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true
         };
+
+        if (!string.IsNullOrEmpty(caminhoChaveSSH))
+            psi.EnvironmentVariables["GIT_SSH_COMMAND"] = $"ssh -i \"{caminhoChaveSSH}\"";
+
+        if (!useShell)
+        {
+            var sshSock = Environment.GetEnvironmentVariable("SSH_AUTH_SOCK");
+            if (!string.IsNullOrEmpty(sshSock))
+                psi.EnvironmentVariables["SSH_AUTH_SOCK"] = sshSock;
+
+            var sshPid = Environment.GetEnvironmentVariable("SSH_AGENT_PID");
+            if (!string.IsNullOrEmpty(sshPid))
+                psi.EnvironmentVariables["SSH_AGENT_PID"] = sshPid;
+        }
 
         using var processo = Process.Start(psi);
         if (processo is null) return new ComandoResultado(string.Empty, "Processo não iniciado", -1);
@@ -175,7 +197,16 @@ public class CloneService
         var error = await processo.StandardError.ReadToEndAsync();
         await processo.WaitForExitAsync();
 
-        return new ComandoResultado(output, error, processo.ExitCode);
+        return new ComandoResultado(output, FiltrarWarnings(error), processo.ExitCode);
+    }
+
+    private static string FiltrarWarnings(string stderr)
+    {
+        if (string.IsNullOrWhiteSpace(stderr)) return string.Empty;
+
+        var linhas = stderr.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var semWarnings = linhas.Where(l => !l.StartsWith("Environment variable $"));
+        return string.Join('\n', semWarnings);
     }
 
     private sealed record ComandoResultado(string Output, string Error, int ExitCode);

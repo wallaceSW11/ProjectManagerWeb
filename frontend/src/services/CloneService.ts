@@ -8,11 +8,13 @@ class CloneService extends BaseApiService {
 
   async verificarBranch(
     url: string,
-    branch: string
+    branch: string,
+    caminhoChaveSSH?: string | null
   ): Promise<{ existe: boolean; erro?: string }> {
-    return await this.get<{ existe: boolean; erro?: string }>(
-      `clones/verificar-branch?url=${encodeURIComponent(url)}&branch=${encodeURIComponent(branch)}`
-    );
+    var query = `clones/verificar-branch?url=${encodeURIComponent(url)}&branch=${encodeURIComponent(branch)}`;
+    if (caminhoChaveSSH)
+      query += `&caminhoChaveSSH=${encodeURIComponent(caminhoChaveSSH)}`;
+    return await this.get<{ existe: boolean; erro?: string }>(query);
   }
 }
 

@@ -248,17 +248,24 @@
 
   const colarDoClipboard = async () => {
     try {
-      const texto = await navigator.clipboard.readText();
+      let texto = '';
+      if (navigator.clipboard) {
+        texto = await navigator.clipboard.readText();
+      }
       const padrao = /^[A-Za-z]+\d+$/;
       if (padrao.test(texto.trim())) {
         codigoTarefaInput.value = texto.trim().toUpperCase();
         await processarCodigoTarefa();
         await nextTick();
         campoDescricao.value?.focus();
+        return;
       }
     } catch {
-      notificar('aviso', 'Não foi possível ler a área de transferência');
+      // clipboard sem permissão
     }
+    await nextTick();
+    campoCodigoTarefa.value?.focus();
+    notificar('aviso', 'Use Ctrl+V para colar o código da tarefa');
   };
 
   function extrairIniciais(codigo: string): string {
@@ -334,9 +341,11 @@
     validandoBranch.value = true;
     try {
       const url = clone.repositorio.url ?? '';
+      const caminhoChaveSSH = clone.repositorio.caminhoChaveSSH;
       const { existe, erro } = await CloneService.verificarBranch(
         url,
-        clone.branch
+        clone.branch,
+        caminhoChaveSSH
       );
       branchInvalida.value = !existe;
       if (existe) hintBranch.value = '';

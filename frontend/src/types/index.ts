@@ -90,6 +90,7 @@ export interface IRepositorio {
   branchBase?: string | null;
   urlBaseGestorTarefas?: string | null;
   pastaCentralizadora?: string | null;
+  caminhoChaveSSH?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {

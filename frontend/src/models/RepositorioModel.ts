@@ -30,6 +30,7 @@ export default class RepositorioModel implements IRepositorio {
   branchBase?: string | null;
   urlBaseGestorTarefas?: string | null;
   pastaCentralizadora?: string | null;
+  caminhoChaveSSH?: string | null;
 
   constructor(obj: Partial<IRepositorio> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -55,6 +56,7 @@ export default class RepositorioModel implements IRepositorio {
     this.branchBase = obj.branchBase || null;
     this.urlBaseGestorTarefas = obj.urlBaseGestorTarefas || null;
     this.pastaCentralizadora = obj.pastaCentralizadora || null;
+    this.caminhoChaveSSH = obj.caminhoChaveSSH || null;
   }
 
   toDTO() {
@@ -78,7 +80,8 @@ export default class RepositorioModel implements IRepositorio {
       cliComandoComplementar: this.cliComandoComplementar,
       branchBase: this.branchBase,
       urlBaseGestorTarefas: this.urlBaseGestorTarefas,
-      pastaCentralizadora: this.pastaCentralizadora
+      pastaCentralizadora: this.pastaCentralizadora,
+      caminhoChaveSSH: this.caminhoChaveSSH
     };
   }
 }

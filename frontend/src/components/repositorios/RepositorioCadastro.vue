@@ -65,6 +65,18 @@
 
       <v-col cols="12">
         <v-text-field
+          label="Caminho da chave SSH"
+          v-model="repositorio.caminhoChaveSSH"
+          hint="Usado para autenticação SSH. Ex: /home/user/.ssh/id_ed25519. Deixe vazio para usar o SSH agent padrão."
+          persistent-hint
+          clearable
+          autocomplete="off"
+          name="pmw-ssh-key"
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <v-text-field
           label="Cor"
           v-model="repositorio.cor"
           type="color"
