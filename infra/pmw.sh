@@ -108,7 +108,10 @@ case "$1" in
 
     # Obtém URL do último release do GitHub
     REPO_URL="wallaceSW11/ProjectManagerWeb"
-    LATEST_URL=$(curl -s "https://api.github.com/repos/$REPO_URL/releases/latest" | grep -oP '"browser_download_url":\s*"\K[^"]+' | grep -i linux | head -1)
+    API_URL="https://api.github.com/repos/$REPO_URL/releases/latest"
+    LATEST_JSON=$(curl -s "$API_URL")
+    LATEST_URL=$(echo "$LATEST_JSON" | grep "browser_download_url.*Linux" | head -1 | cut -d '"' -f 4)
+    LATEST_TAG=$(echo "$LATEST_JSON" | grep '"tag_name"' | head -1 | cut -d '"' -f 4)
 
     if [ -z "$LATEST_URL" ]; then
       echo "Erro: não foi possível obter a URL do release."
