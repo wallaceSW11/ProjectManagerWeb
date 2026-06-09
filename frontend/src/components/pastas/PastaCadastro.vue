@@ -7,12 +7,16 @@
       <v-card-title>Cadastrar pasta</v-card-title>
 
       <v-card-text class="pt-0">
-        <v-form ref="formPasta">
+        <v-form
+          ref="formPasta"
+          autocomplete="off"
+        >
           <v-text-field
             label="Diretório"
             v-model="pasta.diretorio"
             :rules="obrigatorio"
             disabled
+            autocomplete="off"
           />
 
           <SelectRepositorio
@@ -32,12 +36,14 @@
             class="uppercase-input"
             hint="Extraído automaticamente do nome da pasta"
             persistent-hint
+            autocomplete="off"
           />
           <v-text-field
             label="Descrição"
             v-model="pasta.descricao"
             hint="Opcional"
             persistent-hint
+            autocomplete="off"
           />
 
           <v-radio-group
@@ -174,11 +180,10 @@
       adicionarNoLocalStorage.value = true;
       await nextTick(() => (adicionarNoLocalStorage.value = false));
 
-      exibirModalPasta.value = false;
-      Object.assign(pasta, new PastaModel());
       notificar('sucesso', 'Pasta cadastrada');
       atualizarListaPastas();
-      limparCampos();
+      exibirModalPasta.value = false;
+      nextTick(() => formPasta.value.resetValidation());
     } catch (error) {
       console.error('Falha ao criar pasta:', error);
       notificar('erro', 'Falha ao criar pasta');

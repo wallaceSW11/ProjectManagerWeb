@@ -43,13 +43,17 @@
       :acaoBotaoSecundario="descartarAlteracoes"
       larguraMinima="600px"
     >
-      <v-form ref="formPerfil">
+      <v-form
+        ref="formPerfil"
+        autocomplete="off"
+      >
         <v-text-field
           ref="campoNome"
           label="Nome do perfil"
           v-model="perfilSelecionado.nome"
           :rules="obrigatorio"
           placeholder="Ex: Iniciar tudo, Só IDE, Build completo"
+          autocomplete="off"
         />
       </v-form>
 
@@ -131,6 +135,7 @@
   import PerfilMarcacaoProjetoModel from '@/models/PerfilMarcacaoProjetoModel';
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
+  import { notificar } from '@/utils/eventBus';
 
   interface Props {
     repositorios: IRepositorio[];
@@ -270,8 +275,12 @@
     if (emModoCadastro.value) {
       repositorio.value.perfis.push(new PerfilMarcacaoModel(perfilSelecionado));
       Object.assign(perfilSelecionado, new PerfilMarcacaoModel());
+      notificar('sucesso', 'Perfil cadastrado');
       inicializarComandosSelecionados();
-      nextTick(() => campoNome.value?.focus());
+      nextTick(() => {
+        formPerfil.value.resetValidation();
+        campoNome.value?.focus();
+      });
     } else {
       const indice = repositorio.value.perfis.findIndex(
         p => p.identificador === perfilSelecionado.identificador
@@ -281,6 +290,7 @@
           repositorio.value.perfis[indice],
           new PerfilMarcacaoModel(perfilSelecionado)
         );
+      notificar('sucesso', 'Perfil atualizado');
       descartarAlteracoes();
     }
   };

@@ -59,7 +59,10 @@
 
       <!-- FORM -->
       <v-tabs-window-item>
-        <v-form ref="formRef">
+        <v-form
+          ref="formRef"
+          autocomplete="off"
+        >
           <component
             v-for="(field, i) in formFields"
             :key="i"

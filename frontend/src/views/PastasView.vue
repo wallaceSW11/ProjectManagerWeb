@@ -3,38 +3,64 @@
     <div class="d-flex flex-column">
       <v-row no-gutters>
         <v-col
-          cols="9"
+          cols="8"
           class="pb-2"
         >
           <div
             class="d-flex align-center"
             style="gap: 16px"
           >
-            <h2 class="flex-shrink-0">
-              Pastas
-              <span
-                v-if="pastas.length > 0"
-                class="text-medium-emphasis text-body-1"
+            <template v-if="temCentralizadoras">
+              <v-tabs
+                v-model="abaSelecionada"
+                density="compact"
+                color="primary"
+                show-arrows
+                style="min-width: 0"
               >
-                ({{ pastas.length }})
-              </span>
-            </h2>
-
-            <v-tabs
-              v-model="abaSelecionada"
-              density="compact"
-              color="primary"
-              show-arrows
-              style="min-width: 0"
-            >
-              <v-tab
-                v-for="aba in abasDisponiveis"
-                :key="aba"
-                :value="aba"
+                <v-tab
+                  v-for="aba in abasDisponiveis"
+                  :key="aba"
+                  :value="aba"
+                >
+                  {{ aba }}
+                  <v-chip
+                    v-if="contagemPorAba[aba] > 0"
+                    size="x-small"
+                    class="ml-1"
+                    variant="tonal"
+                  >
+                    {{ contagemPorAba[aba] }}
+                  </v-chip>
+                </v-tab>
+              </v-tabs>
+            </template>
+            <template v-else>
+              <h2 class="flex-shrink-0">
+                Pastas
+                <span
+                  v-if="pastas.length > 0"
+                  class="text-medium-emphasis text-body-1"
+                >
+                  ({{ pastas.length }})
+                </span>
+              </h2>
+              <v-tabs
+                v-model="abaSelecionada"
+                density="compact"
+                color="primary"
+                show-arrows
+                style="min-width: 0"
               >
-                {{ aba }}
-              </v-tab>
-            </v-tabs>
+                <v-tab
+                  v-for="aba in abasDisponiveis"
+                  :key="aba"
+                  :value="aba"
+                >
+                  {{ aba }}
+                </v-tab>
+              </v-tabs>
+            </template>
 
             <v-spacer />
 
@@ -112,7 +138,7 @@
         class="flex-nowrap"
       >
         <v-col
-          cols="9"
+          cols="8"
           class="altura-limitada"
         >
           <div v-if="pastas.length === 0">
@@ -485,6 +511,19 @@
       return 0;
     });
     return ordenadas;
+  });
+
+  const temCentralizadoras = computed(
+    () => configuracaoStore.pastasCentralizadoras.length > 0
+  );
+
+  const contagemPorAba = computed(() => {
+    const contagem: Record<string, number> = {};
+    pastas.value.forEach(p => {
+      const aba = p.nomeAba || 'Raiz';
+      contagem[aba] = (contagem[aba] || 0) + 1;
+    });
+    return contagem;
   });
 
   const perfisDisponiveis = computed((): IPerfilMarcacao[] => {

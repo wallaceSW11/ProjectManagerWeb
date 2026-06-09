@@ -54,12 +54,16 @@
         >
           <v-tabs-window v-model="paginaMenu">
             <v-tabs-window-item>
-              <v-form ref="formProjeto">
+              <v-form
+                ref="formProjeto"
+                autocomplete="off"
+              >
                 <v-text-field
                   ref="campoTitulo"
                   label="Título"
                   v-model="menuSelecionado.titulo"
                   :rules="obrigatorio"
+                  autocomplete="off"
                 />
 
                 <v-select
@@ -174,18 +178,23 @@
             </v-tabs-window-item>
 
             <v-tabs-window-item>
-              <v-form ref="formArquivo">
+              <v-form
+                ref="formArquivo"
+                autocomplete="off"
+              >
                 <v-text-field
                   ref="campoArquivo"
                   label="Arquivo"
                   v-model="arquivoSelecionado.arquivo"
                   :rules="obrigatorio"
+                  autocomplete="off"
                 />
                 <v-text-field
                   label="Destino"
                   v-model="arquivoSelecionado.destino"
                   hint="Caminho relativo ao repositório"
                   persistent-hint
+                  autocomplete="off"
                 />
                 <v-checkbox
                   label="Ignorar no git diff"
@@ -195,7 +204,10 @@
             </v-tabs-window-item>
 
             <v-tabs-window-item>
-              <v-form ref="formPasta">
+              <v-form
+                ref="formPasta"
+                autocomplete="off"
+              >
                 <v-text-field
                   ref="campoPastaOrigem"
                   label="Pasta Origem"
@@ -203,12 +215,14 @@
                   :rules="obrigatorio"
                   hint="Caminho completo da pasta que será copiada (ex: C:\tools\.kiro)"
                   persistent-hint
+                  autocomplete="off"
                 />
                 <v-text-field
                   label="Destino"
                   v-model="pastaSelecionada.destino"
                   hint="Onde colar a pasta, relativo ao repositório. Vazio = raiz (ex: [nome_git]\frontend)"
                   persistent-hint
+                  autocomplete="off"
                 />
               </v-form>
             </v-tabs-window-item>
@@ -228,6 +242,7 @@
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import ArquivoModel from '@/models/ArquivoModel';
   import PastaMenuModel from '@/models/PastaMenuModel';
+  import { notificar } from '@/utils/eventBus';
 
   const {
     emModoCadastro,
@@ -392,9 +407,14 @@
       if (emModoCadastro.value) {
         adicionarMenu();
         limparCampos();
-        nextTick(() => campoTitulo.value?.focus());
+        notificar('sucesso', 'Menu cadastrado');
+        nextTick(() => {
+          formProjeto.value.resetValidation();
+          campoTitulo.value?.focus();
+        });
       } else {
         atualizarProjeto();
+        notificar('sucesso', 'Menu atualizado');
         descartarAlteracoes();
       }
     } catch (error) {
@@ -414,6 +434,7 @@
         Object.assign(menuSelecionado.arquivos[indice], arquivoSelecionado);
       }
 
+      notificar('sucesso', 'Arquivo atualizado');
       arquivoEmEdicao.value = false;
       limparCamposArquivos();
       mudarParaPaginaTabela();
@@ -421,8 +442,12 @@
     }
 
     menuSelecionado.arquivos.push(new ArquivoModel(arquivoSelecionado));
+    notificar('sucesso', 'Arquivo cadastrado');
     limparCamposArquivos();
-    nextTick(() => campoArquivo.value?.focus());
+    nextTick(() => {
+      formArquivo.value.resetValidation();
+      campoArquivo.value?.focus();
+    });
   };
 
   const salvarAlteracoesPastas = async (): Promise<void> => {
@@ -437,6 +462,7 @@
         Object.assign(menuSelecionado.pastas[indice], pastaSelecionada);
       }
 
+      notificar('sucesso', 'Pasta de menu atualizada');
       pastaEmEdicao.value = false;
       limparCamposPastas();
       mudarParaPaginaTabela();
@@ -444,8 +470,12 @@
     }
 
     menuSelecionado.pastas.push(new PastaMenuModel(pastaSelecionada));
+    notificar('sucesso', 'Pasta de menu cadastrada');
     limparCamposPastas();
-    nextTick(() => campoPastaOrigem.value?.focus());
+    nextTick(() => {
+      formPasta.value.resetValidation();
+      campoPastaOrigem.value?.focus();
+    });
   };
 
   const adicionarMenu = (): void => {

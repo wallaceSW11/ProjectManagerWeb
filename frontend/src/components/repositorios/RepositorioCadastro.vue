@@ -144,12 +144,15 @@
   const campoUrl = ref<InstanceType<
     typeof import('vuetify/components').VTextField
   > | null>(null);
+  const formRepositorio = ref<InstanceType<
+    typeof import('vuetify/components').VForm
+  > | null>(null);
 
   function focarUrl(): void {
     nextTick(() => campoUrl.value?.focus());
   }
 
-  defineExpose({ focarUrl });
+  defineExpose({ focarUrl, formRepositorio });
 
   const pastasCentralizadoras = computed(() => {
     return configuracaoStore.pastasCentralizadoras?.map(p => p.nome) || [];

@@ -1,5 +1,8 @@
 <template>
-  <v-form ref="formSite">
+  <v-form
+    ref="formSite"
+    autocomplete="off"
+  >
     <v-row no-gutters>
       <v-col
         cols="12"
@@ -11,6 +14,7 @@
           :rules="obrigatorio"
           hint="Nome que aparecerá no menu de Deploy"
           persistent-hint
+          autocomplete="off"
         />
       </v-col>
 
@@ -24,6 +28,7 @@
           :rules="obrigatorio"
           hint="Nome do site no IIS"
           persistent-hint
+          autocomplete="off"
           @blur="sugerirCaminhoPastaRaiz"
         />
       </v-col>
@@ -39,6 +44,7 @@
           placeholder="C:\inetpub\wwwroot\seu-site"
           hint="Diretório raiz do site no servidor"
           persistent-hint
+          autocomplete="off"
         />
       </v-col>
 
@@ -57,12 +63,17 @@
 </template>
 
 <script setup lang="ts">
+  import { ref } from 'vue';
   import type { ISiteIIS } from '@/models/SiteIISModel';
   import SelectPerfilTerminal from '@/components/comum/SelectPerfilTerminal.vue';
 
   const site = defineModel<ISiteIIS>({ required: true });
 
+  const formSite = ref();
+
   const obrigatorio = [(v: any) => !!v || 'Campo obrigatório'];
+
+  defineExpose({ formSite });
 
   const sugerirCaminhoPastaRaiz = () => {
     if (site.value.nome && !site.value.pastaRaiz) {

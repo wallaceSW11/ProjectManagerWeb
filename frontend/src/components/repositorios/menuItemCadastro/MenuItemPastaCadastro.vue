@@ -56,13 +56,17 @@
       </v-tabs-window-item>
 
       <v-tabs-window-item>
-        <v-form ref="formPasta">
+        <v-form
+          ref="formPasta"
+          autocomplete="off"
+        >
           <v-text-field
             label="Pasta Origem"
             v-model="pastaSelecionada.origem"
             :rules="obrigatorio"
             hint="Caminho completo da pasta que será copiada (ex: C:\__Arquivos_Wallace__\AmazonQ\kiro\.kiro)"
             persistent-hint
+            autocomplete="off"
           />
           <v-text-field
             label="Destino"
@@ -70,6 +74,7 @@
             :rules="obrigatorio"
             hint="Onde colar a pasta, relativo ao repositório (ex: [nome_git]\frontend)"
             persistent-hint
+            autocomplete="off"
           />
         </v-form>
       </v-tabs-window-item>

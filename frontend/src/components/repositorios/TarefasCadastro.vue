@@ -49,6 +49,7 @@
               label="Iniciais"
               density="compact"
               variant="underlined"
+              autocomplete="off"
             />
           </v-col>
           <v-col cols="7">
@@ -334,16 +335,17 @@
           ...codigoTarefaForm
         });
       }
+      notificar('sucesso', 'Código de tarefa atualizado');
     } else {
       if (!repositorio.value.codigosTarefa) {
         repositorio.value.codigosTarefa = [];
       }
       repositorio.value.codigosTarefa.push({ ...codigoTarefaForm });
+      notificar('sucesso', 'Código de tarefa cadastrado');
     }
 
     exibirModalCodigoTarefa.value = false;
     codigoTarefaEditandoId.value = null;
-    notificar('sucesso', 'Código de tarefa salvo');
   };
 
   const removerCodigoTarefa = (item: ICodigoTarefa): void => {

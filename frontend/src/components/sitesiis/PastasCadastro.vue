@@ -43,7 +43,10 @@
         :acaoBotaoSecundario="descartarAlteracoes"
         larguraMaxima="900px"
       >
-        <v-form ref="formPasta">
+        <v-form
+          ref="formPasta"
+          autocomplete="off"
+        >
           <v-row no-gutters>
             <v-col
               cols="12"
@@ -55,6 +58,7 @@
                 :rules="obrigatorio"
                 hint="Nome da pasta para backup (timestamp será adicionado)"
                 persistent-hint
+                autocomplete="off"
                 @blur="sugerirCaminhosComBaseNaPasta"
               />
             </v-col>
@@ -70,6 +74,7 @@
                 placeholder="C:\git\seu-projeto\frontend"
                 hint="Onde o comando de build será executado"
                 persistent-hint
+                autocomplete="off"
                 @blur="sugerirCaminhoOrigem"
               />
             </v-col>
@@ -85,6 +90,7 @@
                 placeholder="npm run build"
                 hint="Comando para fazer build/publish do projeto"
                 persistent-hint
+                autocomplete="off"
               />
             </v-col>
 
@@ -99,6 +105,7 @@
                 placeholder="C:\git\seu-projeto\frontend\dist"
                 hint="Pasta gerada após o build"
                 persistent-hint
+                autocomplete="off"
               />
             </v-col>
 
@@ -113,6 +120,7 @@
                 placeholder="C:\inetpub\wwwroot\seu-site\seu-micro-frontend"
                 hint="Destino no IIS"
                 persistent-hint
+                autocomplete="off"
               />
             </v-col>
           </v-row>
@@ -123,9 +131,10 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref } from 'vue';
+  import { nextTick, reactive, ref } from 'vue';
   import type { ISiteIIS, IPastaDeploy } from '@/models/SiteIISModel';
   import { PastaDeployModel } from '@/models/SiteIISModel';
+  import { notificar } from '@/utils/eventBus';
 
   const site = defineModel<ISiteIIS>({ required: true });
 
@@ -194,8 +203,11 @@
 
     if (index >= 0) {
       site.value.pastas[index] = { ...pastaEmEdicao };
+      notificar('sucesso', 'Pasta de deploy atualizada');
     } else {
       site.value.pastas.push({ ...pastaEmEdicao });
+      notificar('sucesso', 'Pasta de deploy cadastrada');
+      nextTick(() => formPasta.value.resetValidation());
     }
 
     descartarAlteracoes();
@@ -212,6 +224,7 @@
 
   const descartarAlteracoes = () => {
     Object.assign(pastaEmEdicao, new PastaDeployModel());
+    nextTick(() => formPasta.value?.resetValidation());
     exibirModalCadastroPasta.value = false;
   };
 </script>
