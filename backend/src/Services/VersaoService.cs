@@ -73,9 +73,11 @@ public class VersaoService(HttpClient httpClient)
 
     private static string ObterVersaoAtual()
     {
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        if (version is null) return "0.0.0";
-        return $"{version.Major}.{version.Minor}.{version.Build}";
+        var assembly = Assembly.GetExecutingAssembly();
+        var infoVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        if (infoVersion is not null) return infoVersion;
+        var version = assembly.GetName().Version;
+        return version is null ? "0.0.0" : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private static int CompararVersao(string a, string b)
