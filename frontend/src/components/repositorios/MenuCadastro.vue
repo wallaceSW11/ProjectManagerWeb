@@ -54,12 +54,16 @@
         >
           <v-tabs-window v-model="paginaMenu">
             <v-tabs-window-item>
-              <v-form ref="formProjeto">
+              <v-form
+                ref="formProjeto"
+                autocomplete="off"
+              >
                 <v-text-field
                   ref="campoTitulo"
                   label="Título"
                   v-model="menuSelecionado.titulo"
                   :rules="obrigatorio"
+                  autocomplete="off"
                 />
 
                 <v-select
@@ -174,18 +178,23 @@
             </v-tabs-window-item>
 
             <v-tabs-window-item>
-              <v-form ref="formArquivo">
+              <v-form
+                ref="formArquivo"
+                autocomplete="off"
+              >
                 <v-text-field
                   ref="campoArquivo"
                   label="Arquivo"
                   v-model="arquivoSelecionado.arquivo"
                   :rules="obrigatorio"
+                  autocomplete="off"
                 />
                 <v-text-field
                   label="Destino"
                   v-model="arquivoSelecionado.destino"
                   hint="Caminho relativo ao repositório"
                   persistent-hint
+                  autocomplete="off"
                 />
                 <v-checkbox
                   label="Ignorar no git diff"
@@ -195,7 +204,10 @@
             </v-tabs-window-item>
 
             <v-tabs-window-item>
-              <v-form ref="formPasta">
+              <v-form
+                ref="formPasta"
+                autocomplete="off"
+              >
                 <v-text-field
                   ref="campoPastaOrigem"
                   label="Pasta Origem"
@@ -203,12 +215,14 @@
                   :rules="obrigatorio"
                   hint="Caminho completo da pasta que será copiada (ex: C:\tools\.kiro)"
                   persistent-hint
+                  autocomplete="off"
                 />
                 <v-text-field
                   label="Destino"
                   v-model="pastaSelecionada.destino"
                   hint="Onde colar a pasta, relativo ao repositório. Vazio = raiz (ex: [nome_git]\frontend)"
                   persistent-hint
+                  autocomplete="off"
                 />
               </v-form>
             </v-tabs-window-item>

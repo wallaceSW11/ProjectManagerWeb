@@ -49,6 +49,7 @@
               label="Iniciais"
               density="compact"
               variant="underlined"
+              autocomplete="off"
             />
           </v-col>
           <v-col cols="7">

@@ -43,13 +43,17 @@
       :acaoBotaoSecundario="descartarAlteracoes"
       larguraMinima="600px"
     >
-      <v-form ref="formPerfil">
+      <v-form
+        ref="formPerfil"
+        autocomplete="off"
+      >
         <v-text-field
           ref="campoNome"
           label="Nome do perfil"
           v-model="perfilSelecionado.nome"
           :rules="obrigatorio"
           placeholder="Ex: Iniciar tudo, Só IDE, Build completo"
+          autocomplete="off"
         />
       </v-form>
 

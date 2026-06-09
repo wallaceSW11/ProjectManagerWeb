@@ -43,16 +43,21 @@
         :acaoBotaoPrimario="salvarAlteracoes"
         :acaoBotaoSecundario="descartarAlteracoes"
       >
-        <v-form ref="formProjeto">
+        <v-form
+          ref="formProjeto"
+          autocomplete="off"
+        >
           <v-text-field
             ref="campoNome"
             label="Nome"
             v-model="projetoSelecionado.nome"
             :rules="obrigatorio"
+            autocomplete="off"
           />
           <v-text-field
             label="Subdiretório"
             v-model="projetoSelecionado.subdiretorio"
+            autocomplete="off"
           />
           <v-select
             :items="configuracaoStore.perfisVSCode"
@@ -65,6 +70,7 @@
           <v-text-field
             label="Comando para abrir o arquivo coverage"
             v-model="projetoSelecionado.arquivoCoverage"
+            autocomplete="off"
           />
 
           <h2>Comandos:</h2>
@@ -73,10 +79,12 @@
           <v-text-field
             :label="TIPO_COMANDO.INSTALAR.titulo"
             v-model="projetoSelecionado.comandosObj!.instalar"
+            autocomplete="off"
           />
           <v-text-field
             :label="TIPO_COMANDO.INICIAR.titulo"
             v-model="projetoSelecionado.comandosObj!.iniciar"
+            autocomplete="off"
           />
           <SelectPerfilTerminal
             v-model="projetoSelecionado.perfilTerminal"
@@ -85,6 +93,7 @@
           <v-text-field
             :label="TIPO_COMANDO.BUILDAR.titulo"
             v-model="projetoSelecionado.comandosObj!.buildar"
+            autocomplete="off"
           />
           <v-select
             label="IDE para abrir"

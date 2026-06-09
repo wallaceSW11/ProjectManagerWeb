@@ -56,15 +56,20 @@
       </v-tabs-window-item>
 
       <v-tabs-window-item>
-        <v-form ref="formProjeto">
+        <v-form
+          ref="formProjeto"
+          autocomplete="off"
+        >
           <v-text-field
             label="Arquivo"
             v-model="arquivoSelecionado.arquivo"
             :rules="obrigatorio"
+            autocomplete="off"
           />
           <v-text-field
             label="Destino"
             v-model="arquivoSelecionado.destino"
+            autocomplete="off"
           />
           <v-checkbox
             label="Ignorar no git diff"

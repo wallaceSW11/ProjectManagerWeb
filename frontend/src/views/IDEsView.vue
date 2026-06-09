@@ -75,12 +75,16 @@
       :acaoBotaoPrimario="salvarIDE"
       :acaoBotaoSecundario="fecharModal"
     >
-      <v-form ref="formRef">
+      <v-form
+        ref="formRef"
+        autocomplete="off"
+      >
         <v-text-field
           v-model="ideSelecionada.nome"
           label="Nome da IDE"
           placeholder="Ex: VS Code, Kiro, Delphi"
           :rules="[regras.obrigatorio]"
+          autocomplete="off"
         />
 
         <v-text-field
@@ -88,6 +92,7 @@
           label="Comando para executar"
           placeholder="Ex: code ., kiro ."
           :rules="[regras.obrigatorio]"
+          autocomplete="off"
         />
 
         <v-checkbox
