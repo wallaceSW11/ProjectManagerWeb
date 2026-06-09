@@ -45,6 +45,7 @@
               <v-tabs-window v-model="paginaCadastro">
                 <v-tabs-window-item>
                   <SiteIISCadastro
+                    ref="siteCadastroRef"
                     v-model="siteSelecionado"
                     class="pt-4"
                   />
@@ -88,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref } from 'vue';
+  import { computed, nextTick, onMounted, reactive, ref } from 'vue';
   import type { ISiteIIS, ISiteIISDeployResponse } from '@/models/SiteIISModel';
   import ListaSitesIIS from '@/components/sitesiis/ListaSitesIIS.vue';
   import SiteIISCadastro from '@/components/sitesiis/SiteIISCadastro.vue';
@@ -104,6 +105,9 @@
   const siteSelecionado = ref<ISiteIIS>(new SiteIISModel());
   const paginaPrincipal = ref<number>(0);
   const paginaCadastro = ref<number>(0);
+  const siteCadastroRef = ref<InstanceType<typeof SiteIISCadastro> | null>(
+    null
+  );
 
   onMounted(async () => {
     await preencherSites();
@@ -214,7 +218,8 @@
       await store.adicionarSite(siteSelecionado.value);
       await preencherSites();
       limparCampos();
-      notificar('sucesso', 'Site criado');
+      notificar('sucesso', 'Site cadastrado');
+      nextTick(() => siteCadastroRef.value?.formSite.resetValidation());
       irParaListagem();
 
       // Recarregar lista do dropdown de deploy

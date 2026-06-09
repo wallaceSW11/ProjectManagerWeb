@@ -57,12 +57,17 @@
 </template>
 
 <script setup lang="ts">
+  import { ref } from 'vue';
   import type { ISiteIIS } from '@/models/SiteIISModel';
   import SelectPerfilTerminal from '@/components/comum/SelectPerfilTerminal.vue';
 
   const site = defineModel<ISiteIIS>({ required: true });
 
+  const formSite = ref();
+
   const obrigatorio = [(v: any) => !!v || 'Campo obrigatório'];
+
+  defineExpose({ formSite });
 
   const sugerirCaminhoPastaRaiz = () => {
     if (site.value.nome && !site.value.pastaRaiz) {

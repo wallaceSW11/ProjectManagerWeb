@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from 'vue';
+  import { nextTick, onMounted, reactive, ref } from 'vue';
   import type { IIDE } from '@/types';
   import IDEModel from '@/models/IDEModel';
   import IDEsService from '@/services/IDEsService';
@@ -152,6 +152,10 @@
   const fecharModal = (): void => {
     modalAberto.value = false;
     ideSelecionada.value = new IDEModel();
+    nextTick(() => {
+      formRef.value?.resetValidation();
+      formRef.value?.reset();
+    });
   };
 
   const salvarIDE = async (): Promise<void> => {
@@ -171,10 +175,14 @@
       } else {
         await IDEsService.adicionarIDE(ideSelecionada.value);
         ides.push(new IDEModel(ideSelecionada.value));
-        notificar('sucesso', 'IDE criada');
+        notificar('sucesso', 'IDE cadastrada');
       }
 
       modalAberto.value = false;
+      nextTick(() => {
+        formRef.value.resetValidation();
+        formRef.value.reset();
+      });
     } catch (error: any) {
       console.error('Falha ao salvar IDE:', error);
       notificar('erro', error.response?.data || 'Falha ao salvar IDE');

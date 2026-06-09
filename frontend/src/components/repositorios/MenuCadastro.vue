@@ -228,6 +228,7 @@
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import ArquivoModel from '@/models/ArquivoModel';
   import PastaMenuModel from '@/models/PastaMenuModel';
+  import { notificar } from '@/utils/eventBus';
 
   const {
     emModoCadastro,
@@ -392,9 +393,14 @@
       if (emModoCadastro.value) {
         adicionarMenu();
         limparCampos();
-        nextTick(() => campoTitulo.value?.focus());
+        notificar('sucesso', 'Menu cadastrado');
+        nextTick(() => {
+          formProjeto.value.resetValidation();
+          campoTitulo.value?.focus();
+        });
       } else {
         atualizarProjeto();
+        notificar('sucesso', 'Menu atualizado');
         descartarAlteracoes();
       }
     } catch (error) {
@@ -414,6 +420,7 @@
         Object.assign(menuSelecionado.arquivos[indice], arquivoSelecionado);
       }
 
+      notificar('sucesso', 'Arquivo atualizado');
       arquivoEmEdicao.value = false;
       limparCamposArquivos();
       mudarParaPaginaTabela();
@@ -421,8 +428,12 @@
     }
 
     menuSelecionado.arquivos.push(new ArquivoModel(arquivoSelecionado));
+    notificar('sucesso', 'Arquivo cadastrado');
     limparCamposArquivos();
-    nextTick(() => campoArquivo.value?.focus());
+    nextTick(() => {
+      formArquivo.value.resetValidation();
+      campoArquivo.value?.focus();
+    });
   };
 
   const salvarAlteracoesPastas = async (): Promise<void> => {
@@ -437,6 +448,7 @@
         Object.assign(menuSelecionado.pastas[indice], pastaSelecionada);
       }
 
+      notificar('sucesso', 'Pasta de menu atualizada');
       pastaEmEdicao.value = false;
       limparCamposPastas();
       mudarParaPaginaTabela();
@@ -444,8 +456,12 @@
     }
 
     menuSelecionado.pastas.push(new PastaMenuModel(pastaSelecionada));
+    notificar('sucesso', 'Pasta de menu cadastrada');
     limparCamposPastas();
-    nextTick(() => campoPastaOrigem.value?.focus());
+    nextTick(() => {
+      formPasta.value.resetValidation();
+      campoPastaOrigem.value?.focus();
+    });
   };
 
   const adicionarMenu = (): void => {

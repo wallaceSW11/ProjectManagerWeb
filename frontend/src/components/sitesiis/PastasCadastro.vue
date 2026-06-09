@@ -123,9 +123,10 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref } from 'vue';
+  import { nextTick, reactive, ref } from 'vue';
   import type { ISiteIIS, IPastaDeploy } from '@/models/SiteIISModel';
   import { PastaDeployModel } from '@/models/SiteIISModel';
+  import { notificar } from '@/utils/eventBus';
 
   const site = defineModel<ISiteIIS>({ required: true });
 
@@ -194,8 +195,11 @@
 
     if (index >= 0) {
       site.value.pastas[index] = { ...pastaEmEdicao };
+      notificar('sucesso', 'Pasta de deploy atualizada');
     } else {
       site.value.pastas.push({ ...pastaEmEdicao });
+      notificar('sucesso', 'Pasta de deploy cadastrada');
+      nextTick(() => formPasta.value.resetValidation());
     }
 
     descartarAlteracoes();
@@ -212,6 +216,7 @@
 
   const descartarAlteracoes = () => {
     Object.assign(pastaEmEdicao, new PastaDeployModel());
+    nextTick(() => formPasta.value?.resetValidation());
     exibirModalCadastroPasta.value = false;
   };
 </script>

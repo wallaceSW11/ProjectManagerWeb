@@ -131,6 +131,7 @@
   import PerfilMarcacaoProjetoModel from '@/models/PerfilMarcacaoProjetoModel';
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
+  import { notificar } from '@/utils/eventBus';
 
   interface Props {
     repositorios: IRepositorio[];
@@ -270,8 +271,12 @@
     if (emModoCadastro.value) {
       repositorio.value.perfis.push(new PerfilMarcacaoModel(perfilSelecionado));
       Object.assign(perfilSelecionado, new PerfilMarcacaoModel());
+      notificar('sucesso', 'Perfil cadastrado');
       inicializarComandosSelecionados();
-      nextTick(() => campoNome.value?.focus());
+      nextTick(() => {
+        formPerfil.value.resetValidation();
+        campoNome.value?.focus();
+      });
     } else {
       const indice = repositorio.value.perfis.findIndex(
         p => p.identificador === perfilSelecionado.identificador
@@ -281,6 +286,7 @@
           repositorio.value.perfis[indice],
           new PerfilMarcacaoModel(perfilSelecionado)
         );
+      notificar('sucesso', 'Perfil atualizado');
       descartarAlteracoes();
     }
   };

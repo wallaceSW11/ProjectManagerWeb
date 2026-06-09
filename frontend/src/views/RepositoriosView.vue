@@ -142,7 +142,10 @@
   const paginaPrincipal = ref<number>(0);
   const paginaCadastro = ref<number>(0);
   const camposObrigatoriosPreenchidos = ref<boolean>(true);
-  const repositorioCadastroRef = ref<{ focarUrl: () => void } | null>(null);
+  const repositorioCadastroRef = ref<{
+    focarUrl: () => void;
+    formRepositorio: { resetValidation: () => void };
+  } | null>(null);
 
   onMounted(async () => {
     await preencherRepositorios();
@@ -232,9 +235,12 @@
       );
       repositorios.push(new RepositorioModel(repositorioSelecionado.value));
       limparCampos();
-      notificar('sucesso', 'Repositorio criado');
+      notificar('sucesso', 'Repositório cadastrado');
       irParaCadastro();
-      nextTick(() => repositorioCadastroRef.value?.focarUrl());
+      nextTick(() => {
+        repositorioCadastroRef.value?.formRepositorio.resetValidation();
+        repositorioCadastroRef.value?.focarUrl();
+      });
     } catch (error) {
       console.error('Falha ao criar repositorio: ' + error);
       notificar('erro', 'Falha ao criar repositorio');
@@ -255,7 +261,7 @@
         Object.assign(repositorios[indice], repositorioSelecionado.value);
 
       limparCampos();
-      notificar('sucesso', 'Repositorio atualizado');
+      notificar('sucesso', 'Repositório atualizado');
       irParaListagem();
     } catch (error) {
       console.error('Falha ao criar repositorio' + error);

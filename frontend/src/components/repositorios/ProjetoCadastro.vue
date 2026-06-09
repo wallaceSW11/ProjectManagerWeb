@@ -112,6 +112,7 @@
   import { TIPO_COMANDO } from '@/constants/geral-constants';
   import IDEsService from '@/services/IDEsService';
   import SelectPerfilTerminal from '@/components/comum/SelectPerfilTerminal.vue';
+  import { notificar } from '@/utils/eventBus';
 
   const repositorio = defineModel<IRepositorio>({ required: true });
   const configuracaoStore = useConfiguracaoStore();
@@ -186,9 +187,14 @@
       if (emModoCadastro.value) {
         adicionarProjeto();
         limparCampos();
-        nextTick(() => campoNome.value?.focus());
+        notificar('sucesso', 'Projeto cadastrado');
+        nextTick(() => {
+          formProjeto.value.resetValidation();
+          campoNome.value?.focus();
+        });
       } else {
         atualizarProjeto();
+        notificar('sucesso', 'Projeto atualizado');
         descartarAlteracoes();
       }
     } catch (error) {

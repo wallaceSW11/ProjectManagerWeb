@@ -174,11 +174,10 @@
       adicionarNoLocalStorage.value = true;
       await nextTick(() => (adicionarNoLocalStorage.value = false));
 
-      exibirModalPasta.value = false;
-      Object.assign(pasta, new PastaModel());
       notificar('sucesso', 'Pasta cadastrada');
       atualizarListaPastas();
-      limparCampos();
+      exibirModalPasta.value = false;
+      nextTick(() => formPasta.value.resetValidation());
     } catch (error) {
       console.error('Falha ao criar pasta:', error);
       notificar('erro', 'Falha ao criar pasta');
