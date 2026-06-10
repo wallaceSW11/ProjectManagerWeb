@@ -4,19 +4,22 @@ namespace ProjectManagerWeb.src.Utils.Terminais;
 
 public class PtyxisTerminal : ITerminalEmulator
 {
-    public void Executar(string command, string? perfilTerminal = null)
+    public void Executar(string command, string? perfilTerminal = null, string? workingDirectory = null)
     {
         var trimmed = command.TrimEnd(' ', ';');
+        var execBash = !string.IsNullOrWhiteSpace(workingDirectory)
+            ? $"cd \"{EscapeBash(workingDirectory)}\" && exec bash"
+            : "exec bash";
         string args;
 
         if (!string.IsNullOrWhiteSpace(perfilTerminal))
         {
             var uuid = ResolverUuidPerfil(perfilTerminal);
-            args = $"--tab-with-profile=\"{uuid}\" -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); exec bash\"";
+            args = $"--tab-with-profile=\"{uuid}\" -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); {execBash}\"";
         }
         else
         {
-            args = $"--tab -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); exec bash\"";
+            args = $"--tab -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); {execBash}\"";
         }
 
         Process.Start(new ProcessStartInfo

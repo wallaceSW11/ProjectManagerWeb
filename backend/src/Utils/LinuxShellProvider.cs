@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using ProjectManagerWeb.src.Services;
 using ProjectManagerWeb.src.Utils.Terminais;
 
@@ -87,7 +88,8 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
 
     public void ExecutarComInterface(string command, string? perfilTerminal = null)
     {
-        Terminal.Executar(GarantirPathUsuario(command), perfilTerminal);
+        var workingDirectory = ExtrairDiretorioDoComando(command);
+        Terminal.Executar(GarantirPathUsuario(command), perfilTerminal, workingDirectory);
     }
 
     public void ExecutarSemInterface(string command)
@@ -122,4 +124,10 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
 
     private static string EscapeBash(string command) =>
         command.Replace("\"", "\\\"");
+
+    private static string? ExtrairDiretorioDoComando(string command)
+    {
+        var match = Regex.Match(command, @"cd\s+""([^""]+)""");
+        return match.Success ? match.Groups[1].Value : null;
+    }
 }
