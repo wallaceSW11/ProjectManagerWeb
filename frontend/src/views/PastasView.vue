@@ -763,22 +763,14 @@
       (p: any) => p.comandosSelecionados && p.comandosSelecionados.length > 0
     );
 
+    salvarMarcacoesPasta(pastaSelecionada.value, diretorioAcoes.value);
+
     if (projetosComComandos.length === 0) return;
 
-    const payload: PayloadComando = {
-      diretorio: pastaSelecionada.value.diretorio,
-      repositorioId: pastaSelecionada.value.repositorioId || '',
-      projetos: projetosComComandos.map((p: any) => ({
-        identificador: p.identificador,
-        nome: p.nome,
-        comandos: p.comandosSelecionados || [],
-        identificadorRepositorioAgregado: p.identificadorRepositorioAgregado,
-        nomeRepositorio: p.nomeRepositorio
-      }))
-    };
+    const payload = construirPayloadSalvar(pastaSelecionada.value);
 
     try {
-      salvarAcoesSelecionadas(payload);
+      salvarMarcacoesPasta(pastaSelecionada.value, diretorioAcoes.value);
       notificar('sucesso', 'Comando solicitado');
 
       await carregandoAsync(async () => {
@@ -792,10 +784,32 @@
 
   const CHAVE_ACOES_SELECIONADAS = 'AcoesSelecionadas';
 
-  const salvarAcoesSelecionadas = (payload: PayloadComando): void => {
+  const construirPayloadSalvar = (pasta: IPasta): PayloadComando => {
+    const projetosComComandos = pasta.projetos.filter(
+      (p: any) => p.comandosSelecionados && p.comandosSelecionados.length > 0
+    );
+
+    return {
+      diretorio: pasta.diretorio,
+      repositorioId: pasta.repositorioId || '',
+      projetos: projetosComComandos.map((p: any) => ({
+        identificador: p.identificador,
+        nome: p.nome,
+        comandos: p.comandosSelecionados || [],
+        identificadorRepositorioAgregado: p.identificadorRepositorioAgregado,
+        nomeRepositorio: p.nomeRepositorio
+      }))
+    };
+  };
+
+  const salvarMarcacoesPasta = (
+    pasta: IPasta,
+    acoesDiretorio: string[] = []
+  ): void => {
+    const payload = construirPayloadSalvar(pasta);
     const payloadComDiretorioAcoes = {
       ...payload,
-      diretorioAcoes: diretorioAcoes.value
+      diretorioAcoes: acoesDiretorio
     };
 
     const salvarNoLocalStorage = (valor: any[]): void => {
@@ -809,9 +823,7 @@
       return;
     }
 
-    const indice = acoes.findIndex(
-      (a: any) => a.diretorio === payload.diretorio
-    );
+    const indice = acoes.findIndex((a: any) => a.diretorio === pasta.diretorio);
 
     indice === -1
       ? acoes.push(payloadComDiretorioAcoes)
@@ -937,13 +949,15 @@
     return menus;
   };
 
-  const executarComandoAvulso = (comando: string): void => {
+  const executarComandoAvulso = async (comando: string): Promise<void> => {
     try {
-      ComandosService.executarComandoAvulso({
+      await ComandosService.executarComandoAvulso({
         comando
       });
+      notificar('sucesso', 'Comando solicitado');
     } catch (error) {
       console.error('Falha ao executar o comando avulso: ', error);
+      notificar('erro', 'Falha ao executar o comando', String(error));
     }
   };
 

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Utils;
@@ -8,18 +7,20 @@ namespace ProjectManagerWeb.src.Services;
 public class CloneService
 {
     private readonly RepositorioJsonService _repositorioJson;
+    private readonly IGitCommandRunner _gitRunner;
 
-    public CloneService(RepositorioJsonService repositorioJson)
+    public CloneService(RepositorioJsonService repositorioJson, IGitCommandRunner gitRunner)
     {
         if (!Directory.Exists(PathHelper.BancoPath))
             Directory.CreateDirectory(PathHelper.BancoPath);
 
         _repositorioJson = repositorioJson;
+        _gitRunner = gitRunner;
     }
 
     public async Task<(bool Existe, string? Erro)> VerificarBranchExisteAsync(string url, string branch, string? caminhoChaveSSH = null)
     {
-        var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --heads \"{url}\" \"{branch}\"", caminhoChaveSSH);
+        var resultado = await _gitRunner.RunAsync($"git ls-remote --heads \"{url}\" \"{branch}\"", caminhoChaveSSH);
 
         if (resultado.ExitCode != 0)
         {
@@ -34,7 +35,7 @@ public class CloneService
 
     public async Task<string> DetectarBranchPrincipalAsync(string url, string? caminhoChaveSSH = null)
     {
-        var resultado = await ExecutarComandoComRetornoAsync($"git ls-remote --symref \"{url}\" HEAD", caminhoChaveSSH);
+        var resultado = await _gitRunner.RunAsync($"git ls-remote --symref \"{url}\" HEAD", caminhoChaveSSH);
 
         if (resultado.ExitCode != 0) return string.Empty;
 
@@ -135,7 +136,7 @@ public class CloneService
         return true;
     }
 
-    private static string MontarScript(string diretorioCompleto, string url, string nomeRepo, CloneRequestDTO clone, string branchPrincipal = "")
+    internal static string MontarScript(string diretorioCompleto, string url, string nomeRepo, CloneRequestDTO clone, string branchPrincipal = "")
     {
         // branch não-base: clona a principal, depois faz fetch da branch informada
         // branch base: clona direto com --branch, sem baixar outras refs
@@ -167,55 +168,6 @@ public class CloneService
         return script.ToString();
     }
 
-    private static bool EhBranchBase(string branch) =>
+    internal static bool EhBranchBase(string branch) =>
         branch is "develop" or "dev" or "main" or "master";
-
-    private static async Task<ComandoResultado> ExecutarComandoComRetornoAsync(string comando, string? caminhoChaveSSH = null)
-    {
-        var useShell = OperatingSystem.IsWindows();
-
-        var psi = new ProcessStartInfo
-        {
-            FileName = useShell ? "git" : "bash",
-            Arguments = useShell ? comando["git ".Length..] : $"-c \"{comando.Replace("\"", "\\\"")}\"",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
-
-        if (!string.IsNullOrEmpty(caminhoChaveSSH))
-            psi.EnvironmentVariables["GIT_SSH_COMMAND"] = $"ssh -i \"{caminhoChaveSSH}\"";
-
-        if (!useShell)
-        {
-            var sshSock = Environment.GetEnvironmentVariable("SSH_AUTH_SOCK");
-            if (!string.IsNullOrEmpty(sshSock))
-                psi.EnvironmentVariables["SSH_AUTH_SOCK"] = sshSock;
-
-            var sshPid = Environment.GetEnvironmentVariable("SSH_AGENT_PID");
-            if (!string.IsNullOrEmpty(sshPid))
-                psi.EnvironmentVariables["SSH_AGENT_PID"] = sshPid;
-        }
-
-        using var processo = Process.Start(psi);
-        if (processo is null) return new ComandoResultado(string.Empty, "Processo não iniciado", -1);
-
-        var output = await processo.StandardOutput.ReadToEndAsync();
-        var error = await processo.StandardError.ReadToEndAsync();
-        await processo.WaitForExitAsync();
-
-        return new ComandoResultado(output, FiltrarWarnings(error), processo.ExitCode);
-    }
-
-    private static string FiltrarWarnings(string stderr)
-    {
-        if (string.IsNullOrWhiteSpace(stderr)) return string.Empty;
-
-        var linhas = stderr.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        var semWarnings = linhas.Where(l => !l.StartsWith("Environment variable $"));
-        return string.Join('\n', semWarnings);
-    }
-
-    private sealed record ComandoResultado(string Output, string Error, int ExitCode);
 }

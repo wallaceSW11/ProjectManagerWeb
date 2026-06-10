@@ -78,7 +78,7 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
         }
     }
 
-    private static string RemoverMarcadorExit(string command)
+    internal static string RemoverMarcadorExit(string command)
     {
         var trimmed = command.TrimEnd();
         if (trimmed.EndsWith("Exit;", StringComparison.OrdinalIgnoreCase))
@@ -125,7 +125,7 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
     private static string EscapeBash(string command) =>
         command.Replace("\"", "\\\"");
 
-    private static string? ExtrairDiretorioDoComando(string command)
+    internal static string? ExtrairDiretorioDoComando(string command)
     {
         var match = Regex.Match(command, @"cd\s+""([^""]+)""");
         return match.Success ? match.Groups[1].Value : null;

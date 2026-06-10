@@ -49,6 +49,16 @@ dotnet publish            # publicar para IIS
 
 # Tudo junto (raiz)
 .\Atualizar_PMW.ps1      # atualizar do último release
+
+# Testes
+dotnet test backend/tests/ProjectManagerWeb.Tests/ProjectManagerWeb.Tests.csproj  # rodar testes
+bash backend/test-coverage.sh  # testes + relatório de cobertura HTML
+```
+
+Para relatório de cobertura, instalar o ReportGenerator antes:
+```bash
+dotnet tool install -g dotnet-reportgenerator-globaltool
+```
 ```
 
 ## Proibições (valem pra todo o repositório)
@@ -59,7 +69,7 @@ dotnet publish            # publicar para IIS
   ❌ `if (!item) { return; }`
 - **Evite if/else** — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
 - NUNCA hardcodar secrets, API keys ou connection strings
-- NUNCA git commit/push/pull/merge/rebase — responsabilidade do usuário
+- **NUNCA git add, commit, push, pull, merge, rebase — NUNCA.** Responsabilidade exclusiva do usuário. O usuário revisa e commita pessoalmente. O skill `criar-mr` tem permissão total.
 - NUNCA inventar informação — investigue antes
 
 ## Git

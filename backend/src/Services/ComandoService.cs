@@ -5,7 +5,7 @@ using ProjectManagerWeb.src.Enuns;
 
 namespace ProjectManagerWeb.src.Services;
 
-public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJsonService ideJsonService)
+public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJsonService ideJsonService, IShellExecutor shellExecutor)
 {
     public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
     {
@@ -114,7 +114,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
         try
         {
-            comandos.ForEach(c => ShellExecute.ExecutarComando(c.Comando, c.Perfil, repositorio.GitHubToken));
+            comandos.ForEach(c => shellExecutor.ExecutarComando(c.Comando, c.Perfil, repositorio.GitHubToken));
         }
         catch
         {
@@ -132,7 +132,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
     {
         try
         {
-            ShellExecute.ExecutarComando(comando, perfilTerminal, githubToken);
+            shellExecutor.ExecutarComando(comando, perfilTerminal, githubToken);
         }
         catch
         {
@@ -200,7 +200,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
         {
             try
             {
-                ShellExecute.ExecutarComando(c, githubToken: repositorio.GitHubToken);
+                shellExecutor.ExecutarComando(c, githubToken: repositorio.GitHubToken);
                 ShellExecute.LogComando(c, "OK");
             }
             catch (Exception ex)
@@ -306,7 +306,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
 
         try
         {
-            ShellExecute.ExecutarComandoSemInterface(comando);
+            shellExecutor.ExecutarComandoSemInterface(comando);
         }
         catch
         {
@@ -316,7 +316,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IDEJs
         return true;
     }
 
-    private static string ObterAlvoIDE(string diretorio, bool abrirWorkspace)
+    internal static string ObterAlvoIDE(string diretorio, bool abrirWorkspace)
     {
         if (abrirWorkspace && Directory.Exists(diretorio))
         {
