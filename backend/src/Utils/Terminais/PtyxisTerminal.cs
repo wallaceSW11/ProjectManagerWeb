@@ -8,7 +8,7 @@ public class PtyxisTerminal : ITerminalEmulator
     {
         var trimmed = command.TrimEnd(' ', ';');
         var execBash = !string.IsNullOrWhiteSpace(workingDirectory)
-            ? $"cd \"{EscapeBash(workingDirectory)}\" && exec bash"
+            ? $"cd '{EscapeBash(workingDirectory)}' && exec bash"
             : "exec bash";
         string args;
 
