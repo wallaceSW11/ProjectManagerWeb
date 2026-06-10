@@ -78,3 +78,15 @@ Branches: `main`, `develop`, `feature/*`, `fix/*`, `chore/*`
 Commits: `tipo(escopo): descrição em pt-br`
 Tipos: feat, fix, chore, refactor, style, docs, test
 PRs sempre para `develop`. Commits atômicos. Sem secrets no commit.
+
+### Pós-merge
+
+Depois que uma PR é mergeada na `main`, o pipeline de release faz um commit de bump de versão.
+Para sincronizar a branch local:
+
+```bash
+git checkout <sua-branch>
+git pull origin main
+# ou
+git rebase main
+```
