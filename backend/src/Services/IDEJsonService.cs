@@ -4,7 +4,7 @@ using ProjectManagerWeb.src.Utils;
 
 namespace ProjectManagerWeb.src.Services
 {
-    public class IDEJsonService
+    public class IDEJsonService : IIDEJsonService
     {
         private static readonly string BasePath = PathHelper.BancoPath;
 

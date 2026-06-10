@@ -25,6 +25,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<RepositorioJsonService>();
 builder.Services.AddSingleton<ConfiguracaoService>();
+builder.Services.AddSingleton<IShellExecutor, ShellExecutor>();
 builder.Services.AddSingleton<IGitCommandRunner, GitCommandRunner>();
 builder.Services.AddSingleton<CloneService>();
 builder.Services.AddSingleton<PastaService>();
@@ -34,6 +35,7 @@ builder.Services.AddSingleton<IISService>();
 builder.Services.AddSingleton<SiteIISJsonService>();
 builder.Services.AddSingleton<DeployIISService>();
 builder.Services.AddSingleton<IDEJsonService>();
+builder.Services.AddSingleton<IIDEJsonService>(sp => sp.GetRequiredService<IDEJsonService>());
 builder.Services.AddSingleton<MigrationService>();
 builder.Services.AddSingleton<TerminalService>();
 builder.Services.AddHttpClient<VersaoService>();
