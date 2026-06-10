@@ -174,6 +174,17 @@
                     </v-data-table>
                   </div>
                 </div>
+
+                <!-- Comando Avulso -->
+                <div v-if="menuSelecionado.tipo === 'COMANDO_AVULSO'">
+                  <v-text-field
+                    label="Comando"
+                    v-model="comandoAvulsoTexto"
+                    hint="Ex: git checkout -- . ; git pull origin dev"
+                    persistent-hint
+                    autocomplete="off"
+                  />
+                </div>
               </v-form>
             </v-tabs-window-item>
 
@@ -259,6 +270,15 @@
   const pastaSelecionada = reactive<IPastaMenu>(new PastaMenuModel());
   const arquivoEmEdicao = ref<boolean>(false);
   const pastaEmEdicao = ref<boolean>(false);
+
+  const comandoAvulsoTexto = computed({
+    get: () => menuSelecionado.comandos[0] || '',
+    set: (v: string) => {
+      if (menuSelecionado.comandos.length === 0)
+        menuSelecionado.comandos.push('');
+      menuSelecionado.comandos[0] = v;
+    }
+  });
 
   const obrigatorio = [(v: string) => !!v || 'Obrigatório'];
 

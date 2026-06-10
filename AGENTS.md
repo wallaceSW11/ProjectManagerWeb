@@ -71,6 +71,8 @@ dotnet tool install -g dotnet-reportgenerator-globaltool
 - NUNCA hardcodar secrets, API keys ou connection strings
 - **NUNCA git add, commit, push, pull, merge, rebase — NUNCA.** Responsabilidade exclusiva do usuário. O usuário revisa e commita pessoalmente. O skill `criar-mr` tem permissão total.
 - NUNCA inventar informação — investigue antes
+- NUNCA pular camadas: Component → Store → Service → API | Controller → Service → JsonService
+- **NUNCA criar ou rodar testes unitários.** Implementação e testes são ciclos separados: implemento, você revisa/testa manualmente, depois roda skill de testes separadamente.
 
 ## Git
 

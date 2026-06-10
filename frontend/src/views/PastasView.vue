@@ -839,8 +839,12 @@
   };
 
   const executarMenu = async (pasta: IPasta, menuId: string): Promise<void> => {
+    const sep = featuresStore.pathSeparator;
+    const dir = pasta.subdiretorio
+      ? `${pasta.diretorio}${sep}${pasta.subdiretorio}`
+      : pasta.diretorio;
     const payload: PayloadMenuComando = {
-      diretorio: pasta.diretorio,
+      diretorio: dir,
       repositorioId: pasta.repositorioId || '',
       comandoId: menuId
     };
@@ -864,9 +868,14 @@
     notificar('sucesso', `${menuIds.length} comando(s) solicitado(s)`);
 
     try {
+      const sep = featuresStore.pathSeparator;
+      const dir = pasta.subdiretorio
+        ? `${pasta.diretorio}${sep}${pasta.subdiretorio}`
+        : pasta.diretorio;
+
       for (const menuId of menuIds) {
         const payload: PayloadMenuComando = {
-          diretorio: pasta.diretorio,
+          diretorio: dir,
           repositorioId: pasta.repositorioId || '',
           comandoId: menuId
         };
@@ -926,6 +935,20 @@
         const sep = featuresStore.pathSeparator;
         const diretorio = `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}`;
         executarComandoAvulso(`cd "${diretorio}"; git fetch --unshallow;`);
+      }
+    },
+    {
+      identificador: 6,
+      titulo: 'Comando avulso',
+      icone: 'mdi-console-line',
+      acao: (projeto: any) => {
+        const sep = featuresStore.pathSeparator;
+        const dir = projeto.subdiretorio
+          ? `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`
+          : `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}`;
+        const comando = prompt(`Digite o comando para executar em:\n${dir}`);
+        if (!comando) return;
+        executarComandoAvulso(`cd "${dir}"; ${comando};`);
       }
     }
   ];
