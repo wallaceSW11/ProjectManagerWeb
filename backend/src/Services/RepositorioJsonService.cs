@@ -8,9 +8,6 @@ namespace ProjectManagerWeb.src.Services
     {
         private static readonly string BasePath = PathHelper.BancoPath;
 
-        private static readonly string FilePath =
-            Path.Combine(BasePath, "repositorios.json");
-
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly JsonSerializerOptions _jsonOptions = new()
         {
@@ -18,12 +15,21 @@ namespace ProjectManagerWeb.src.Services
             PropertyNameCaseInsensitive = true
         };
 
+        private readonly string _filePath;
+
         public RepositorioJsonService()
         {
+            _filePath = Path.Combine(BasePath, "repositorios.json");
+
             if (!Directory.Exists(BasePath))
             {
                 Directory.CreateDirectory(BasePath);
             }
+        }
+
+        internal RepositorioJsonService(string testFilePath) : this()
+        {
+            _filePath = testFilePath;
         }
 
         // --- MÉTODOS PÚBLICOS DO CRUD ---
@@ -172,14 +178,14 @@ namespace ProjectManagerWeb.src.Services
 
         // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---
 
-        private static async Task<List<RepositorioRequestDTO>> LerListaDoArquivoAsync(bool locked = false)
+        private async Task<List<RepositorioRequestDTO>> LerListaDoArquivoAsync(bool locked = false)
         {
             if (!locked) await _semaphore.WaitAsync();
             try
             {
-                if (!File.Exists(FilePath)) return [];
+                if (!File.Exists(_filePath)) return [];
 
-                var jsonString = await File.ReadAllTextAsync(FilePath);
+                var jsonString = await File.ReadAllTextAsync(_filePath);
                 if (string.IsNullOrWhiteSpace(jsonString)) return [];
 
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -197,7 +203,7 @@ namespace ProjectManagerWeb.src.Services
             try
             {
                 var jsonString = JsonSerializer.Serialize(repositorios, _jsonOptions);
-                await File.WriteAllTextAsync(FilePath, jsonString);
+                await File.WriteAllTextAsync(_filePath, jsonString);
             }
             finally
             {

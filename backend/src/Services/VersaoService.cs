@@ -84,7 +84,7 @@ public class VersaoService(HttpClient httpClient)
         return version is null ? "0.0.0" : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
-    private static int CompararVersao(string a, string b)
+    internal static int CompararVersao(string a, string b)
     {
         var partesA = a.Split('.');
         var partesB = b.Split('.');

@@ -8,18 +8,23 @@ namespace ProjectManagerWeb.src.Services
     {
         private static readonly string BasePath = PathHelper.BancoPath;
 
-        private static readonly string FilePath =
-            Path.Combine(BasePath, "pastas.json");
-
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
+        private readonly string _filePath;
 
         public PastaJsonService()
         {
+            _filePath = Path.Combine(BasePath, "pastas.json");
+
             if (!Directory.Exists(BasePath))
             {
                 Directory.CreateDirectory(BasePath);
             }
+        }
+
+        internal PastaJsonService(string testFilePath) : this()
+        {
+            _filePath = testFilePath;
         }
 
         // --- MÉTODOS PÚBLICOS DO CRUD ---
@@ -51,14 +56,12 @@ namespace ProjectManagerWeb.src.Services
             {
                 var pastas = await LerListaDoArquivoAsync(locked: true);
 
-                if (pastas.Exists(pasta => pasta.Diretorio.Equals(novaPasta.Diretorio, StringComparison.OrdinalIgnoreCase)))
-                    await DeleteAsync(novaPasta.Diretorio);
+                pastas.RemoveAll(p => p.Diretorio.Equals(novaPasta.Diretorio, StringComparison.OrdinalIgnoreCase));
 
-                var pastaParaAdicionar = novaPasta;
-                pastas.Add(pastaParaAdicionar);
+                pastas.Add(novaPasta);
                 await GravarListaNoArquivoAsync(pastas, locked: true);
 
-                return pastaParaAdicionar;
+                return novaPasta;
             }
             finally
             {
@@ -127,14 +130,14 @@ namespace ProjectManagerWeb.src.Services
 
         // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---
 
-        private static async Task<List<PastaCadastroRequestDTO>> LerListaDoArquivoAsync(bool locked = false)
+        private async Task<List<PastaCadastroRequestDTO>> LerListaDoArquivoAsync(bool locked = false)
         {
             if (!locked) await _semaphore.WaitAsync();
             try
             {
-                if (!File.Exists(FilePath)) return [];
+                if (!File.Exists(_filePath)) return [];
 
-                var jsonString = await File.ReadAllTextAsync(FilePath);
+                var jsonString = await File.ReadAllTextAsync(_filePath);
                 if (string.IsNullOrWhiteSpace(jsonString)) return [];
                 return JsonSerializer.Deserialize<List<PastaCadastroRequestDTO>>(jsonString) ?? [];
             }
@@ -150,7 +153,7 @@ namespace ProjectManagerWeb.src.Services
             try
             {
                 var jsonString = JsonSerializer.Serialize(pastas, _jsonOptions);
-                await File.WriteAllTextAsync(FilePath, jsonString);
+                await File.WriteAllTextAsync(_filePath, jsonString);
             }
             finally
             {

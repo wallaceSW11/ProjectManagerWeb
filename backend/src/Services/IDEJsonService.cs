@@ -8,18 +8,23 @@ namespace ProjectManagerWeb.src.Services
     {
         private static readonly string BasePath = PathHelper.BancoPath;
 
-        private static readonly string FilePath =
-            Path.Combine(BasePath, "IDEs.json");
-
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
+        private readonly string _filePath;
 
         public IDEJsonService()
         {
+            _filePath = Path.Combine(BasePath, "IDEs.json");
+
             if (!Directory.Exists(BasePath))
             {
                 Directory.CreateDirectory(BasePath);
             }
+        }
+
+        internal IDEJsonService(string testFilePath) : this()
+        {
+            _filePath = testFilePath;
         }
 
         // --- MÉTODOS PÚBLICOS DO CRUD ---
@@ -114,14 +119,14 @@ namespace ProjectManagerWeb.src.Services
 
         // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---
 
-        private static async Task<List<IDEDTO>> LerListaDoArquivoAsync(bool locked = false)
+        private async Task<List<IDEDTO>> LerListaDoArquivoAsync(bool locked = false)
         {
             if (!locked) await _semaphore.WaitAsync();
             try
             {
-                if (!File.Exists(FilePath)) return [];
+                if (!File.Exists(_filePath)) return [];
 
-                var jsonString = await File.ReadAllTextAsync(FilePath);
+                var jsonString = await File.ReadAllTextAsync(_filePath);
                 if (string.IsNullOrWhiteSpace(jsonString)) return [];
                 return JsonSerializer.Deserialize<List<IDEDTO>>(jsonString) ?? [];
             }
@@ -137,7 +142,7 @@ namespace ProjectManagerWeb.src.Services
             try
             {
                 var jsonString = JsonSerializer.Serialize(ides, _jsonOptions);
-                await File.WriteAllTextAsync(FilePath, jsonString);
+                await File.WriteAllTextAsync(_filePath, jsonString);
             }
             finally
             {
