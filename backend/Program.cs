@@ -25,6 +25,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<RepositorioJsonService>();
 builder.Services.AddSingleton<ConfiguracaoService>();
+builder.Services.AddSingleton<IGitCommandRunner, GitCommandRunner>();
 builder.Services.AddSingleton<CloneService>();
 builder.Services.AddSingleton<PastaService>();
 builder.Services.AddSingleton<ComandoService>();

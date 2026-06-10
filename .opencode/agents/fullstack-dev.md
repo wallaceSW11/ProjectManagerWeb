@@ -10,6 +10,7 @@ permission:
     "*": deny
     backend: allow
     frontend: allow
+    testador: allow
 color: "#00d4aa"
 ---
 
