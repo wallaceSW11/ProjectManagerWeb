@@ -113,7 +113,7 @@ jobs:
         run: |
           COVERAGE_FILE=$(find tests/CoverageResults -name "coverage.cobertura.xml" -print -quit)
           if [ -n "$COVERAGE_FILE" ]; then
-            echo "COVERAGE_FILE=$COVERAGE_FILE" >> $GITHUB_ENV
+            echo "COVERAGE_FILE=$PWD/$COVERAGE_FILE" >> $GITHUB_ENV
             COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' "$COVERAGE_FILE" | head -1)
             if [ -n "$COVERAGE" ]; then
               PERCENT=$(echo "$COVERAGE * 100" | bc -l | xargs printf "%.1f")
