@@ -75,7 +75,11 @@ public class VersaoService(HttpClient httpClient)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var infoVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        if (infoVersion is not null) return infoVersion;
+        if (infoVersion is not null)
+        {
+            var idx = infoVersion.IndexOf('+');
+            return idx >= 0 ? infoVersion[..idx] : infoVersion;
+        }
         var version = assembly.GetName().Version;
         return version is null ? "0.0.0" : $"{version.Major}.{version.Minor}.{version.Build}";
     }
