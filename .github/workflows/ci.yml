@@ -70,3 +70,53 @@ jobs:
         run: |
           dotnet restore
           dotnet build --no-restore --nologo
+
+  test-backend:
+    runs-on: ubuntu-latest
+    needs: build-backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Run tests with coverage
+        working-directory: backend
+        run: dotnet test tests/ProjectManagerWeb.Tests/ProjectManagerWeb.Tests.csproj
+          --collect:"XPlat Code Coverage"
+          --settings Coverage.runsettings
+          --results-directory tests/CoverageResults
+          --nologo
+          --verbosity minimal
+
+      - name: Generate coverage report
+        working-directory: backend
+        run: reportgenerator
+          -reports:"tests/CoverageResults/**/coverage.cobertura.xml"
+          -targetdir:"tests/CoverageReport"
+          -reporttypes:Html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/tests/CoverageReport
+          retention-days: 7
+
+      - name: Show coverage summary
+        working-directory: backend
+        run: |
+          COVERAGE_FILE=$(find tests/CoverageResults -name "coverage.cobertura.xml" -print -quit)
+          if [ -n "$COVERAGE_FILE" ]; then
+            COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' "$COVERAGE_FILE" | head -1)
+            if [ -n "$COVERAGE" ]; then
+              PERCENT=$(echo "$COVERAGE * 100" | bc -l | xargs printf "%.1f")
+              echo "### Cobertura de linha: $PERCENT%" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi

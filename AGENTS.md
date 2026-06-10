@@ -49,6 +49,16 @@ dotnet publish            # publicar para IIS
 
 # Tudo junto (raiz)
 .\Atualizar_PMW.ps1      # atualizar do último release
+
+# Testes
+dotnet test backend/tests/ProjectManagerWeb.Tests/ProjectManagerWeb.Tests.csproj  # rodar testes
+bash backend/test-coverage.sh  # testes + relatório de cobertura HTML
+```
+
+Para relatório de cobertura, instalar o ReportGenerator antes:
+```bash
+dotnet tool install -g dotnet-reportgenerator-globaltool
+```
 ```
 
 ## Proibições (valem pra todo o repositório)
