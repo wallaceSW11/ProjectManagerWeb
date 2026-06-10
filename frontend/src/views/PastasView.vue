@@ -949,13 +949,15 @@
     return menus;
   };
 
-  const executarComandoAvulso = (comando: string): void => {
+  const executarComandoAvulso = async (comando: string): Promise<void> => {
     try {
-      ComandosService.executarComandoAvulso({
+      await ComandosService.executarComandoAvulso({
         comando
       });
+      notificar('sucesso', 'Comando solicitado');
     } catch (error) {
       console.error('Falha ao executar o comando avulso: ', error);
+      notificar('erro', 'Falha ao executar o comando', String(error));
     }
   };
 
