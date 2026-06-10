@@ -7,11 +7,9 @@ namespace ProjectManagerWeb.src.Services;
 public class ConfiguracaoService
 {
     private static readonly string BasePath = PathHelper.BancoPath;
-
-    private static readonly string FilePath =
-        Path.Combine(BasePath, "Configuracao.json");
-
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
+
+    private readonly string _filePath;
 
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -21,10 +19,15 @@ public class ConfiguracaoService
 
     public ConfiguracaoService()
     {
+        _filePath = Path.Combine(BasePath, "Configuracao.json");
+
         if (!Directory.Exists(BasePath))
-        {
             Directory.CreateDirectory(BasePath);
-        }
+    }
+
+    internal ConfiguracaoService(string test_filePath) : this()
+    {
+        _filePath = test_filePath;
     }
 
     /// <summary>
@@ -35,12 +38,12 @@ public class ConfiguracaoService
         await _semaphore.WaitAsync();
         try
         {
-            if (!File.Exists(FilePath))
+            if (!File.Exists(_filePath))
             {
                 return new ConfiguracaoRequestDTO();
             }
 
-            var jsonString = await File.ReadAllTextAsync(FilePath);
+            var jsonString = await File.ReadAllTextAsync(_filePath);
             if (string.IsNullOrWhiteSpace(jsonString))
             {
                 return new ConfiguracaoRequestDTO();
@@ -64,7 +67,7 @@ public class ConfiguracaoService
         try
         {
             var jsonString = JsonSerializer.Serialize(configuracao, _jsonOptions);
-            await File.WriteAllTextAsync(FilePath, jsonString);
+            await File.WriteAllTextAsync(_filePath, jsonString);
         }
         finally
         {
