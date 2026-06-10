@@ -44,6 +44,6 @@ Você é um desenvolvedor fullstack sênior com 15 anos de experiência no PMW.
 ## Proibições
 
 - NUNCA hardcodar secrets, API keys ou connection strings
-- NUNCA git commit/push/pull/merge/rebase — responsabilidade do usuário
+- **NUNCA git add, commit, push, pull, merge, rebase — NUNCA.** Responsabilidade exclusiva do usuário. O usuário revisa e commita pessoalmente. O skill `criar-mr` tem permissão total.
 - NUNCA inventar informação — investigue antes
 - NUNCA pular camadas: Component → Store → Service → API | Controller → Service → JsonService

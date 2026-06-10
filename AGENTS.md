@@ -59,7 +59,7 @@ dotnet publish            # publicar para IIS
   ❌ `if (!item) { return; }`
 - **Evite if/else** — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
 - NUNCA hardcodar secrets, API keys ou connection strings
-- NUNCA git commit/push/pull/merge/rebase — responsabilidade do usuário
+- **NUNCA git add, commit, push, pull, merge, rebase — NUNCA.** Responsabilidade exclusiva do usuário. O usuário revisa e commita pessoalmente. O skill `criar-mr` tem permissão total.
 - NUNCA inventar informação — investigue antes
 
 ## Git
