@@ -77,8 +77,8 @@ public class VersaoService(HttpClient httpClient)
         var infoVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
         if (infoVersion is not null)
         {
-            var idx = infoVersion.IndexOf('+');
-            return idx >= 0 ? infoVersion[..idx] : infoVersion;
+            var match = System.Text.RegularExpressions.Regex.Match(infoVersion, @"\d+\.\d+\.\d+");
+            if (match.Success) return match.Value;
         }
         var version = assembly.GetName().Version;
         return version is null ? "0.0.0" : $"{version.Major}.{version.Minor}.{version.Build}";

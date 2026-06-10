@@ -763,6 +763,8 @@
       (p: any) => p.comandosSelecionados && p.comandosSelecionados.length > 0
     );
 
+    salvarMarcacoesPasta(pastaSelecionada.value, diretorioAcoes.value);
+
     if (projetosComComandos.length === 0) return;
 
     const payload = construirPayloadSalvar(pastaSelecionada.value);
