@@ -1,0 +1,28 @@
+name: Validar scripts de infraestrutura
+
+on:
+  workflow_call:
+
+jobs:
+  validate-infra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validar scripts Bash
+        run: |
+          echo "Validando scripts Bash..."
+          for f in bootstrap.sh infra/pmw.sh; do
+            echo -n "  $f: "
+            bash -n "$f" && echo "OK" || exit 1
+          done
+
+      - name: Validar scripts PowerShell
+        run: |
+          echo "Validando scripts PowerShell..."
+          for f in bootstrap.ps1 Atualizar_PMW.ps1 infra/pmw.ps1; do
+            echo -n "  $f: "
+            pwsh -NoProfile -NoLogo -Command "& { \$tokens = \$errors = \$null; \$ast = [System.Management.Automation.Language.Parser]::ParseFile('$f', [ref]\$tokens, [ref]\$errors); if (\$errors.Count -gt 0) { Write-Error \"ERRO: \$(\$errors[0])\"; exit 1 } else { Write-Host 'OK' } }" || exit 1
+          done

@@ -1,5 +1,7 @@
 # ProjectManagerWeb (PMW)
 
+[![CI](https://github.com/wallaceSW11/ProjectManagerWeb/actions/workflows/ci.yml/badge.svg)](https://github.com/wallaceSW11/ProjectManagerWeb/actions/workflows/ci.yml)
+
 **Ferramenta desktop-web para gerenciar repositórios Git, pastas de projetos, IDEs e deploy.**  
 Roda localmente na máquina do desenvolvedor — sem autenticação, sem banco relacional.
 

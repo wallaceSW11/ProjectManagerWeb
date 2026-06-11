@@ -200,7 +200,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
         {
             try
             {
-                shellExecutor.ExecutarComando(c, githubToken: repositorio.GitHubToken);
+                shellExecutor.ExecutarComando($"cd \"{menu.Diretorio}\"; {c}", githubToken: repositorio.GitHubToken);
                 ShellExecute.LogComando(c, "OK");
             }
             catch (Exception ex)

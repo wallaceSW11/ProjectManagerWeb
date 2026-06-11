@@ -71,6 +71,8 @@ dotnet tool install -g dotnet-reportgenerator-globaltool
 - NUNCA hardcodar secrets, API keys ou connection strings
 - **NUNCA git add, commit, push, pull, merge, rebase — NUNCA.** Responsabilidade exclusiva do usuário. O usuário revisa e commita pessoalmente. O skill `criar-mr` tem permissão total.
 - NUNCA inventar informação — investigue antes
+- NUNCA pular camadas: Component → Store → Service → API | Controller → Service → JsonService
+- **NUNCA criar ou rodar testes unitários.** Implementação e testes são ciclos separados: implemento, você revisa/testa manualmente, depois roda skill de testes separadamente.
 
 ## Git
 
@@ -78,3 +80,15 @@ Branches: `main`, `develop`, `feature/*`, `fix/*`, `chore/*`
 Commits: `tipo(escopo): descrição em pt-br`
 Tipos: feat, fix, chore, refactor, style, docs, test
 PRs sempre para `develop`. Commits atômicos. Sem secrets no commit.
+
+### Pós-merge
+
+Depois que uma PR é mergeada na `main`, o pipeline de release faz um commit de bump de versão.
+Para sincronizar a branch local:
+
+```bash
+git checkout <sua-branch>
+git pull origin main
+# ou
+git rebase main
+```

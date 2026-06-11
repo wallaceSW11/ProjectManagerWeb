@@ -17,7 +17,7 @@ export interface IMenu {
   tipo: 'APLICAR_ARQUIVO' | 'APLICAR_PASTA' | 'COMANDO_AVULSO';
   arquivos: IArquivo[];
   pastas: IPastaMenu[];
-  comandos: Array<{ comando: string }>;
+  comandos: string[];
   ativo: boolean;
 }
 
