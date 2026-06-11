@@ -345,8 +345,49 @@
     }
   };
 
-  const atualizarAgora = () => {
+  const atualizarAgora = async () => {
+    notificar(
+      'sucesso',
+      'Atualização iniciada',
+      'Acompanhe o progresso no terminal.'
+    );
     ComandosService.executarComandoAvulso({ comando: 'pmw update' });
+
+    notificar('aviso', 'Aguardando servidor reiniciar...');
+
+    const aguardarReinicio = () => {
+      return new Promise(resolve => {
+        const maxTentativas = 60;
+        const intervalo = 2000;
+        let servidorFicouOffline = false;
+        let tentativas = 0;
+
+        const verificar = async () => {
+          tentativas++;
+          try {
+            const resposta = await fetch('/api/versao');
+            if (resposta.ok && servidorFicouOffline) {
+              resolve();
+              return;
+            }
+          } catch {
+            servidorFicouOffline = true;
+          }
+
+          if (tentativas >= maxTentativas) {
+            resolve();
+            return;
+          }
+
+          setTimeout(verificar, intervalo);
+        };
+
+        setTimeout(verificar, intervalo);
+      });
+    };
+
+    await aguardarReinicio();
+    window.location.reload();
   };
 
   const verificarAtualizacaoManual = async () => {
