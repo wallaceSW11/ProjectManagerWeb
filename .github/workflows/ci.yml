@@ -79,9 +79,6 @@ jobs:
         with:
           dotnet-version: '9.x'
 
-      - name: Install ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
-
       - name: Cache NuGet
         uses: actions/cache@v4
         with:
@@ -98,74 +95,34 @@ jobs:
           --nologo
           --verbosity minimal
 
-      - name: Generate coverage report
-        working-directory: backend
-        run: reportgenerator
-          -reports:"tests/CoverageResults/**/coverage.cobertura.xml"
-          -targetdir:"tests/CoverageReport"
-          -reporttypes:Html
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: backend/tests/CoverageReport
-          retention-days: 7
-
-      - name: Show coverage summary
+      - name: Extract coverage and comment on PR
+        if: github.event_name == 'pull_request'
         working-directory: backend
         run: |
           COVERAGE_FILE=$(find tests/CoverageResults -name "coverage.cobertura.xml" -print -quit)
           if [ -n "$COVERAGE_FILE" ]; then
-            echo "COVERAGE_FILE=$PWD/$COVERAGE_FILE" >> $GITHUB_ENV
             COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' "$COVERAGE_FILE" | head -1)
             if [ -n "$COVERAGE" ]; then
               PERCENT=$(echo "$COVERAGE * 100" | bc -l | xargs printf "%.1f")
+              echo "COVERAGE_PCT=$PERCENT" >> $GITHUB_ENV
               echo "### Cobertura de linha: $PERCENT%" >> $GITHUB_STEP_SUMMARY
             fi
           fi
 
-      - name: Comment coverage on PR
+      - name: Post coverage comment
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            const coverageFile = process.env.COVERAGE_FILE;
-            if (!coverageFile) { console.log('No coverage file'); return; }
-
-            const xml = fs.readFileSync(coverageFile, 'utf8');
-            const classes = xml.match(/class name="[^"]*" filename="[^"]*" line-rate="[^"]*"/g) || [];
-
-            let total = [];
-            classes.forEach(c => {
-              const name = c.match(/class name="([^"]*)"/)[1].replace('ProjectManagerWeb.src.', '');
-              const file = c.match(/filename="([^"]*)"/)[1];
-              const rate = parseFloat(c.match(/line-rate="([^"]*)"/)[1]);
-              const pct = (rate * 100).toFixed(1);
-              total.push({ name, file, pct });
-            });
-
-            let lineCov = total.length > 0 ? total[0].pct : 'N/A';
-            if (total.length > 0) {
-              const sum = total.reduce((acc, t) => acc + parseFloat(t.pct), 0);
-              lineCov = (sum / total.length).toFixed(1);
-            }
-
-            let table = '| Arquivo | Cobertura |\n|---------|-----------|\n';
-            total.sort((a, b) => parseFloat(a.pct) - parseFloat(b.pct));
-            total.forEach(t => {
-              const icon = parseFloat(t.pct) >= 80 ? '🟢' : parseFloat(t.pct) >= 50 ? '🟡' : '🔴';
-              table += `| ${t.name} | ${icon} ${t.pct}% |\n`;
-            });
-
-            const body = `## 📊 Cobertura de testes\n\n**Média: ${lineCov}%**\n\n${table}\n\n📎 [Relatório HTML completo](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const pct = process.env.COVERAGE_PCT;
+            if (!pct) { console.log('No coverage to report'); return; }
+            const body = `## 📊 Cobertura: **${pct}%**`;
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            const existing = comments.find(c => c.body.includes('📊 Cobertura de testes'));
+            const existing = comments.find(c => c.body.includes('📊 Cobertura:'));
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
