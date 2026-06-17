@@ -289,7 +289,6 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
         }
         catch
         {
-            // Ignora erro de git — não é crítico
         }
     }
 

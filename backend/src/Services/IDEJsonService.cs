@@ -17,17 +17,13 @@ namespace ProjectManagerWeb.src.Services
             _filePath = Path.Combine(BasePath, "IDEs.json");
 
             if (!Directory.Exists(BasePath))
-            {
                 Directory.CreateDirectory(BasePath);
-            }
         }
 
         internal IDEJsonService(string testFilePath) : this()
         {
             _filePath = testFilePath;
         }
-
-        // --- MÉTODOS PÚBLICOS DO CRUD ---
 
         public async Task<List<IDEDTO>> GetAllAsync()
         {
@@ -47,7 +43,6 @@ namespace ProjectManagerWeb.src.Services
             {
                 var ides = await LerListaDoArquivoAsync(locked: true);
 
-                // Validação: não permitir nomes duplicados
                 if (ides.Exists(ide => ide.Nome.Equals(novaIDE.Nome, StringComparison.OrdinalIgnoreCase)))
                     throw new Exception("Já existe uma IDE com esse nome");
 
@@ -102,12 +97,6 @@ namespace ProjectManagerWeb.src.Services
             }
         }
 
-        /// <summary>
-        /// Verifica se uma IDE está sendo referenciada por algum projeto.
-        /// </summary>
-        /// <param name="identificador">Identificador da IDE a verificar.</param>
-        /// <param name="repositorioService">Serviço de repositórios para buscar referências.</param>
-        /// <returns>True se a IDE está em uso, False caso contrário.</returns>
         public async Task<bool> IsReferencedByProjectsAsync(Guid identificador, RepositorioJsonService repositorioService)
         {
             var repositorios = await repositorioService.GetAllAsync();
@@ -116,8 +105,6 @@ namespace ProjectManagerWeb.src.Services
                 .SelectMany(r => r.Projetos)
                 .Any(p => p.Comandos.IDEIdentificador == identificador);
         }
-
-        // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---
 
         private async Task<List<IDEDTO>> LerListaDoArquivoAsync(bool locked = false)
         {

@@ -21,7 +21,6 @@ public class GhosttyTerminal : ITerminalEmulator
 
     public List<string> ObterPerfis()
     {
-        // Ghostty não suporta perfis via CLI
         return [];
     }
 

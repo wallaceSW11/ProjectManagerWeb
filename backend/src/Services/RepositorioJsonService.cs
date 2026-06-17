@@ -22,17 +22,13 @@ namespace ProjectManagerWeb.src.Services
             _filePath = Path.Combine(BasePath, "repositorios.json");
 
             if (!Directory.Exists(BasePath))
-            {
                 Directory.CreateDirectory(BasePath);
-            }
         }
 
         internal RepositorioJsonService(string testFilePath) : this()
         {
             _filePath = testFilePath;
         }
-
-        // --- MÉTODOS PÚBLICOS DO CRUD ---
 
         public async Task<List<RepositorioRequestDTO>> GetAllAsync()
         {
@@ -175,8 +171,6 @@ namespace ProjectManagerWeb.src.Services
                 _semaphore.Release();
             }
         }
-
-        // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---
 
         private async Task<List<RepositorioRequestDTO>> LerListaDoArquivoAsync(bool locked = false)
         {
