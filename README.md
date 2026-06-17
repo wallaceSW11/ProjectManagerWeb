@@ -5,6 +5,8 @@
 > Gerencie seu ambiente de desenvolvimento do clone ao deploy com um clique.  
 > Uma interface web local que centraliza repositórios, projetos, IDEs e IIS.
 
+![PMW Screenshot](pmw.png)
+
 ---
 
 ## Sumário
