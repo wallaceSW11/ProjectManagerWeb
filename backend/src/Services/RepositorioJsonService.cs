@@ -40,7 +40,7 @@ namespace ProjectManagerWeb.src.Services
             return [.. repositorios.OrderBy(r => r.Indice)];
         }
 
-        public async Task<RepositorioRequestDTO?> GetByIdAsync(Guid identificador)
+        public virtual async Task<RepositorioRequestDTO?> GetByIdAsync(Guid identificador)
         {
             var repositorios = await LerListaDoArquivoAsync();
             return repositorios.FirstOrDefault(r => r.Identificador == identificador);
