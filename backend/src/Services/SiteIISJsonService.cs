@@ -17,17 +17,13 @@ namespace ProjectManagerWeb.src.Services
             _filePath = Path.Combine(BasePath, "sites-iis.json");
 
             if (!Directory.Exists(BasePath))
-            {
                 Directory.CreateDirectory(BasePath);
-            }
         }
 
         internal SiteIISJsonService(string testFilePath) : this()
         {
             _filePath = testFilePath;
         }
-
-        // --- MÉTODOS PÚBLICOS DO CRUD ---
 
         public async Task<List<SiteIISRequestDTO>> GetAllAsync()
         {
@@ -106,8 +102,6 @@ namespace ProjectManagerWeb.src.Services
                 _semaphore.Release();
             }
         }
-
-        // --- MÉTODOS PRIVADOS DE ACESSO AO ARQUIVO ---
 
         private async Task<List<SiteIISRequestDTO>> LerListaDoArquivoAsync(bool locked = false)
         {

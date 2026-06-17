@@ -18,6 +18,10 @@
     "criar-mr": {
       "template": "Use the criar-mr skill to create a Pull Request. Follow the skill workflow: check git status, commit if needed, push, and create PR.",
       "description": "Cria um Pull Request no GitHub (commit, push e PR)"
+    },
+    "pipeline": {
+      "template": "Use the pipeline skill to run the full delivery pipeline: diff analysis, test analysis, code style validation, test creation, commit, and PR.",
+      "description": "Pipeline completa: diff, testes, code style e MR"
     }
   }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -69,6 +70,38 @@ public class VersaoService(HttpClient httpClient)
         {
             return new VersaoResponseDTO(versaoAtual, null, null, null);
         }
+    }
+
+    public static void AtualizarAplicacao()
+    {
+        if (OperatingSystem.IsWindows())
+            ExecutarAtualizacaoWindows();
+        else
+            ExecutarAtualizacaoLinux();
+    }
+
+    private static void ExecutarAtualizacaoWindows()
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = "cmd.exe",
+            Arguments = "/c start \"PMW Update\" pwsh.exe -NoExit -Command \"pmw update\"",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        Process.Start(psi);
+    }
+
+    private static void ExecutarAtualizacaoLinux()
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = "bash",
+            Arguments = "-c \"nohup bash -c 'pmw update' > /tmp/pmw-update.log 2>&1 &\"",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        Process.Start(psi);
     }
 
     private static string ObterVersaoAtual()

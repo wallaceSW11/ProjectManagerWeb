@@ -30,24 +30,17 @@ public class ConfiguracaoService
         _filePath = test_filePath;
     }
 
-    /// <summary>
-    /// Obtém o objeto de configuração do arquivo JSON.
-    /// </summary>
     public async Task<ConfiguracaoRequestDTO> ObterConfiguracaoAsync()
     {
         await _semaphore.WaitAsync();
         try
         {
             if (!File.Exists(_filePath))
-            {
                 return new ConfiguracaoRequestDTO();
-            }
 
             var jsonString = await File.ReadAllTextAsync(_filePath);
             if (string.IsNullOrWhiteSpace(jsonString))
-            {
                 return new ConfiguracaoRequestDTO();
-            }
 
             var config = JsonSerializer.Deserialize<ConfiguracaoRequestDTO>(jsonString, _jsonOptions);
             return config ?? new ConfiguracaoRequestDTO();
@@ -58,9 +51,6 @@ public class ConfiguracaoService
         }
     }
 
-    /// <summary>
-    /// Salva (substitui) o objeto de configuração no arquivo JSON.
-    /// </summary>
     public async Task SalvarConfiguracaoAsync(ConfiguracaoRequestDTO configuracao)
     {
         await _semaphore.WaitAsync();

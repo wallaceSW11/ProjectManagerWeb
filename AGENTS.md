@@ -69,10 +69,10 @@ dotnet tool install -g dotnet-reportgenerator-globaltool
   ❌ `if (!item) { return; }`
 - **Evite if/else** — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
 - NUNCA hardcodar secrets, API keys ou connection strings
-- **NUNCA git add, commit, push, pull, merge, rebase — NUNCA.** Responsabilidade exclusiva do usuário. O usuário revisa e commita pessoalmente. O skill `criar-mr` tem permissão total.
+- **NUNCA git add, commit, push, pull, merge, rebase — NUNCA.** Responsabilidade exclusiva do usuário. O usuário revisa e commita pessoalmente. Os skills `criar-mr` e `pipeline` têm permissão total.
 - NUNCA inventar informação — investigue antes
 - NUNCA pular camadas: Component → Store → Service → API | Controller → Service → JsonService
-- **NUNCA criar ou rodar testes unitários.** Implementação e testes são ciclos separados: implemento, você revisa/testa manualmente, depois roda skill de testes separadamente.
+- **NUNCA criar ou rodar testes unitários.** Implementação e testes são ciclos separados: implemento, você revisa/testa manualmente, depois roda skill de testes separadamente. Exceção: o skill `pipeline` pode criar e rodar testes.
 
 ## Git
 
