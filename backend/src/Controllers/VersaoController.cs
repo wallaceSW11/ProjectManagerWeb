@@ -20,6 +20,13 @@ public class VersaoController(VersaoService versaoService) : ControllerBase
         return Ok(data.ToString("dd/MM/yyyy HH:mm:ss"));
     }
 
+    [HttpPost("atualizar-aplicacao")]
+    public IActionResult AtualizarAplicacao()
+    {
+        VersaoService.AtualizarAplicacao();
+        return Ok();
+    }
+
     [HttpGet("features")]
     public IActionResult Features() =>
         Ok(new

@@ -288,7 +288,6 @@
 <script setup>
   import { onBeforeUnmount, onMounted, ref } from 'vue';
   import logo from '@/assets/logo.svg';
-  import ComandosService from '@/services/ComandosService';
   import SnackbarNotificacao from '@/components/comum/SnackbarNotificacao.vue';
   import CloneGit from '@/components/clone/CloneGit.vue';
   import eventBus, { notificar } from '@/utils/eventBus';
@@ -328,12 +327,18 @@
   };
 
   const atualizarAgora = async () => {
+    try {
+      await versaoStore.atualizarAplicacao();
+    } catch {
+      notificar('erro', 'Falha ao iniciar atualização');
+      return;
+    }
+
     notificar(
       'sucesso',
       'Atualização iniciada',
       'Acompanhe o progresso no terminal.'
     );
-    ComandosService.executarComandoAvulso({ comando: 'pmw update' });
 
     notificar('aviso', 'Aguardando servidor reiniciar...');
 

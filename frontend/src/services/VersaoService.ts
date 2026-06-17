@@ -26,6 +26,10 @@ class VersaoService extends BaseApiService {
   async obterFeatures(): Promise<FeaturesResponse> {
     return await this.get<FeaturesResponse>('versao/features');
   }
+
+  async atualizarAplicacao(): Promise<void> {
+    await this.post('versao/atualizar-aplicacao', {});
+  }
 }
 
 export default new VersaoService();

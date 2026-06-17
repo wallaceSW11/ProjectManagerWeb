@@ -46,6 +46,10 @@ export const useVersaoStore = defineStore('versao', {
     async carregar(): Promise<void> {
       await this.verificarAtualizacao();
       setInterval(() => this.verificarAtualizacao(), INTERVALO_VERIFICACAO);
+    },
+
+    async atualizarAplicacao(): Promise<void> {
+      await VersaoService.atualizarAplicacao();
     }
   }
 });
