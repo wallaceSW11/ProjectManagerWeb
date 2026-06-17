@@ -184,7 +184,7 @@
           </v-icon>
         </v-btn>
 
-        <v-menu>
+        <v-menu close-on-content-click="false">
           <template v-slot:activator="{ props }">
             <v-btn
               icon
@@ -215,8 +215,14 @@
               </v-list-item-title>
             </v-list-item>
 
-            <v-list-item v-if="verificandoVersao">
+            <v-list-item v-if="versaoStore.carregando">
               <v-list-item-title class="text-body-2 text-grey">
+                <v-icon
+                  size="small"
+                  class="mr-1"
+                >
+                  mdi-loading mdi-spin
+                </v-icon>
                 Verificando...
               </v-list-item-title>
             </v-list-item>
@@ -233,19 +239,6 @@
                   mdi-alert
                 </v-icon>
                 Nova versão: {{ versaoStore.versaoNova }}
-              </v-list-item-title>
-            </v-list-item>
-
-            <v-list-item v-if="atualizado">
-              <v-list-item-title class="text-body-2 text-grey">
-                <v-icon
-                  size="small"
-                  class="mr-1"
-                  color="grey"
-                >
-                  mdi-check
-                </v-icon>
-                Você está atualizado
               </v-list-item-title>
             </v-list-item>
 
@@ -293,7 +286,7 @@
 </template>
 
 <script setup>
-  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+  import { onBeforeUnmount, onMounted, ref } from 'vue';
   import logo from '@/assets/logo.svg';
   import ComandosService from '@/services/ComandosService';
   import SnackbarNotificacao from '@/components/comum/SnackbarNotificacao.vue';
@@ -312,17 +305,6 @@
   const siteIISStore = useSiteIISStore();
   const versaoStore = useVersaoStore();
   const sitesParaDeploy = ref([]);
-
-  const verificandoVersao = computed(
-    () => versaoStore.carregando && !versaoStore.versaoAtual
-  );
-
-  const atualizado = computed(
-    () =>
-      versaoStore.versaoAtual &&
-      !versaoStore.temAtualizacao &&
-      !versaoStore.carregando
-  );
 
   const carregarSitesParaDeploy = async () => {
     try {
@@ -394,13 +376,8 @@
     await versaoStore.verificarAtualizacao();
     if (versaoStore.erro)
       notificar('erro', 'Falha ao verificar atualizações', versaoStore.erro);
-    else if (versaoStore.temAtualizacao)
-      notificar(
-        'sucesso',
-        'Nova versão disponível',
-        versaoStore.versaoNova ?? ''
-      );
-    else notificar('sucesso', 'Você está na versão mais recente');
+    else if (!versaoStore.temAtualizacao)
+      notificar('sucesso', 'Você está na versão mais recente');
   };
 
   const exibirCarregando = ref(true);
