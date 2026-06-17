@@ -170,7 +170,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
                 ShellExecute.LogComando($"File.Copy \"{a.Arquivo}\" -> \"{caminhoArquivoDestino}\"", "OK");
 
                 if (a.IgnorarGit)
-                    IgnorarArquivoNoGit(caminhoArquivoDestino);
+                    AplicarSkipWorktree(caminhoArquivoDestino);
             }
             catch (Exception ex)
             {
@@ -223,7 +223,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
             CopiarDiretorioRecursivo(subDir, Path.Combine(destino, Path.GetFileName(subDir)));
     }
 
-    private static void IgnorarArquivoNoGit(string caminhoArquivo)
+    private static void AplicarSkipWorktree(string caminhoArquivo)
     {
         try
         {
@@ -246,15 +246,14 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
 
             if (string.IsNullOrEmpty(raizGit) || processo.ExitCode != 0) return;
 
-            var caminhoRelativo = Path.GetRelativePath(raizGit, caminhoArquivo).Replace('\\', '/');
+            var caminhoRelativo = Path.GetRelativePath(raizGit, caminhoArquivo)
+                .Replace('\\', '/')
+                .TrimEnd('/');
 
-            var gitIgnorePath = Path.Combine(raizGit, ".gitignore");
-
-            var estaRastreado = false;
             var verificaRastreado = new ProcessStartInfo
             {
                 FileName = "git",
-                Arguments = $"-C \"{raizGit}\" ls-files --error-unmatch \"{caminhoRelativo}\"",
+                Arguments = $"-C \"{raizGit}\" ls-files \"{caminhoRelativo}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -262,22 +261,31 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
             };
 
             using var procVerifica = Process.Start(verificaRastreado);
-            if (procVerifica is not null)
-            {
-                procVerifica.WaitForExit();
-                estaRastreado = procVerifica.ExitCode == 0;
-            }
+            if (procVerifica is null) return;
 
-            if (estaRastreado)
+            var saida = procVerifica.StandardOutput.ReadToEnd().Trim();
+            procVerifica.WaitForExit();
+
+            if (string.IsNullOrEmpty(saida)) return;
+
+            var skipPsi = new ProcessStartInfo
             {
-                var comando = $"cd \"{raizGit}\"; git update-index --assume-unchanged \"{caminhoRelativo}\"; Exit;";
-                ShellExecute.ExecutarComando(comando);
-            }
-            else
-            {
-                var entrada = $"{caminhoRelativo}{Environment.NewLine}";
-                File.AppendAllText(gitIgnorePath, entrada);
-            }
+                FileName = "git",
+                Arguments = $"-C \"{raizGit}\" update-index --skip-worktree \"{caminhoRelativo}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var procSkip = Process.Start(skipPsi);
+            if (procSkip is null) return;
+
+            var erroSkip = procSkip.StandardError.ReadToEnd().Trim();
+            procSkip.WaitForExit();
+
+            if (procSkip.ExitCode != 0)
+                ShellExecute.LogComando($"skip-worktree falhou ({procSkip.ExitCode}) para {caminhoRelativo}: {erroSkip}", "ERRO");
         }
         catch
         {

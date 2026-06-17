@@ -682,13 +682,11 @@
   };
 
   const carregarPastas = async (): Promise<void> => {
-    pastas.value = [];
     try {
       const resposta = await carregandoAsync(async () => {
         return await PastasService.getPastas();
       });
 
-      // Garantir que os projetos sejam instâncias de ProjetoModel
       pastas.value = resposta.map((pasta: any) => {
         const pastaModel = new PastaModel(pasta);
         pastaModel.projetos =
@@ -751,7 +749,8 @@
   };
 
   const executarAcoes = async (): Promise<void> => {
-    // Executar ações do diretório (IDE/CLI)
+    localStorage.setItem(CHAVE_ABA_SELECIONADA, abaSelecionada.value);
+
     if (diretorioAcoes.value.includes('IDE')) {
       await abrirPastaNaIDE(pastaSelecionada.value as IPasta);
     }
