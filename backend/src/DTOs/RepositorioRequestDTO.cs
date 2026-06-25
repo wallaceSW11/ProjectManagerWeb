@@ -97,7 +97,8 @@ namespace ProjectManagerWeb.src.DTOs
         string Nome,
         List<PerfilMarcacaoProjetoDTO> Projetos,
         bool AbrirIDE = false,
-        bool AbrirCLI = false
+        bool AbrirCLI = false,
+        bool ExecutarAposAplicar = false
     );
 
     public sealed record PerfilMarcacaoProjetoDTO(

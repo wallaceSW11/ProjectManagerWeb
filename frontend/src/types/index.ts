@@ -105,6 +105,7 @@ export interface IPerfilMarcacao {
   projetos: IPerfilMarcacaoProjeto[];
   abrirIDE: boolean;
   abrirCLI: boolean;
+  executarAposAplicar: boolean;
 }
 
 export interface IPasta {

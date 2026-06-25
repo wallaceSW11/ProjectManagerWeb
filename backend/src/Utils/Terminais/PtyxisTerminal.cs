@@ -7,19 +7,19 @@ public class PtyxisTerminal : ITerminalEmulator
     public void Executar(string command, string? perfilTerminal = null, string? workingDirectory = null)
     {
         var trimmed = command.TrimEnd(' ', ';');
-        var execBash = !string.IsNullOrWhiteSpace(workingDirectory)
-            ? $"cd '{EscapeBash(workingDirectory)}' && exec bash"
-            : "exec bash";
+        var execShell = !string.IsNullOrWhiteSpace(workingDirectory)
+            ? $"cd '{EscapeBash(workingDirectory)}' && stty sane && exec \"$SHELL\""
+            : "stty sane && exec \"$SHELL\"";
         string args;
 
         if (!string.IsNullOrWhiteSpace(perfilTerminal))
         {
             var uuid = ResolverUuidPerfil(perfilTerminal);
-            args = $"--tab-with-profile=\"{uuid}\" -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); {execBash}\"";
+            args = $"--tab-with-profile=\"{uuid}\" -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); {execShell}\"";
         }
         else
         {
-            args = $"--tab -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); {execBash}\"";
+            args = $"--tab -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); {execShell}\"";
         }
 
         Process.Start(new ProcessStartInfo

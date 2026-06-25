@@ -111,9 +111,40 @@
               variant="underlined"
               hide-details
               clearable
-              style="width: 180px; min-width: 180px; padding-right: 8px"
+              style="width: 220px; min-width: 220px; padding-right: 8px"
               @update:modelValue="aplicarPerfil"
-            />
+            >
+              <template #item="{ props, item }">
+                <v-list-item v-bind="props">
+                  <template #title>
+                    <span class="d-flex align-center">
+                      {{ item.title }}
+                      <v-icon
+                        v-if="item.raw.executarAposAplicar"
+                        color="primary"
+                        size="small"
+                        class="ml-1"
+                      >
+                        mdi-flash
+                      </v-icon>
+                    </span>
+                  </template>
+                </v-list-item>
+              </template>
+              <template #selection="{ item }">
+                <span class="d-flex align-center">
+                  {{ item.title }}
+                  <v-icon
+                    v-if="item.raw.executarAposAplicar"
+                    color="primary"
+                    size="small"
+                    class="ml-1"
+                  >
+                    mdi-flash
+                  </v-icon>
+                </span>
+              </template>
+            </v-select>
             <v-tooltip text="Desmarcar todos">
               <template #activator="{ props }">
                 <v-icon
@@ -534,7 +565,9 @@
     return repo?.perfis || [];
   });
 
-  const aplicarPerfil = (identificadorPerfil: string | null): void => {
+  const aplicarPerfil = async (
+    identificadorPerfil: string | null
+  ): Promise<void> => {
     if (!identificadorPerfil) return;
 
     const perfil = perfisDisponiveis.value.find(
@@ -555,6 +588,8 @@
     });
 
     perfilSelecionadoId.value = null;
+
+    if (perfil.executarAposAplicar) await executarAcoes();
   };
 
   const focarPesquisa = (event: KeyboardEvent): void => {
@@ -615,6 +650,7 @@
 
   watch(abaSelecionada, novaAba => {
     localStorage.setItem(CHAVE_ABA_SELECIONADA, novaAba);
+    selecionarPastaDaAba(novaAba);
   });
 
   onUnmounted(() => {
@@ -658,7 +694,9 @@
       return;
     }
 
-    const diretorioSalvo = consultarPastaSelecionadaDoStorage();
+    const diretorioSalvo = consultarPastaSelecionadaDoStorage(
+      abaSelecionada.value
+    );
 
     if (!diretorioSalvo) {
       selecionarPasta(pastasDaAba[0]);
@@ -731,21 +769,39 @@
     salvarPastaSelecionadaNoStorage();
   };
 
-  const CHAVE_PASTA_SELECIONADA = 'PastaSelecionada';
+  const CHAVE_PASTA_SELECIONADA_POR_ABA = 'PastaSelecionadaPorAba';
 
   const salvarPastaSelecionadaNoStorage = (): void => {
+    const dados = consultarPastasSelecionadasStorage();
+    dados[abaSelecionada.value] = pastaSelecionada.value.diretorio;
     localStorage.setItem(
-      CHAVE_PASTA_SELECIONADA,
-      JSON.stringify(pastaSelecionada.value.diretorio)
+      CHAVE_PASTA_SELECIONADA_POR_ABA,
+      JSON.stringify(dados)
     );
   };
 
-  const consultarPastaSelecionadaDoStorage = (): string | null => {
-    const pasta = localStorage.getItem(CHAVE_PASTA_SELECIONADA);
+  const consultarPastasSelecionadasStorage = (): Record<string, string> => {
+    const dados = localStorage.getItem(CHAVE_PASTA_SELECIONADA_POR_ABA);
+    return dados ? JSON.parse(dados) : {};
+  };
 
-    if (!pasta) return null;
+  const consultarPastaSelecionadaDoStorage = (aba: string): string | null => {
+    const dados = consultarPastasSelecionadasStorage();
+    return dados[aba] || null;
+  };
 
-    return JSON.parse(pasta);
+  const selecionarPastaDaAba = (aba: string): void => {
+    if (!pastas.value.length) return;
+
+    const pastasDaAba = pastas.value.filter((p: IPasta) => p.nomeAba === aba);
+    if (!pastasDaAba.length) return;
+
+    const diretorioSalvo = consultarPastaSelecionadaDoStorage(aba);
+    const selecionada = diretorioSalvo
+      ? pastasDaAba.find((p: IPasta) => p.diretorio === diretorioSalvo)
+      : null;
+
+    selecionarPasta(selecionada || pastasDaAba[0]);
   };
 
   const executarAcoes = async (): Promise<void> => {

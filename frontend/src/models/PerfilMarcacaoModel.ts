@@ -7,6 +7,7 @@ export default class PerfilMarcacaoModel implements IPerfilMarcacao {
   projetos: PerfilMarcacaoProjetoModel[];
   abrirIDE: boolean;
   abrirCLI: boolean;
+  executarAposAplicar: boolean;
 
   constructor(obj: Partial<IPerfilMarcacao> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -15,5 +16,6 @@ export default class PerfilMarcacaoModel implements IPerfilMarcacao {
       obj.projetos?.map(p => new PerfilMarcacaoProjetoModel(p)) || [];
     this.abrirIDE = obj.abrirIDE || false;
     this.abrirCLI = obj.abrirCLI || false;
+    this.executarAposAplicar = obj.executarAposAplicar || false;
   }
 }

@@ -17,6 +17,13 @@
         fixed-header
         height="300"
       >
+        <template #[`item.executarAposAplicar`]="{ item }">
+          <v-icon :color="item.executarAposAplicar ? 'green' : 'red'">
+            {{
+              item.executarAposAplicar ? 'mdi-check-bold' : 'mdi-close-thick'
+            }}
+          </v-icon>
+        </template>
         <template #[`item.actions`]="{ item }">
           <IconeComTooltip
             icone="mdi-pencil"
@@ -54,6 +61,15 @@
           :rules="obrigatorio"
           placeholder="Ex: Iniciar tudo, Só IDE, Build completo"
           autocomplete="off"
+        />
+
+        <v-checkbox
+          v-model="perfilSelecionado.executarAposAplicar"
+          label="Executar automaticamente após aplicar"
+          hide-details
+          color="primary"
+          density="compact"
+          class="mb-3"
         />
       </v-form>
 
@@ -164,6 +180,12 @@
 
   const colunas = [
     { title: 'Nome', key: 'nome', align: 'start' },
+    {
+      title: 'Executar',
+      key: 'executarAposAplicar',
+      align: 'center',
+      width: '90px'
+    },
     { title: 'Ações', key: 'actions', align: 'center', width: '120px' }
   ] as const;
 
