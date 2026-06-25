@@ -111,9 +111,40 @@
               variant="underlined"
               hide-details
               clearable
-              style="width: 180px; min-width: 180px; padding-right: 8px"
+              style="width: 220px; min-width: 220px; padding-right: 8px"
               @update:modelValue="aplicarPerfil"
-            />
+            >
+              <template #item="{ props, item }">
+                <v-list-item v-bind="props">
+                  <template #title>
+                    <span class="d-flex align-center">
+                      {{ item.title }}
+                      <v-icon
+                        v-if="item.raw.executarAposAplicar"
+                        color="primary"
+                        size="small"
+                        class="ml-1"
+                      >
+                        mdi-flash
+                      </v-icon>
+                    </span>
+                  </template>
+                </v-list-item>
+              </template>
+              <template #selection="{ item }">
+                <span class="d-flex align-center">
+                  {{ item.title }}
+                  <v-icon
+                    v-if="item.raw.executarAposAplicar"
+                    color="primary"
+                    size="small"
+                    class="ml-1"
+                  >
+                    mdi-flash
+                  </v-icon>
+                </span>
+              </template>
+            </v-select>
             <v-tooltip text="Desmarcar todos">
               <template #activator="{ props }">
                 <v-icon
@@ -534,7 +565,9 @@
     return repo?.perfis || [];
   });
 
-  const aplicarPerfil = (identificadorPerfil: string | null): void => {
+  const aplicarPerfil = async (
+    identificadorPerfil: string | null
+  ): Promise<void> => {
     if (!identificadorPerfil) return;
 
     const perfil = perfisDisponiveis.value.find(
@@ -555,6 +588,8 @@
     });
 
     perfilSelecionadoId.value = null;
+
+    if (perfil.executarAposAplicar) await executarAcoes();
   };
 
   const focarPesquisa = (event: KeyboardEvent): void => {
