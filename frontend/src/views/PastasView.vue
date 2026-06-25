@@ -615,6 +615,7 @@
 
   watch(abaSelecionada, novaAba => {
     localStorage.setItem(CHAVE_ABA_SELECIONADA, novaAba);
+    selecionarPastaDaAba(novaAba);
   });
 
   onUnmounted(() => {
@@ -658,7 +659,9 @@
       return;
     }
 
-    const diretorioSalvo = consultarPastaSelecionadaDoStorage();
+    const diretorioSalvo = consultarPastaSelecionadaDoStorage(
+      abaSelecionada.value
+    );
 
     if (!diretorioSalvo) {
       selecionarPasta(pastasDaAba[0]);
@@ -731,21 +734,39 @@
     salvarPastaSelecionadaNoStorage();
   };
 
-  const CHAVE_PASTA_SELECIONADA = 'PastaSelecionada';
+  const CHAVE_PASTA_SELECIONADA_POR_ABA = 'PastaSelecionadaPorAba';
 
   const salvarPastaSelecionadaNoStorage = (): void => {
+    const dados = consultarPastasSelecionadasStorage();
+    dados[abaSelecionada.value] = pastaSelecionada.value.diretorio;
     localStorage.setItem(
-      CHAVE_PASTA_SELECIONADA,
-      JSON.stringify(pastaSelecionada.value.diretorio)
+      CHAVE_PASTA_SELECIONADA_POR_ABA,
+      JSON.stringify(dados)
     );
   };
 
-  const consultarPastaSelecionadaDoStorage = (): string | null => {
-    const pasta = localStorage.getItem(CHAVE_PASTA_SELECIONADA);
+  const consultarPastasSelecionadasStorage = (): Record<string, string> => {
+    const dados = localStorage.getItem(CHAVE_PASTA_SELECIONADA_POR_ABA);
+    return dados ? JSON.parse(dados) : {};
+  };
 
-    if (!pasta) return null;
+  const consultarPastaSelecionadaDoStorage = (aba: string): string | null => {
+    const dados = consultarPastasSelecionadasStorage();
+    return dados[aba] || null;
+  };
 
-    return JSON.parse(pasta);
+  const selecionarPastaDaAba = (aba: string): void => {
+    if (!pastas.value.length) return;
+
+    const pastasDaAba = pastas.value.filter((p: IPasta) => p.nomeAba === aba);
+    if (!pastasDaAba.length) return;
+
+    const diretorioSalvo = consultarPastaSelecionadaDoStorage(aba);
+    const selecionada = diretorioSalvo
+      ? pastasDaAba.find((p: IPasta) => p.diretorio === diretorioSalvo)
+      : null;
+
+    selecionarPasta(selecionada || pastasDaAba[0]);
   };
 
   const executarAcoes = async (): Promise<void> => {
