@@ -1,6 +1,7 @@
 <template>
-  <v-container>
-    <div class="d-flex flex-column">
+  <v-row class="d-flex justify-center pt-5 px-6">
+    <v-col cols="12" lg="10">
+      <div class="d-flex flex-column">
       <v-row no-gutters>
         <v-col
           cols="8"
@@ -446,8 +447,8 @@
         </v-col>
       </v-row>
     </div>
-  </v-container>
-
+    </v-col>
+  </v-row>
   <CadastroPasta
     v-model="exibirModalPasta"
     :pasta="pastaSelecionada"
