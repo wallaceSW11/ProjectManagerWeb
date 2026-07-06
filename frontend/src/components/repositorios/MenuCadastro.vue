@@ -16,7 +16,7 @@
           :items="repositorio.menus"
           hide-default-footer
           fixed-header
-          height="300"
+          height="calc(100dvh - 400px)"
         >
           <template #[`item.tipo`]="{ item }">
             {{ formatarTipo(item.tipo) }}

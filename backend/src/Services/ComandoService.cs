@@ -292,6 +292,98 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
         }
     }
 
+    public static List<string> RemoverSkipWorktree(string diretorio)
+    {
+        var resultados = new List<string>();
+
+        try
+        {
+            var inicioPsi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"-C \"{diretorio}\" rev-parse --show-toplevel",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var procRaiz = Process.Start(inicioPsi);
+            if (procRaiz is null) return ["Erro ao iniciar processo"];
+
+            var raizGit = procRaiz.StandardOutput.ReadToEnd().Trim();
+            var erroRaiz = procRaiz.StandardError.ReadToEnd().Trim();
+            procRaiz.WaitForExit();
+
+            if (procRaiz.ExitCode != 0 || string.IsNullOrEmpty(raizGit))
+            {
+                resultados.Add($"Diretório não é um repositório git: {erroRaiz}");
+                return resultados;
+            }
+
+            var listarPsi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"-C \"{raizGit}\" ls-files -v",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var procListar = Process.Start(listarPsi);
+            if (procListar is null) return ["Erro ao listar arquivos"];
+
+            var saida = procListar.StandardOutput.ReadToEnd();
+            procListar.WaitForExit();
+
+            var arquivosComSkip = saida
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Where(l => l.StartsWith('S'))
+                .Select(l => l[2..].Trim())
+                .Where(l => !string.IsNullOrEmpty(l))
+                .ToList();
+
+            if (arquivosComSkip.Count == 0)
+            {
+                resultados.Add("Nenhum arquivo com skip-worktree encontrado");
+                return resultados;
+            }
+
+            foreach (var arquivo in arquivosComSkip)
+            {
+                var removerPsi = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = $"-C \"{raizGit}\" update-index --no-skip-worktree \"{arquivo}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var procRemover = Process.Start(removerPsi);
+                if (procRemover is null)
+                {
+                    resultados.Add($"{arquivo}: erro ao iniciar processo");
+                    continue;
+                }
+
+                var erro = procRemover.StandardError.ReadToEnd().Trim();
+                procRemover.WaitForExit();
+
+                resultados.Add($"{arquivo}: {(procRemover.ExitCode == 0 ? "OK" : $"FALHOU: {erro}")}");
+            }
+
+            ShellExecute.LogComando($"ReverterSkipWorktree em {raizGit}", $"{arquivosComSkip.Count} arquivo(s) processado(s)");
+        }
+        catch (Exception ex)
+        {
+            resultados.Add($"Erro: {ex.Message}");
+        }
+
+        return resultados;
+    }
+
     public async Task<bool> AbrirPastaIDE(AbrirPastaIDERequestDTO request)
     {
         var ide = await ideJsonService.GetByIdAsync(request.IDEIdentificador) ?? throw new Exception("IDE não encontrada");

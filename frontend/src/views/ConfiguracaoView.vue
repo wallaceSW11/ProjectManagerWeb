@@ -2,9 +2,15 @@
   <v-container>
     <v-row no-gutters>
       <v-col cols="12">
-        <div class="d-flex justify-space-between">
-          <div>
+        <div class="d-flex justify-space-between align-center">
+          <div class="d-flex align-center ga-2">
             <h1>Configurações</h1>
+            <IconeComTooltip
+              icone="mdi-folder-open-outline"
+              texto="Abrir local do banco de dados"
+              :acao="abrirBancoPath"
+              top
+            />
           </div>
         </div>
       </v-col>
@@ -92,6 +98,40 @@
                     />
                   </template>
                 </v-data-table>
+              </div>
+
+              <v-divider class="my-4" />
+
+              <div>
+                <div class="d-flex align-center mb-2">
+                  <h4 class="text-body-1">Detectados no VS Code</h4>
+                  <v-icon
+                    v-if="carregandoPerfisDetectados"
+                    size="small"
+                    class="ml-2"
+                    color="primary"
+                  >
+                    mdi-loading mdi-spin
+                  </v-icon>
+                </div>
+                <div
+                  v-if="perfisVSCodeDetectados.length === 0 && !carregandoPerfisDetectados"
+                  class="text-medium-emphasis text-caption"
+                >
+                  Nenhum perfil detectado no VS Code
+                </div>
+                <v-chip-group v-if="perfisVSCodeDetectados.length > 0">
+                  <v-chip
+                    v-for="perfil in perfisVSCodeDetectados"
+                    :key="perfil"
+                    variant="outlined"
+                    size="small"
+                    color="primary"
+                  >
+                    <v-icon start>mdi-account</v-icon>
+                    {{ perfil }}
+                  </v-chip>
+                </v-chip-group>
               </div>
             </div>
           </v-tabs-window-item>
@@ -203,9 +243,11 @@
   } from '@/types';
   import ConfiguracaoModel from '../models/ConfiguracaoModel';
   import ConfiguracaoService from '../services/ConfiguracaoService';
+  import ComandosService from '@/services/ComandosService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { useFeaturesStore } from '@/stores/features';
   import { notificar } from '@/utils/eventBus';
+  import IconeComTooltip from '@/components/comum/botao/IconeComTooltip.vue';
 
   const configuracaoStore = useConfiguracaoStore();
   const featuresStore = useFeaturesStore();
@@ -214,6 +256,8 @@
   const abaAtiva = ref<number>(0);
   const terminaisLinux = ['ptyxis', 'ghostty'];
   const nomePerfil = ref<string>(''); // input do perfil
+  const perfisVSCodeDetectados = ref<string[]>([]);
+  const carregandoPerfisDetectados = ref<boolean>(false);
   const nomeCliNovo = ref<string>('');
   const comandoCliNovo = ref<string>('');
   const nomePastaCentralizadora = ref<string>('');
@@ -222,7 +266,20 @@
 
   onMounted(() => {
     Object.assign(configuracao, new ConfiguracaoModel(configuracaoStore));
+    carregarPerfisVSCodeDetectados();
   });
+
+  const carregarPerfisVSCodeDetectados = async (): Promise<void> => {
+    carregandoPerfisDetectados.value = true;
+    try {
+      perfisVSCodeDetectados.value =
+        await ConfiguracaoService.obterPerfisVSCodeDetectados();
+    } catch {
+      perfisVSCodeDetectados.value = [];
+    } finally {
+      carregandoPerfisDetectados.value = false;
+    }
+  };
 
   const colunas = reactive([
     { title: 'Perfil', key: 'nome', align: 'start' },
@@ -409,6 +466,18 @@
       notificar('sucesso', 'Pasta centralizadora removida');
     } catch (error: any) {
       notificar('erro', 'Falha ao remover pasta centralizadora', error.message);
+    }
+  };
+
+  const abrirBancoPath = async (): Promise<void> => {
+    try {
+      const caminho = await ConfiguracaoService.obterCaminhoBanco();
+      const explorador = featuresStore.isWindows ? 'explorer' : 'xdg-open';
+      await ComandosService.executarComandoAvulso({
+        comando: `"${explorador}" "${caminho}"`
+      });
+    } catch (error: any) {
+      notificar('erro', 'Falha ao abrir diretório', error.message);
     }
   };
 </script>

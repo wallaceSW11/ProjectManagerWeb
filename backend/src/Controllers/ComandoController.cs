@@ -47,4 +47,14 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
         var resultado = await comandoService.AbrirPastaIDE(request);
         return Ok(resultado);
     }
+
+    [HttpPost("reverter-skip-worktree")]
+    public IActionResult ReverterSkipWorktree([FromBody] ComandoAvulsoRequestDTO request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Comando))
+            return BadRequest("Diretório não informado.");
+
+        var resultados = ComandoService.RemoverSkipWorktree(request.Comando);
+        return Ok(resultados);
+    }
 }
