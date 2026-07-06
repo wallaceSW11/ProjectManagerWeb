@@ -47,6 +47,12 @@ class ComandosService extends BaseApiService {
   async abrirPastaIDE(request: AbrirPastaIDE): Promise<void> {
     return await this.post('comandos/abrir-pasta-ide', request);
   }
+
+  async reverterSkipWorktree(diretorio: string): Promise<string[]> {
+    return await this.post('comandos/reverter-skip-worktree', {
+      comando: diretorio
+    });
+  }
 }
 
 export default new ComandosService();

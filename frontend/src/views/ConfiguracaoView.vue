@@ -2,9 +2,15 @@
   <v-container>
     <v-row no-gutters>
       <v-col cols="12">
-        <div class="d-flex justify-space-between">
-          <div>
+        <div class="d-flex justify-space-between align-center">
+          <div class="d-flex align-center ga-2">
             <h1>Configurações</h1>
+            <IconeComTooltip
+              icone="mdi-folder-open-outline"
+              texto="Abrir local do banco de dados"
+              :acao="abrirBancoPath"
+              top
+            />
           </div>
         </div>
       </v-col>
@@ -203,9 +209,11 @@
   } from '@/types';
   import ConfiguracaoModel from '../models/ConfiguracaoModel';
   import ConfiguracaoService from '../services/ConfiguracaoService';
+  import ComandosService from '@/services/ComandosService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { useFeaturesStore } from '@/stores/features';
   import { notificar } from '@/utils/eventBus';
+  import IconeComTooltip from '@/components/comum/botao/IconeComTooltip.vue';
 
   const configuracaoStore = useConfiguracaoStore();
   const featuresStore = useFeaturesStore();
@@ -409,6 +417,18 @@
       notificar('sucesso', 'Pasta centralizadora removida');
     } catch (error: any) {
       notificar('erro', 'Falha ao remover pasta centralizadora', error.message);
+    }
+  };
+
+  const abrirBancoPath = async (): Promise<void> => {
+    try {
+      const caminho = await ConfiguracaoService.obterCaminhoBanco();
+      const explorador = featuresStore.isWindows ? 'explorer' : 'xdg-open';
+      await ComandosService.executarComandoAvulso({
+        comando: `"${explorador}" "${caminho}"`
+      });
+    } catch (error: any) {
+      notificar('erro', 'Falha ao abrir diretório', error.message);
     }
   };
 </script>

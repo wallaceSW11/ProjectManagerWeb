@@ -200,6 +200,7 @@
                   @ocultar-pasta="ocultarPasta"
                   @excluir-pasta="excluirPasta"
                   @toggle-fixar="toggleFixarPasta"
+                  @reverter-skip-worktree="reverterSkipWorktree"
                 />
               </template>
             </draggable>
@@ -231,6 +232,7 @@
                   @ocultar-pasta="ocultarPasta"
                   @excluir-pasta="excluirPasta"
                   @toggle-fixar="toggleFixarPasta"
+                  @reverter-skip-worktree="reverterSkipWorktree"
                 />
               </template>
             </draggable>
@@ -246,8 +248,7 @@
               <div
                 v-if="
                   pastaSelecionada?.projetos.length === 0 &&
-                  !ideDisponivel &&
-                  !cliDisponivel
+                  !podeExibirDiretorio
                 "
               >
                 Não há projetos disponíveis.
@@ -255,7 +256,7 @@
 
               <template v-else>
                 <v-card
-                  v-if="ideDisponivel || cliDisponivel"
+                  v-if="podeExibirDiretorio"
                   class="mb-2"
                   style="background-color: #2d2d30"
                 >
@@ -530,6 +531,13 @@
     () => !!pastaSelecionada.value.ideIdentificador
   );
   const cliDisponivel = computed(() => !!pastaSelecionada.value.cliComando);
+  const repositorioAssociado = computed(
+    () => !!pastaSelecionada.value.repositorioId
+  );
+  const podeExibirDiretorio = computed(
+    () =>
+      ideDisponivel.value || cliDisponivel.value || repositorioAssociado.value
+  );
 
   const abasDisponiveis = computed(() => {
     const abas = new Set<string>();
@@ -982,30 +990,6 @@
         executarComandoAvulso(comando);
       }
     },
-    {
-      identificador: 4,
-      titulo: 'Baixar histórico completo (git fetch --unshallow)',
-      icone: 'mdi-source-branch-sync',
-      acao: (projeto: any) => {
-        const sep = featuresStore.pathSeparator;
-        const diretorio = `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}`;
-        executarComandoAvulso(`cd "${diretorio}"; git fetch --unshallow;`);
-      }
-    },
-    {
-      identificador: 6,
-      titulo: 'Comando avulso',
-      icone: 'mdi-console-line',
-      acao: (projeto: any) => {
-        const sep = featuresStore.pathSeparator;
-        const dir = projeto.subdiretorio
-          ? `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}${sep}${projeto.subdiretorio}`
-          : `${pastaSelecionada.value.diretorio}${sep}${projeto.nomeRepositorio}`;
-        const comando = prompt(`Digite o comando para executar em:\n${dir}`);
-        if (!comando) return;
-        executarComandoAvulso(`cd "${dir}"; ${comando};`);
-      }
-    }
   ];
 
   const menusProjetoDisponiveis = (projeto: any): MenuProjeto[] => {
@@ -1171,6 +1155,36 @@
     } catch (error) {
       console.error('Falha ao excluir pasta:', error);
       notificar('erro', 'Falha ao excluir pasta', String(error));
+    }
+  };
+
+  const reverterSkipWorktree = async (pasta: IPasta): Promise<void> => {
+    const sep = featuresStore.pathSeparator;
+    const repoDir = pasta.nomeRepositorio
+      ? `${pasta.diretorio}${sep}${pasta.nomeRepositorio}`
+      : pasta.diretorio;
+    const confirmado = confirm(
+      `Remover skip-worktree de todos os arquivos?\n\n${repoDir}`
+    );
+    if (!confirmado) return;
+
+    try {
+      const resultados = await ComandosService.reverterSkipWorktree(repoDir);
+      const sucessos = resultados.filter(r => r.includes(': OK')).length;
+      const falhas = resultados.filter(
+        r => !r.includes('OK') && !r.includes('Nenhum') && !r.includes('não é um repositório')
+      );
+
+      if (sucessos > 0)
+        notificar('sucesso', `Skip-worktree revertido: ${sucessos} arquivo(s)`);
+
+      if (resultados.length > 0 && sucessos === 0)
+        notificar('aviso', resultados[0]);
+
+      if (falhas.length > 0)
+        notificar('erro', `${falhas.length} falha(s)`, falhas.join('\n'));
+    } catch (error) {
+      notificar('erro', 'Falha ao reverter skip-worktree', String(error));
     }
   };
 

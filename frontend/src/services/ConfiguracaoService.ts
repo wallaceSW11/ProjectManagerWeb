@@ -36,6 +36,13 @@ class ConfiguracaoService extends BaseApiService {
       `configuracoes/pastas-centralizadoras/${encodeURIComponent(nome)}`
     );
   }
+
+  async obterCaminhoBanco(): Promise<string> {
+    const resposta = await this.get<{ caminho: string }>(
+      'configuracoes/caminho-banco'
+    );
+    return resposta.caminho;
+  }
 }
 
 export default new ConfiguracaoService();

@@ -143,6 +143,20 @@
                 class="my-2"
               />
 
+              <v-list-item
+                @click.stop="emit('reverterSkipWorktree', pasta)"
+              >
+                <v-list-item-title>
+                  <v-icon
+                    color="warning"
+                    class="px-3"
+                  >
+                    mdi-source-branch-sync
+                  </v-icon>
+                  Reverter skip-worktree
+                </v-list-item-title>
+              </v-list-item>
+
               <v-list-item @click.stop="emit('excluirPasta', pasta.diretorio)">
                 <v-list-item-title>
                   <v-icon
@@ -202,6 +216,7 @@
     ocultarPasta: [diretorio: string];
     excluirPasta: [diretorio: string];
     toggleFixar: [pasta: IPasta];
+    reverterSkipWorktree: [pasta: IPasta];
   }>();
 
   const menuAberto = ref<boolean>(false);

@@ -124,7 +124,7 @@
         :headers="colunasCodigosTarefa"
         hide-default-footer
         fixed-header
-        height="300"
+        height="calc(100dvh - 510px)"
       >
         <template #[`item.criarBranchRemoto`]="{ item }">
           <v-icon
