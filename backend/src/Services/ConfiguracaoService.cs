@@ -157,4 +157,40 @@ public class ConfiguracaoService
 
         await SalvarConfiguracaoAsync(configuracao with { PastasCentralizadoras = atualizadas });
     }
+
+    public static List<string> DetectarPerfisVSCode()
+    {
+        try
+        {
+            var storagePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "Code", "User", "globalStorage", "storage.json"
+            );
+
+            if (!File.Exists(storagePath)) return [];
+
+            var json = File.ReadAllText(storagePath);
+            if (string.IsNullOrWhiteSpace(json)) return [];
+
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("userDataProfiles", out var profiles)) return [];
+
+            var nomes = new List<string>();
+            foreach (var profile in profiles.EnumerateArray())
+            {
+                if (profile.TryGetProperty("name", out var nameProp))
+                {
+                    var nome = nameProp.GetString();
+                    if (!string.IsNullOrWhiteSpace(nome))
+                        nomes.Add(nome);
+                }
+            }
+
+            return nomes;
+        }
+        catch
+        {
+            return [];
+        }
+    }
 }

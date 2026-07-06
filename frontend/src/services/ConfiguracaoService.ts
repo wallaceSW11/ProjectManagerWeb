@@ -43,6 +43,10 @@ class ConfiguracaoService extends BaseApiService {
     );
     return resposta.caminho;
   }
+
+  async obterPerfisVSCodeDetectados(): Promise<string[]> {
+    return await this.get<string[]>('configuracoes/perfis-vscode-detectados');
+  }
 }
 
 export default new ConfiguracaoService();
