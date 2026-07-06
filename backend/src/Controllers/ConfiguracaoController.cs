@@ -13,9 +13,17 @@ namespace ProjectManagerWeb.src.Controllers
         public IActionResult ObterCaminhoBanco() =>
             Ok(new { caminho = PathHelper.BancoPath });
 
-        [HttpGet("perfis-vscode-detectados")]
-        public IActionResult ObterPerfisVSCodeDetectados() =>
-            Ok(ConfiguracaoService.DetectarPerfisVSCode());
+        [HttpGet("perfis-ide")]
+        public IActionResult ObterPerfisIDE([FromQuery] string? ide)
+        {
+            var perfis = ide?.ToLower() switch
+            {
+                "vs code" => ConfiguracaoService.DetectarPerfisVSCode(),
+                "kiro" => ConfiguracaoService.DetectarPerfisKiro(),
+                _ => []
+            };
+            return Ok(perfis);
+        }
 
         [HttpGet]
         public async Task<IActionResult> ObterConfiguracao()

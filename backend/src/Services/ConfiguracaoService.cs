@@ -158,13 +158,19 @@ public class ConfiguracaoService
         await SalvarConfiguracaoAsync(configuracao with { PastasCentralizadoras = atualizadas });
     }
 
-    public static List<string> DetectarPerfisVSCode()
+    public static List<string> DetectarPerfisVSCode() =>
+        LerPerfisIde("Code");
+
+    public static List<string> DetectarPerfisKiro() =>
+        LerPerfisIde("Kiro");
+
+    private static List<string> LerPerfisIde(string ideFolder)
     {
         try
         {
             var storagePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "Code", "User", "globalStorage", "storage.json"
+                ideFolder, "User", "globalStorage", "storage.json"
             );
 
             if (!File.Exists(storagePath)) return [];

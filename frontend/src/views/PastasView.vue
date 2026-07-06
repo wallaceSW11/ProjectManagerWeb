@@ -1,6 +1,7 @@
 <template>
-  <v-container>
-    <div class="d-flex flex-column">
+  <v-row class="d-flex justify-center pt-5 px-6">
+    <v-col cols="12" lg="10">
+      <div class="d-flex flex-column">
       <v-row no-gutters>
         <v-col
           cols="8"
@@ -446,8 +447,8 @@
         </v-col>
       </v-row>
     </div>
-  </v-container>
-
+    </v-col>
+  </v-row>
   <CadastroPasta
     v-model="exibirModalPasta"
     :pasta="pastaSelecionada"
@@ -989,7 +990,7 @@
           : `cd "${dir}";`;
         executarComandoAvulso(comando);
       }
-    },
+    }
   ];
 
   const menusProjetoDisponiveis = (projeto: any): MenuProjeto[] => {
@@ -1172,7 +1173,10 @@
       const resultados = await ComandosService.reverterSkipWorktree(repoDir);
       const sucessos = resultados.filter(r => r.includes(': OK')).length;
       const falhas = resultados.filter(
-        r => !r.includes('OK') && !r.includes('Nenhum') && !r.includes('não é um repositório')
+        r =>
+          !r.includes('OK') &&
+          !r.includes('Nenhum') &&
+          !r.includes('não é um repositório')
       );
 
       if (sucessos > 0)

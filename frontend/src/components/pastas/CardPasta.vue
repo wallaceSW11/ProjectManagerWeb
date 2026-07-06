@@ -143,9 +143,7 @@
                 class="my-2"
               />
 
-              <v-list-item
-                @click.stop="emit('reverterSkipWorktree', pasta)"
-              >
+              <v-list-item @click.stop="emit('reverterSkipWorktree', pasta)">
                 <v-list-item-title>
                   <v-icon
                     color="warning"

@@ -184,7 +184,10 @@
           </v-icon>
         </v-btn>
 
-        <v-menu close-on-content-click="false">
+        <v-menu
+          v-model="menuAtualizacaoAberto"
+          close-on-content-click="false"
+        >
           <template v-slot:activator="{ props }">
             <v-btn
               icon
@@ -246,7 +249,7 @@
 
             <v-list-item
               v-if="versaoStore.temAtualizacao"
-              @click="atualizarAgora"
+              @click.stop="atualizarAgora"
             >
               <v-list-item-title class="text-body-2">
                 <v-icon
@@ -260,7 +263,7 @@
               </v-list-item-title>
             </v-list-item>
 
-            <v-list-item @click="verificarAtualizacaoManual">
+            <v-list-item @click.stop="menuAtualizacaoAberto = true; verificarAtualizacaoManual()">
               <v-list-item-title class="text-body-2">
                 <v-icon
                   size="small"
@@ -381,10 +384,13 @@
     await versaoStore.verificarAtualizacao();
     if (versaoStore.erro)
       notificar('erro', 'Falha ao verificar atualizações', versaoStore.erro);
-    else if (!versaoStore.temAtualizacao)
+    else if (versaoStore.temAtualizacao)
+      notificar('sucesso', `Nova versão disponível: ${versaoStore.versaoNova}`);
+    else
       notificar('sucesso', 'Você está na versão mais recente');
   };
 
+  const menuAtualizacaoAberto = ref(false);
   const exibirCarregando = ref(true);
   const exibirConteudoCarregando = ref(false);
   const mensagem = ref('Carregando...');
