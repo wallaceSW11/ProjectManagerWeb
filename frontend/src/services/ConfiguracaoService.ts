@@ -44,8 +44,10 @@ class ConfiguracaoService extends BaseApiService {
     return resposta.caminho;
   }
 
-  async obterPerfisVSCodeDetectados(): Promise<string[]> {
-    return await this.get<string[]>('configuracoes/perfis-vscode-detectados');
+  async obterPerfisIDE(ideNome: string): Promise<string[]> {
+    return await this.get<string[]>(
+      `configuracoes/perfis-ide?ide=${encodeURIComponent(ideNome)}`
+    );
   }
 }
 

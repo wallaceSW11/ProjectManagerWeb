@@ -18,7 +18,6 @@
       <v-col cols="12">
         <v-tabs v-model="abaAtiva">
           <v-tab>Geral</v-tab>
-          <v-tab>Perfis IDE</v-tab>
           <v-tab>Pasta Centralizadora</v-tab>
           <v-tab>CLI de IA</v-tab>
         </v-tabs>
@@ -55,85 +54,6 @@
                 />
               </v-col>
             </v-row>
-          </v-tabs-window-item>
-
-          <!-- Aba: Perfis IDE -->
-          <v-tabs-window-item>
-            <div class="d-flex flex-column justify-center pt-4">
-              <div class="d-flex align-center">
-                <v-text-field
-                  label="Perfil"
-                  v-model="nomePerfil"
-                  autocomplete="off"
-                  name="pmw-perfil"
-                  @keydown.enter.prevent="adicionarPerfil"
-                />
-                <v-btn
-                  class="ml-2"
-                  @click="adicionarPerfil"
-                >
-                  <v-icon>mdi-plus</v-icon>
-                  Adicionar
-                </v-btn>
-              </div>
-
-              <div>
-                <v-data-table
-                  :items="configuracao.perfisVSCode"
-                  :headers="colunas"
-                  hide-default-footer
-                >
-                  <template #[`item.actions`]="{ item }">
-                    <IconeComTooltip
-                      icone="mdi-pencil"
-                      texto="Editar"
-                      :acao="() => editarPerfil(item)"
-                      top
-                    />
-                    <IconeComTooltip
-                      icone="mdi-delete"
-                      texto="Excluir"
-                      :acao="() => removerPerfil(item)"
-                      top
-                    />
-                  </template>
-                </v-data-table>
-              </div>
-
-              <v-divider class="my-4" />
-
-              <div>
-                <div class="d-flex align-center mb-2">
-                  <h4 class="text-body-1">Detectados no VS Code</h4>
-                  <v-icon
-                    v-if="carregandoPerfisDetectados"
-                    size="small"
-                    class="ml-2"
-                    color="primary"
-                  >
-                    mdi-loading mdi-spin
-                  </v-icon>
-                </div>
-                <div
-                  v-if="perfisVSCodeDetectados.length === 0 && !carregandoPerfisDetectados"
-                  class="text-medium-emphasis text-caption"
-                >
-                  Nenhum perfil detectado no VS Code
-                </div>
-                <v-chip-group v-if="perfisVSCodeDetectados.length > 0">
-                  <v-chip
-                    v-for="perfil in perfisVSCodeDetectados"
-                    :key="perfil"
-                    variant="outlined"
-                    size="small"
-                    color="primary"
-                  >
-                    <v-icon start>mdi-account</v-icon>
-                    {{ perfil }}
-                  </v-chip>
-                </v-chip-group>
-              </div>
-            </div>
           </v-tabs-window-item>
 
           <!-- Aba: Pasta Centralizadora -->
@@ -236,11 +156,7 @@
 
 <script setup lang="ts">
   import { onMounted, reactive, ref, nextTick } from 'vue';
-  import type {
-    IConfiguracao,
-    IPastaCentralizadora,
-    IPerfilVSCode
-  } from '@/types';
+  import type { IConfiguracao, IPastaCentralizadora } from '@/types';
   import ConfiguracaoModel from '../models/ConfiguracaoModel';
   import ConfiguracaoService from '../services/ConfiguracaoService';
   import ComandosService from '@/services/ComandosService';
@@ -255,9 +171,7 @@
   // --- STATE ---
   const abaAtiva = ref<number>(0);
   const terminaisLinux = ['ptyxis', 'ghostty'];
-  const nomePerfil = ref<string>(''); // input do perfil
-  const perfisVSCodeDetectados = ref<string[]>([]);
-  const carregandoPerfisDetectados = ref<boolean>(false);
+
   const nomeCliNovo = ref<string>('');
   const comandoCliNovo = ref<string>('');
   const nomePastaCentralizadora = ref<string>('');
@@ -266,25 +180,7 @@
 
   onMounted(() => {
     Object.assign(configuracao, new ConfiguracaoModel(configuracaoStore));
-    carregarPerfisVSCodeDetectados();
   });
-
-  const carregarPerfisVSCodeDetectados = async (): Promise<void> => {
-    carregandoPerfisDetectados.value = true;
-    try {
-      perfisVSCodeDetectados.value =
-        await ConfiguracaoService.obterPerfisVSCodeDetectados();
-    } catch {
-      perfisVSCodeDetectados.value = [];
-    } finally {
-      carregandoPerfisDetectados.value = false;
-    }
-  };
-
-  const colunas = reactive([
-    { title: 'Perfil', key: 'nome', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
-  ] as const);
 
   const colunasCli = reactive([
     { title: 'Nome', key: 'nome', align: 'start' },
@@ -304,66 +200,6 @@
       notificar('sucesso', 'Configurações atualizadas');
     } catch (error: any) {
       notificar('erro', 'Falha ao salvar configuração', error.message);
-    }
-  };
-
-  // Valida nome do perfil
-  const perfilValido = (): boolean => {
-    if (!nomePerfil.value.trim()) {
-      alert('O nome do perfil é obrigatório');
-      return false;
-    }
-
-    const jaInformado = configuracao.perfisVSCode?.some(
-      p => p.nome === nomePerfil.value
-    );
-
-    if (jaInformado) {
-      alert('Já existe um perfil com esse nome');
-      return false;
-    }
-
-    return true;
-  };
-
-  // Adiciona perfil
-  const adicionarPerfil = (): void => {
-    if (!perfilValido()) return;
-
-    configuracao.perfisVSCode.push({ nome: nomePerfil.value });
-    nomePerfil.value = ''; // limpa input
-
-    salvarConfiguracao(); // opcional, salva direto
-  };
-
-  const editarPerfil = async (item: IPerfilVSCode): Promise<void> => {
-    const novoNome = prompt('Editar nome do perfil:', item.nome);
-    if (!novoNome || !novoNome.trim()) return;
-
-    const nomeAntigo = item.nome;
-    const nomeTrimado = novoNome.trim();
-
-    try {
-      await ConfiguracaoService.renomearPerfil(nomeAntigo, nomeTrimado);
-      item.nome = nomeTrimado;
-      configuracaoStore.salvarConfiguracao(configuracao);
-      notificar(
-        'sucesso',
-        'Perfil renomeado e atualizado em todos os projetos'
-      );
-    } catch (error: any) {
-      notificar('erro', 'Falha ao renomear perfil', error.message);
-    }
-  };
-
-  // Remover perfil
-  const removerPerfil = (item: IPerfilVSCode): void => {
-    const confirmDelete = confirm(`Deseja remover o perfil "${item.nome}"?`);
-    if (confirmDelete) {
-      configuracao.perfisVSCode = configuracao.perfisVSCode.filter(
-        p => p !== item
-      );
-      salvarConfiguracao();
     }
   };
 

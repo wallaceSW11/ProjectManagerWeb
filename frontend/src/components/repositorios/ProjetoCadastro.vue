@@ -59,12 +59,12 @@
             v-model="projetoSelecionado.subdiretorio"
             autocomplete="off"
           />
-          <v-select
-            :items="configuracaoStore.perfisVSCode"
-            label="Perfil VS Code"
+          <SelectPerfilIDE
             v-model="projetoSelecionado.perfilVSCode"
-            item-title="nome"
-            item-value="nome"
+            :ide-identificador="
+              projetoSelecionado.comandosObj!.ideIdentificador
+            "
+            :ides="ides"
           />
 
           <v-text-field
@@ -120,6 +120,7 @@
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
   import IDEsService from '@/services/IDEsService';
+  import SelectPerfilIDE from '@/components/comum/SelectPerfilIDE.vue';
   import SelectPerfilTerminal from '@/components/comum/SelectPerfilTerminal.vue';
   import { notificar } from '@/utils/eventBus';
 

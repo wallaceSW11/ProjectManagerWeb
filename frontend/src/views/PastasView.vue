@@ -989,7 +989,7 @@
           : `cd "${dir}";`;
         executarComandoAvulso(comando);
       }
-    },
+    }
   ];
 
   const menusProjetoDisponiveis = (projeto: any): MenuProjeto[] => {
@@ -1172,7 +1172,10 @@
       const resultados = await ComandosService.reverterSkipWorktree(repoDir);
       const sucessos = resultados.filter(r => r.includes(': OK')).length;
       const falhas = resultados.filter(
-        r => !r.includes('OK') && !r.includes('Nenhum') && !r.includes('não é um repositório')
+        r =>
+          !r.includes('OK') &&
+          !r.includes('Nenhum') &&
+          !r.includes('não é um repositório')
       );
 
       if (sucessos > 0)
