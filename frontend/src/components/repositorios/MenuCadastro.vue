@@ -34,6 +34,12 @@
               top
             />
             <IconeComTooltip
+              icone="mdi-content-copy"
+              texto="Duplicar"
+              :acao="() => duplicarItem(item)"
+              top
+            />
+            <IconeComTooltip
               icone="mdi-delete"
               texto="Excluir"
               :acao="() => excluirProjeto(item)"
@@ -390,6 +396,14 @@
     Object.assign(menuSelecionado, item);
     definirModoEdicao();
     abrirModalMenuCadastro();
+  };
+
+  const duplicarItem = (item: IMenu): void => {
+    definirModoCadastro();
+    const copia = { ...item, identificador: crypto.randomUUID() };
+    Object.assign(menuSelecionado, new MenuModel(copia));
+    abrirModalMenuCadastro();
+    nextTick(() => campoTitulo.value?.focus());
   };
 
   const formProjeto = ref<any>(null);
