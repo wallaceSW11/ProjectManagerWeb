@@ -31,6 +31,7 @@
                 :itens="repositorios"
                 @editar="mudarParaEdicao"
                 @excluir="excluirRepositorio"
+                @duplicar="duplicarRepositorio"
               />
             </v-tabs-window-item>
 
@@ -129,6 +130,9 @@
   import RepositorioCadastro from '../components/repositorios/RepositorioCadastro.vue';
   import IDETerminalCadastro from '../components/repositorios/IDETerminalCadastro.vue';
   import RepositorioModel from '../models/RepositorioModel';
+  import ProjetoModel from '@/models/ProjetoModel';
+  import MenuModel from '@/models/MenuModel';
+  import PerfilMarcacaoModel from '@/models/PerfilMarcacaoModel';
   import RepositoriosService from '../services/RepositoriosService';
   import MenuCadastro from '@/components/repositorios/MenuCadastro.vue';
   import ProjetoCadastro from '../components/repositorios/ProjetoCadastro.vue';
@@ -204,6 +208,20 @@
     irParaCadastro();
   };
 
+  const duplicarRepositorio = (repo: IRepositorio): void => {
+    modoOperacao.value = MODO_OPERACAO.NOVO.valor;
+    Object.assign(repositorioSelecionado.value, new RepositorioModel({
+      ...repo,
+      identificador: '',
+      projetos: (repo.projetos || []).map((p: any) => new ProjetoModel({ ...p, identificador: '' })),
+      menus: (repo.menus || []).map((m: any) => new MenuModel({ ...m, identificador: '' })),
+      perfis: (repo.perfis || []).map((p: any) => new PerfilMarcacaoModel({ ...p, identificador: '' })),
+      codigosTarefa: (repo.codigosTarefa || []).map((t: any) => ({ ...t, identificador: crypto.randomUUID() }))
+    }));
+    irParaCadastro();
+    nextTick(() => repositorioCadastroRef.value?.focarUrl());
+  };
+
   const prepararParaCadastro = (): void => {
     modoOperacao.value = MODO_OPERACAO.NOVO.valor;
     limparCampos();
@@ -241,10 +259,25 @@
         repositorioCadastroRef.value?.formRepositorio.resetValidation();
         repositorioCadastroRef.value?.focarUrl();
       });
-    } catch (error) {
-      console.error('Falha ao criar repositorio: ' + error);
-      notificar('erro', 'Falha ao criar repositorio');
+    } catch (error: any) {
+      const msg = extrairMensagemErro(error);
+      notificar('erro', 'Falha ao criar repositório', msg);
     }
+  };
+
+  const extrairMensagemErro = (error: any): string => {
+    if (error?.response?.data) {
+      const data = error.response.data;
+      if (data.errors) {
+        const erros = Object.entries(data.errors)
+          .map(([campo, mensagens]) => `${campo}: ${(mensagens as string[]).join(', ')}`)
+          .join('\n');
+        if (erros) return erros;
+      }
+      if (data.title) return data.title;
+      if (typeof data === 'string') return data;
+    }
+    return error?.message || 'Erro desconhecido';
   };
 
   const atualizarRepositorio = async (): Promise<void> => {
@@ -263,9 +296,9 @@
       limparCampos();
       notificar('sucesso', 'Repositório atualizado');
       irParaListagem();
-    } catch (error) {
-      console.error('Falha ao criar repositorio' + error);
-      notificar('erro', 'Falha ao criar repositorio');
+    } catch (error: any) {
+      const msg = extrairMensagemErro(error);
+      notificar('erro', 'Falha ao atualizar repositório', msg);
     }
   };
 
