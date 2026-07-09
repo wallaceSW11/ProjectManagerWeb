@@ -48,6 +48,12 @@
               top
             />
             <IconeComTooltip
+              icone="mdi-content-copy"
+              texto="Duplicar"
+              :acao="() => emit('duplicar', repositorio)"
+              top
+            />
+            <IconeComTooltip
               icone="mdi-delete"
               texto="Excluir"
               :acao="() => emit('excluir', repositorio)"
@@ -73,6 +79,7 @@
   const emit = defineEmits<{
     editar: [identificador: string];
     excluir: [repositorio: IRepositorio];
+    duplicar: [repositorio: IRepositorio];
   }>();
 
   const copiarParaAreaTransferencia = async (texto: string): Promise<void> => {
