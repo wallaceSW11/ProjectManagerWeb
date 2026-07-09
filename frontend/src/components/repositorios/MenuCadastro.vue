@@ -400,7 +400,8 @@
 
   const duplicarItem = (item: IMenu): void => {
     definirModoCadastro();
-    Object.assign(menuSelecionado, new MenuModel(item));
+    const copia = { ...item, identificador: crypto.randomUUID() };
+    Object.assign(menuSelecionado, new MenuModel(copia));
     abrirModalMenuCadastro();
     nextTick(() => campoTitulo.value?.focus());
   };

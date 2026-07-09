@@ -143,7 +143,9 @@
                 class="my-2"
               />
 
-              <v-list-item @click.stop="emit('reverterSkipWorktree', pasta)">
+              <v-list-item
+                @click.stop="menuAberto = false; emit('reverterSkipWorktree', pasta)"
+              >
                 <v-list-item-title>
                   <v-icon
                     color="warning"
@@ -155,7 +157,9 @@
                 </v-list-item-title>
               </v-list-item>
 
-              <v-list-item @click.stop="emit('excluirPasta', pasta.diretorio)">
+              <v-list-item
+                @click.stop="menuAberto = false; emit('excluirPasta', pasta.diretorio)"
+              >
                 <v-list-item-title>
                   <v-icon
                     color="error"
