@@ -28,10 +28,11 @@
           >
             <v-tabs-window-item>
               <ListaRepositorios
-                :itens="repositorios"
+                v-model="repositorios"
                 @editar="mudarParaEdicao"
                 @excluir="excluirRepositorio"
                 @duplicar="duplicarRepositorio"
+                @ordenado="aoOrdenar"
               />
             </v-tabs-window-item>
 
@@ -167,6 +168,24 @@
       );
     } catch (error) {
       console.error('Falha ao obter os relatorios:', error);
+    }
+  };
+
+  const aoOrdenar = async (
+    repositoriosOrdenados: IRepositorio[]
+  ): Promise<void> => {
+    try {
+      const indices = repositoriosOrdenados.map((r, index) => ({
+        identificador: r.identificador,
+        indice: index
+      }));
+
+      await RepositoriosService.atualizarOrdem(indices);
+
+      notificar('sucesso', 'Ordem salva');
+    } catch (error) {
+      console.error('Falha ao salvar ordem:', error);
+      notificar('erro', 'Falha ao salvar a ordem');
     }
   };
 

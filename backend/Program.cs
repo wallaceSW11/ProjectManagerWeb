@@ -47,7 +47,23 @@ else
 
 var app = builder.Build();
 
+PathHelper.Configure(app.Environment.EnvironmentName);
 ShellExecute.Configure(app.Services.GetRequiredService<IShellProvider>());
+
+if (app.Environment.IsDevelopment())
+{
+    var devPath = PathHelper.BancoPath;
+    var devRepositoriosPath = Path.Combine(devPath, "repositorios.json");
+    if (!File.Exists(devRepositoriosPath))
+    {
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var prodPath = Path.Combine(appData, "PMW", "Banco");
+        if (Directory.Exists(prodPath))
+            CopiarDiretorioRecursivo(prodPath, devPath);
+        else
+            Directory.CreateDirectory(devPath);
+    }
+}
 
 try
 {
@@ -97,3 +113,18 @@ app.Use(async (context, next) =>
 });
 
 app.Run();
+
+static void CopiarDiretorioRecursivo(string origem, string destino)
+{
+    Directory.CreateDirectory(destino);
+
+    foreach (var arquivo in Directory.GetFiles(origem))
+    {
+        var destinoArquivo = Path.Combine(destino, Path.GetFileName(arquivo));
+        File.Copy(arquivo, destinoArquivo, overwrite: true);
+        File.SetAttributes(destinoArquivo, FileAttributes.Normal);
+    }
+
+    foreach (var subDir in Directory.GetDirectories(origem))
+        CopiarDiretorioRecursivo(subDir, Path.Combine(destino, Path.GetFileName(subDir)));
+}

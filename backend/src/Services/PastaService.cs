@@ -100,7 +100,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
 
             var projetosDisponiveis = new List<ProjetoDisponivelDTO>();
 
-            foreach (var projeto in repositorio.Projetos)
+            foreach (var projeto in repositorio.Projetos.OrderBy(p => p.Indice))
             {
                 var comandos = new List<ETipoComando>();
 
@@ -146,7 +146,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
                     if (!Directory.Exists(Path.Combine(pastaNoDisco, repositorioAgregado.Nome)) || string.IsNullOrWhiteSpace(repositorioAgregado.Nome))
                         continue;
 
-                    foreach (var projeto in repositorioAgregado.Projetos)
+                    foreach (var projeto in repositorioAgregado.Projetos.OrderBy(p => p.Indice))
                     {
                         var comandos = new List<ETipoComando>();
 
@@ -198,7 +198,7 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
               pasta.Identificador,
               repositorio.Cor,
               projetosDisponiveis,
-              repositorio.Menus ?? [],
+               (repositorio.Menus ?? []).OrderBy(m => m.Indice).ToList(),
               repositorio.IDEIdentificador,
               repositorio.Nome,
               pasta.Indice,

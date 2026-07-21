@@ -45,6 +45,14 @@
               :acao="() => excluirProjeto(item)"
               top
             />
+            <BotoesOrdenar
+              :primeiro="repositorio.menus.indexOf(item) === 0"
+              :ultimo="
+                repositorio.menus.indexOf(item) === repositorio.menus.length - 1
+              "
+              @subir="subirItem(item)"
+              @descer="descerItem(item)"
+            />
           </template>
         </v-data-table>
       </div>
@@ -256,6 +264,7 @@
   import RepositorioModel from '@/models/RepositorioModel';
   import MenuModel from '@/models/MenuModel';
   import BotaoTerciario from '../comum/botao/BotaoTerciario.vue';
+  import BotoesOrdenar from '@/components/comum/botao/BotoesOrdenar.vue';
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import ArquivoModel from '@/models/ArquivoModel';
   import PastaMenuModel from '@/models/PastaMenuModel';
@@ -301,7 +310,7 @@
     { title: 'Título', key: 'titulo', align: 'start' },
     { title: 'Tipo', key: 'tipo', align: 'start' },
     { title: 'Ativo', key: 'ativo', align: 'center' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
+    { title: 'Actions', key: 'actions', align: 'center', width: '280px' }
   ] as const);
 
   const colunasMenuArquivos = reactive([
@@ -347,6 +356,22 @@
   const descartarAlteracoesPastas = (): void => {
     mudarParaPaginaTabela();
     limparCamposPastas();
+  };
+
+  const subirItem = (item: IMenu): void => {
+    const indice = repositorio.value.menus.indexOf(item);
+    if (indice <= 0) return;
+    const temp = repositorio.value.menus[indice];
+    repositorio.value.menus[indice] = repositorio.value.menus[indice - 1];
+    repositorio.value.menus[indice - 1] = temp;
+  };
+
+  const descerItem = (item: IMenu): void => {
+    const indice = repositorio.value.menus.indexOf(item);
+    if (indice < 0 || indice >= repositorio.value.menus.length - 1) return;
+    const temp = repositorio.value.menus[indice];
+    repositorio.value.menus[indice] = repositorio.value.menus[indice + 1];
+    repositorio.value.menus[indice + 1] = temp;
   };
 
   const prepararParaCadastro = (): void => {
