@@ -210,14 +210,26 @@
 
   const duplicarRepositorio = (repo: IRepositorio): void => {
     modoOperacao.value = MODO_OPERACAO.NOVO.valor;
-    Object.assign(repositorioSelecionado.value, new RepositorioModel({
-      ...repo,
-      identificador: '',
-      projetos: (repo.projetos || []).map((p: any) => new ProjetoModel({ ...p, identificador: '' })),
-      menus: (repo.menus || []).map((m: any) => new MenuModel({ ...m, identificador: '' })),
-      perfis: (repo.perfis || []).map((p: any) => new PerfilMarcacaoModel({ ...p, identificador: '' })),
-      codigosTarefa: (repo.codigosTarefa || []).map((t: any) => ({ ...t, identificador: crypto.randomUUID() }))
-    }));
+    Object.assign(
+      repositorioSelecionado.value,
+      new RepositorioModel({
+        ...repo,
+        identificador: '',
+        projetos: (repo.projetos || []).map(
+          (p: any) => new ProjetoModel({ ...p, identificador: '' })
+        ),
+        menus: (repo.menus || []).map(
+          (m: any) => new MenuModel({ ...m, identificador: '' })
+        ),
+        perfis: (repo.perfis || []).map(
+          (p: any) => new PerfilMarcacaoModel({ ...p, identificador: '' })
+        ),
+        codigosTarefa: (repo.codigosTarefa || []).map((t: any) => ({
+          ...t,
+          identificador: crypto.randomUUID()
+        }))
+      })
+    );
     irParaCadastro();
     nextTick(() => repositorioCadastroRef.value?.focarUrl());
   };
@@ -270,7 +282,10 @@
       const data = error.response.data;
       if (data.errors) {
         const erros = Object.entries(data.errors)
-          .map(([campo, mensagens]) => `${campo}: ${(mensagens as string[]).join(', ')}`)
+          .map(
+            ([campo, mensagens]) =>
+              `${campo}: ${(mensagens as string[]).join(', ')}`
+          )
           .join('\n');
         if (erros) return erros;
       }

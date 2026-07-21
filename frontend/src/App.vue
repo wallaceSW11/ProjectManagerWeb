@@ -263,7 +263,12 @@
               </v-list-item-title>
             </v-list-item>
 
-            <v-list-item @click.stop="menuAtualizacaoAberto = true; verificarAtualizacaoManual()">
+            <v-list-item
+              @click.stop="
+                menuAtualizacaoAberto = true;
+                verificarAtualizacaoManual();
+              "
+            >
               <v-list-item-title class="text-body-2">
                 <v-icon
                   size="small"
@@ -386,8 +391,7 @@
       notificar('erro', 'Falha ao verificar atualizações', versaoStore.erro);
     else if (versaoStore.temAtualizacao)
       notificar('sucesso', `Nova versão disponível: ${versaoStore.versaoNova}`);
-    else
-      notificar('sucesso', 'Você está na versão mais recente');
+    else notificar('sucesso', 'Você está na versão mais recente');
   };
 
   const menuAtualizacaoAberto = ref(false);

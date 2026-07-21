@@ -144,7 +144,10 @@
               />
 
               <v-list-item
-                @click.stop="menuAberto = false; emit('reverterSkipWorktree', pasta)"
+                @click.stop="
+                  menuAberto = false;
+                  emit('reverterSkipWorktree', pasta);
+                "
               >
                 <v-list-item-title>
                   <v-icon
@@ -158,7 +161,10 @@
               </v-list-item>
 
               <v-list-item
-                @click.stop="menuAberto = false; emit('excluirPasta', pasta.diretorio)"
+                @click.stop="
+                  menuAberto = false;
+                  emit('excluirPasta', pasta.diretorio);
+                "
               >
                 <v-list-item-title>
                   <v-icon
@@ -302,7 +308,7 @@
       titulo: 'Melhoria',
       cor: 'green'
     },
-    BUG: {
+    BUGFIX: {
       icone: 'mdi-bug',
       titulo: 'Erro',
       cor: 'red'
