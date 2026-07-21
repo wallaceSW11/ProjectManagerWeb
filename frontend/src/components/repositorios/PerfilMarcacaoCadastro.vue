@@ -37,6 +37,14 @@
             :acao="() => excluirPerfil(item)"
             top
           />
+          <BotoesOrdenar
+            :primeiro="repositorio.perfis.indexOf(item) === 0"
+            :ultimo="
+              repositorio.perfis.indexOf(item) === repositorio.perfis.length - 1
+            "
+            @subir="subirItem(item)"
+            @descer="descerItem(item)"
+          />
         </template>
       </v-data-table>
     </div>
@@ -151,6 +159,7 @@
   import PerfilMarcacaoProjetoModel from '@/models/PerfilMarcacaoProjetoModel';
   import { useModoOperacao } from '@/composables/useModoOperacao';
   import { TIPO_COMANDO } from '@/constants/geral-constants';
+  import BotoesOrdenar from '@/components/comum/botao/BotoesOrdenar.vue';
   import { notificar } from '@/utils/eventBus';
 
   interface Props {
@@ -186,7 +195,7 @@
       align: 'center',
       width: '90px'
     },
-    { title: 'Ações', key: 'actions', align: 'center', width: '120px' }
+    { title: 'Ações', key: 'actions', align: 'center', width: '280px' }
   ] as const;
 
   interface GrupoProjeto {
@@ -266,6 +275,22 @@
       comandosSelecionadosPorProjeto[grupo.projeto.identificador] =
         projetoNoPerfil ? [...projetoNoPerfil.comandos] : [];
     });
+  };
+
+  const subirItem = (item: IPerfilMarcacao): void => {
+    const indice = repositorio.value.perfis.indexOf(item);
+    if (indice <= 0) return;
+    const temp = repositorio.value.perfis[indice];
+    repositorio.value.perfis[indice] = repositorio.value.perfis[indice - 1];
+    repositorio.value.perfis[indice - 1] = temp;
+  };
+
+  const descerItem = (item: IPerfilMarcacao): void => {
+    const indice = repositorio.value.perfis.indexOf(item);
+    if (indice < 0 || indice >= repositorio.value.perfis.length - 1) return;
+    const temp = repositorio.value.perfis[indice];
+    repositorio.value.perfis[indice] = repositorio.value.perfis[indice + 1];
+    repositorio.value.perfis[indice + 1] = temp;
   };
 
   const prepararParaCadastro = (): void => {

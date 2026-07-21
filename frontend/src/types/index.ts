@@ -19,6 +19,7 @@ export interface IMenu {
   pastas: IPastaMenu[];
   comandos: string[];
   ativo: boolean;
+  indice?: number;
 }
 
 export interface IIDE {
@@ -49,6 +50,7 @@ export interface IProjeto {
   expandido: boolean;
   nomeIDE?: string | null; // Nome da IDE vindo do backend
   perfilTerminal?: string | null;
+  indice?: number;
   getComandosDisponiveis?(): Array<{
     titulo: string;
     valor: string;
@@ -106,6 +108,7 @@ export interface IPerfilMarcacao {
   abrirIDE: boolean;
   abrirCLI: boolean;
   executarAposAplicar: boolean;
+  indice?: number;
 }
 
 export interface IPasta {

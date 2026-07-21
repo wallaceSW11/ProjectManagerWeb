@@ -53,7 +53,8 @@ namespace ProjectManagerWeb.src.DTOs
         ComandoDTO Comandos,
         string? ArquivoCoverage,
         bool Expandido = false,
-        string? PerfilTerminal = null
+        string? PerfilTerminal = null,
+        int Indice = 0
     );
 
     /// <summary>
@@ -78,7 +79,8 @@ namespace ProjectManagerWeb.src.DTOs
         List<ArquivosDTO>? Arquivos,
         List<PastaDTO>? Pastas,
         List<string>? Comandos,
-        bool Ativo = true
+        bool Ativo = true,
+        int Indice = 0
     );
 
     public sealed record ArquivosDTO(
@@ -98,7 +100,8 @@ namespace ProjectManagerWeb.src.DTOs
         List<PerfilMarcacaoProjetoDTO> Projetos,
         bool AbrirIDE = false,
         bool AbrirCLI = false,
-        bool ExecutarAposAplicar = false
+        bool ExecutarAposAplicar = false,
+        int Indice = 0
     );
 
     public sealed record PerfilMarcacaoProjetoDTO(

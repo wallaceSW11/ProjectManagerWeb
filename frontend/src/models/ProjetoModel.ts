@@ -15,6 +15,7 @@ export default class ProjetoModel implements IProjeto {
   nomeIDE?: string | null;
   perfilTerminal?: string | null;
   comandosSelecionados: string[];
+  indice: number;
 
   constructor(obj: Partial<IProjeto> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -30,6 +31,7 @@ export default class ProjetoModel implements IProjeto {
       obj.identificadorRepositorioAgregado;
     this.nomeIDE = obj.nomeIDE;
     this.perfilTerminal = obj.perfilTerminal || null;
+    this.indice = obj.indice ?? 0;
 
     // Handle comandosObj from backend or frontend
     if (obj.comandosObj) {
@@ -145,7 +147,8 @@ export default class ProjetoModel implements IProjeto {
       },
       arquivoCoverage: this.arquivoCoverage || null,
       expandido: this.expandido,
-      perfilTerminal: this.perfilTerminal || null
+      perfilTerminal: this.perfilTerminal || null,
+      indice: this.indice
     };
   }
 }

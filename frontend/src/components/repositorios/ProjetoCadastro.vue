@@ -30,6 +30,15 @@
             :acao="() => excluirProjeto(item)"
             top
           />
+          <BotoesOrdenar
+            :primeiro="repositorio.projetos.indexOf(item) === 0"
+            :ultimo="
+              repositorio.projetos.indexOf(item) ===
+              repositorio.projetos.length - 1
+            "
+            @subir="subirItem(item)"
+            @descer="descerItem(item)"
+          />
         </template>
       </v-data-table>
     </div>
@@ -122,6 +131,7 @@
   import IDEsService from '@/services/IDEsService';
   import SelectPerfilIDE from '@/components/comum/SelectPerfilIDE.vue';
   import SelectPerfilTerminal from '@/components/comum/SelectPerfilTerminal.vue';
+  import BotoesOrdenar from '@/components/comum/botao/BotoesOrdenar.vue';
   import { notificar } from '@/utils/eventBus';
 
   const repositorio = defineModel<IRepositorio>({ required: true });
@@ -155,7 +165,7 @@
     { title: 'Nome', key: 'nome', align: 'start' },
     { title: 'Subdiretorio', key: 'subdiretorio', align: 'start' },
     { title: 'Perfil VS Code', key: 'perfilVSCode', align: 'start' },
-    { title: 'Actions', key: 'actions', align: 'center', width: '200px' }
+    { title: 'Actions', key: 'actions', align: 'center', width: '280px' }
   ] as const;
 
   const projetoSelecionado = reactive<IProjeto>(new ProjetoModel());
@@ -181,6 +191,22 @@
 
   const adicionarProjeto = (): void => {
     repositorio.value.projetos.push(new ProjetoModel(projetoSelecionado));
+  };
+
+  const subirItem = (item: IProjeto): void => {
+    const indice = repositorio.value.projetos.indexOf(item);
+    if (indice <= 0) return;
+    const temp = repositorio.value.projetos[indice];
+    repositorio.value.projetos[indice] = repositorio.value.projetos[indice - 1];
+    repositorio.value.projetos[indice - 1] = temp;
+  };
+
+  const descerItem = (item: IProjeto): void => {
+    const indice = repositorio.value.projetos.indexOf(item);
+    if (indice < 0 || indice >= repositorio.value.projetos.length - 1) return;
+    const temp = repositorio.value.projetos[indice];
+    repositorio.value.projetos[indice] = repositorio.value.projetos[indice + 1];
+    repositorio.value.projetos[indice + 1] = temp;
   };
 
   const prepararParaCadastro = (): void => {

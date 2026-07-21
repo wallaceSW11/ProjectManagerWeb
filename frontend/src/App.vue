@@ -186,7 +186,7 @@
 
         <v-menu
           v-model="menuAtualizacaoAberto"
-          close-on-content-click="false"
+          :close-on-content-click="false"
         >
           <template v-slot:activator="{ props }">
             <v-btn

@@ -8,6 +8,7 @@ export default class PerfilMarcacaoModel implements IPerfilMarcacao {
   abrirIDE: boolean;
   abrirCLI: boolean;
   executarAposAplicar: boolean;
+  indice: number;
 
   constructor(obj: Partial<IPerfilMarcacao> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -17,5 +18,6 @@ export default class PerfilMarcacaoModel implements IPerfilMarcacao {
     this.abrirIDE = obj.abrirIDE || false;
     this.abrirCLI = obj.abrirCLI || false;
     this.executarAposAplicar = obj.executarAposAplicar || false;
+    this.indice = obj.indice ?? 0;
   }
 }
