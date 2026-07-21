@@ -1,452 +1,455 @@
 <template>
   <v-row class="d-flex justify-center pt-5 px-6">
-    <v-col cols="12" lg="10">
+    <v-col
+      cols="12"
+      lg="10"
+    >
       <div class="d-flex flex-column">
-      <v-row no-gutters>
-        <v-col
-          cols="8"
-          class="pb-2"
-        >
-          <div
-            class="d-flex align-center"
-            style="gap: 16px"
+        <v-row no-gutters>
+          <v-col
+            cols="8"
+            class="pb-2"
           >
-            <template v-if="temCentralizadoras">
-              <v-tabs
-                v-model="abaSelecionada"
-                density="compact"
-                color="primary"
-                show-arrows
-                style="min-width: 0"
-              >
-                <v-tab
-                  v-for="aba in abasDisponiveis"
-                  :key="aba"
-                  :value="aba"
-                >
-                  {{ aba }}
-                  <v-chip
-                    v-if="contagemPorAba[aba] > 0"
-                    size="x-small"
-                    class="ml-1"
-                    variant="tonal"
-                  >
-                    {{ contagemPorAba[aba] }}
-                  </v-chip>
-                </v-tab>
-              </v-tabs>
-            </template>
-            <template v-else>
-              <h2 class="flex-shrink-0">
-                Pastas
-                <span
-                  v-if="pastas.length > 0"
-                  class="text-medium-emphasis text-body-1"
-                >
-                  ({{ pastas.length }})
-                </span>
-              </h2>
-              <v-tabs
-                v-model="abaSelecionada"
-                density="compact"
-                color="primary"
-                show-arrows
-                style="min-width: 0"
-              >
-                <v-tab
-                  v-for="aba in abasDisponiveis"
-                  :key="aba"
-                  :value="aba"
-                >
-                  {{ aba }}
-                </v-tab>
-              </v-tabs>
-            </template>
-
-            <v-spacer />
-
             <div
               class="d-flex align-center"
-              style="gap: 8px"
+              style="gap: 16px"
             >
-              <v-text-field
-                ref="campoPesquisa"
-                v-model="termoPesquisa"
-                placeholder="Código ou descrição"
+              <template v-if="temCentralizadoras">
+                <v-tabs
+                  v-model="abaSelecionada"
+                  density="compact"
+                  color="primary"
+                  show-arrows
+                  style="min-width: 0"
+                >
+                  <v-tab
+                    v-for="aba in abasDisponiveis"
+                    :key="aba"
+                    :value="aba"
+                  >
+                    {{ aba }}
+                    <v-chip
+                      v-if="contagemPorAba[aba] > 0"
+                      size="x-small"
+                      class="ml-1"
+                      variant="tonal"
+                    >
+                      {{ contagemPorAba[aba] }}
+                    </v-chip>
+                  </v-tab>
+                </v-tabs>
+              </template>
+              <template v-else>
+                <h2 class="flex-shrink-0">
+                  Pastas
+                  <span
+                    v-if="pastas.length > 0"
+                    class="text-medium-emphasis text-body-1"
+                  >
+                    ({{ pastas.length }})
+                  </span>
+                </h2>
+                <v-tabs
+                  v-model="abaSelecionada"
+                  density="compact"
+                  color="primary"
+                  show-arrows
+                  style="min-width: 0"
+                >
+                  <v-tab
+                    v-for="aba in abasDisponiveis"
+                    :key="aba"
+                    :value="aba"
+                  >
+                    {{ aba }}
+                  </v-tab>
+                </v-tabs>
+              </template>
+
+              <v-spacer />
+
+              <div
+                class="d-flex align-center"
+                style="gap: 8px"
+              >
+                <v-text-field
+                  ref="campoPesquisa"
+                  v-model="termoPesquisa"
+                  placeholder="Código ou descrição"
+                  density="compact"
+                  variant="underlined"
+                  hide-details
+                  clearable
+                  style="width: 220px; min-width: 220px; padding-right: 8px"
+                  prepend-inner-icon="mdi-magnify"
+                  @keydown.esc="termoPesquisa = ''"
+                />
+
+                <IconeComTooltip
+                  icone="mdi-refresh"
+                  texto="Atualizar listagem"
+                  :acao="carregarPastas"
+                />
+
+                <PastasOcultas
+                  ref="pastasOcultas"
+                  @atualizar="carregarPastas"
+                />
+              </div>
+            </div>
+          </v-col>
+
+          <v-col class="d-flex align-center justify-space-between pl-4">
+            <div>
+              <h3>Projetos / Ações</h3>
+            </div>
+            <div class="d-flex align-center gap-2 pr-3">
+              <v-select
+                v-if="perfisDisponiveis.length > 0"
+                v-model="perfilSelecionadoId"
+                :items="perfisDisponiveis"
+                item-title="nome"
+                item-value="identificador"
+                placeholder="Aplicar perfil"
                 density="compact"
                 variant="underlined"
                 hide-details
                 clearable
                 style="width: 220px; min-width: 220px; padding-right: 8px"
-                prepend-inner-icon="mdi-magnify"
-                @keydown.esc="termoPesquisa = ''"
-              />
-
-              <IconeComTooltip
-                icone="mdi-refresh"
-                texto="Atualizar listagem"
-                :acao="carregarPastas"
-              />
-
-              <PastasOcultas
-                ref="pastasOcultas"
-                @atualizar="carregarPastas"
-              />
-            </div>
-          </div>
-        </v-col>
-
-        <v-col class="d-flex align-center justify-space-between pl-4">
-          <div>
-            <h3>Projetos / Ações</h3>
-          </div>
-          <div class="d-flex align-center gap-2 pr-3">
-            <v-select
-              v-if="perfisDisponiveis.length > 0"
-              v-model="perfilSelecionadoId"
-              :items="perfisDisponiveis"
-              item-title="nome"
-              item-value="identificador"
-              placeholder="Aplicar perfil"
-              density="compact"
-              variant="underlined"
-              hide-details
-              clearable
-              style="width: 220px; min-width: 220px; padding-right: 8px"
-              @update:modelValue="aplicarPerfil"
-            >
-              <template #item="{ props, item }">
-                <v-list-item v-bind="props">
-                  <template #title>
-                    <span class="d-flex align-center">
-                      {{ item.title }}
-                      <v-icon
-                        v-if="item.raw.executarAposAplicar"
-                        color="primary"
-                        size="small"
-                        class="ml-1"
-                      >
-                        mdi-flash
-                      </v-icon>
-                    </span>
-                  </template>
-                </v-list-item>
-              </template>
-              <template #selection="{ item }">
-                <span class="d-flex align-center">
-                  {{ item.title }}
+                @update:modelValue="aplicarPerfil"
+              >
+                <template #item="{ props, item }">
+                  <v-list-item v-bind="props">
+                    <template #title>
+                      <span class="d-flex align-center">
+                        {{ item.title }}
+                        <v-icon
+                          v-if="item.raw.executarAposAplicar"
+                          color="primary"
+                          size="small"
+                          class="ml-1"
+                        >
+                          mdi-flash
+                        </v-icon>
+                      </span>
+                    </template>
+                  </v-list-item>
+                </template>
+                <template #selection="{ item }">
+                  <span class="d-flex align-center">
+                    {{ item.title }}
+                    <v-icon
+                      v-if="item.raw.executarAposAplicar"
+                      color="primary"
+                      size="small"
+                      class="ml-1"
+                    >
+                      mdi-flash
+                    </v-icon>
+                  </span>
+                </template>
+              </v-select>
+              <v-tooltip text="Desmarcar todos">
+                <template #activator="{ props }">
                   <v-icon
-                    v-if="item.raw.executarAposAplicar"
-                    color="primary"
-                    size="small"
-                    class="ml-1"
+                    v-bind="props"
+                    size="16px"
+                    @click="
+                      pastaSelecionada.projetos.forEach(
+                        projeto => (projeto.comandosSelecionados = [])
+                      )
+                    "
                   >
-                    mdi-flash
+                    mdi-close-box-multiple-outline
                   </v-icon>
-                </span>
-              </template>
-            </v-select>
-            <v-tooltip text="Desmarcar todos">
-              <template #activator="{ props }">
-                <v-icon
-                  v-bind="props"
-                  size="16px"
-                  @click="
-                    pastaSelecionada.projetos.forEach(
-                      projeto => (projeto.comandosSelecionados = [])
-                    )
+                </template>
+              </v-tooltip>
+            </div>
+          </v-col>
+        </v-row>
+
+        <v-row
+          no-gutters
+          class="flex-nowrap"
+        >
+          <v-col
+            cols="8"
+            class="altura-limitada"
+          >
+            <div v-if="pastas.length === 0">
+              Não há pastas no diretório raiz informado.
+              <p>{{ configuracaoStore.diretorioRaiz }}</p>
+            </div>
+
+            <div v-else>
+              <draggable
+                v-if="pastasFixadas.length > 0"
+                v-model="pastasFixadas"
+                item-key="diretorio"
+                :animation="200"
+                group="pastas-fixadas"
+                class="drag-area"
+                @end="atualizarOrdemFixadas"
+              >
+                <template #item="{ element }">
+                  <CardPasta
+                    :pasta="element"
+                    :pasta-selecionada="pastaSelecionada"
+                    :cor="element.cor"
+                    @selecionarPasta="selecionarPasta"
+                    @exibir-cadastro-pasta="exibirCadastroPasta"
+                    @executar-menu="executarMenu"
+                    @executar-menus-multiplos="executarMenusMultiplos"
+                    @abrirDiretorio="abrirDiretorio"
+                    @ocultar-pasta="ocultarPasta"
+                    @excluir-pasta="excluirPasta"
+                    @toggle-fixar="toggleFixarPasta"
+                    @reverter-skip-worktree="reverterSkipWorktree"
+                  />
+                </template>
+              </draggable>
+
+              <v-divider
+                v-if="pastasFixadas.length > 0"
+                class="my-2 mx-2"
+              />
+
+              <draggable
+                v-model="pastasNaoFixadas"
+                item-key="diretorio"
+                :animation="200"
+                group="pastas"
+                class="drag-area"
+                :disabled="!!termoPesquisa"
+                @end="atualizarIndicesPastas"
+              >
+                <template #item="{ element }">
+                  <CardPasta
+                    :pasta="element"
+                    :pasta-selecionada="pastaSelecionada"
+                    :cor="element.cor"
+                    @selecionarPasta="selecionarPasta"
+                    @exibir-cadastro-pasta="exibirCadastroPasta"
+                    @executar-menu="executarMenu"
+                    @executar-menus-multiplos="executarMenusMultiplos"
+                    @abrirDiretorio="abrirDiretorio"
+                    @ocultar-pasta="ocultarPasta"
+                    @excluir-pasta="excluirPasta"
+                    @toggle-fixar="toggleFixarPasta"
+                    @reverter-skip-worktree="reverterSkipWorktree"
+                  />
+                </template>
+              </draggable>
+            </div>
+          </v-col>
+
+          <v-col class="pl-2">
+            <div style="height: calc(100dvh - 140px)">
+              <div
+                class="pr-2"
+                style="height: calc(100% - 48px); overflow-y: auto"
+              >
+                <div
+                  v-if="
+                    pastaSelecionada?.projetos.length === 0 &&
+                    !podeExibirDiretorio
                   "
                 >
-                  mdi-close-box-multiple-outline
-                </v-icon>
-              </template>
-            </v-tooltip>
-          </div>
-        </v-col>
-      </v-row>
+                  Não há projetos disponíveis.
+                </div>
 
-      <v-row
-        no-gutters
-        class="flex-nowrap"
-      >
-        <v-col
-          cols="8"
-          class="altura-limitada"
-        >
-          <div v-if="pastas.length === 0">
-            Não há pastas no diretório raiz informado.
-            <p>{{ configuracaoStore.diretorioRaiz }}</p>
-          </div>
-
-          <div v-else>
-            <draggable
-              v-if="pastasFixadas.length > 0"
-              v-model="pastasFixadas"
-              item-key="diretorio"
-              :animation="200"
-              group="pastas-fixadas"
-              class="drag-area"
-              @end="atualizarOrdemFixadas"
-            >
-              <template #item="{ element }">
-                <CardPasta
-                  :pasta="element"
-                  :pasta-selecionada="pastaSelecionada"
-                  :cor="element.cor"
-                  @selecionarPasta="selecionarPasta"
-                  @exibir-cadastro-pasta="exibirCadastroPasta"
-                  @executar-menu="executarMenu"
-                  @executar-menus-multiplos="executarMenusMultiplos"
-                  @abrirDiretorio="abrirDiretorio"
-                  @ocultar-pasta="ocultarPasta"
-                  @excluir-pasta="excluirPasta"
-                  @toggle-fixar="toggleFixarPasta"
-                  @reverter-skip-worktree="reverterSkipWorktree"
-                />
-              </template>
-            </draggable>
-
-            <v-divider
-              v-if="pastasFixadas.length > 0"
-              class="my-2 mx-2"
-            />
-
-            <draggable
-              v-model="pastasNaoFixadas"
-              item-key="diretorio"
-              :animation="200"
-              group="pastas"
-              class="drag-area"
-              :disabled="!!termoPesquisa"
-              @end="atualizarIndicesPastas"
-            >
-              <template #item="{ element }">
-                <CardPasta
-                  :pasta="element"
-                  :pasta-selecionada="pastaSelecionada"
-                  :cor="element.cor"
-                  @selecionarPasta="selecionarPasta"
-                  @exibir-cadastro-pasta="exibirCadastroPasta"
-                  @executar-menu="executarMenu"
-                  @executar-menus-multiplos="executarMenusMultiplos"
-                  @abrirDiretorio="abrirDiretorio"
-                  @ocultar-pasta="ocultarPasta"
-                  @excluir-pasta="excluirPasta"
-                  @toggle-fixar="toggleFixarPasta"
-                  @reverter-skip-worktree="reverterSkipWorktree"
-                />
-              </template>
-            </draggable>
-          </div>
-        </v-col>
-
-        <v-col class="pl-2">
-          <div style="height: calc(100dvh - 140px)">
-            <div
-              class="pr-2"
-              style="height: calc(100% - 48px); overflow-y: auto"
-            >
-              <div
-                v-if="
-                  pastaSelecionada?.projetos.length === 0 &&
-                  !podeExibirDiretorio
-                "
-              >
-                Não há projetos disponíveis.
-              </div>
-
-              <template v-else>
-                <v-card
-                  v-if="podeExibirDiretorio"
-                  class="mb-2"
-                  style="background-color: #2d2d30"
-                >
-                  <v-card-title class="pb-0 d-flex align-center">
-                    <div class="d-flex flex-grow-1 align-center">
-                      <v-icon
-                        @click="diretorioExpandido = !diretorioExpandido"
-                        size="small"
-                        class="mr-2"
-                      >
-                        {{
-                          diretorioExpandido
-                            ? 'mdi-chevron-down'
-                            : 'mdi-chevron-right'
-                        }}
-                      </v-icon>
-                      <span>Diretório</span>
-                    </div>
-                  </v-card-title>
-
-                  <v-card-text class="pa-0 ma-0 ml-4 pr-4">
-                    <v-expand-transition>
-                      <div v-if="diretorioExpandido">
-                        <v-switch
-                          v-if="ideDisponivel"
-                          :label="`Abrir no ${pastaSelecionada.nomeIDE || 'IDE'}`"
-                          v-model="diretorioAcoes"
-                          value="IDE"
-                          hide-details
-                          height="40px"
-                          color="primary"
-                          density="compact"
-                          append-icon="mdi-open-in-new"
-                          @click:append="
-                            abrirPastaNaIDE(pastaSelecionada as IPasta)
-                          "
-                        />
-                        <v-switch
-                          v-if="cliDisponivel"
-                          :label="`Abrir no ${pastaSelecionada.nomeCli || 'CLI'}`"
-                          v-model="diretorioAcoes"
-                          value="CLI"
-                          hide-details
-                          height="40px"
-                          color="primary"
-                          density="compact"
-                          append-icon="mdi-flash"
-                          @click:append="
-                            abrirPastaKiroCli(pastaSelecionada as IPasta)
-                          "
-                        />
-                      </div>
-                    </v-expand-transition>
-                  </v-card-text>
-                </v-card>
-
-                <div
-                  v-for="projeto in pastaSelecionada.projetos"
-                  :key="projeto.identificador"
-                >
+                <template v-else>
                   <v-card
+                    v-if="podeExibirDiretorio"
                     class="mb-2"
                     style="background-color: #2d2d30"
                   >
                     <v-card-title class="pb-0 d-flex align-center">
-                      <div
-                        class="d-flex flex-grow-1 justify-space-between align-center"
-                      >
-                        <div>
-                          <v-icon
-                            @click="toggleExpandirProjeto(projeto)"
-                            size="small"
-                            class="mr-2"
-                          >
-                            {{
-                              projeto.expandido
-                                ? 'mdi-chevron-down'
-                                : 'mdi-chevron-right'
-                            }}
-                          </v-icon>
-                        </div>
-
-                        <div
-                          class="d-flex flex-grow-1 justify-space-between align-center"
+                      <div class="d-flex flex-grow-1 align-center">
+                        <v-icon
+                          @click="diretorioExpandido = !diretorioExpandido"
+                          size="small"
+                          class="mr-2"
                         >
-                          <div class="d-flex align-center">
-                            {{ projeto.nome }}
-                            <v-chip
-                              v-if="
-                                !projeto.expandido &&
-                                projeto.comandosSelecionados &&
-                                projeto.comandosSelecionados.length > 0
-                              "
-                              color="primary"
-                              size="x-small"
-                              class="ml-2"
-                              variant="elevated"
-                            >
-                              {{ projeto.comandosSelecionados?.length || 0 }}
-                            </v-chip>
-                          </div>
-
-                          <div>
-                            <v-menu location="bottom">
-                              <template #activator="{ props }">
-                                <v-btn
-                                  v-bind="props"
-                                  icon
-                                  size="small"
-                                  variant="text"
-                                >
-                                  <v-icon small>mdi-dots-vertical</v-icon>
-                                </v-btn>
-                              </template>
-
-                              <v-list dense>
-                                <v-list-item
-                                  v-for="menu in menusProjetoDisponiveis(
-                                    projeto
-                                  )"
-                                  :key="menu.identificador"
-                                  @click="menu.acao(projeto)"
-                                >
-                                  <v-list-item-title>
-                                    <v-icon
-                                      class="pr-1"
-                                      color="primary"
-                                    >
-                                      {{ menu.icone }}
-                                    </v-icon>
-                                    {{ menu.titulo }}
-                                  </v-list-item-title>
-                                </v-list-item>
-                              </v-list>
-                            </v-menu>
-                          </div>
-                        </div>
+                          {{
+                            diretorioExpandido
+                              ? 'mdi-chevron-down'
+                              : 'mdi-chevron-right'
+                          }}
+                        </v-icon>
+                        <span>Diretório</span>
                       </div>
                     </v-card-title>
 
                     <v-card-text class="pa-0 ma-0 ml-4 pr-4">
                       <v-expand-transition>
-                        <div v-if="projeto.expandido">
+                        <div v-if="diretorioExpandido">
                           <v-switch
-                            v-for="comando in projeto.getComandosDisponiveis?.()"
-                            :key="comando.valor"
-                            :label="comando.titulo"
-                            :value="comando.valor"
-                            v-model="projeto.comandosSelecionados"
+                            v-if="ideDisponivel"
+                            :label="`Abrir no ${pastaSelecionada.nomeIDE || 'IDE'}`"
+                            v-model="diretorioAcoes"
+                            value="IDE"
                             hide-details
                             height="40px"
                             color="primary"
                             density="compact"
-                            :append-icon="iconeAcaoMenu(comando.valor)"
+                            append-icon="mdi-open-in-new"
                             @click:append="
-                              () =>
-                                executarAcaoMenuAvulso(projeto, comando.valor)
+                              abrirPastaNaIDE(pastaSelecionada as IPasta)
+                            "
+                          />
+                          <v-switch
+                            v-if="cliDisponivel"
+                            :label="`Abrir no ${pastaSelecionada.nomeCli || 'CLI'}`"
+                            v-model="diretorioAcoes"
+                            value="CLI"
+                            hide-details
+                            height="40px"
+                            color="primary"
+                            density="compact"
+                            append-icon="mdi-flash"
+                            @click:append="
+                              abrirPastaKiroCli(pastaSelecionada as IPasta)
                             "
                           />
                         </div>
                       </v-expand-transition>
                     </v-card-text>
                   </v-card>
-                </div>
-              </template>
-            </div>
 
-            <div class="d-flex shrink mt-1">
-              <v-btn
-                size="large"
-                color="primary"
-                width="100%"
-                @click="executarAcoes"
-                :disabled="
-                  !pastaSelecionada.projetos.some(
-                    p =>
-                      p.comandosSelecionados &&
-                      p.comandosSelecionados.length > 0
-                  ) && diretorioAcoes.length === 0
-                "
-              >
-                <v-icon>mdi-lightning-bolt</v-icon>
-                Executar
-              </v-btn>
+                  <div
+                    v-for="projeto in pastaSelecionada.projetos"
+                    :key="projeto.identificador"
+                  >
+                    <v-card
+                      class="mb-2"
+                      style="background-color: #2d2d30"
+                    >
+                      <v-card-title class="pb-0 d-flex align-center">
+                        <div
+                          class="d-flex flex-grow-1 justify-space-between align-center"
+                        >
+                          <div>
+                            <v-icon
+                              @click="toggleExpandirProjeto(projeto)"
+                              size="small"
+                              class="mr-2"
+                            >
+                              {{
+                                projeto.expandido
+                                  ? 'mdi-chevron-down'
+                                  : 'mdi-chevron-right'
+                              }}
+                            </v-icon>
+                          </div>
+
+                          <div
+                            class="d-flex flex-grow-1 justify-space-between align-center"
+                          >
+                            <div class="d-flex align-center">
+                              {{ projeto.nome }}
+                              <v-chip
+                                v-if="
+                                  !projeto.expandido &&
+                                  projeto.comandosSelecionados &&
+                                  projeto.comandosSelecionados.length > 0
+                                "
+                                color="primary"
+                                size="x-small"
+                                class="ml-2"
+                                variant="elevated"
+                              >
+                                {{ projeto.comandosSelecionados?.length || 0 }}
+                              </v-chip>
+                            </div>
+
+                            <div>
+                              <v-menu location="bottom">
+                                <template #activator="{ props }">
+                                  <v-btn
+                                    v-bind="props"
+                                    icon
+                                    size="small"
+                                    variant="text"
+                                  >
+                                    <v-icon small>mdi-dots-vertical</v-icon>
+                                  </v-btn>
+                                </template>
+
+                                <v-list dense>
+                                  <v-list-item
+                                    v-for="menu in menusProjetoDisponiveis(
+                                      projeto
+                                    )"
+                                    :key="menu.identificador"
+                                    @click="menu.acao(projeto)"
+                                  >
+                                    <v-list-item-title>
+                                      <v-icon
+                                        class="pr-1"
+                                        color="primary"
+                                      >
+                                        {{ menu.icone }}
+                                      </v-icon>
+                                      {{ menu.titulo }}
+                                    </v-list-item-title>
+                                  </v-list-item>
+                                </v-list>
+                              </v-menu>
+                            </div>
+                          </div>
+                        </div>
+                      </v-card-title>
+
+                      <v-card-text class="pa-0 ma-0 ml-4 pr-4">
+                        <v-expand-transition>
+                          <div v-if="projeto.expandido">
+                            <v-switch
+                              v-for="comando in projeto.getComandosDisponiveis?.()"
+                              :key="comando.valor"
+                              :label="comando.titulo"
+                              :value="comando.valor"
+                              v-model="projeto.comandosSelecionados"
+                              hide-details
+                              height="40px"
+                              color="primary"
+                              density="compact"
+                              :append-icon="iconeAcaoMenu(comando.valor)"
+                              @click:append="
+                                () =>
+                                  executarAcaoMenuAvulso(projeto, comando.valor)
+                              "
+                            />
+                          </div>
+                        </v-expand-transition>
+                      </v-card-text>
+                    </v-card>
+                  </div>
+                </template>
+              </div>
+
+              <div class="d-flex shrink mt-1">
+                <v-btn
+                  size="large"
+                  color="primary"
+                  width="100%"
+                  @click="executarAcoes"
+                  :disabled="
+                    !pastaSelecionada.projetos.some(
+                      p =>
+                        p.comandosSelecionados &&
+                        p.comandosSelecionados.length > 0
+                    ) && diretorioAcoes.length === 0
+                  "
+                >
+                  <v-icon>mdi-lightning-bolt</v-icon>
+                  Executar
+                </v-btn>
+              </div>
             </div>
-          </div>
-        </v-col>
-      </v-row>
-    </div>
+          </v-col>
+        </v-row>
+      </div>
     </v-col>
   </v-row>
   <CadastroPasta

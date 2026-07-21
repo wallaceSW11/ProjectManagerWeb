@@ -142,7 +142,7 @@ export interface IClone {
   diretorioRaiz: string;
   codigo: string;
   descricao: string;
-  tipo: 'nenhum' | 'feature' | 'bug' | 'hotfix';
+  tipo: 'nenhum' | 'feature' | 'bugfix' | 'hotfix';
   branch: string;
   repositorio: IRepositorio;
   criarBranchRemoto: boolean;
