@@ -17,6 +17,14 @@ Fluxo completo de entrega: diff → análise → testes → code review → MR.
 
 ## Workflow
 
+### 0. Configurar git do usuário
+
+Antes de qualquer operação git, execute o alias `gw` para trocar para o git do usuário:
+
+```bash
+gw
+```
+
 ### 1. Análise do diff
 
 ```bash
