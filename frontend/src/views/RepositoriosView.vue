@@ -28,7 +28,7 @@
           >
             <v-tabs-window-item>
               <ListaRepositorios
-                :itens="repositorios"
+                v-model="repositorios"
                 @editar="mudarParaEdicao"
                 @excluir="excluirRepositorio"
                 @duplicar="duplicarRepositorio"
@@ -182,7 +182,6 @@
 
       await RepositoriosService.atualizarOrdem(indices);
 
-      Object.assign(repositorios, repositoriosOrdenados);
       notificar('sucesso', 'Ordem salva');
     } catch (error) {
       console.error('Falha ao salvar ordem:', error);

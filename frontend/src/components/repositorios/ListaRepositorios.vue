@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div v-if="!itens.length">Nenhum repositório cadastrado</div>
+    <div v-if="!modelValue.length">Nenhum repositório cadastrado</div>
 
     <draggable
       v-else
-      v-model="listaLocal"
+      v-model="lista"
       item-key="identificador"
       :animation="200"
       handle=".drag-handle"
@@ -79,13 +79,13 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch } from 'vue';
+  import { computed } from 'vue';
   import type { IRepositorio, IProjeto } from '@/types';
   import draggable from 'vuedraggable';
   import { notificar } from '@/utils/eventBus';
 
   interface Props {
-    itens: IRepositorio[];
+    modelValue: IRepositorio[];
   }
 
   const props = defineProps<Props>();
@@ -94,20 +94,16 @@
     excluir: [repositorio: IRepositorio];
     duplicar: [repositorio: IRepositorio];
     ordenado: [repositorios: IRepositorio[]];
+    'update:modelValue': [repositorios: IRepositorio[]];
   }>();
 
-  const listaLocal = ref<IRepositorio[]>([]);
-
-  watch(
-    () => props.itens,
-    novaLista => {
-      listaLocal.value = [...novaLista];
-    },
-    { immediate: true }
-  );
+  const lista = computed({
+    get: () => props.modelValue,
+    set: val => emit('update:modelValue', val)
+  });
 
   const salvarOrdem = (): void => {
-    emit('ordenado', listaLocal.value);
+    emit('ordenado', props.modelValue);
   };
 
   const copiarParaAreaTransferencia = async (texto: string): Promise<void> => {
