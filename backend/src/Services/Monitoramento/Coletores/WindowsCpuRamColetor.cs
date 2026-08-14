@@ -81,6 +81,14 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         return celsius is > -50 and < 150 ? celsius : null;
     }
 
+    public double? ObterRamVelocidadeMhz()
+    {
+        var velocidade = ConsultarInteiroUnico("SELECT ConfiguredClockSpeed FROM Win32_PhysicalMemory", "ConfiguredClockSpeed");
+        if (velocidade is not null)
+            return velocidade;
+        return ConsultarInteiroUnico("SELECT Speed FROM Win32_PhysicalMemory", "Speed");
+    }
+
     public double? ObterCpuPercentual()
     {
         if (!GetSystemTimes(out var idle, out var kernel, out var user))

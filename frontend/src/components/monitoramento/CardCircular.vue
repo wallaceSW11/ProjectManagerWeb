@@ -1,45 +1,46 @@
 <template>
-  <section class="cockpit-card cockpit-cpu">
+  <section class="cockpit-card cockpit-circular">
     <div class="d-flex align-center ga-2 mb-2">
       <v-icon
         :color="cor"
         size="small"
       >
-        mdi-chip
+        {{ icone }}
       </v-icon>
-      <span class="text-caption text-grey text-uppercase">CPU</span>
+      <span class="text-caption text-grey text-uppercase">{{ titulo }}</span>
     </div>
 
     <div
-      class="cockpit-cpu-nome"
+      v-if="nome"
+      class="cockpit-circular-nome"
       :title="nome"
     >
       {{ nome }}
     </div>
 
-    <div class="cockpit-cpu-circuito">
+    <div class="cockpit-circular-circuito">
       <v-progress-circular
         :model-value="percentual ?? 0"
         :size="170"
         :width="12"
         :color="cor"
       >
-        <div class="cockpit-cpu-percentual">
+        <div class="cockpit-circular-percentual">
           <span :class="`text-${cor}`">{{ percentualTexto }}</span>
           <span class="text-caption text-grey text-uppercase">uso atual</span>
         </div>
       </v-progress-circular>
     </div>
 
-    <div class="cockpit-cpu-rodape">
-      <div class="cockpit-cpu-item">
-        <span class="text-caption text-grey">Frequência</span>
-        <span class="cockpit-cpu-valor">{{ frequencia }}</span>
+    <div class="cockpit-circular-rodape">
+      <div class="cockpit-circular-item">
+        <span class="text-caption text-grey">{{ rotuloEsquerdo }}</span>
+        <span class="cockpit-circular-valor">{{ valorEsquerdo }}</span>
       </div>
 
-      <div class="cockpit-cpu-item cockpit-cpu-item-direita">
-        <span class="text-caption text-grey">Temperatura</span>
-        <span class="cockpit-cpu-valor">{{ temperatura }}</span>
+      <div class="cockpit-circular-item cockpit-circular-item-direita">
+        <span class="text-caption text-grey">{{ rotuloDireito }}</span>
+        <span class="cockpit-circular-valor">{{ valorDireito }}</span>
       </div>
     </div>
   </section>
@@ -50,10 +51,14 @@
   import { corPorUso } from '@/utils/corUso';
 
   const props = defineProps<{
-    nome: string;
+    icone: string;
+    titulo: string;
+    nome: string | null;
     percentual: number | null;
-    frequenciaMhz: number | null;
-    temperaturaCelsius: number | null;
+    rotuloEsquerdo: string;
+    valorEsquerdo: string;
+    rotuloDireito: string;
+    valorDireito: string;
   }>();
 
   const cor = computed(() =>
@@ -62,19 +67,6 @@
 
   const percentualTexto = computed(() =>
     props.percentual === null ? '--' : `${props.percentual.toFixed(0)}%`
-  );
-
-  const frequencia = computed(() => {
-    if (props.frequenciaMhz === null) return '--';
-    return props.frequenciaMhz >= 1000
-      ? `${(props.frequenciaMhz / 1000).toFixed(1)} GHz`
-      : `${Math.round(props.frequenciaMhz)} MHz`;
-  });
-
-  const temperatura = computed(() =>
-    props.temperaturaCelsius === null
-      ? '--'
-      : `${Math.round(props.temperaturaCelsius)}°C`
   );
 </script>
 
@@ -87,12 +79,12 @@
     min-width: 0;
   }
 
-  .cockpit-cpu {
+  .cockpit-circular {
     display: flex;
     flex-direction: column;
   }
 
-  .cockpit-cpu-nome {
+  .cockpit-circular-nome {
     font-size: 0.9rem;
     font-weight: 600;
     text-align: center;
@@ -101,7 +93,7 @@
     text-overflow: ellipsis;
   }
 
-  .cockpit-cpu-circuito {
+  .cockpit-circular-circuito {
     flex: 1;
     display: flex;
     align-items: center;
@@ -110,35 +102,35 @@
     min-height: 0;
   }
 
-  .cockpit-cpu-percentual {
+  .cockpit-circular-percentual {
     display: flex;
     flex-direction: column;
     align-items: center;
     line-height: 1.25;
   }
 
-  .cockpit-cpu-percentual > span:first-child {
+  .cockpit-circular-percentual > span:first-child {
     font-size: 2.6rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
 
-  .cockpit-cpu-rodape {
+  .cockpit-circular-rodape {
     display: flex;
     justify-content: space-between;
     gap: 16px;
   }
 
-  .cockpit-cpu-item {
+  .cockpit-circular-item {
     display: flex;
     flex-direction: column;
   }
 
-  .cockpit-cpu-item-direita {
+  .cockpit-circular-item-direita {
     align-items: flex-end;
   }
 
-  .cockpit-cpu-valor {
+  .cockpit-circular-valor {
     font-size: 1.1rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;

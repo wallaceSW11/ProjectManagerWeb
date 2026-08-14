@@ -192,6 +192,8 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
         return milesimosDeGrau.Value / 1000.0;
     }
 
+    public double? ObterRamVelocidadeMhz() => null;
+
     public double? ObterCpuPercentual()
     {
         var amostra = LerAmostraCpu();

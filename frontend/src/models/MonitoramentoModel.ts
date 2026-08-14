@@ -13,6 +13,7 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
   ramTotalBytes: number | null;
   ramDisponivelBytes: number | null;
   ramUsadaBytes: number | null;
+  ramVelocidadeMhz: number | null;
   discoPercentual: number | null;
   discoTotalBytes: number | null;
   discoDisponivelBytes: number | null;
@@ -31,6 +32,7 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
     this.ramTotalBytes = obj.ramTotalBytes ?? null;
     this.ramDisponivelBytes = obj.ramDisponivelBytes ?? null;
     this.ramUsadaBytes = obj.ramUsadaBytes ?? null;
+    this.ramVelocidadeMhz = obj.ramVelocidadeMhz ?? null;
     this.discoPercentual = obj.discoPercentual ?? null;
     this.discoTotalBytes = obj.discoTotalBytes ?? null;
     this.discoDisponivelBytes = obj.discoDisponivelBytes ?? null;

@@ -7,5 +7,6 @@ public interface ICpuRamColetor
     double? ObterCpuFrequenciaMhz();
     double? ObterCpuTemperaturaCelsius();
     double? ObterCpuPercentual();
+    double? ObterRamVelocidadeMhz();
     (long total, long disponivel) ObterMemoria();
 }

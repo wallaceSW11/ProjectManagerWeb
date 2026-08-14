@@ -17,20 +17,26 @@
     </header>
 
     <main class="cockpit-corpo">
-      <CardCpu
+      <CardCircular
+        icone="mdi-chip"
+        titulo="CPU"
         :nome="cpuNome"
         :percentual="cpuPercentual"
-        :frequencia-mhz="cpuFrequenciaMhz"
-        :temperatura-celsius="cpuTemperaturaCelsius"
+        rotulo-esquerdo="Frequência"
+        :valor-esquerdo="cpuFrequenciaTexto"
+        rotulo-direito="Temperatura"
+        :valor-direito="cpuTemperaturaTexto"
       />
 
-      <CardMetrica
+      <CardCircular
         icone="mdi-memory"
         titulo="RAM"
-        :valor="ramValor"
-        :detalhe="ramDetalhe"
+        :nome="null"
         :percentual="ramPercentual"
-        :cor="corRam"
+        rotulo-esquerdo="Em uso"
+        :valor-esquerdo="ramUsadaTexto"
+        rotulo-direito="Velocidade"
+        :valor-direito="ramVelocidadeTexto"
       />
 
       <CardMetrica
@@ -68,7 +74,7 @@
 <script setup lang="ts">
   import { computed, onBeforeUnmount, onMounted } from 'vue';
   import logo from '@/assets/logo.svg';
-  import CardCpu from '@/components/monitoramento/CardCpu.vue';
+  import CardCircular from '@/components/monitoramento/CardCircular.vue';
   import CardMetrica from '@/components/monitoramento/CardMetrica.vue';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
   import { corPorUso } from '@/utils/corUso';
@@ -83,13 +89,18 @@
     () => monitoramentoStore.snapshot?.cpuPercentual ?? null
   );
 
-  const cpuFrequenciaMhz = computed(
-    () => monitoramentoStore.snapshot?.cpuFrequenciaMhz ?? null
-  );
+  const cpuFrequenciaTexto = computed(() => {
+    const mhz = monitoramentoStore.snapshot?.cpuFrequenciaMhz ?? null;
+    if (mhz === null) return '--';
+    return mhz >= 1000
+      ? `${(mhz / 1000).toFixed(1)} GHz`
+      : `${Math.round(mhz)} MHz`;
+  });
 
-  const cpuTemperaturaCelsius = computed(
-    () => monitoramentoStore.snapshot?.cpuTemperaturaCelsius ?? null
-  );
+  const cpuTemperaturaTexto = computed(() => {
+    const celsius = monitoramentoStore.snapshot?.cpuTemperaturaCelsius ?? null;
+    return celsius === null ? '--' : `${Math.round(celsius)}°C`;
+  });
 
   const ramUsadaBytes = computed(
     () => monitoramentoStore.snapshot?.ramUsadaBytes ?? null
@@ -106,21 +117,15 @@
     return (usada / total) * 100;
   });
 
-  const ramValor = computed(() => {
+  const ramUsadaTexto = computed(() => {
     const usada = ramUsadaBytes.value;
     return usada === null ? '--' : `${formatarGb(usada)} GB`;
   });
 
-  const ramDetalhe = computed(() => {
-    const usada = ramUsadaBytes.value;
-    const total = ramTotalBytes.value;
-    if (usada === null || total === null || total === 0) return 'aguardando...';
-    return `${formatarGb(usada)} de ${formatarGb(total)} GB`;
+  const ramVelocidadeTexto = computed(() => {
+    const mhz = monitoramentoStore.snapshot?.ramVelocidadeMhz ?? null;
+    return mhz === null ? '--' : `${Math.round(mhz)} MHz`;
   });
-
-  const corRam = computed(() =>
-    ramPercentual.value === null ? 'primary' : corPorUso(ramPercentual.value)
-  );
 
   const discoUsadaBytes = computed(
     () => monitoramentoStore.snapshot?.discoUsadaBytes ?? null

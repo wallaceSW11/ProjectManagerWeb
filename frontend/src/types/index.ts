@@ -200,6 +200,7 @@ export interface IMonitoramentoSnapshot {
   ramTotalBytes: number | null;
   ramDisponivelBytes: number | null;
   ramUsadaBytes: number | null;
+  ramVelocidadeMhz: number | null;
   discoPercentual: number | null;
   discoTotalBytes: number | null;
   discoDisponivelBytes: number | null;
