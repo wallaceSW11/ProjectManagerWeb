@@ -29,6 +29,11 @@ const routes: RouteRecordRaw[] = [
     path: '/ides',
     name: 'ides',
     component: () => import('../views/IDEsView.vue')
+  },
+  {
+    path: '/monitoramento',
+    name: 'monitoramento',
+    component: () => import('../views/MonitoramentoView.vue')
   }
 ];
 
