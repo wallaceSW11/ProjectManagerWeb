@@ -9,5 +9,9 @@ public sealed record MonitoramentoSnapshotDTO(
     double? CpuPercentual,
     long? RamTotalBytes,
     long? RamDisponivelBytes,
-    long? RamUsadaBytes
+    long? RamUsadaBytes,
+    double? DiscoPercentual,
+    long? DiscoTotalBytes,
+    long? DiscoDisponivelBytes,
+    long? DiscoUsadaBytes
 );

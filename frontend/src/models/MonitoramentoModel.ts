@@ -10,6 +10,10 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
   ramTotalBytes: number | null;
   ramDisponivelBytes: number | null;
   ramUsadaBytes: number | null;
+  discoPercentual: number | null;
+  discoTotalBytes: number | null;
+  discoDisponivelBytes: number | null;
+  discoUsadaBytes: number | null;
 
   constructor(obj: Partial<IMonitoramentoSnapshot> = {}) {
     this.timestamp = obj.timestamp || new Date().toISOString();
@@ -21,5 +25,9 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
     this.ramTotalBytes = obj.ramTotalBytes ?? null;
     this.ramDisponivelBytes = obj.ramDisponivelBytes ?? null;
     this.ramUsadaBytes = obj.ramUsadaBytes ?? null;
+    this.discoPercentual = obj.discoPercentual ?? null;
+    this.discoTotalBytes = obj.discoTotalBytes ?? null;
+    this.discoDisponivelBytes = obj.discoDisponivelBytes ?? null;
+    this.discoUsadaBytes = obj.discoUsadaBytes ?? null;
   }
 }

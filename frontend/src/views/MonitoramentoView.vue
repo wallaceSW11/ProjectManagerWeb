@@ -35,6 +35,15 @@
         :cor="corRam"
       />
 
+      <CardMetrica
+        icone="mdi-harddisk"
+        titulo="Disco"
+        :valor="discoValor"
+        :detalhe="discoDetalhe"
+        :percentual="discoPercentual"
+        :cor="corDisco"
+      />
+
       <section class="cockpit-card cockpit-sistema">
         <div class="d-flex align-center ga-2 mb-2">
           <v-icon
@@ -52,11 +61,6 @@
 
         <div class="text-caption text-grey">
           {{ textoConexao }}
-        </div>
-
-        <div class="text-caption text-grey">
-          {{ clientesConectados }}
-          {{ rotuloClientes }} · atualizado {{ timestampFormatado }}
         </div>
       </section>
     </main>
@@ -125,6 +129,37 @@
     ramPercentual.value === null ? 'primary' : corPorUso(ramPercentual.value)
   );
 
+  const discoUsadaBytes = computed(
+    () => monitoramentoStore.snapshot?.discoUsadaBytes ?? null
+  );
+
+  const discoTotalBytes = computed(
+    () => monitoramentoStore.snapshot?.discoTotalBytes ?? null
+  );
+
+  const discoPercentual = computed(() => {
+    const valor = monitoramentoStore.snapshot?.discoPercentual;
+    return valor === null || valor === undefined ? null : valor;
+  });
+
+  const discoValor = computed(() => {
+    const percentual = discoPercentual.value;
+    return percentual === null ? '--' : `${percentual.toFixed(1)}%`;
+  });
+
+  const discoDetalhe = computed(() => {
+    const usada = discoUsadaBytes.value;
+    const total = discoTotalBytes.value;
+    if (usada === null || total === null || total === 0) return 'aguardando...';
+    return `${formatarGb(usada)} de ${formatarGb(total)} GB`;
+  });
+
+  const corDisco = computed(() =>
+    discoPercentual.value === null
+      ? 'primary'
+      : corPorUso(discoPercentual.value)
+  );
+
   const sistemaOperacional = computed(
     () => monitoramentoStore.snapshot?.sistemaOperacional || '--'
   );
@@ -140,20 +175,6 @@
   const corConexao = computed(() =>
     monitoramentoStore.conectado ? 'success' : 'error'
   );
-
-  const clientesConectados = computed(
-    () => monitoramentoStore.clientesConectados
-  );
-
-  const rotuloClientes = computed(() =>
-    clientesConectados.value === 1 ? 'cliente' : 'clientes'
-  );
-
-  const timestampFormatado = computed(() => {
-    const timestamp = monitoramentoStore.snapshot?.timestamp;
-    if (!timestamp) return '--';
-    return new Date(timestamp).toLocaleTimeString('pt-BR');
-  });
 
   onMounted(() => {
     monitoramentoStore.conectar();

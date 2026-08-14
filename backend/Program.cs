@@ -46,7 +46,13 @@ if (OperatingSystem.IsWindows())
     builder.Services.AddSingleton<ICpuRamColetor, WindowsCpuRamColetor>();
 else
     builder.Services.AddSingleton<ICpuRamColetor, LinuxCpuRamColetor>();
-builder.Services.AddSingleton<IColetorMetricas, CpuRamColetor>();
+builder.Services.AddSingleton<CpuRamColetor>();
+builder.Services.AddSingleton<DiscoColetor>();
+builder.Services.AddSingleton<IColetorMetricas>(sp => new ColetorComposto(
+[
+    sp.GetRequiredService<CpuRamColetor>(),
+    sp.GetRequiredService<DiscoColetor>()
+]));
 
 if (OperatingSystem.IsWindows())
     builder.Services.AddSingleton<IShellProvider, WindowsShellProvider>();

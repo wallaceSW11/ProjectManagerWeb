@@ -19,7 +19,11 @@ public class CpuRamColetor(ICpuRamColetor coletorPlataforma) : IColetorMetricas
             cpu,
             total > 0 ? total : null,
             total > 0 ? disponivel : null,
-            total > 0 ? usado : null
+            total > 0 ? usado : null,
+            null,
+            null,
+            null,
+            null
         ));
     }
 }
