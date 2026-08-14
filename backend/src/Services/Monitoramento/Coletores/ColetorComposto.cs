@@ -32,6 +32,9 @@ public class ColetorComposto(IColetorMetricas[] coletores) : IColetorMetricas
             DiscoPercentual = b.DiscoPercentual ?? a.DiscoPercentual,
             DiscoTotalBytes = b.DiscoTotalBytes ?? a.DiscoTotalBytes,
             DiscoDisponivelBytes = b.DiscoDisponivelBytes ?? a.DiscoDisponivelBytes,
-            DiscoUsadaBytes = b.DiscoUsadaBytes ?? a.DiscoUsadaBytes
+            DiscoUsadaBytes = b.DiscoUsadaBytes ?? a.DiscoUsadaBytes,
+            CpuNome = b.CpuNome ?? a.CpuNome,
+            CpuFrequenciaMhz = b.CpuFrequenciaMhz ?? a.CpuFrequenciaMhz,
+            CpuTemperaturaCelsius = b.CpuTemperaturaCelsius ?? a.CpuTemperaturaCelsius
         };
 }

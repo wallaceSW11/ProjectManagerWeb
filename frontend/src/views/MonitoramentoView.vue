@@ -17,13 +17,11 @@
     </header>
 
     <main class="cockpit-corpo">
-      <CardMetrica
-        icone="mdi-chip"
-        titulo="CPU"
-        :valor="cpuValor"
-        :detalhe="cpuDetalhe"
+      <CardCpu
+        :nome="cpuNome"
         :percentual="cpuPercentual"
-        :cor="corCpu"
+        :frequencia-mhz="cpuFrequenciaMhz"
+        :temperatura-celsius="cpuTemperaturaCelsius"
       />
 
       <CardMetrica
@@ -70,32 +68,27 @@
 <script setup lang="ts">
   import { computed, onBeforeUnmount, onMounted } from 'vue';
   import logo from '@/assets/logo.svg';
+  import CardCpu from '@/components/monitoramento/CardCpu.vue';
   import CardMetrica from '@/components/monitoramento/CardMetrica.vue';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
+  import { corPorUso } from '@/utils/corUso';
 
   const monitoramentoStore = useMonitoramentoStore();
 
   const formatarGb = (bytes: number): string => (bytes / 1024 ** 3).toFixed(1);
 
-  const corPorUso = (percentual: number): string =>
-    percentual < 60 ? 'success' : percentual < 85 ? 'warning' : 'error';
+  const cpuNome = computed(() => monitoramentoStore.snapshot?.cpuNome || '--');
 
-  const cpuPercentual = computed(() => {
-    const valor = monitoramentoStore.snapshot?.cpuPercentual;
-    return valor === null || valor === undefined ? null : valor;
-  });
-
-  const cpuValor = computed(() => {
-    const percentual = cpuPercentual.value;
-    return percentual === null ? '--' : `${percentual.toFixed(1)}%`;
-  });
-
-  const cpuDetalhe = computed(() =>
-    cpuPercentual.value === null ? 'aguardando amostra...' : 'uso atual'
+  const cpuPercentual = computed(
+    () => monitoramentoStore.snapshot?.cpuPercentual ?? null
   );
 
-  const corCpu = computed(() =>
-    cpuPercentual.value === null ? 'primary' : corPorUso(cpuPercentual.value)
+  const cpuFrequenciaMhz = computed(
+    () => monitoramentoStore.snapshot?.cpuFrequenciaMhz ?? null
+  );
+
+  const cpuTemperaturaCelsius = computed(
+    () => monitoramentoStore.snapshot?.cpuTemperaturaCelsius ?? null
   );
 
   const ramUsadaBytes = computed(

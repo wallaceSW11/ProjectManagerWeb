@@ -7,6 +7,9 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
   contadorSnapshots: number;
   sistemaOperacional: string;
   cpuPercentual: number | null;
+  cpuNome: string | null;
+  cpuFrequenciaMhz: number | null;
+  cpuTemperaturaCelsius: number | null;
   ramTotalBytes: number | null;
   ramDisponivelBytes: number | null;
   ramUsadaBytes: number | null;
@@ -22,6 +25,9 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
     this.contadorSnapshots = obj.contadorSnapshots || 0;
     this.sistemaOperacional = obj.sistemaOperacional || '';
     this.cpuPercentual = obj.cpuPercentual ?? null;
+    this.cpuNome = obj.cpuNome ?? null;
+    this.cpuFrequenciaMhz = obj.cpuFrequenciaMhz ?? null;
+    this.cpuTemperaturaCelsius = obj.cpuTemperaturaCelsius ?? null;
     this.ramTotalBytes = obj.ramTotalBytes ?? null;
     this.ramDisponivelBytes = obj.ramDisponivelBytes ?? null;
     this.ramUsadaBytes = obj.ramUsadaBytes ?? null;

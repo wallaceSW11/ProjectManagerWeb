@@ -194,6 +194,9 @@ export interface IMonitoramentoSnapshot {
   contadorSnapshots: number;
   sistemaOperacional: string;
   cpuPercentual: number | null;
+  cpuNome: string | null;
+  cpuFrequenciaMhz: number | null;
+  cpuTemperaturaCelsius: number | null;
   ramTotalBytes: number | null;
   ramDisponivelBytes: number | null;
   ramUsadaBytes: number | null;

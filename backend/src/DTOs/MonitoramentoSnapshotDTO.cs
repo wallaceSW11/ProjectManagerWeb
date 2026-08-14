@@ -13,5 +13,8 @@ public sealed record MonitoramentoSnapshotDTO(
     double? DiscoPercentual,
     long? DiscoTotalBytes,
     long? DiscoDisponivelBytes,
-    long? DiscoUsadaBytes
+    long? DiscoUsadaBytes,
+    string? CpuNome,
+    double? CpuFrequenciaMhz,
+    double? CpuTemperaturaCelsius
 );

@@ -23,7 +23,10 @@ public class CpuRamColetor(ICpuRamColetor coletorPlataforma) : IColetorMetricas
             null,
             null,
             null,
-            null
+            null,
+            coletorPlataforma.ObterCpuNome(),
+            coletorPlataforma.ObterCpuFrequenciaMhz(),
+            coletorPlataforma.ObterCpuTemperaturaCelsius()
         ));
     }
 }
