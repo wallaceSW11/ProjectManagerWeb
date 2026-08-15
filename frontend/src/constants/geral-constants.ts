@@ -59,3 +59,24 @@ export const TIPO_COMANDO: TipoComandoConstants = {
 export const UX_CONFIG = {
   DELAY_LOADING_MS: 300 // Delay para exibir conteúdo de carregamento
 } as const;
+
+interface LayoutMonitoramentoItem {
+  titulo: string;
+  valor: string;
+}
+
+interface LayoutMonitoramentoConstants {
+  PADRAO: LayoutMonitoramentoItem;
+  COCKPIT: LayoutMonitoramentoItem;
+}
+
+export const LAYOUT_MONITORAMENTO: LayoutMonitoramentoConstants = {
+  PADRAO: {
+    titulo: 'Padrão',
+    valor: 'PADRAO'
+  },
+  COCKPIT: {
+    titulo: 'Cockpit',
+    valor: 'COCKPIT'
+  }
+};

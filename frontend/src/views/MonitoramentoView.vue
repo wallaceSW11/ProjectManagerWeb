@@ -1,72 +1,58 @@
 <template>
-  <div class="cockpit">
-    <header class="cockpit-barra">
+  <div
+    class="monitoramento"
+    :class="{ 'monitoramento-cockpit': ehCockpit }"
+  >
+    <header
+      class="monitoramento-barra"
+      :class="{ 'monitoramento-barra-cockpit': ehCockpit }"
+    >
       <img
+        v-if="!ehCockpit"
         :src="logo"
-        class="cockpit-logo"
+        class="monitoramento-logo"
       />
-      <span class="cockpit-titulo">Project Manager Web Monitoring</span>
-      <v-btn
-        class="cockpit-home"
-        icon
-        variant="text"
-        :to="{ name: 'pastas' }"
+      <v-icon
+        v-else
+        color="#ffd21c"
+        size="small"
       >
-        <v-icon color="primary">mdi-home</v-icon>
-      </v-btn>
+        mdi-flash
+      </v-icon>
+      <span class="monitoramento-titulo">{{ titulo }}</span>
+
+      <div class="monitoramento-acoes">
+        <v-menu>
+          <template #activator="{ props: menuProps }">
+            <v-btn
+              v-bind="menuProps"
+              class="monitoramento-seletor-layout"
+              variant="plain"
+              density="comfortable"
+            >
+              Layout
+              <v-icon end>mdi-menu-down</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list
+            density="compact"
+            class="monitoramento-menu-layout"
+          >
+            <v-list-item
+              v-for="opcao in opcoesLayout"
+              :key="opcao.valor"
+              :title="opcao.titulo"
+              :active="layoutAtual === opcao.valor"
+              @click="selecionarLayout(opcao.valor)"
+            />
+          </v-list>
+        </v-menu>
+      </div>
     </header>
 
-    <main class="cockpit-corpo">
-      <CardCircular
-        icone="mdi-chip"
-        titulo="CPU"
-        :nome="cpuNome"
-        :percentual="cpuPercentual"
-        rotulo-esquerdo="Frequência"
-        :valor-esquerdo="cpuFrequenciaTexto"
-        rotulo-direito="Temperatura"
-        :valor-direito="cpuTemperaturaTexto"
-      />
-
-      <CardCircular
-        icone="mdi-memory"
-        titulo="RAM"
-        :nome="null"
-        :percentual="ramPercentual"
-        rotulo-esquerdo="Em uso"
-        :valor-esquerdo="ramUsadaTexto"
-        rotulo-direito="Velocidade"
-        :valor-direito="ramVelocidadeTexto"
-      />
-
-      <CardMetrica
-        icone="mdi-harddisk"
-        titulo="Disco"
-        :valor="discoValor"
-        :detalhe="discoDetalhe"
-        :percentual="discoPercentual"
-        :cor="corDisco"
-      />
-
-      <section class="cockpit-card cockpit-sistema">
-        <div class="d-flex align-center ga-2 mb-2">
-          <v-icon
-            :color="corConexao"
-            size="small"
-          >
-            {{ iconeConexao }}
-          </v-icon>
-          <span class="text-caption text-grey text-uppercase">Sistema</span>
-        </div>
-
-        <div class="cockpit-so">
-          {{ sistemaOperacional }}
-        </div>
-
-        <div class="text-caption text-grey">
-          {{ textoConexao }}
-        </div>
-      </section>
+    <main class="monitoramento-corpo">
+      <component :is="layoutComponente" />
     </main>
   </div>
 </template>
@@ -74,104 +60,27 @@
 <script setup lang="ts">
   import { computed, onBeforeUnmount, onMounted } from 'vue';
   import logo from '@/assets/logo.svg';
-  import CardCircular from '@/components/monitoramento/CardCircular.vue';
-  import CardMetrica from '@/components/monitoramento/CardMetrica.vue';
+  import LayoutCockpit from '@/components/monitoramento/layouts/LayoutCockpit.vue';
+  import LayoutPadrao from '@/components/monitoramento/layouts/LayoutPadrao.vue';
+  import { LAYOUT_MONITORAMENTO } from '@/constants/geral-constants';
+  import { useLayoutMonitoramento } from '@/composables/useLayoutMonitoramento';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
-  import { corPorUso } from '@/utils/corUso';
 
   const monitoramentoStore = useMonitoramentoStore();
 
-  const formatarGb = (bytes: number): string => (bytes / 1024 ** 3).toFixed(1);
+  const { layoutAtual, ehCockpit, selecionarLayout } = useLayoutMonitoramento();
 
-  const cpuNome = computed(() => monitoramentoStore.snapshot?.cpuNome || '--');
+  const opcoesLayout = [
+    LAYOUT_MONITORAMENTO.PADRAO,
+    LAYOUT_MONITORAMENTO.COCKPIT
+  ];
 
-  const cpuPercentual = computed(
-    () => monitoramentoStore.snapshot?.cpuPercentual ?? null
+  const layoutComponente = computed(() =>
+    ehCockpit.value ? LayoutCockpit : LayoutPadrao
   );
 
-  const cpuFrequenciaTexto = computed(() => {
-    const mhz = monitoramentoStore.snapshot?.cpuFrequenciaMhz ?? null;
-    if (mhz === null) return '--';
-    return mhz >= 1000
-      ? `${(mhz / 1000).toFixed(1)} GHz`
-      : `${Math.round(mhz)} MHz`;
-  });
-
-  const cpuTemperaturaTexto = computed(() => {
-    const celsius = monitoramentoStore.snapshot?.cpuTemperaturaCelsius ?? null;
-    return celsius === null ? '--' : `${Math.round(celsius)}°C`;
-  });
-
-  const ramUsadaBytes = computed(
-    () => monitoramentoStore.snapshot?.ramUsadaBytes ?? null
-  );
-
-  const ramTotalBytes = computed(
-    () => monitoramentoStore.snapshot?.ramTotalBytes ?? null
-  );
-
-  const ramPercentual = computed(() => {
-    const usada = ramUsadaBytes.value;
-    const total = ramTotalBytes.value;
-    if (usada === null || total === null || total === 0) return null;
-    return (usada / total) * 100;
-  });
-
-  const ramUsadaTexto = computed(() => {
-    const usada = ramUsadaBytes.value;
-    return usada === null ? '--' : `${formatarGb(usada)} GB`;
-  });
-
-  const ramVelocidadeTexto = computed(() => {
-    const mhz = monitoramentoStore.snapshot?.ramVelocidadeMhz ?? null;
-    return mhz === null ? '--' : `${Math.round(mhz)} MHz`;
-  });
-
-  const discoUsadaBytes = computed(
-    () => monitoramentoStore.snapshot?.discoUsadaBytes ?? null
-  );
-
-  const discoTotalBytes = computed(
-    () => monitoramentoStore.snapshot?.discoTotalBytes ?? null
-  );
-
-  const discoPercentual = computed(() => {
-    const valor = monitoramentoStore.snapshot?.discoPercentual;
-    return valor === null || valor === undefined ? null : valor;
-  });
-
-  const discoValor = computed(() => {
-    const percentual = discoPercentual.value;
-    return percentual === null ? '--' : `${percentual.toFixed(1)}%`;
-  });
-
-  const discoDetalhe = computed(() => {
-    const usada = discoUsadaBytes.value;
-    const total = discoTotalBytes.value;
-    if (usada === null || total === null || total === 0) return 'aguardando...';
-    return `${formatarGb(usada)} de ${formatarGb(total)} GB`;
-  });
-
-  const corDisco = computed(() =>
-    discoPercentual.value === null
-      ? 'primary'
-      : corPorUso(discoPercentual.value)
-  );
-
-  const sistemaOperacional = computed(
-    () => monitoramentoStore.snapshot?.sistemaOperacional || '--'
-  );
-
-  const textoConexao = computed(() =>
-    monitoramentoStore.conectado ? 'Conectado' : 'Desconectado'
-  );
-
-  const iconeConexao = computed(() =>
-    monitoramentoStore.conectado ? 'mdi-lan-connect' : 'mdi-lan-disconnect'
-  );
-
-  const corConexao = computed(() =>
-    monitoramentoStore.conectado ? 'success' : 'error'
+  const titulo = computed(() =>
+    ehCockpit.value ? 'PMW MONITOR' : 'Project Manager Web Monitoring'
   );
 
   onMounted(() => {
@@ -184,14 +93,18 @@
 </script>
 
 <style scoped>
-  .cockpit {
+  .monitoramento {
     height: 100dvh;
     display: flex;
     flex-direction: column;
     background: rgb(var(--v-theme-background));
   }
 
-  .cockpit-barra {
+  .monitoramento-cockpit {
+    background: #07090a;
+  }
+
+  .monitoramento-barra {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -200,12 +113,18 @@
     flex-shrink: 0;
   }
 
-  .cockpit-logo {
+  .monitoramento-barra-cockpit {
+    background: rgba(5, 7, 8, 0.72);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+  }
+
+  .monitoramento-logo {
     width: 28px;
     height: 28px;
   }
 
-  .cockpit-titulo {
+  .monitoramento-titulo {
     font-size: 1.1rem;
     font-weight: 600;
     white-space: nowrap;
@@ -213,32 +132,31 @@
     text-overflow: ellipsis;
   }
 
-  .cockpit-home {
-    margin-left: auto;
+  .monitoramento-barra-cockpit .monitoramento-titulo {
+    color: #f3f4f4;
+    letter-spacing: 0.04em;
   }
 
-  .cockpit-corpo {
+  .monitoramento-acoes {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .monitoramento-seletor-layout {
+    letter-spacing: 0.03em;
+  }
+
+  .monitoramento-barra-cockpit .monitoramento-seletor-layout {
+    color: #f3f4f4;
+  }
+
+  .monitoramento-corpo {
     flex: 1;
     display: flex;
-    gap: 12px;
-    padding: 12px;
+    flex-direction: column;
     min-height: 0;
-  }
-
-  .cockpit-corpo > * {
-    flex: 1;
-  }
-
-  .cockpit-so {
-    font-size: 1.2rem;
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: 4px;
-  }
-
-  @media (max-width: 600px) {
-    .cockpit-corpo {
-      flex-direction: column;
-    }
+    min-width: 0;
   }
 </style>
