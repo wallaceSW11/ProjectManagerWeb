@@ -5,8 +5,31 @@
         :titulo="cpuTitulo"
         :valor="cpuPercentual"
         cor="#74d94b"
-        :secundario="cpuSecundario"
-      />
+      >
+        <template #secundario>
+          <div class="cockpit-secundario">
+            <span class="cockpit-secundario-item">
+              <v-icon
+                size="18"
+                color="#74d94b"
+              >
+                mdi-speedometer
+              </v-icon>
+              {{ cpuFrequenciaTexto }}
+            </span>
+
+            <span class="cockpit-secundario-item">
+              <v-icon
+                size="18"
+                color="#ff9f12"
+              >
+                mdi-thermometer
+              </v-icon>
+              {{ cpuTemperaturaTexto }}
+            </span>
+          </div>
+        </template>
+      </SportGauge>
 
       <SportGauge
         titulo="RAM"
@@ -16,7 +39,19 @@
       />
     </div>
 
-    <footer class="cockpit-so">{{ sistemaOperacional }}</footer>
+    <footer class="cockpit-rodape">
+      <div class="cockpit-so">{{ sistemaOperacional }}</div>
+
+      <div class="cockpit-disco">
+        <v-icon
+          size="16"
+          color="#899092"
+        >
+          mdi-harddisk
+        </v-icon>
+        {{ discoTexto }}
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -37,18 +72,17 @@
     () => monitoramentoStore.snapshot?.cpuPercentual ?? null
   );
 
-  const cpuSecundario = computed(() => {
-    const snapshot = monitoramentoStore.snapshot;
-    const mhz = snapshot?.cpuFrequenciaMhz ?? null;
-    const celsius = snapshot?.cpuTemperaturaCelsius ?? null;
-    const frequencia =
-      mhz === null
-        ? '--'
-        : mhz >= 1000
-          ? `${(mhz / 1000).toFixed(2)} GHz`
-          : `${Math.round(mhz)} MHz`;
-    const temperatura = celsius === null ? '--' : `${Math.round(celsius)}°C`;
-    return `${frequencia} · ${temperatura}`;
+  const cpuFrequenciaTexto = computed(() => {
+    const mhz = monitoramentoStore.snapshot?.cpuFrequenciaMhz ?? null;
+    if (mhz === null) return '--';
+    return mhz >= 1000
+      ? `${(mhz / 1000).toFixed(2)} GHz`
+      : `${Math.round(mhz)} MHz`;
+  });
+
+  const cpuTemperaturaTexto = computed(() => {
+    const celsius = monitoramentoStore.snapshot?.cpuTemperaturaCelsius ?? null;
+    return celsius === null ? '--' : `${Math.round(celsius)}°C`;
   });
 
   const ramUsadaBytes = computed(
@@ -76,6 +110,29 @@
   const sistemaOperacional = computed(
     () => monitoramentoStore.snapshot?.sistemaOperacional || '--'
   );
+
+  const discoPercentual = computed(
+    () => monitoramentoStore.snapshot?.discoPercentual ?? null
+  );
+
+  const discoUsadaBytes = computed(
+    () => monitoramentoStore.snapshot?.discoUsadaBytes ?? null
+  );
+
+  const discoTotalBytes = computed(
+    () => monitoramentoStore.snapshot?.discoTotalBytes ?? null
+  );
+
+  const discoTexto = computed(() => {
+    const percentual = discoPercentual.value;
+    const usada = discoUsadaBytes.value;
+    const total = discoTotalBytes.value;
+    const percentualTexto =
+      percentual === null ? '--' : `${percentual.toFixed(1)}%`;
+    const usadaTexto = usada === null ? '--' : `${formatarGb(usada)} GB`;
+    const totalTexto = total === null ? '--' : `${formatarGb(total)} GB`;
+    return `${percentualTexto} · ${usadaTexto} de ${totalTexto}`;
+  });
 </script>
 
 <style scoped>
@@ -128,26 +185,55 @@
 
   .cockpit-gauges {
     flex: 1;
+    container-type: size;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: clamp(10px, 2vw, 28px);
     align-items: center;
     justify-items: center;
-    padding: clamp(8px, 2vh, 20px) clamp(10px, 3vw, 40px);
+    padding: clamp(8px, 2vh, 20px) clamp(10px, 3vw, 40px)
+      clamp(12px, 2.5vh, 22px);
     min-height: 0;
   }
 
-  .cockpit-so {
-    position: absolute;
-    z-index: 4;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #899092;
-    font-size: clamp(10px, 1.3vw, 14px);
-    letter-spacing: 0.05em;
+  .cockpit-rodape {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    padding: 10px 10px 18px;
     white-space: nowrap;
     pointer-events: none;
+  }
+
+  .cockpit-so {
+    color: #899092;
+    font-size: clamp(12px, 1.5vw, 16px);
+    letter-spacing: 0.05em;
+  }
+
+  .cockpit-disco {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b7375;
+    font-size: clamp(11px, 1.3vw, 14px);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+
+  .cockpit-secundario {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .cockpit-secundario-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
   }
 
   @media (orientation: portrait) {
@@ -155,6 +241,10 @@
       grid-template-columns: 1fr;
       grid-template-rows: 1fr 1fr;
       overflow-y: auto;
+    }
+
+    .cockpit-rodape {
+      padding: 16px 10px 24px;
     }
   }
 </style>

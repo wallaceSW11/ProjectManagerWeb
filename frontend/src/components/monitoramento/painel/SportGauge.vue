@@ -41,14 +41,9 @@
           stroke-width="9"
         />
 
-        <circle
+        <path
           class="sport-gauge-trilha"
-          cx="100"
-          cy="100"
-          r="78"
-          pathLength="100"
-          stroke-dasharray="82 100"
-          transform="rotate(140 100 100)"
+          :d="caminhoTrilha"
         />
 
         <path
@@ -114,7 +109,9 @@
       </div>
     </div>
 
-    <div class="sport-gauge-secundario">{{ secundario }}</div>
+    <div class="sport-gauge-secundario">
+      <slot name="secundario">{{ secundario }}</slot>
+    </div>
   </div>
 </template>
 
@@ -131,7 +128,7 @@
     titulo: string;
     valor: number | null;
     cor: string;
-    secundario: string;
+    secundario?: string;
   }>();
 
   const idGradienteAro = useId();
@@ -153,24 +150,35 @@
     };
   };
 
-  const caminhoAlerta = computed(() => {
-    const inicio = pontoNoArco(
-      ANGULO_INICIO + 0.9 * (ANGULO_FIM - ANGULO_INICIO)
-    );
-    const fim = pontoNoArco(ANGULO_FIM);
-    return `M ${inicio.x} ${inicio.y} A ${RAIO_ARCO} ${RAIO_ARCO} 0 0 1 ${fim.x} ${fim.y}`;
-  });
+  const caminhoArco = (anguloInicio: number, anguloFim: number): string => {
+    const inicio = pontoNoArco(anguloInicio);
+    const fim = pontoNoArco(anguloFim);
+    const arcoMaior = Math.abs(anguloFim - anguloInicio) > 180 ? 1 : 0;
+    return `M ${inicio.x} ${inicio.y} A ${RAIO_ARCO} ${RAIO_ARCO} 0 ${arcoMaior} 1 ${fim.x} ${fim.y}`;
+  };
+
+  const caminhoTrilha = computed(() => caminhoArco(ANGULO_INICIO, ANGULO_FIM));
+
+  const caminhoAlerta = computed(() =>
+    caminhoArco(ANGULO_INICIO + 0.9 * (ANGULO_FIM - ANGULO_INICIO), ANGULO_FIM)
+  );
 
   const ticks = computed(() =>
-    Array.from({ length: 21 }, (_, i) => {
-      const valor = i * 5;
+    Array.from({ length: 51 }, (_, i) => {
+      const valor = i * 2;
       const major = valor % 10 === 0;
+      const media = !major && valor % 5 === 0;
       return {
         valor,
         angulo: ANGULO_INICIO + (valor / 100) * (ANGULO_FIM - ANGULO_INICIO),
         major,
+        media,
         vermelha: valor >= 90,
-        pontos: major ? '98.4,23 100,11 101.6,23' : '99.2,19 100,14 100.8,19'
+        pontos: major
+          ? '98.4,23 100,11 101.6,23'
+          : media
+            ? '99.2,19 100,14 100.8,19'
+            : '99.6,17 100,15 100.4,17'
       };
     })
   );
@@ -189,12 +197,15 @@
     })
   );
 
-  const tickClasse = (tick: { major: boolean; vermelha: boolean }): string =>
-    tick.vermelha
-      ? 'sport-gauge-tick-vermelha'
-      : tick.major
-        ? 'sport-gauge-tick-major'
-        : '';
+  const tickClasse = (tick: {
+    major: boolean;
+    media: boolean;
+    vermelha: boolean;
+  }): string => {
+    if (tick.vermelha) return 'sport-gauge-tick-vermelha';
+    if (tick.major) return 'sport-gauge-tick-major';
+    return tick.media ? 'sport-gauge-tick-media' : '';
+  };
 
   const exibido = ref(0);
   let frameAnimacao: number | null = null;
@@ -243,6 +254,7 @@
   .sport-gauge-instrumento {
     position: relative;
     width: min(58vw, 72vh);
+    width: min(58vw, 72vh, calc(100cqh - 64px));
     aspect-ratio: 1;
     filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.5));
   }
@@ -294,6 +306,11 @@
   .sport-gauge-tick-major polygon {
     fill: #c2c7c8;
     opacity: 0.95;
+  }
+
+  .sport-gauge-tick-media polygon {
+    fill: #93999b;
+    opacity: 0.9;
   }
 
   .sport-gauge-tick-vermelha polygon {
@@ -359,7 +376,7 @@
 
   .sport-gauge-secundario {
     color: #899092;
-    font-size: clamp(10px, 1.4vw, 13px);
+    font-size: clamp(13px, 1.7vw, 17px);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.03em;
     white-space: nowrap;
