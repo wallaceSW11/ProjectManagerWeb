@@ -1,14 +1,14 @@
 <template>
   <div
     class="monitoramento"
-    :class="{ 'monitoramento-cockpit': ehCockpit || ehPainelEsportivo }"
+    :class="{ 'monitoramento-cockpit': ehPainelEsportivo }"
   >
     <header
       class="monitoramento-barra"
-      :class="{ 'monitoramento-barra-cockpit': ehCockpit || ehPainelEsportivo }"
+      :class="{ 'monitoramento-barra-cockpit': ehPainelEsportivo }"
     >
       <img
-        v-if="!ehCockpit"
+        v-if="!ehPainelEsportivo"
         :src="logo"
         class="monitoramento-logo"
       />
@@ -59,7 +59,6 @@
 <script setup lang="ts">
   import { computed, onBeforeUnmount, onMounted } from 'vue';
   import logo from '@/assets/logo.svg';
-  import LayoutCockpit from '@/components/monitoramento/layouts/LayoutCockpit.vue';
   import LayoutPainelEsportivo from '@/components/monitoramento/layouts/LayoutPainelEsportivo.vue';
   import LayoutPadrao from '@/components/monitoramento/layouts/LayoutPadrao.vue';
   import { LAYOUT_MONITORAMENTO } from '@/constants/geral-constants';
@@ -68,22 +67,19 @@
 
   const monitoramentoStore = useMonitoramentoStore();
 
-  const { layoutAtual, ehCockpit, ehPainelEsportivo, selecionarLayout } =
-    useLayoutMonitoramento();
+  const { layoutAtual, ehPainelEsportivo, selecionarLayout } = useLayoutMonitoramento();
 
   const opcoesLayout = [
     LAYOUT_MONITORAMENTO.PADRAO,
-    LAYOUT_MONITORAMENTO.COCKPIT,
     LAYOUT_MONITORAMENTO.PAINEL_ESPORTIVO
   ];
 
-  const layoutComponente = computed(() => {
-    if (ehPainelEsportivo.value) return LayoutPainelEsportivo;
-    return ehCockpit.value ? LayoutCockpit : LayoutPadrao;
-  });
+  const layoutComponente = computed(() =>
+    ehPainelEsportivo.value ? LayoutPainelEsportivo : LayoutPadrao
+  );
 
   const titulo = computed(() =>
-    ehCockpit.value || ehPainelEsportivo.value
+    ehPainelEsportivo.value
       ? 'PMW MONITOR'
       : 'Project Manager Web Monitoring'
   );

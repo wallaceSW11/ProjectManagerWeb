@@ -28,7 +28,8 @@
           >
             <v-tabs-window-item>
               <ListaRepositorios
-                v-model="repositorios"
+                :model-value="repositorios"
+                @update:model-value="atualizarRepositorios"
                 @editar="mudarParaEdicao"
                 @excluir="excluirRepositorio"
                 @duplicar="duplicarRepositorio"
@@ -151,6 +152,12 @@
     focarUrl: () => void;
     formRepositorio: { resetValidation: () => void };
   } | null>(null);
+
+  const atualizarRepositorios = (
+    repositoriosAtualizados: IRepositorio[]
+  ): void => {
+    repositorios.splice(0, repositorios.length, ...repositoriosAtualizados);
+  };
 
   onMounted(async () => {
     await preencherRepositorios();

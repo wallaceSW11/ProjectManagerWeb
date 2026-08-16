@@ -5,20 +5,18 @@ const CHAVE_STORAGE = 'pmw-monitor-layout';
 
 interface UseLayoutMonitoramentoReturn {
   layoutAtual: Ref<string>;
-  ehCockpit: ComputedRef<boolean>;
   ehPainelEsportivo: ComputedRef<boolean>;
   selecionarLayout: (valor: string) => void;
 }
 
+const layoutSalvo = localStorage.getItem(CHAVE_STORAGE);
 const layoutAtual = ref<string>(
-  localStorage.getItem(CHAVE_STORAGE) ?? LAYOUT_MONITORAMENTO.PADRAO.valor
+  layoutSalvo === LAYOUT_MONITORAMENTO.PAINEL_ESPORTIVO.valor
+    ? layoutSalvo
+    : LAYOUT_MONITORAMENTO.PADRAO.valor
 );
 
 export function useLayoutMonitoramento(): UseLayoutMonitoramentoReturn {
-  const ehCockpit = computed(
-    () => layoutAtual.value === LAYOUT_MONITORAMENTO.COCKPIT.valor
-  );
-
   const ehPainelEsportivo = computed(
     () => layoutAtual.value === LAYOUT_MONITORAMENTO.PAINEL_ESPORTIVO.valor
   );
@@ -30,7 +28,6 @@ export function useLayoutMonitoramento(): UseLayoutMonitoramentoReturn {
 
   return {
     layoutAtual,
-    ehCockpit,
     ehPainelEsportivo,
     selecionarLayout
   };
