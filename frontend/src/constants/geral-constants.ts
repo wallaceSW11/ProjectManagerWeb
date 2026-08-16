@@ -68,6 +68,7 @@ interface LayoutMonitoramentoItem {
 interface LayoutMonitoramentoConstants {
   PADRAO: LayoutMonitoramentoItem;
   COCKPIT: LayoutMonitoramentoItem;
+  PAINEL_ESPORTIVO: LayoutMonitoramentoItem;
 }
 
 export const LAYOUT_MONITORAMENTO: LayoutMonitoramentoConstants = {
@@ -78,5 +79,9 @@ export const LAYOUT_MONITORAMENTO: LayoutMonitoramentoConstants = {
   COCKPIT: {
     titulo: 'Cockpit',
     valor: 'COCKPIT'
+  },
+  PAINEL_ESPORTIVO: {
+    titulo: 'Painel esportivo',
+    valor: 'PAINEL_ESPORTIVO'
   }
 };

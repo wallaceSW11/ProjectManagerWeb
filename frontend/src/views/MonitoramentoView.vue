@@ -1,11 +1,11 @@
 <template>
   <div
     class="monitoramento"
-    :class="{ 'monitoramento-cockpit': ehCockpit }"
+    :class="{ 'monitoramento-cockpit': ehCockpit || ehPainelEsportivo }"
   >
     <header
       class="monitoramento-barra"
-      :class="{ 'monitoramento-barra-cockpit': ehCockpit }"
+      :class="{ 'monitoramento-barra-cockpit': ehCockpit || ehPainelEsportivo }"
     >
       <img
         v-if="!ehCockpit"
@@ -15,7 +15,7 @@
       <v-icon
         v-else
         color="#ffd21c"
-        size="small"
+        size="16"
       >
         mdi-flash
       </v-icon>
@@ -29,10 +29,9 @@
               class="monitoramento-seletor-layout"
               variant="plain"
               density="comfortable"
-            >
-              Layout
-              <v-icon end>mdi-menu-down</v-icon>
-            </v-btn>
+              icon="mdi-view-dashboard-outline"
+              aria-label="Selecionar layout"
+            />
           </template>
 
           <v-list
@@ -61,6 +60,7 @@
   import { computed, onBeforeUnmount, onMounted } from 'vue';
   import logo from '@/assets/logo.svg';
   import LayoutCockpit from '@/components/monitoramento/layouts/LayoutCockpit.vue';
+  import LayoutPainelEsportivo from '@/components/monitoramento/layouts/LayoutPainelEsportivo.vue';
   import LayoutPadrao from '@/components/monitoramento/layouts/LayoutPadrao.vue';
   import { LAYOUT_MONITORAMENTO } from '@/constants/geral-constants';
   import { useLayoutMonitoramento } from '@/composables/useLayoutMonitoramento';
@@ -68,19 +68,24 @@
 
   const monitoramentoStore = useMonitoramentoStore();
 
-  const { layoutAtual, ehCockpit, selecionarLayout } = useLayoutMonitoramento();
+  const { layoutAtual, ehCockpit, ehPainelEsportivo, selecionarLayout } =
+    useLayoutMonitoramento();
 
   const opcoesLayout = [
     LAYOUT_MONITORAMENTO.PADRAO,
-    LAYOUT_MONITORAMENTO.COCKPIT
+    LAYOUT_MONITORAMENTO.COCKPIT,
+    LAYOUT_MONITORAMENTO.PAINEL_ESPORTIVO
   ];
 
-  const layoutComponente = computed(() =>
-    ehCockpit.value ? LayoutCockpit : LayoutPadrao
-  );
+  const layoutComponente = computed(() => {
+    if (ehPainelEsportivo.value) return LayoutPainelEsportivo;
+    return ehCockpit.value ? LayoutCockpit : LayoutPadrao;
+  });
 
   const titulo = computed(() =>
-    ehCockpit.value ? 'PMW MONITOR' : 'Project Manager Web Monitoring'
+    ehCockpit.value || ehPainelEsportivo.value
+      ? 'PMW MONITOR'
+      : 'Project Manager Web Monitoring'
   );
 
   onMounted(() => {
@@ -134,6 +139,7 @@
 
   .monitoramento-barra-cockpit .monitoramento-titulo {
     color: #f3f4f4;
+    font-size: 0.9rem;
     letter-spacing: 0.04em;
   }
 
