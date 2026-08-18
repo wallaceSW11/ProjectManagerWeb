@@ -10,7 +10,8 @@
   ],
   "plugin": [
     ".opencode/plugins/validate-code-style.js",
-    ".opencode/plugins/validate-infra.js"
+    ".opencode/plugins/validate-infra.js",
+    ".opencode/plugins/validar-ao-finalizar.js"
   ],
   "shell": "pwsh",
   "formatter": true,

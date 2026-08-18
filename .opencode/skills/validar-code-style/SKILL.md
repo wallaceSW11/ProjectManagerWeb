@@ -26,3 +26,11 @@ Use quando quiser verificar code-style manualmente, complementar o plugin autom�
 - Lógica complexa em v-if/v-show/:class — extrair pra computed
 - Loading sem finally — resetar no finally
 - Chamar service direto do component — passar pela store
+
+## Revisão qualitativa — boas práticas
+
+- **SOLID** — responsabilidade única: sem lógica de negócio em controller/component; camadas respeitadas (Component → Store → Service → API | Controller → Service → JsonService)
+- **DRY** — sem duplicação; se repetir 2x+, extrair util/composable/serviço
+- **KISS** — solução mais simples possível; sem abstração/interface sem necessidade (YAGNI)
+- **Não reinventar a roda** — ler arquivo similar antes de criar novo; reaproveitar padrões existentes do projeto
+- Sem placeholder/TODO; sem código morto; nomes auto-documentados
