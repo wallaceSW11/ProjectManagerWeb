@@ -67,7 +67,8 @@
 
   const monitoramentoStore = useMonitoramentoStore();
 
-  const { layoutAtual, ehPainelEsportivo, selecionarLayout } = useLayoutMonitoramento();
+  const { layoutAtual, ehPainelEsportivo, selecionarLayout } =
+    useLayoutMonitoramento();
 
   const opcoesLayout = [
     LAYOUT_MONITORAMENTO.PADRAO,
@@ -79,9 +80,7 @@
   );
 
   const titulo = computed(() =>
-    ehPainelEsportivo.value
-      ? 'PMW MONITOR'
-      : 'Project Manager Web Monitoring'
+    ehPainelEsportivo.value ? 'PMW MONITOR' : 'Project Manager Web Monitoring'
   );
 
   onMounted(() => {

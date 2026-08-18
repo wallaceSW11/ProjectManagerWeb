@@ -16,7 +16,9 @@
       <strong class="painel-esportivo-sistema">{{ sistemaOperacional }}</strong>
       <div class="painel-esportivo-divisor" />
       <span class="painel-esportivo-centro-rotulo">DISCO</span>
-      <strong class="painel-esportivo-disco-percentual">{{ discoPercentualTexto }}</strong>
+      <strong class="painel-esportivo-disco-percentual">
+        {{ discoPercentualTexto }}
+      </strong>
       <span class="painel-esportivo-disco-capacidade">
         {{ discoUsadaTexto }} / {{ discoTotalTexto }}
       </span>
@@ -123,7 +125,9 @@
   );
 
   const discoPercentualTexto = computed(() =>
-    discoPercentual.value === null ? '--' : `${discoPercentual.value.toFixed(1)}%`
+    discoPercentual.value === null
+      ? '--'
+      : `${discoPercentual.value.toFixed(1)}%`
   );
 
   const discoUsadaTexto = computed(() => formatarGb(discoUsadaBytes.value));
@@ -141,7 +145,11 @@
     overflow: hidden;
     color: #f3f4f4;
     background:
-      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.035), transparent 48%),
+      radial-gradient(
+        circle at 50% 50%,
+        rgba(255, 255, 255, 0.035),
+        transparent 48%
+      ),
       linear-gradient(180deg, #101314 0%, #050708 100%);
   }
 
@@ -152,8 +160,16 @@
     opacity: 0.08;
     pointer-events: none;
     background:
-      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px),
-      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 7px);
+      repeating-linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.07) 0 1px,
+        transparent 1px 7px
+      ),
+      repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.035) 0 1px,
+        transparent 1px 7px
+      );
   }
 
   .painel-esportivo-instrumento {
@@ -199,7 +215,9 @@
     background:
       linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 40%),
       rgba(5, 7, 8, 0.76);
-    box-shadow: inset 0 1px rgba(255, 255, 255, 0.06), 0 14px 30px rgba(0, 0, 0, 0.28);
+    box-shadow:
+      inset 0 1px rgba(255, 255, 255, 0.06),
+      0 14px 30px rgba(0, 0, 0, 0.28);
     text-align: center;
   }
 

@@ -6,20 +6,64 @@
       :aria-label="titulo"
     >
       <defs>
-        <radialGradient :id="idFundo" cx="50%" cy="42%" r="62%">
-          <stop offset="0%" stop-color="#171b1c" />
-          <stop offset="68%" stop-color="#090b0c" />
-          <stop offset="100%" stop-color="#030405" />
+        <radialGradient
+          :id="idFundo"
+          cx="50%"
+          cy="42%"
+          r="62%"
+        >
+          <stop
+            offset="0%"
+            stop-color="#171b1c"
+          />
+          <stop
+            offset="68%"
+            stop-color="#090b0c"
+          />
+          <stop
+            offset="100%"
+            stop-color="#030405"
+          />
         </radialGradient>
-        <linearGradient :id="idAro" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#7a8385" />
-          <stop offset="16%" stop-color="#252a2b" />
-          <stop offset="50%" stop-color="#090a0b" />
-          <stop offset="84%" stop-color="#343a3b" />
-          <stop offset="100%" stop-color="#0d0f10" />
+        <linearGradient
+          :id="idAro"
+          x1="0"
+          y1="0"
+          x2="1"
+          y2="1"
+        >
+          <stop
+            offset="0%"
+            stop-color="#7a8385"
+          />
+          <stop
+            offset="16%"
+            stop-color="#252a2b"
+          />
+          <stop
+            offset="50%"
+            stop-color="#090a0b"
+          />
+          <stop
+            offset="84%"
+            stop-color="#343a3b"
+          />
+          <stop
+            offset="100%"
+            stop-color="#0d0f10"
+          />
         </linearGradient>
-        <filter :id="idBrilho" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="1.4" result="blur" />
+        <filter
+          :id="idBrilho"
+          x="-30%"
+          y="-30%"
+          width="160%"
+          height="160%"
+        >
+          <feGaussianBlur
+            stdDeviation="1.4"
+            result="blur"
+          />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -27,9 +71,26 @@
         </filter>
       </defs>
 
-      <circle class="conta-giros-sombra" cx="100" cy="100" r="94" />
-      <circle class="conta-giros-aro" :stroke="`url(#${idAro})`" cx="100" cy="100" r="90" />
-      <circle class="conta-giros-fundo" :fill="`url(#${idFundo})`" cx="100" cy="100" r="83" />
+      <circle
+        class="conta-giros-sombra"
+        cx="100"
+        cy="100"
+        r="94"
+      />
+      <circle
+        class="conta-giros-aro"
+        :stroke="`url(#${idAro})`"
+        cx="100"
+        cy="100"
+        r="90"
+      />
+      <circle
+        class="conta-giros-fundo"
+        :fill="`url(#${idFundo})`"
+        cx="100"
+        cy="100"
+        r="83"
+      />
       <path
         class="conta-giros-trilha"
         :d="caminhoTrilha"
@@ -47,7 +108,13 @@
         :transform="`rotate(${tick.angulo} 100 100)`"
       >
         <line
-          :class="['conta-giros-tick', { 'conta-giros-tick-maior': tick.maior, 'conta-giros-tick-alerta': tick.alerta }]"
+          :class="[
+            'conta-giros-tick',
+            {
+              'conta-giros-tick-maior': tick.maior,
+              'conta-giros-tick-alerta': tick.alerta
+            }
+          ]"
           x1="100"
           :y1="tick.maior ? 22 : 25"
           x2="100"
@@ -79,17 +146,44 @@
           x2="100"
           y2="34"
         />
-        <circle class="conta-giros-ponteiro-centro" cx="100" cy="100" r="7" />
-        <circle :fill="cor" cx="100" cy="100" r="3" />
+        <circle
+          class="conta-giros-ponteiro-centro"
+          cx="100"
+          cy="100"
+          r="7"
+        />
+        <circle
+          :fill="cor"
+          cx="100"
+          cy="100"
+          r="3"
+        />
       </g>
     </svg>
 
     <span class="conta-giros-titulo">{{ titulo }}</span>
     <div class="conta-giros-informacao">
-      <span class="conta-giros-valor" :style="{ color: cor }">{{ percentualTexto }}</span>
-      <div v-if="detalhes?.length" class="conta-giros-detalhes">
-        <span v-for="detalhe in detalhes" :key="detalhe.texto" class="conta-giros-detalhe">
-          <v-icon :color="detalhe.cor" size="17">{{ detalhe.icone }}</v-icon>
+      <span
+        class="conta-giros-valor"
+        :style="{ color: cor }"
+      >
+        {{ percentualTexto }}
+      </span>
+      <div
+        v-if="detalhes?.length"
+        class="conta-giros-detalhes"
+      >
+        <span
+          v-for="detalhe in detalhes"
+          :key="detalhe.texto"
+          class="conta-giros-detalhe"
+        >
+          <v-icon
+            :color="detalhe.cor"
+            size="17"
+          >
+            {{ detalhe.icone }}
+          </v-icon>
           {{ detalhe.texto }}
         </span>
       </div>
@@ -164,7 +258,8 @@
 
   const numeros = computed(() =>
     [0, 20, 40, 60, 80, 100].map(valor => {
-      const angulo = ANGULO_INICIO + (valor / 100) * (ANGULO_FIM - ANGULO_INICIO);
+      const angulo =
+        ANGULO_INICIO + (valor / 100) * (ANGULO_FIM - ANGULO_INICIO);
       const radianos = (angulo * Math.PI) / 180;
       return {
         valor,
@@ -189,7 +284,8 @@
 
       const animar = (agora: number): void => {
         const progresso = Math.min((agora - comeco) / DURACAO_ANIMACAO_MS, 1);
-        exibido.value = inicio + (alvo - inicio) * (1 - Math.pow(1 - progresso, 3));
+        exibido.value =
+          inicio + (alvo - inicio) * (1 - Math.pow(1 - progresso, 3));
         frameAnimacao = progresso < 1 ? requestAnimationFrame(animar) : null;
       };
 
