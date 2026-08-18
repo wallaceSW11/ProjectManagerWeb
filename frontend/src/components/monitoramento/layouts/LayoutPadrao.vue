@@ -59,10 +59,12 @@
   import CardMetrica from '@/components/monitoramento/CardMetrica.vue';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
   import { corPorUso } from '@/utils/corUso';
+  import { formatarDecimal } from '@/utils/formatarNumero';
 
   const monitoramentoStore = useMonitoramentoStore();
 
-  const formatarGb = (bytes: number): string => (bytes / 1024 ** 3).toFixed(1);
+  const formatarGb = (bytes: number): string =>
+    `${formatarDecimal(bytes / 1024 ** 3)} GB`;
 
   const cpuNome = computed(() => monitoramentoStore.snapshot?.cpuNome || '--');
 
@@ -123,7 +125,7 @@
 
   const discoValor = computed(() => {
     const percentual = discoPercentual.value;
-    return percentual === null ? '--' : `${percentual.toFixed(1)}%`;
+    return percentual === null ? '--' : `${formatarDecimal(percentual)}%`;
   });
 
   const discoDetalhe = computed(() => {

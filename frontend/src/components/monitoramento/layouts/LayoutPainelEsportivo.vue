@@ -39,11 +39,12 @@
   import { computed } from 'vue';
   import ContaGiros from '@/components/monitoramento/painel/ContaGiros.vue';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
+  import { formatarDecimal } from '@/utils/formatarNumero';
 
   const monitoramentoStore = useMonitoramentoStore();
 
   const formatarGb = (bytes: number | null): string =>
-    bytes === null ? '--' : `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+    bytes === null ? '--' : `${formatarDecimal(bytes / 1024 ** 3)} GB`;
 
   const cpuPercentual = computed(
     () => monitoramentoStore.snapshot?.cpuPercentual ?? null
@@ -127,7 +128,7 @@
   const discoPercentualTexto = computed(() =>
     discoPercentual.value === null
       ? '--'
-      : `${discoPercentual.value.toFixed(1)}%`
+      : `${formatarDecimal(discoPercentual.value)}%`
   );
 
   const discoUsadaTexto = computed(() => formatarGb(discoUsadaBytes.value));

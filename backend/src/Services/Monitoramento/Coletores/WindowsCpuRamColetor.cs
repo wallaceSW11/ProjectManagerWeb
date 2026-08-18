@@ -8,7 +8,9 @@ namespace ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 [SupportedOSPlatform("windows")]
 internal class WindowsCpuRamColetor : ICpuRamColetor
 {
-    private const string ConsultaTemperatura = "SELECT CurrentTemperature FROM MSAcpi_ThermalZoneTemperature";
+    private const string EscopoWmiRaiz = @"root\WMI";
+    private const string ConsultaTemperaturaMsAcpi = "SELECT CurrentTemperature FROM MSAcpi_ThermalZoneTemperature";
+    private const string ConsultaTemperaturaPerf = "SELECT Temperature FROM Win32_PerfFormattedData_Counters_ThermalZoneInformation";
 
     private PerformanceCounter? _contadorPerformanceProcessor;
     private string? _nomeCpu;
@@ -39,7 +41,17 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
     private long _userAnterior;
     private bool _possuiAmostraAnterior;
 
-    public string ObterSistemaOperacional() => RuntimeInformation.OSDescription;
+    public string ObterSistemaOperacional()
+    {
+        var nome = ConsultarTextoUnico("SELECT Caption FROM Win32_OperatingSystem", "Caption");
+        if (string.IsNullOrWhiteSpace(nome))
+            return RuntimeInformation.OSDescription;
+
+        const string prefixoMicrosoft = "Microsoft ";
+        return nome.StartsWith(prefixoMicrosoft, StringComparison.OrdinalIgnoreCase)
+            ? nome[prefixoMicrosoft.Length..]
+            : nome;
+    }
 
     public string? ObterCpuNome()
     {
@@ -73,7 +85,8 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
 
     public double? ObterCpuTemperaturaCelsius()
     {
-        var decimosKelvin = ConsultarInteiroUnico(ConsultaTemperatura, "CurrentTemperature");
+        var decimosKelvin = ConsultarInteiroUnico(ConsultaTemperaturaMsAcpi, "CurrentTemperature", EscopoWmiRaiz)
+            ?? ConsultarInteiroUnico(ConsultaTemperaturaPerf, "Temperature");
         if (decimosKelvin is null or <= 0)
             return null;
 
@@ -127,19 +140,21 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
     private static string? ConsultarTextoUnico(string consulta, string propriedade) =>
         ConsultarValorUnico(consulta, propriedade)?.ToString();
 
-    private static int? ConsultarInteiroUnico(string consulta, string propriedade)
+    private static int? ConsultarInteiroUnico(string consulta, string propriedade, string? escopo = null)
     {
-        var valor = ConsultarValorUnico(consulta, propriedade);
+        var valor = ConsultarValorUnico(consulta, propriedade, escopo);
         if (valor is null)
             return null;
         return Convert.ToInt32(valor);
     }
 
-    private static object? ConsultarValorUnico(string consulta, string propriedade)
+    private static object? ConsultarValorUnico(string consulta, string propriedade, string? escopo = null)
     {
         try
         {
-            using var searcher = new ManagementObjectSearcher(consulta);
+            using var searcher = escopo is null
+                ? new ManagementObjectSearcher(consulta)
+                : new ManagementObjectSearcher(escopo, consulta);
             using var resultados = searcher.Get();
             foreach (var item in resultados.Cast<ManagementObject>())
             {
