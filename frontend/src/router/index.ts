@@ -42,4 +42,13 @@ const router = createRouter({
   routes
 });
 
+const ehDispositivoMovel = /Android|iPhone|iPad|iPod/i.test(
+  navigator.userAgent
+);
+
+router.beforeEach(to => {
+  if (!ehDispositivoMovel || to.path !== '/') return;
+  return { path: '/monitoramento' };
+});
+
 export default router;
