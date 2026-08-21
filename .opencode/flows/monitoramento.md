@@ -14,7 +14,7 @@ MonitoramentoService           → singleton: gerencia sockets + ciclo de coleta
 ColetorComposto                → mescla snapshots dos coletores (with { ... })
 ├── CpuRamColetor              → CPU, RAM, SO, nome/frequência/temperatura CPU, velocidade RAM
 │   ├── ICpuRamColetor         → interface por plataforma (registrada por OS no Program.cs)
-│   ├── WindowsCpuRamColetor   → WMI + P/Invoke kernel32
+│   ├── WindowsCpuRamColetor   → LibreHardwareMonitor (temperatura) + WMI (fallback) + P/Invoke kernel32
 │   └── LinuxCpuRamColetor     → /proc e /sys
 └── DiscoColetor               → disco da raiz do diretório de trabalho
 ```
@@ -35,7 +35,7 @@ Serializado camelCase para o frontend.
 | Métrica | Fonte | Detalhe |
 |---------|-------|---------|
 | Nome do SO | WMI `Win32_OperatingSystem.Caption` | `RuntimeInformation.OSDescription` retorna versão do kernel ("Microsoft Windows 10.0.26200" no Win 11) — por isso usa WMI e remove o prefixo "Microsoft " |
-| Temperatura CPU | WMI `MSAcpi_ThermalZoneTemperature` | Vive no namespace `root\WMI` — o padrão do `ManagementObjectSearcher` é `root\cimv2`, então o escopo precisa ser explícito. Fallback: `Win32_PerfFormattedData_Counters_ThermalZoneInformation` (décimos de Kelvin). Se a placa não expõe o sensor via WMI, vem `--` |
+| Temperatura CPU | `LibreHardwareMonitorLib` (pacote NuGet oficial, MPL-2.0) | Fonte primária: lê os sensores reais da CPU (MSR via driver WinRing0). `Computer` aberto lazy na primeira coleta e atualizado a cada snapshot; retorna a maior temperatura entre os sensores do hardware CPU. **Requer execução como administrador** — sem elevação o driver não carrega e cai no fallback WMI. Fallback: WMI `MSAcpi_ThermalZoneTemperature` (namespace `root\WMI` — o padrão do `ManagementObjectSearcher` é `root\cimv2`, então o escopo precisa ser explícito) e `Win32_PerfFormattedData_Counters_ThermalZoneInformation` (décimos de Kelvin). Se nada retornar sensor, vem `--` |
 | CPU % | `GetSystemTimes` (kernel32) | Delta entre amostras; 1ª amostra retorna null |
 | RAM | `GlobalMemoryStatusEx` (kernel32) | Total e disponível |
 | Frequência CPU | `Win32_Processor.MaxClockSpeed` × `% Processor Performance` | Fallback: `CurrentClockSpeed` |

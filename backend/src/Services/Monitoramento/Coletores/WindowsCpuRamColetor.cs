@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using LibreHardwareMonitor.Hardware;
 
 namespace ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 
@@ -15,6 +16,8 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
     private PerformanceCounter? _contadorPerformanceProcessor;
     private string? _nomeCpu;
     private int? _clockMaxMhz;
+    private Computer? _computador;
+    private bool _tentouAbrirComputador;
 
     [DllImport("kernel32.dll")]
     private static extern bool GetSystemTimes(out long lpIdleTime, out long lpKernelTime, out long lpUserTime);
@@ -85,13 +88,73 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
 
     public double? ObterCpuTemperaturaCelsius()
     {
+        var celsius = LerTemperaturaCpu();
+        if (celsius is not null)
+            return celsius;
+
         var decimosKelvin = ConsultarInteiroUnico(ConsultaTemperaturaMsAcpi, "CurrentTemperature", EscopoWmiRaiz)
             ?? ConsultarInteiroUnico(ConsultaTemperaturaPerf, "Temperature");
         if (decimosKelvin is null or <= 0)
             return null;
 
-        var celsius = decimosKelvin.Value / 10.0 - 273.15;
+        celsius = decimosKelvin.Value / 10.0 - 273.15;
         return celsius is > -50 and < 150 ? celsius : null;
+    }
+
+    private double? LerTemperaturaCpu()
+    {
+        if (!_tentouAbrirComputador)
+        {
+            _computador = AbrirComputador();
+            _tentouAbrirComputador = true;
+        }
+
+        if (_computador is null)
+            return null;
+
+        try
+        {
+            _computador.Accept(new UpdateVisitor());
+
+            double? maior = null;
+            foreach (var hardware in _computador.Hardware)
+            {
+                if (hardware.HardwareType != HardwareType.Cpu)
+                    continue;
+
+                foreach (var sensor in hardware.Sensors)
+                {
+                    if (sensor.SensorType != SensorType.Temperature || sensor.Value is null)
+                        continue;
+
+                    var celsius = (double)sensor.Value.Value;
+                    if (celsius is < -20 or > 150)
+                        continue;
+
+                    maior = maior is null ? celsius : Math.Max(maior.Value, celsius);
+                }
+            }
+
+            return maior;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static Computer? AbrirComputador()
+    {
+        try
+        {
+            var computador = new Computer { IsCpuEnabled = true };
+            computador.Open();
+            return computador;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public double? ObterRamVelocidadeMhz()
@@ -171,4 +234,20 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
 
         return null;
     }
+}
+
+internal class UpdateVisitor : IVisitor
+{
+    public void VisitComputer(IComputer computer) => computer.Traverse(this);
+
+    public void VisitHardware(IHardware hardware)
+    {
+        hardware.Update();
+        foreach (var subHardware in hardware.SubHardware)
+            subHardware.Accept(this);
+    }
+
+    public void VisitSensor(ISensor sensor) { }
+
+    public void VisitParameter(IParameter parameter) { }
 }
