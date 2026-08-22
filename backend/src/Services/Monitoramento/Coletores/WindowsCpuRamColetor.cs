@@ -18,6 +18,8 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
     private int? _clockMaxMhz;
     private Computer? _computador;
     private bool _tentouAbrirComputador;
+    private double? _temperaturaWmi;
+    private bool _temperaturaWmiDefinitiva;
 
     [DllImport("kernel32.dll")]
     private static extern bool GetSystemTimes(out long lpIdleTime, out long lpKernelTime, out long lpUserTime);
@@ -92,12 +94,24 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         if (celsius is not null)
             return celsius;
 
+        if (_temperaturaWmiDefinitiva)
+            return _temperaturaWmi;
+
+        _temperaturaWmi = LerTemperaturaWmi();
+        if (_temperaturaWmi is null)
+            _temperaturaWmiDefinitiva = true;
+
+        return _temperaturaWmi;
+    }
+
+    private double? LerTemperaturaWmi()
+    {
         var decimosKelvin = ConsultarInteiroUnico(ConsultaTemperaturaMsAcpi, "CurrentTemperature", EscopoWmiRaiz)
             ?? ConsultarInteiroUnico(ConsultaTemperaturaPerf, "Temperature");
         if (decimosKelvin is null or <= 0)
             return null;
 
-        celsius = decimosKelvin.Value / 10.0 - 273.15;
+        var celsius = decimosKelvin.Value / 10.0 - 273.15;
         return celsius is > -50 and < 150 ? celsius : null;
     }
 

@@ -34,6 +34,7 @@ O **ProjectManagerWeb** é uma ferramenta desktop-web que unifica as tarefas mai
 - **Gerenciar** dezenas de projetos simultaneamente — instalar dependências, iniciar em dev, buildar
 - **Abrir** projetos na IDE correta (VS Code, Kiro, Delphi) direto da interface
 - **Deployar** no IIS local sem abrir o Gerenciador do IIS
+- **Monitorar** a saúde da máquina em tempo real — CPU, RAM, disco e temperatura num painel estilo cockpit
 
 Tudo roda **localmente** na sua máquina. Sem nuvem, sem autenticação, sem banco relacional.  
 Os dados são salvos em arquivos JSON em `%APPDATA%\PMW\Banco\`.
@@ -50,6 +51,13 @@ Os dados são salvos em arquivos JSON em `%APPDATA%\PMW\Banco\`.
 ---
 
 ## ✨ Principais recursos
+
+### 📊 Monitoramento em tempo real
+- Painel estilo cockpit com conta-giros animado — CPU, RAM, disco, frequência e temperatura
+- Acessível de qualquer dispositivo na mesma rede, **inclusive do celular** (`http://IP-do-PC:2025/monitoramento`)
+- Animação de entrada estilo carro: ao abrir a tela, as agulhas varrem de 0 a 100 e voltam — depois os valores reais entram
+- Temperatura da CPU: **LibreHardwareMonitor** no Windows (rode como administrador) e sensores do kernel no Linux
+- **Consumo zero quando ocioso**: a coleta só roda enquanto há alguém com a página aberta (WebSocket, 1 snapshot/segundo)
 
 ### 📁 Pastas e projetos
 - Listagem automática do diretório raiz de trabalho
@@ -172,7 +180,7 @@ Com o PMW você clona todos, instala dependências, inicia em dev e abre na IDE 
 ProjectManagerWeb/
 ├── frontend/                # Vue 3 SPA
 │   ├── src/
-│   │   ├── views/           # Telas (Pastas, Repositórios, Configuração, Sites, IDEs)
+│   │   ├── views/           # Telas (Pastas, Repositórios, Configuração, Sites, IDEs, Monitoramento)
 │   │   ├── components/      # Componentes por domínio
 │   │   ├── stores/          # Pinia (Options API)
 │   │   ├── services/        # Camada de API (Axios)
