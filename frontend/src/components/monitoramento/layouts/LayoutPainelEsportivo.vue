@@ -5,9 +5,11 @@
 
       <ContaGiros
         titulo="CPU"
-        :valor="cpuPercentual"
+        :valor="cpuPercentualExibido"
         cor="#74d94b"
+        :animacao-entrada="animacaoEntradaAtiva"
         :detalhes="detalhesCpu"
+        @animacao-entrada-concluida="registrarConclusaoAnimacao"
       />
     </article>
 
@@ -27,40 +29,69 @@
     <article class="painel-esportivo-instrumento">
       <ContaGiros
         titulo="RAM"
-        :valor="ramPercentual"
+        :valor="ramPercentualExibido"
         cor="#ff9f12"
+        :animacao-entrada="animacaoEntradaAtiva"
         :detalhes="detalhesRam"
+        @animacao-entrada-concluida="registrarConclusaoAnimacao"
       />
     </article>
   </section>
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import ContaGiros from '@/components/monitoramento/painel/ContaGiros.vue';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
   import { formatarDecimal } from '@/utils/formatarNumero';
 
+  const QUANTIDADE_CONTAGIROS = 2;
+
   const monitoramentoStore = useMonitoramentoStore();
+
+  const conclusoesAnimacao = ref(0);
+  const animacaoEntradaAtiva = ref(true);
+
+  const registrarConclusaoAnimacao = (): void => {
+    conclusoesAnimacao.value += 1;
+    if (conclusoesAnimacao.value >= QUANTIDADE_CONTAGIROS)
+      animacaoEntradaAtiva.value = false;
+  };
 
   const formatarGb = (bytes: number | null): string =>
     bytes === null ? '--' : `${formatarDecimal(bytes / 1024 ** 3)} GB`;
+
+  const formatarGbExibicao = (bytes: number | null): string => {
+    if (animacaoEntradaAtiva.value) return '0 GB';
+    return bytes === null ? '--' : formatarGb(bytes);
+  };
+
+  const formatarFrequencia = (mhz: number): string =>
+    mhz >= 1000 ? `${(mhz / 1000).toFixed(2)} GHz` : `${Math.round(mhz)} MHz`;
 
   const cpuPercentual = computed(
     () => monitoramentoStore.snapshot?.cpuPercentual ?? null
   );
 
-  const cpuNome = computed(() => monitoramentoStore.snapshot?.cpuNome || '--');
+  const cpuPercentualExibido = computed(() =>
+    animacaoEntradaAtiva.value ? null : cpuPercentual.value
+  );
+
+  const cpuNome = computed(() =>
+    animacaoEntradaAtiva.value
+      ? '--'
+      : monitoramentoStore.snapshot?.cpuNome || '--'
+  );
 
   const cpuFrequenciaTexto = computed(() => {
+    if (animacaoEntradaAtiva.value) return '0 MHz';
     const mhz = monitoramentoStore.snapshot?.cpuFrequenciaMhz ?? null;
     if (mhz === null) return '--';
-    return mhz >= 1000
-      ? `${(mhz / 1000).toFixed(2)} GHz`
-      : `${Math.round(mhz)} MHz`;
+    return formatarFrequencia(mhz);
   });
 
   const cpuTemperaturaTexto = computed(() => {
+    if (animacaoEntradaAtiva.value) return '0°C';
     const celsius = monitoramentoStore.snapshot?.cpuTemperaturaCelsius ?? null;
     return celsius === null ? '--' : `${Math.round(celsius)}°C`;
   });
@@ -80,8 +111,12 @@
     return (usada / total) * 100;
   });
 
-  const ramUsadaTexto = computed(() => formatarGb(ramUsadaBytes.value));
-  const ramTotalTexto = computed(() => formatarGb(ramTotalBytes.value));
+  const ramPercentualExibido = computed(() =>
+    animacaoEntradaAtiva.value ? null : ramPercentual.value
+  );
+
+  const ramUsadaTexto = computed(() => formatarGbExibicao(ramUsadaBytes.value));
+  const ramTotalTexto = computed(() => formatarGbExibicao(ramTotalBytes.value));
 
   const detalhesCpu = computed(() => [
     {
@@ -109,8 +144,10 @@
     }
   ]);
 
-  const sistemaOperacional = computed(
-    () => monitoramentoStore.snapshot?.sistemaOperacional || '--'
+  const sistemaOperacional = computed(() =>
+    animacaoEntradaAtiva.value
+      ? '--'
+      : monitoramentoStore.snapshot?.sistemaOperacional || '--'
   );
 
   const discoPercentual = computed(
@@ -125,14 +162,18 @@
     () => monitoramentoStore.snapshot?.discoTotalBytes ?? null
   );
 
-  const discoPercentualTexto = computed(() =>
-    discoPercentual.value === null
-      ? '--'
-      : `${formatarDecimal(discoPercentual.value)}%`
-  );
+  const discoPercentualTexto = computed(() => {
+    if (animacaoEntradaAtiva.value) return '0%';
+    if (discoPercentual.value === null) return '--';
+    return `${formatarDecimal(discoPercentual.value)}%`;
+  });
 
-  const discoUsadaTexto = computed(() => formatarGb(discoUsadaBytes.value));
-  const discoTotalTexto = computed(() => formatarGb(discoTotalBytes.value));
+  const discoUsadaTexto = computed(() =>
+    formatarGbExibicao(discoUsadaBytes.value)
+  );
+  const discoTotalTexto = computed(() =>
+    formatarGbExibicao(discoTotalBytes.value)
+  );
 </script>
 
 <style scoped>

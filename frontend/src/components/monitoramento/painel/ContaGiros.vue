@@ -198,11 +198,14 @@
   const ANGULO_FIM = 140;
   const RAIO_NUMEROS = 59;
   const DURACAO_ANIMACAO_MS = 650;
+  const DURACAO_ENTRADA_SUBIDA_MS = 1100;
+  const DURACAO_ENTRADA_DESCIDA_MS = 800;
 
   const props = defineProps<{
     titulo: string;
     valor: number | null;
     cor: string;
+    animacaoEntrada: boolean;
     detalhes?: {
       icone: string;
       cor: string;
@@ -210,10 +213,15 @@
     }[];
   }>();
 
+  const emit = defineEmits<{
+    animacaoEntradaConcluida: [];
+  }>();
+
   const idFundo = useId();
   const idAro = useId();
   const idBrilho = useId();
   const exibido = ref(0);
+  const animacaoEntradaAtiva = ref(false);
   let frameAnimacao: number | null = null;
 
   const limitar = (valor: number): number => Math.min(100, Math.max(0, valor));
@@ -269,13 +277,55 @@
     })
   );
 
-  const percentualTexto = computed(() =>
-    props.valor === null ? '--' : `${Math.round(exibido.value)}%`
+  const percentualTexto = computed(() => {
+    if (props.valor === null && !animacaoEntradaAtiva.value) return '--';
+    return `${Math.round(exibido.value)}%`;
+  });
+
+  const animarEntrada = (): void => {
+    animacaoEntradaAtiva.value = true;
+    if (frameAnimacao !== null) cancelAnimationFrame(frameAnimacao);
+
+    const comeco = performance.now();
+
+    const animar = (agora: number): void => {
+      const decorrido = agora - comeco;
+      if (decorrido < DURACAO_ENTRADA_SUBIDA_MS) {
+        const progresso = decorrido / DURACAO_ENTRADA_SUBIDA_MS;
+        exibido.value = 100 * (1 - Math.pow(1 - progresso, 3));
+        frameAnimacao = requestAnimationFrame(animar);
+        return;
+      }
+
+      if (decorrido < DURACAO_ENTRADA_SUBIDA_MS + DURACAO_ENTRADA_DESCIDA_MS) {
+        const progresso =
+          (decorrido - DURACAO_ENTRADA_SUBIDA_MS) / DURACAO_ENTRADA_DESCIDA_MS;
+        exibido.value = 100 * Math.pow(1 - progresso, 3);
+        frameAnimacao = requestAnimationFrame(animar);
+        return;
+      }
+
+      exibido.value = 0;
+      frameAnimacao = null;
+      animacaoEntradaAtiva.value = false;
+      emit('animacaoEntradaConcluida');
+    };
+
+    frameAnimacao = requestAnimationFrame(animar);
+  };
+
+  watch(
+    () => props.animacaoEntrada,
+    ativa => {
+      if (ativa) animarEntrada();
+    },
+    { immediate: true }
   );
 
   watch(
     () => props.valor,
     valor => {
+      if (animacaoEntradaAtiva.value) return;
       if (frameAnimacao !== null) cancelAnimationFrame(frameAnimacao);
 
       const inicio = exibido.value;
