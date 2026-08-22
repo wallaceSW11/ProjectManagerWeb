@@ -53,17 +53,17 @@ Serializado camelCase para o frontend.
 
 ## Frontend
 
-Rota `/monitoramento` → `MonitoramentoView.vue` → layout selecionável (padrão ou esportivo), persistido via `useLayoutMonitoramento`.
+Rota `/monitoramento` → `MonitoramentoView.vue` → `LayoutPainelEsportivo.vue` (layout único, o padrão foi removido).
+
+Animação de entrada: ao montar a tela (acesso ou F5), os dois ContaGiros fazem o bate-e-volta de carro (agulha 0→100→0) enquanto os campos numéricos ficam zerados; quando ambos concluem, os valores reais entram. Métricas sem leitura mostram `--`.
 
 ```
 services/monitoramentoService.ts → wrapper WebSocket com reconexão exponencial (2s → 30s)
 stores/monitoramento.ts          → conexão, snapshot, status
 models/MonitoramentoModel.ts     → model com constructor + toDTO
-views/MonitoramentoView.vue      → barra + seletor de layout
+views/MonitoramentoView.vue      → barra discreta + corpo do painel
 components/monitoramento/
-├── layouts/LayoutPadrao.vue         → cards com v-progress-circular/linear
 ├── layouts/LayoutPainelEsportivo.vue → ContaGiros (SVG animado)
-├── CardCircular.vue / CardMetrica.vue
 └── painel/ContaGiros.vue
 ```
 
@@ -85,7 +85,6 @@ frontend/src/components/monitoramento/**/*.vue
 frontend/src/stores/monitoramento.ts
 frontend/src/services/monitoramentoService.ts
 frontend/src/models/MonitoramentoModel.ts
-frontend/src/composables/useLayoutMonitoramento.ts
 frontend/src/utils/formatarNumero.ts
 docs/monitoramento-plan.md / docs/monitoramento-analise.md      → histórico de decisões
 ```
