@@ -142,7 +142,7 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
                         continue;
 
                     var celsius = (double)sensor.Value.Value;
-                    if (celsius is < -20 or > 150)
+                    if (!double.IsFinite(celsius) || celsius is < -20 or > 150)
                         continue;
 
                     maior = maior is null ? celsius : Math.Max(maior.Value, celsius);
