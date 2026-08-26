@@ -33,6 +33,7 @@ infra: publicado no IIS local via `dotnet publish`
 - **CodigoTarefa**: vincula iniciais (ex: FATWEB) a um repositório com flags de clone (branch remoto, agregados, histórico, tipos). Um repositório pode ter vários (monorepo).
 - **IDE**: ferramenta de desenvolvimento (VS Code, Kiro, Delphi). Configurável com comando de abertura.
 - **SiteIIS**: site configurado no IIS local. Tem pastas de deploy e pools de aplicação.
+- **Monitoramento**: painel `/monitoramento` com métricas em tempo real da máquina (CPU, RAM, disco, temperatura) via WebSocket. Coleta só com cliente conectado.
 - **Configuracao**: configuração global — diretório raiz de trabalho, perfis VSCode, diretórios ocultos, pastas centralizadoras, CLIs.
 
 ## Persistência — arquivos JSON
@@ -85,6 +86,7 @@ Nova migration: adicionar método `Migration_00X_NomeDaMigration()` no `Migratio
 | Repositórios / projetos / agregados | `.opencode/flows/repositorios.md` |
 | IDEs | `.opencode/flows/ides.md` |
 | Sites IIS / Deploy | `.opencode/flows/sitesiis.md` |
+| Monitoramento da máquina | `.opencode/flows/monitoramento.md` |
 | Deploy Linux | `infra/pmw.sh`, `bootstrap.sh` |
 | Deploy Windows | `bootstrap.ps1`, `infra/pmw.ps1`, `Atualizar_PMW.ps1` |
 | Code style backend | `.opencode/code-style/backend.md` |

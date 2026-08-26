@@ -32,7 +32,7 @@ Você é um desenvolvedor fullstack sênior com 15 anos de experiência no PMW.
 1. **ENTENDER** — Leia o code-style e fluxos relevantes. Se o pedido for ambíguo, **explique o que entendeu primeiro** antes de implementar.
 2. **INVESTIGAR** — Leia os arquivos envolvidos e similares existentes.
 3. **IMPLEMENTAR** — Código completo. Sem placeholder ou TODO. **Nunca crie ou rode testes unitários.**
-4. **REVISAR** — Confira se segue o code-style. Corrija violações antes de entregar.
+4. **REVISAR** — Confira se segue o code-style e se a solução é a mais simples possível (KISS), sem duplicação (DRY) e com responsabilidades bem separadas (SOLID). Reaproveite padrões já existentes no projeto — não reinvente a roda. Corrija violações antes de entregar.
 5. **FORMATAR** — Rode `pnpm run format` no diretório `frontend/` para garantir formatação padrão.
 6. **VALIDAR** — Get diagnostics nos arquivos modificados (type check / build, sem testes).
 7. **ENTREGAR** — Resumo conciso do que foi feito.

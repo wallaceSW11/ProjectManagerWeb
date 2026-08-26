@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PMW Monitor — Sport Cockpit</title>
+
+  <style>
+    :root {
+      --bg: #07090a;
+      --panel: #0d1011;
+      --panel-2: #111516;
+      --line: rgba(255,255,255,.10);
+      --text: #f3f4f4;
+      --muted: #899092;
+      --cpu: #74d94b;
+      --ram: #ff9f12;
+      --danger: #ff3b30;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cockpit {
+      width: 100vw;
+      height: 100vh;
+      min-height: 220px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.025), transparent 45%),
+        linear-gradient(180deg, #0d1011 0%, #07090a 100%);
+    }
+
+    /* Subtle carbon-fiber-inspired texture */
+    .cockpit::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .08;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          135deg,
+          rgba(255,255,255,.08) 0,
+          rgba(255,255,255,.08) 1px,
+          transparent 1px,
+          transparent 7px
+        ),
+        repeating-linear-gradient(
+          45deg,
+          rgba(255,255,255,.04) 0,
+          rgba(255,255,255,.04) 1px,
+          transparent 1px,
+          transparent 7px
+        );
+      mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    }
+
+    .topbar {
+      position: absolute;
+      z-index: 5;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: clamp(34px, 8vh, 54px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(14px, 3vw, 34px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(5,7,8,.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(11px, 1.7vw, 16px);
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    .bolt {
+      color: #ffd21c;
+      font-size: 1.3em;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--cpu);
+      font-size: clamp(9px, 1.4vw, 13px);
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cpu);
+      box-shadow: 0 0 10px rgba(116,217,75,.8);
+    }
+
+    .dashboard {
+      position: absolute;
+      inset: clamp(34px, 8vh, 54px) 0 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(10px, 2vw, 28px);
+      align-items: center;
+      padding: clamp(8px, 2vh, 20px) clamp(10px, 3vw, 40px);
+    }
+
+    .gauge-card {
+      position: relative;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gauge {
+      width: min(43vw, 48vh);
+      aspect-ratio: 1;
+      position: relative;
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,.45));
+    }
+
+    .gauge svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .gauge-track {
+      fill: none;
+      stroke: #262b2d;
+      stroke-width: 7;
+    }
+
+    .gauge-progress {
+      fill: none;
+      stroke-width: 7;
+      stroke-linecap: round;
+      transition: stroke-dashoffset .7s cubic-bezier(.22,.61,.36,1);
+    }
+
+    .cpu-progress {
+      stroke: var(--cpu);
+      filter: drop-shadow(0 0 5px rgba(116,217,75,.35));
+    }
+
+    .ram-progress {
+      stroke: var(--ram);
+      filter: drop-shadow(0 0 5px rgba(255,159,18,.35));
+    }
+
+    .tick {
+      stroke: #687073;
+      stroke-width: 1.5;
+      opacity: .8;
+    }
+
+    .tick.major {
+      stroke: #c2c7c8;
+      stroke-width: 2;
+      opacity: .9;
+    }
+
+    .tick.red {
+      stroke: var(--danger);
+    }
+
+    .needle {
+      transform-origin: 100px 100px;
+      transition: transform .7s cubic-bezier(.22,.61,.36,1);
+    }
+
+    .needle-line {
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .needle-cpu {
+      stroke: var(--cpu);
+      filter: drop-shadow(0 0 4px rgba(116,217,75,.4));
+    }
+
+    .needle-ram {
+      stroke: var(--ram);
+      filter: drop-shadow(0 0 4px rgba(255,159,18,.4));
+    }
+
+    .needle-center {
+      fill: #181c1d;
+      stroke: #d8dcdc;
+      stroke-width: 2;
+    }
+
+    .gauge-title {
+      position: absolute;
+      top: 20%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: clamp(10px, 2vw, 17px);
+      font-weight: 600;
+      letter-spacing: .12em;
+      color: #cdd1d2;
+    }
+
+    .gauge-value {
+      position: absolute;
+      top: 47%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: clamp(34px, 7vw, 68px);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -.04em;
+    }
+
+    .cpu-value {
+      color: var(--cpu);
+      text-shadow: 0 0 20px rgba(116,217,75,.14);
+    }
+
+    .ram-value {
+      color: var(--ram);
+      text-shadow: 0 0 20px rgba(255,159,18,.14);
+    }
+
+    .gauge-subtitle {
+      position: absolute;
+      top: 62%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: clamp(8px, 1.4vw, 12px);
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .available {
+      position: absolute;
+      bottom: 13%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: clamp(10px, 1.7vw, 15px);
+      color: #b8bdbf;
+    }
+
+    .available strong {
+      font-size: 1.15em;
+    }
+
+    .cpu-available strong {
+      color: var(--cpu);
+    }
+
+    .ram-available strong {
+      color: var(--ram);
+    }
+
+    .bottom-info {
+      position: absolute;
+      z-index: 4;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(330px, 38vw);
+      min-width: 190px;
+      padding: 8px 16px 10px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      border-radius: 12px 12px 0 0;
+      background: rgba(10,12,13,.86);
+      backdrop-filter: blur(8px);
+    }
+
+    .time {
+      color: #e5e7e7;
+      font-size: clamp(11px, 1.7vw, 15px);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .08em;
+    }
+
+    .hint {
+      margin-top: 2px;
+      color: #646b6d;
+      font-size: clamp(7px, 1vw, 9px);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    @media (orientation: portrait) {
+      .dashboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+        overflow-y: auto;
+      }
+
+      .gauge {
+        width: min(55vw, 35vh);
+      }
+
+      .bottom-info {
+        display: none;
+      }
+    }
+
+    @media (max-height: 300px) {
+      .gauge-title { top: 17%; }
+      .gauge-value { top: 45%; }
+      .gauge-subtitle { top: 61%; }
+      .available { bottom: 9%; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="cockpit">
+    <header class="topbar">
+      <div class="brand">
+        <span class="bolt">ϟ</span>
+        <span>PMW MONITOR</span>
+      </div>
+
+      <div class="status">
+        <span class="status-dot"></span>
+        ONLINE
+      </div>
+    </header>
+
+    <section class="dashboard">
+
+      <!-- CPU -->
+      <article class="gauge-card">
+        <div class="gauge">
+          <svg viewBox="0 0 200 200" aria-label="CPU">
+            <circle
+              class="gauge-track"
+              cx="100" cy="100" r="78"
+              pathLength="100"
+              stroke-dasharray="82 100"
+              transform="rotate(140 100 100)"
+            />
+
+            <circle
+              id="cpuProgress"
+              class="gauge-progress cpu-progress"
+              cx="100" cy="100" r="78"
+              pathLength="100"
+              stroke-dasharray="82 100"
+              transform="rotate(140 100 100)"
+              stroke-dashoffset="58.6"
+            />
+
+            <g id="cpuTicks"></g>
+
+            <g id="cpuNeedle" class="needle needle-cpu">
+              <line class="needle-line" x1="100" y1="100" x2="100" y2="35" />
+              <circle class="needle-center" cx="100" cy="100" r="6" />
+            </g>
+          </svg>
+
+          <div class="gauge-title">CPU</div>
+          <div id="cpuValue" class="gauge-value cpu-value">28%</div>
+          <div class="gauge-subtitle">USO ATUAL</div>
+          <div class="available cpu-available">
+            <strong id="cpuAvailable">72%</strong> DISPONÍVEL
+          </div>
+        </div>
+      </article>
+
+      <!-- RAM -->
+      <article class="gauge-card">
+        <div class="gauge">
+          <svg viewBox="0 0 200 200" aria-label="RAM">
+            <circle
+              class="gauge-track"
+              cx="100" cy="100" r="78"
+              pathLength="100"
+              stroke-dasharray="82 100"
+              transform="rotate(140 100 100)"
+            />
+
+            <circle
+              id="ramProgress"
+              class="gauge-progress ram-progress"
+              cx="100" cy="100" r="78"
+              pathLength="100"
+              stroke-dasharray="82 100"
+              transform="rotate(140 100 100)"
+              stroke-dashoffset="26.24"
+            />
+
+            <g id="ramTicks"></g>
+
+            <g id="ramNeedle" class="needle needle-ram">
+              <line class="needle-line" x1="100" y1="100" x2="100" y2="35" />
+              <circle class="needle-center" cx="100" cy="100" r="6" />
+            </g>
+          </svg>
+
+          <div class="gauge-title">RAM</div>
+          <div id="ramValue" class="gauge-value ram-value">68%</div>
+          <div class="gauge-subtitle">USO ATUAL</div>
+          <div class="available ram-available">
+            <strong id="ramAvailable">32%</strong> DISPONÍVEL
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <footer class="bottom-info">
+      <div id="clock" class="time">00:00:00</div>
+      <div class="hint">REAL-TIME SYSTEM MONITOR</div>
+    </footer>
+  </main>
+
+  <script>
+    const GAUGE_START = -140;
+    const GAUGE_END = 140;
+
+    function clamp(value, min = 0, max = 100) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function valueToAngle(value) {
+      return GAUGE_START + (clamp(value) / 100) * (GAUGE_END - GAUGE_START);
+    }
+
+    function updateGauge(progressId, needleId, value) {
+      const safeValue = clamp(value);
+
+      // 82 is the visible circumference portion defined by the SVG.
+      const visibleLength = 82;
+      const offset = visibleLength - (safeValue / 100) * visibleLength;
+
+      document.getElementById(progressId).style.strokeDashoffset = offset;
+      document.getElementById(needleId).style.transform =
+        `rotate(${valueToAngle(safeValue)}deg)`;
+    }
+
+    function updateMetrics({ cpu, ram }) {
+      cpu = clamp(cpu);
+      ram = clamp(ram);
+
+      document.getElementById("cpuValue").textContent = `${cpu.toFixed(0)}%`;
+      document.getElementById("cpuAvailable").textContent = `${(100 - cpu).toFixed(0)}%`;
+
+      document.getElementById("ramValue").textContent = `${ram.toFixed(0)}%`;
+      document.getElementById("ramAvailable").textContent = `${(100 - ram).toFixed(0)}%`;
+
+      updateGauge("cpuProgress", "cpuNeedle", cpu);
+      updateGauge("ramProgress", "ramNeedle", ram);
+    }
+
+    function buildTicks(containerId) {
+      const container = document.getElementById(containerId);
+
+      for (let i = 0; i <= 20; i++) {
+        const value = i * 5;
+        const angle = GAUGE_START + (value / 100) * (GAUGE_END - GAUGE_START);
+        const isMajor = value % 10 === 0;
+
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.setAttribute(
+          "transform",
+          `rotate(${angle} 100 100)`
+        );
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", "100");
+        line.setAttribute("y1", "14");
+        line.setAttribute("x2", "100");
+        line.setAttribute("y2", isMajor ? "23" : "19");
+        line.setAttribute("class", `tick ${isMajor ? "major" : ""} ${value >= 90 ? "red" : ""}`);
+
+        group.appendChild(line);
+        container.appendChild(group);
+      }
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent =
+        now.toLocaleTimeString("pt-BR", { hour12: false });
+    }
+
+    buildTicks("cpuTicks");
+    buildTicks("ramTicks");
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    /*
+      DEMO MODE
+      ----------
+      Para conectar ao seu WebSocket, basta chamar:
+
+        updateMetrics({
+          cpu: 28.5,
+          ram: 71.5
+        });
+
+      O restante da interface continua igual.
+
+      O código abaixo apenas simula variações enquanto você abre
+      este HTML sozinho no navegador.
+    */
+
+    let demoCpu = 28;
+    let demoRam = 68;
+
+    setInterval(() => {
+      demoCpu = clamp(demoCpu + (Math.random() - 0.5) * 7);
+      demoRam = clamp(demoRam + (Math.random() - 0.5) * 2);
+
+      updateMetrics({
+        cpu: demoCpu,
+        ram: demoRam
+      });
+    }, 1000);
+  </script>
+</body>
+</html>

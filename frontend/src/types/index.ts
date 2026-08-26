@@ -186,3 +186,23 @@ export interface CarregandoInfo {
   exibir: boolean;
   texto: string;
 }
+
+export interface IMonitoramentoSnapshot {
+  timestamp: string;
+  plataforma: string;
+  clientesConectados: number;
+  contadorSnapshots: number;
+  sistemaOperacional: string;
+  cpuPercentual: number | null;
+  cpuNome: string | null;
+  cpuFrequenciaMhz: number | null;
+  cpuTemperaturaCelsius: number | null;
+  ramTotalBytes: number | null;
+  ramDisponivelBytes: number | null;
+  ramUsadaBytes: number | null;
+  ramVelocidadeMhz: number | null;
+  discoPercentual: number | null;
+  discoTotalBytes: number | null;
+  discoDisponivelBytes: number | null;
+  discoUsadaBytes: number | null;
+}

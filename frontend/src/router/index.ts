@@ -29,12 +29,26 @@ const routes: RouteRecordRaw[] = [
     path: '/ides',
     name: 'ides',
     component: () => import('../views/IDEsView.vue')
+  },
+  {
+    path: '/monitoramento',
+    name: 'monitoramento',
+    component: () => import('../views/MonitoramentoView.vue')
   }
 ];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+});
+
+const ehDispositivoMovel = /Android|iPhone|iPad|iPod/i.test(
+  navigator.userAgent
+);
+
+router.beforeEach(to => {
+  if (!ehDispositivoMovel || to.path !== '/') return;
+  return { path: '/monitoramento' };
 });
 
 export default router;

@@ -1,5 +1,6 @@
 <template>
   <v-overlay
+    v-if="!ehMonitoramento"
     v-model="exibirCarregando"
     class="d-flex flex-column align-center justify-center text-center"
     persistent
@@ -36,7 +37,7 @@
   <SnackbarNotificacao />
 
   <v-app>
-    <v-app-bar>
+    <v-app-bar v-if="!ehMonitoramento">
       <v-app-bar-title>
         <img
           :src="logo"
@@ -294,7 +295,8 @@
 </template>
 
 <script setup>
-  import { onBeforeUnmount, onMounted, ref } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+  import { useRoute } from 'vue-router';
   import logo from '@/assets/logo.svg';
   import SnackbarNotificacao from '@/components/comum/SnackbarNotificacao.vue';
   import CloneGit from '@/components/clone/CloneGit.vue';
@@ -304,6 +306,9 @@
   import { useSiteIISStore } from '@/stores/siteIIS';
   import { useFeaturesStore } from '@/stores/features';
   import { useVersaoStore } from '@/stores/useVersaoStore';
+
+  const route = useRoute();
+  const ehMonitoramento = computed(() => route.name === 'monitoramento');
 
   const exibirModalClone = ref(false);
   const exibirModalSites = ref(false);

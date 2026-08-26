@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using ProjectManagerWeb.src.Services;
+using ProjectManagerWeb.src.Services.Monitoramento;
+using ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 using ProjectManagerWeb.src.Utils;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -39,6 +41,18 @@ builder.Services.AddSingleton<IIDEJsonService>(sp => sp.GetRequiredService<IDEJs
 builder.Services.AddSingleton<MigrationService>();
 builder.Services.AddSingleton<TerminalService>();
 builder.Services.AddHttpClient<VersaoService>();
+builder.Services.AddSingleton<MonitoramentoService>();
+if (OperatingSystem.IsWindows())
+    builder.Services.AddSingleton<ICpuRamColetor, WindowsCpuRamColetor>();
+else
+    builder.Services.AddSingleton<ICpuRamColetor, LinuxCpuRamColetor>();
+builder.Services.AddSingleton<CpuRamColetor>();
+builder.Services.AddSingleton<DiscoColetor>();
+builder.Services.AddSingleton<IColetorMetricas>(sp => new ColetorComposto(
+[
+    sp.GetRequiredService<CpuRamColetor>(),
+    sp.GetRequiredService<DiscoColetor>()
+]));
 
 if (OperatingSystem.IsWindows())
     builder.Services.AddSingleton<IShellProvider, WindowsShellProvider>();
@@ -89,6 +103,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
+app.UseWebSockets();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.MapControllers();
