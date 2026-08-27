@@ -33,17 +33,16 @@ export function useTelaCheia(): UseTelaCheiaReturn {
   };
 
   const alternarTelaCheia = async (): Promise<void> => {
-    const documento = document as DocumentoComWebkit;
-
-    if (emTelaCheia.value) {
-      if (document.exitFullscreen) await document.exitFullscreen();
-      else await documento.webkitExitFullscreen?.();
-      return;
-    }
-
     const raiz = document.documentElement as HTMLElement & ElementoComWebkit;
-    if (raiz.requestFullscreen) await raiz.requestFullscreen();
-    else await raiz.webkitRequestFullscreen?.();
+    const documento = document as DocumentoComWebkit;
+    const entrar =
+      raiz.requestFullscreen?.bind(raiz) ??
+      raiz.webkitRequestFullscreen?.bind(raiz);
+    const sair =
+      document.exitFullscreen?.bind(document) ??
+      documento.webkitExitFullscreen?.bind(documento);
+
+    await (emTelaCheia.value ? sair : entrar)?.();
   };
 
   const suportaTelaCheia = computed(() => {
