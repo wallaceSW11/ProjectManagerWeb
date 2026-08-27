@@ -174,6 +174,15 @@
         />
 
         <v-btn
+          v-if="suportaTelaCheia"
+          icon
+          :title="tituloTelaCheia"
+          @click="alternarTelaCheia"
+        >
+          <v-icon color="primary">{{ iconeTelaCheia }}</v-icon>
+        </v-btn>
+
+        <v-btn
           icon
           :to="{ name: 'configuracao' }"
         >
@@ -306,9 +315,20 @@
   import { useSiteIISStore } from '@/stores/siteIIS';
   import { useFeaturesStore } from '@/stores/features';
   import { useVersaoStore } from '@/stores/useVersaoStore';
+  import { useTelaCheia } from '@/composables/useTelaCheia';
 
   const route = useRoute();
   const ehMonitoramento = computed(() => route.name === 'monitoramento');
+
+  const { emTelaCheia, suportaTelaCheia, alternarTelaCheia } = useTelaCheia();
+
+  const iconeTelaCheia = computed(() =>
+    emTelaCheia.value ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
+  );
+
+  const tituloTelaCheia = computed(() =>
+    emTelaCheia.value ? 'Sair da tela cheia' : 'Tela cheia'
+  );
 
   const exibirModalClone = ref(false);
   const exibirModalSites = ref(false);

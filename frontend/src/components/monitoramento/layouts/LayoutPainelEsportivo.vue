@@ -1,5 +1,17 @@
 <template>
   <section class="painel-esportivo">
+    <v-btn
+      v-if="suportaTelaCheia"
+      class="painel-esportivo-tela-cheia"
+      icon
+      variant="text"
+      size="small"
+      :title="tituloTelaCheia"
+      @click="alternarTelaCheia"
+    >
+      <v-icon size="20">{{ iconeTelaCheia }}</v-icon>
+    </v-btn>
+
     <article class="painel-esportivo-instrumento">
       <div class="painel-esportivo-cpu-nome">{{ cpuNome }}</div>
 
@@ -43,11 +55,21 @@
   import { computed, ref } from 'vue';
   import ContaGiros from '@/components/monitoramento/painel/ContaGiros.vue';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
+  import { useTelaCheia } from '@/composables/useTelaCheia';
   import { formatarDecimal } from '@/utils/formatarNumero';
 
   const QUANTIDADE_CONTAGIROS = 2;
 
   const monitoramentoStore = useMonitoramentoStore();
+  const { emTelaCheia, suportaTelaCheia, alternarTelaCheia } = useTelaCheia();
+
+  const iconeTelaCheia = computed(() =>
+    emTelaCheia.value ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'
+  );
+
+  const tituloTelaCheia = computed(() =>
+    emTelaCheia.value ? 'Sair da tela cheia' : 'Tela cheia'
+  );
 
   const conclusoesAnimacao = ref(0);
   const animacaoEntradaAtiva = ref(true);
@@ -212,6 +234,14 @@
         rgba(255, 255, 255, 0.035) 0 1px,
         transparent 1px 7px
       );
+  }
+
+  .painel-esportivo-tela-cheia {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 4;
+    color: #747c7e;
   }
 
   .painel-esportivo-instrumento {
