@@ -84,7 +84,7 @@ public class CloneService
             ? string.Empty
             : $"export GIT_SSH_COMMAND=\"ssh -i {gitPrincipal.CaminhoChaveSSH}\"; ";
 
-        var scriptPrincipal = tokenExport + sshExport + MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal);
+        var scriptPrincipal = tokenExport + sshExport + MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal, gitPrincipal.BranchesAdicionais);
         ShellExecute.ExecutarComando(scriptPrincipal, githubToken: gitPrincipal.GitHubToken);
 
         if (clone.BaixarAgregados)
@@ -128,7 +128,7 @@ public class CloneService
                 else
                     cloneAgregado = clone;
 
-                var scriptAgregado = tokenExportAgregado + sshExportAgregado + MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado);
+                var scriptAgregado = tokenExportAgregado + sshExportAgregado + MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado, agregado.BranchesAdicionais);
                 ShellExecute.ExecutarComando(scriptAgregado, githubToken: agregado.GitHubToken);
             });
         }
@@ -136,10 +136,8 @@ public class CloneService
         return true;
     }
 
-    internal static string MontarScript(string diretorioCompleto, string url, string nomeRepo, CloneRequestDTO clone, string branchPrincipal = "")
+    internal static string MontarScript(string diretorioCompleto, string url, string nomeRepo, CloneRequestDTO clone, string branchPrincipal = "", List<string>? branchesAdicionais = null)
     {
-        // branch não-base: clona a principal, depois faz fetch da branch informada
-        // branch base: clona direto com --branch, sem baixar outras refs
         var ehNaoBase = !string.IsNullOrEmpty(branchPrincipal);
         var branchParaClone = ehNaoBase ? branchPrincipal : clone.Branch;
         var filter = clone.HistoricoCompleto ? string.Empty : "--filter=blob:none --single-branch ";
@@ -164,6 +162,12 @@ public class CloneService
             else
                 script.Append($"git checkout -b {clone.Tipo}/{clone.Codigo};");
         }
+
+        if (!clone.HistoricoCompleto && branchesAdicionais is not null)
+            foreach (var extra in branchesAdicionais
+                .Where(b => !string.IsNullOrWhiteSpace(b) && b != clone.Branch && b != branchParaClone)
+                .Distinct())
+                script.Append($"git fetch origin refs/heads/{extra}:refs/remotes/origin/{extra}; ");
 
         return script.ToString();
     }

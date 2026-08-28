@@ -197,6 +197,67 @@ public class CloneServiceTests
 
             script.Should().NotContain("git checkout -b");
         }
+
+        [Fact]
+        public void Deve_adicionar_fetch_das_branches_adicionais_quando_branch_base()
+        {
+            var clone = CriarClone("main");
+
+            var script = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "", ["staging"]);
+
+            script.Should().Contain("git clone --filter=blob:none --single-branch --branch main \"url\"");
+            script.Should().Contain("git fetch origin refs/heads/staging:refs/remotes/origin/staging");
+        }
+
+        [Fact]
+        public void Nao_deve_adicionar_fetch_de_extra_quando_extra_igual_a_branch_clonada()
+        {
+            var clone = CriarClone("main");
+
+            var script = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "", ["main"]);
+
+            script.Should().NotContain("git fetch origin");
+        }
+
+        [Fact]
+        public void Nao_deve_adicionar_fetch_de_extra_quando_extra_igual_a_branch_principal()
+        {
+            var clone = CriarClone("feature/nova");
+
+            var script = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "main", ["main"]);
+
+            script.Should().NotContain("git fetch origin refs/heads/main:refs/remotes/origin/main");
+        }
+
+        [Fact]
+        public void Deve_adicionar_fetch_de_extra_quando_extra_diferente_da_branch_principal()
+        {
+            var clone = CriarClone("feature/nova");
+
+            var script = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "main", ["staging"]);
+
+            script.Should().Contain("git fetch origin refs/heads/staging:refs/remotes/origin/staging");
+        }
+
+        [Fact]
+        public void Nao_deve_adicionar_fetch_de_extras_quando_historico_completo()
+        {
+            var clone = CriarClone("main", historicoCompleto: true);
+
+            var script = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "", ["staging"]);
+
+            script.Should().NotContain("git fetch origin");
+        }
+
+        [Fact]
+        public void Deve_adicionar_fetch_de_extra_uma_vez_quando_extras_duplicadas_e_vazias()
+        {
+            var clone = CriarClone("main");
+
+            var script = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "", ["staging", "", "staging", null!]);
+
+            script.Split("git fetch origin").Length.Should().Be(2);
+        }
     }
 
     public class FiltrarWarnings : CloneServiceTests

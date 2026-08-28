@@ -19,10 +19,10 @@ Fluxo completo de entrega: diff → análise → testes → code review → MR.
 
 ### 0. Configurar git do usuário
 
-Antes de qualquer operação git, execute o alias `gw` para trocar para o git do usuário:
+Antes de qualquer operação git, execute o comando para trocar o gh para o usuário pessoal:
 
 ```bash
-gw
+gh auth switch --user wallaceSW11
 ```
 
 ### 1. Análise do diff
@@ -150,3 +150,11 @@ Criar PR com `gh pr create` preenchendo o template automaticamente:
 Título do PR: `tipo(escopo): descrição` (igual ao commit)
 
 ### 8. Retornar a URL do PR
+
+### 9. Restaurar usuário do gh
+
+Sempre execute ao final — mesmo que alguma etapa anterior tenha falhado antes do commit/push — o comando para devolver o gh ao usuário da deeprocket:
+
+```bash
+gh auth switch --user wallace-deeprocket
+```
