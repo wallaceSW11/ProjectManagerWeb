@@ -94,6 +94,7 @@ export interface IRepositorio {
   pastaCentralizadora?: string | null;
   caminhoChaveSSH?: string | null;
   githubToken?: string | null;
+  branchesAdicionais?: string[];
 }
 
 export interface IPerfilMarcacaoProjeto {

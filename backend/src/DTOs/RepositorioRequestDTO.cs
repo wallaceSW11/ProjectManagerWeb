@@ -36,7 +36,8 @@ namespace ProjectManagerWeb.src.DTOs
         string? UrlBaseGestorTarefas = null,
         string? PastaCentralizadora = null,
         string? CaminhoChaveSSH = null,
-        string? GitHubToken = null
+        string? GitHubToken = null,
+        List<string>? BranchesAdicionais = null
     );
 
     /// <summary>

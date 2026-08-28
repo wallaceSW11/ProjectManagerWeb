@@ -51,6 +51,21 @@
 
       <v-col
         cols="12"
+        class="py-4"
+      >
+        <v-combobox
+          label="Branches adicionais"
+          v-model="repositorio.branchesAdicionais"
+          chips
+          multiple
+          clearable
+          hint="Branches buscadas junto no clone rápido (ex: staging)"
+          persistent-hint
+        />
+      </v-col>
+
+      <v-col
+        cols="12"
         class="pb-3"
       >
         <v-select

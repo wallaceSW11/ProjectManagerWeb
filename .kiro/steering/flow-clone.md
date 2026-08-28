@@ -75,6 +75,7 @@ lógica do `CloneService.Clonar()`:
    - `Tipo == "nenhum"` → `git checkout -b {Codigo}`
    - `Tipo != "nenhum"` → `git checkout -b {Tipo}/{Codigo}`
 7. se `BaixarAgregados = true`: repete os passos 4–6 para cada `Guid` em `repositorio.Agregados`
+8. se `HistoricoCompleto = false`: para cada branch em `RepositorioRequestDTO.BranchesAdicionais` (do repo sendo clonado), adiciona `git fetch origin refs/heads/<branch>:refs/remotes/origin/<branch>` ao final do script
 
 ## branches base vs. branches de trabalho (criarBranchRemoto)
 
@@ -95,6 +96,25 @@ private static bool EhBranchBase(string branch) =>
 ```
 
 Essa regra se aplica tanto ao repositório principal quanto aos agregados.
+
+## branches adicionais do repositório
+
+`BranchesAdicionais` (lista de nomes no cadastro do repositório): branches buscadas junto no clone rápido.
+Útil em repos com muitas branches (ex: 300+), para ter `origin/staging` disponível sem baixar todas as refs.
+
+- fetch no fim do script com refspec explícito: `git fetch origin refs/heads/<branch>:refs/remotes/origin/<branch>` para cada extra (exceto as já baixadas no clone)
+  (`--single-branch` limita o refspec do remote à branch clonada — sem refspec explícito o fetch não cria `origin/<branch>`)
+- extra inexistente no remote: fetch falha e o clone segue (ref não criada)
+- `HistoricoCompleto = true`: extras ignoradas (clone completo já baixa tudo)
+- agregados: usam as `BranchesAdicionais` do próprio agregado
+
+Ex: `BranchesAdicionais = [staging]`, clone de `dev`:
+
+```bash
+git clone --filter=blob:none --single-branch --branch dev <url>; git fetch origin refs/heads/staging:refs/remotes/origin/staging;
+```
+
+Na pasta clonada, `git checkout staging` cria a branch local rastreando `origin/staging`.
 
 lógica do `CloneController` após o clone:
 1. chama `CriarPasta()` — monta `PastaCadastroRequestDTO` e chama `PastaService.Cadastrar()`

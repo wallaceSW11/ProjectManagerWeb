@@ -32,6 +32,7 @@ export default class RepositorioModel implements IRepositorio {
   pastaCentralizadora?: string | null;
   caminhoChaveSSH?: string | null;
   githubToken?: string | null;
+  branchesAdicionais: string[];
 
   constructor(obj: Partial<IRepositorio> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -59,6 +60,7 @@ export default class RepositorioModel implements IRepositorio {
     this.pastaCentralizadora = obj.pastaCentralizadora || null;
     this.caminhoChaveSSH = obj.caminhoChaveSSH || null;
     this.githubToken = obj.githubToken || null;
+    this.branchesAdicionais = obj.branchesAdicionais || [];
   }
 
   toDTO() {
@@ -84,7 +86,8 @@ export default class RepositorioModel implements IRepositorio {
       urlBaseGestorTarefas: this.urlBaseGestorTarefas,
       pastaCentralizadora: this.pastaCentralizadora,
       caminhoChaveSSH: this.caminhoChaveSSH,
-      githubToken: this.githubToken
+      githubToken: this.githubToken,
+      branchesAdicionais: this.branchesAdicionais
     };
   }
 }

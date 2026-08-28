@@ -78,6 +78,8 @@ Lógica do `CloneService.Clonar()`:
 | false | true | `develop/dev/main/master` | `git clone --filter=blob:none --single-branch --branch {branch}` + `git checkout -b {codigo}` |
 | false | true | outra | `git clone --filter=blob:none --single-branch --branch {branch}` + `git fetch origin {branch}` + checkout + `git checkout -b {codigo}` |
 
+Com `historicoCompleto = false`, o script adiciona `git fetch origin {extra}` ao final para cada branch em `BranchesAdicionais` do repositório.
+
 ### Branches base vs trabalho
 
 Branches base (`develop`, `dev`, `main`, `master`): o `git clone --single-branch --branch` já traz a branch localmente.
@@ -87,6 +89,22 @@ Branches de trabalho: clona a principal, depois `git fetch origin {branch}` e ch
 private static bool EhBranchBase(string branch) =>
     branch is "develop" or "dev" or "main" or "master";
 ```
+
+### Branches adicionais do repositório
+
+`RepositorioRequestDTO.BranchesAdicionais`: lista de branches buscadas junto no clone rápido (`historicoCompleto = false`).
+Útil em repos com muitas branches, para ter `origin/staging` (ou outra branch de trabalho) disponível sem baixar todas as refs.
+
+- Fetch de cada extra no fim do script, com refspec explícito: `git fetch origin refs/heads/{extra}:refs/remotes/origin/{extra}`
+  (o `--single-branch` limita o refspec do remote à branch clonada — sem o refspec explícito o fetch só atualizaria o FETCH_HEAD e a ref `origin/{extra}` não seria criada)
+- Extras iguais à branch clonada (ou à principal) são ignoradas — já vieram no clone
+- Extra inexistente no remote: fetch falha e o clone segue normalmente (ref não é criada)
+- `historicoCompleto = true`: clone completo já baixa tudo, extras ignoradas
+- Agregados: usa as `BranchesAdicionais` do próprio agregado
+
+Ex: repo com 300+ branches, `BranchesAdicionais = [staging]`, clone de `dev`:
+`git clone --filter=blob:none --single-branch --branch dev` + `git fetch origin refs/heads/staging:refs/remotes/origin/staging`
+Na pasta clonada, `git checkout staging` cria a branch local rastreando `origin/staging`.
 
 ## Nome da pasta no disco
 
