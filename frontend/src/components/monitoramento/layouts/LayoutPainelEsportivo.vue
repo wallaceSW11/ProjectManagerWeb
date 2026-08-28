@@ -4,8 +4,9 @@
       v-if="suportaTelaCheia"
       class="painel-esportivo-tela-cheia"
       icon
-      variant="text"
+      variant="plain"
       size="small"
+      :ripple="false"
       :title="tituloTelaCheia"
       @click="alternarTelaCheia"
     >
@@ -238,7 +239,7 @@
 
   .painel-esportivo-tela-cheia {
     position: absolute;
-    top: 4px;
+    bottom: 4px;
     right: 4px;
     z-index: 4;
     color: #747c7e;
