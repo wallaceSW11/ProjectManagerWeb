@@ -22,7 +22,11 @@
         cor="#74d94b"
         :animacao-entrada="animacaoEntradaAtiva"
         :detalhes="detalhesCpu"
+        clicavel
+        dica="top processos"
+        dica-icon="mdi-gesture-tap"
         @animacao-entrada-concluida="registrarConclusaoAnimacao"
+        @clicar="abrirModalProcessos('cpu')"
       />
     </article>
 
@@ -46,23 +50,42 @@
         cor="#ff9f12"
         :animacao-entrada="animacaoEntradaAtiva"
         :detalhes="detalhesRam"
+        clicavel
+        dica="top processos"
+        dica-icon="mdi-gesture-tap"
         @animacao-entrada-concluida="registrarConclusaoAnimacao"
+        @clicar="abrirModalProcessos('ram')"
       />
     </article>
+
+    <ModalTopProcessos
+      v-model="modalProcessosAberto"
+      :tipo="modalProcessosTipo"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
   import { computed, ref } from 'vue';
   import ContaGiros from '@/components/monitoramento/painel/ContaGiros.vue';
+  import ModalTopProcessos from '@/components/monitoramento/ModalTopProcessos.vue';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
   import { useTelaCheia } from '@/composables/useTelaCheia';
   import { formatarDecimal } from '@/utils/formatarNumero';
+  import type { TipoTopProcessos } from '@/types';
 
   const QUANTIDADE_CONTAGIROS = 2;
 
   const monitoramentoStore = useMonitoramentoStore();
   const { emTelaCheia, suportaTelaCheia, alternarTelaCheia } = useTelaCheia();
+
+  const modalProcessosAberto = ref(false);
+  const modalProcessosTipo = ref<TipoTopProcessos>('cpu');
+
+  const abrirModalProcessos = (tipo: TipoTopProcessos): void => {
+    modalProcessosTipo.value = tipo;
+    modalProcessosAberto.value = true;
+  };
 
   const iconeTelaCheia = computed(() =>
     emTelaCheia.value ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'

@@ -1,5 +1,9 @@
 <template>
-  <div class="conta-giros">
+  <div
+    class="conta-giros"
+    :class="{ 'conta-giros-clicavel': clicavel }"
+    @click="aoClicar"
+  >
     <svg
       class="conta-giros-svg"
       viewBox="0 0 200 200"
@@ -187,6 +191,13 @@
           {{ detalhe.texto }}
         </span>
       </div>
+      <span
+        v-if="dica"
+        class="conta-giros-dica"
+      >
+        <v-icon size="12">{{ dicaIcone }}</v-icon>
+        {{ dica }}
+      </span>
     </div>
   </div>
 </template>
@@ -206,6 +217,9 @@
     valor: number | null;
     cor: string;
     animacaoEntrada: boolean;
+    clicavel?: boolean;
+    dica?: string;
+    dicaIcone?: string;
     detalhes?: {
       icone: string;
       cor: string;
@@ -215,7 +229,13 @@
 
   const emit = defineEmits<{
     animacaoEntradaConcluida: [];
+    clicar: [];
   }>();
+
+  const aoClicar = (): void => {
+    if (!props.clicavel) return;
+    emit('clicar');
+  };
 
   const idFundo = useId();
   const idAro = useId();
@@ -430,6 +450,10 @@
     stroke-width: 1.6;
   }
 
+  .conta-giros-clicavel {
+    cursor: pointer;
+  }
+
   .conta-giros-informacao {
     position: absolute;
     inset: 52% 0 auto;
@@ -463,6 +487,17 @@
     color: #a6adaf;
     font-size: clamp(10px, 1.35vw, 14px);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .conta-giros-dica {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    color: #899092;
+    font-size: clamp(9px, 1.1vw, 12px);
+    font-style: italic;
     white-space: nowrap;
   }
 

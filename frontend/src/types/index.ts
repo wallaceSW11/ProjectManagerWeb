@@ -207,3 +207,11 @@ export interface IMonitoramentoSnapshot {
   discoDisponivelBytes: number | null;
   discoUsadaBytes: number | null;
 }
+
+export type TipoTopProcessos = 'cpu' | 'ram';
+
+export interface IProcessoInfo {
+  nome: string;
+  percentual: number;
+  memoriaBytes: number | null;
+}

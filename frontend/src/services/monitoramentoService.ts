@@ -1,7 +1,12 @@
+import BaseApiService from './BaseApiService';
 import MonitoramentoModel from '@/models/MonitoramentoModel';
-import type { IMonitoramentoSnapshot } from '@/types';
+import type {
+  IMonitoramentoSnapshot,
+  IProcessoInfo,
+  TipoTopProcessos
+} from '@/types';
 
-class MonitoramentoService {
+class MonitoramentoService extends BaseApiService {
   private socket: WebSocket | null = null;
   private url: string;
   private timerReconexao: ReturnType<typeof setTimeout> | null = null;
@@ -12,6 +17,7 @@ class MonitoramentoService {
   private onStatusCallback: ((conectado: boolean) => void) | null = null;
 
   constructor() {
+    super();
     const isDev = import.meta.env.DEV;
     const host = isDev ? 'localhost:2024' : location.host;
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -42,6 +48,12 @@ class MonitoramentoService {
     socket.onclose = () => {
       this.tratarFechamento();
     };
+  }
+
+  async obterTopProcessos(tipo: TipoTopProcessos): Promise<IProcessoInfo[]> {
+    return await this.get<IProcessoInfo[]>(
+      `monitoramento/processos/top/${tipo}`
+    );
   }
 
   desconectar(): void {
@@ -75,4 +87,4 @@ class MonitoramentoService {
   }
 }
 
-export default MonitoramentoService;
+export default new MonitoramentoService();
