@@ -15,7 +15,7 @@ public class MonitoramentoServiceTests
     public MonitoramentoServiceTests()
     {
         _coletor.ColetarAsync(Arg.Any<CancellationToken>())
-            .Returns(new MonitoramentoSnapshotDTO(DateTime.UtcNow, "linux", 0, 0, "Linux", null, null, null, null, null, null, null, null, null, null, null, null));
+            .Returns(new MonitoramentoSnapshotDTO(DateTime.UtcNow, "linux", 0, 0, "Linux", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null));
         _sut = new MonitoramentoService(_coletor, _logger);
     }
 

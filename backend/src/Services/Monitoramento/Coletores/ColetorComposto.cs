@@ -36,6 +36,11 @@ public class ColetorComposto(IColetorMetricas[] coletores) : IColetorMetricas
             CpuNome = b.CpuNome ?? a.CpuNome,
             CpuFrequenciaMhz = b.CpuFrequenciaMhz ?? a.CpuFrequenciaMhz,
             CpuTemperaturaCelsius = b.CpuTemperaturaCelsius ?? a.CpuTemperaturaCelsius,
-            RamVelocidadeMhz = b.RamVelocidadeMhz ?? a.RamVelocidadeMhz
+            RamVelocidadeMhz = b.RamVelocidadeMhz ?? a.RamVelocidadeMhz,
+            DiscoTemperaturaCelsius = b.DiscoTemperaturaCelsius ?? a.DiscoTemperaturaCelsius,
+            SwapTotalBytes = b.SwapTotalBytes ?? a.SwapTotalBytes,
+            SwapUsadaBytes = b.SwapUsadaBytes ?? a.SwapUsadaBytes,
+            RedeDownloadBytesPorSegundo = b.RedeDownloadBytesPorSegundo ?? a.RedeDownloadBytesPorSegundo,
+            RedeUploadBytesPorSegundo = b.RedeUploadBytesPorSegundo ?? a.RedeUploadBytesPorSegundo
         };
 }

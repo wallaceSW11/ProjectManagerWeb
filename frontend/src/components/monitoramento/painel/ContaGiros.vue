@@ -191,13 +191,6 @@
           {{ detalhe.texto }}
         </span>
       </div>
-      <span
-        v-if="dica"
-        class="conta-giros-dica"
-      >
-        <v-icon size="12">{{ dicaIcone }}</v-icon>
-        {{ dica }}
-      </span>
     </div>
   </div>
 </template>
@@ -218,8 +211,6 @@
     cor: string;
     animacaoEntrada: boolean;
     clicavel?: boolean;
-    dica?: string;
-    dicaIcone?: string;
     detalhes?: {
       icone: string;
       cor: string;
@@ -487,17 +478,6 @@
     color: #a6adaf;
     font-size: clamp(10px, 1.35vw, 14px);
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-
-  .conta-giros-dica {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 8px;
-    color: #899092;
-    font-size: clamp(9px, 1.1vw, 12px);
-    font-style: italic;
     white-space: nowrap;
   }
 

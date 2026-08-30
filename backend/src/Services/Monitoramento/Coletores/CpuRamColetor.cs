@@ -9,6 +9,7 @@ public class CpuRamColetor(ICpuRamColetor coletorPlataforma) : IColetorMetricas
         var cpu = coletorPlataforma.ObterCpuPercentual();
         var (total, disponivel) = coletorPlataforma.ObterMemoria();
         var usado = total - disponivel;
+        var (swapTotal, swapUsado) = coletorPlataforma.ObterSwap();
 
         return Task.FromResult(new MonitoramentoSnapshotDTO(
             DateTime.UtcNow,
@@ -27,7 +28,12 @@ public class CpuRamColetor(ICpuRamColetor coletorPlataforma) : IColetorMetricas
             coletorPlataforma.ObterCpuNome(),
             coletorPlataforma.ObterCpuFrequenciaMhz(),
             coletorPlataforma.ObterCpuTemperaturaCelsius(),
-            coletorPlataforma.ObterRamVelocidadeMhz()
+            coletorPlataforma.ObterRamVelocidadeMhz(),
+            coletorPlataforma.ObterDiscoTemperaturaCelsius(),
+            swapTotal > 0 ? swapTotal : null,
+            swapTotal > 0 ? swapUsado : null,
+            null,
+            null
         ));
     }
 }

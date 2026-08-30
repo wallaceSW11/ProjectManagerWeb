@@ -206,6 +206,11 @@ export interface IMonitoramentoSnapshot {
   discoTotalBytes: number | null;
   discoDisponivelBytes: number | null;
   discoUsadaBytes: number | null;
+  discoTemperaturaCelsius: number | null;
+  swapTotalBytes: number | null;
+  swapUsadaBytes: number | null;
+  redeDownloadBytesPorSegundo: number | null;
+  redeUploadBytesPorSegundo: number | null;
 }
 
 export type TipoTopProcessos = 'cpu' | 'ram';

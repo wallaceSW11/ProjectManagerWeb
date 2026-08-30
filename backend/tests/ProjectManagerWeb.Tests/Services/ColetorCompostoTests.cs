@@ -42,7 +42,12 @@ public class ColetorCompostoTests
             cpuNome,
             cpuFrequenciaMhz,
             cpuTemperaturaCelsius,
-            ramVelocidadeMhz);
+            ramVelocidadeMhz,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     public class ColetarAsync : ColetorCompostoTests
     {

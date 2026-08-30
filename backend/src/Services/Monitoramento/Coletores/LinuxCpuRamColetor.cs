@@ -194,6 +194,39 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
 
     public double? ObterRamVelocidadeMhz() => null;
 
+    public (long total, long usado) ObterSwap()
+    {
+        var total = LerValorMeminfo("SwapTotal:") * 1024;
+        var livre = LerValorMeminfo("SwapFree:") * 1024;
+        return (total, total - livre);
+    }
+
+    public double? ObterDiscoTemperaturaCelsius()
+    {
+        if (!Directory.Exists(_caminhoHwmon))
+            return null;
+
+        try
+        {
+            foreach (var hwmon in Directory.GetDirectories(_caminhoHwmon, "hwmon*"))
+            {
+                var nome = LerTexto(Path.Combine(hwmon, "name"));
+                if (!nome.Contains("nvme", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var celsius = LerCelsius(Path.Combine(hwmon, "temp1_input"));
+                if (celsius is not null)
+                    return celsius;
+            }
+        }
+        catch
+        {
+            return null;
+        }
+
+        return null;
+    }
+
     public double? ObterCpuPercentual()
     {
         var amostra = LerAmostraCpu();

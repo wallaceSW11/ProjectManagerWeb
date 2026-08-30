@@ -40,6 +40,11 @@ public class DiscoColetor : IColetorMetricas
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null
             ));
         }
@@ -50,5 +55,5 @@ public class DiscoColetor : IColetorMetricas
     }
 
     private static MonitoramentoSnapshotDTO SnapshotVazio(DateTime timestamp, string plataforma) =>
-        new(timestamp, plataforma, 0, 0, "", null, null, null, null, null, null, null, null, null, null, null, null);
+        new(timestamp, plataforma, 0, 0, "", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 }

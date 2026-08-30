@@ -12,17 +12,23 @@ Coleta acontece **somente enquanto houver cliente conectado** — zero consumo o
 MonitoramentoController        → GET /api/monitoramento/ws (handshake WebSocket)
 MonitoramentoService           → singleton: gerencia sockets + ciclo de coleta
 ColetorComposto                → mescla snapshots dos coletores (with { ... })
-├── CpuRamColetor              → CPU, RAM, SO, nome/frequência/temperatura CPU, velocidade RAM
+├── CpuRamColetor              → CPU, RAM, SO, nome/frequência/temperatura CPU, velocidade RAM, temp disco, swap
 │   ├── ICpuRamColetor         → interface por plataforma (registrada por OS no Program.cs)
-│   ├── WindowsCpuRamColetor   → LibreHardwareMonitor (temperatura) + WMI (fallback) + P/Invoke kernel32
-│   └── LinuxCpuRamColetor     → /proc e /sys
-└── DiscoColetor               → disco da raiz do diretório de trabalho
+│   ├── WindowsCpuRamColetor   → LibreHardwareMonitor (temperatura CPU+Storage) + WMI (fallback) + P/Invoke kernel32
+│   └── LinuxCpuRamColetor     → /proc e /sys (swap via /proc/meminfo, temp disco via hwmon nvme)
+├── DiscoColetor               → disco da raiz do diretório de trabalho
+└── RedeColetor                → download/upload em bytes/segundo (delta entre amostras)
+    ├── IRedeColetor           → interface por plataforma
+    ├── WindowsRedeColetor     → NetworkInterface.GetIPStatistics() somando interfaces ativas (sem loopback)
+    └── LinuxRedeColetor       → /proc/net/dev somando todas as interfaces (sem lo)
 
 ProcessosService               → GET /api/monitoramento/processos/top/{tipo} (cpu|ram), sob demanda
 └── IProcessosColetor          → top 10 processos por CPU ou RAM, por plataforma
     ├── WindowsProcessosColetor → Process.GetProcesses(): CPU% por delta de TotalProcessorTime (2 amostras, 500ms), RAM por WorkingSet64
     └── LinuxProcessosColetor   → /proc/[pid]/stat (utime+stime em delta) e /proc/[pid]/status (VmRSS); USER_HZ via sysconf. Nome do processo via /proc/[pid]/exe (fallback argv[0] → comm) — Chromium reescreve argv[0] dos filhos com argumentos embutidos, por isso exe é a fonte primária
 ```
+
+Swap é exclusivo do Linux (Windows retorna nulo e o frontend oculta o bloco).
 
 Regras do ciclo:
 

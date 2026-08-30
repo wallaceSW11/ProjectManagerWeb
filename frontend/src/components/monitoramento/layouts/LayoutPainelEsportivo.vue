@@ -23,8 +23,6 @@
         :animacao-entrada="animacaoEntradaAtiva"
         :detalhes="detalhesCpu"
         clicavel
-        dica="top processos"
-        dica-icon="mdi-gesture-tap"
         @animacao-entrada-concluida="registrarConclusaoAnimacao"
         @clicar="abrirModalProcessos('cpu')"
       />
@@ -41,6 +39,41 @@
       <span class="painel-esportivo-disco-capacidade">
         {{ discoUsadaTexto }} / {{ discoTotalTexto }}
       </span>
+      <span class="painel-esportivo-disco-temperatura">
+        <v-icon
+          size="14"
+          color="#ff9f12"
+        >
+          mdi-thermometer
+        </v-icon>
+        {{ discoTemperaturaTexto }}
+      </span>
+      <template v-if="exibirSwap">
+        <span class="painel-esportivo-centro-rotulo">SWAP</span>
+        <strong class="painel-esportivo-swap-valores">
+          {{ swapUsadaTexto }} / {{ swapTotalTexto }}
+        </strong>
+      </template>
+      <div class="painel-esportivo-divisor" />
+      <span class="painel-esportivo-centro-rotulo">REDE</span>
+      <span class="painel-esportivo-rede painel-esportivo-rede-upload">
+        <v-icon
+          size="14"
+          color="#74d94b"
+        >
+          mdi-arrow-up
+        </v-icon>
+        {{ redeUploadTexto }}
+      </span>
+      <span class="painel-esportivo-rede painel-esportivo-rede-download">
+        <v-icon
+          size="14"
+          color="#ff9f12"
+        >
+          mdi-arrow-down
+        </v-icon>
+        {{ redeDownloadTexto }}
+      </span>
     </aside>
 
     <article class="painel-esportivo-instrumento">
@@ -51,8 +84,6 @@
         :animacao-entrada="animacaoEntradaAtiva"
         :detalhes="detalhesRam"
         clicavel
-        dica="top processos"
-        dica-icon="mdi-gesture-tap"
         @animacao-entrada-concluida="registrarConclusaoAnimacao"
         @clicar="abrirModalProcessos('ram')"
       />
@@ -220,6 +251,55 @@
   const discoTotalTexto = computed(() =>
     formatarGbExibicao(discoTotalBytes.value)
   );
+
+  const discoTemperaturaTexto = computed(() => {
+    if (animacaoEntradaAtiva.value) return '--';
+    const celsius =
+      monitoramentoStore.snapshot?.discoTemperaturaCelsius ?? null;
+    return celsius === null ? '--' : `${Math.round(celsius)}°C`;
+  });
+
+  const swapTotalBytes = computed(
+    () => monitoramentoStore.snapshot?.swapTotalBytes ?? null
+  );
+
+  const swapUsadaBytes = computed(
+    () => monitoramentoStore.snapshot?.swapUsadaBytes ?? null
+  );
+
+  const exibirSwap = computed(
+    () =>
+      !animacaoEntradaAtiva.value &&
+      monitoramentoStore.plataforma === 'linux' &&
+      swapTotalBytes.value !== null &&
+      swapTotalBytes.value > 0
+  );
+
+  const swapUsadaTexto = computed(() =>
+    formatarGbExibicao(swapUsadaBytes.value)
+  );
+  const swapTotalTexto = computed(() =>
+    formatarGbExibicao(swapTotalBytes.value)
+  );
+
+  const formatarRede = (bytesPorSegundo: number | null): string => {
+    if (animacaoEntradaAtiva.value) return '--';
+    if (bytesPorSegundo === null) return '--';
+    const kbps = (bytesPorSegundo * 8) / 1000;
+    return kbps >= 1000
+      ? `${formatarDecimal(kbps / 1000)} Mbps`
+      : `${formatarDecimal(kbps)} kbps`;
+  };
+
+  const redeUploadTexto = computed(() =>
+    formatarRede(monitoramentoStore.snapshot?.redeUploadBytesPorSegundo ?? null)
+  );
+
+  const redeDownloadTexto = computed(() =>
+    formatarRede(
+      monitoramentoStore.snapshot?.redeDownloadBytesPorSegundo ?? null
+    )
+  );
 </script>
 
 <style scoped>
@@ -349,6 +429,33 @@
 
   .painel-esportivo-disco-capacidade {
     color: #899092;
+    font-size: clamp(10px, 1.3vw, 14px);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .painel-esportivo-disco-temperatura {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #a6adaf;
+    font-size: clamp(10px, 1.3vw, 14px);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .painel-esportivo-swap-valores {
+    color: #d2d7d7;
+    font-size: clamp(12px, 1.5vw, 16px);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .painel-esportivo-rede {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #a6adaf;
     font-size: clamp(10px, 1.3vw, 14px);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
