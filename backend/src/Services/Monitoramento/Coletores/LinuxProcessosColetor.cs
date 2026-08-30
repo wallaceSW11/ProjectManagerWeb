@@ -3,7 +3,7 @@ using ProjectManagerWeb.src.DTOs;
 
 namespace ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 
-internal class LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcessosColetor
+internal class LinuxProcessosColetor : IProcessosColetor
 {
     private const int IntervaloAmostrasMs = 500;
     private const int QuantidadeTop = 10;
@@ -13,7 +13,19 @@ internal class LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcessosC
     [DllImport("libc", EntryPoint = "sysconf")]
     private static extern long Sysconf(int name);
 
+    private readonly ICpuRamColetor _cpuRamColetor;
+    private readonly string _caminhoProc;
     private readonly long _ticksPorSegundo = ObterTicksPorSegundo();
+
+    public LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : this(cpuRamColetor, CaminhoProc)
+    {
+    }
+
+    internal LinuxProcessosColetor(ICpuRamColetor cpuRamColetor, string caminhoProc)
+    {
+        _cpuRamColetor = cpuRamColetor;
+        _caminhoProc = caminhoProc;
+    }
 
     public async Task<List<ProcessoInfoDTO>> ColetarTopAsync(string tipo, CancellationToken ct)
     {
@@ -43,14 +55,14 @@ internal class LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcessosC
 
     private List<ProcessoInfoDTO> ObterTopMemoria()
     {
-        var total = cpuRamColetor.ObterMemoria().total;
+        var total = _cpuRamColetor.ObterMemoria().total;
         var processos = new List<ProcessoInfoDTO>();
 
         foreach (var pid in EnumerarPids())
         {
             try
             {
-                var status = File.ReadAllText(Path.Combine(CaminhoProc, pid.ToString(), "status"));
+                var status = File.ReadAllText(Path.Combine(_caminhoProc, pid.ToString(), "status"));
                 var linhaVmRss = status.Split('\n')
                     .FirstOrDefault(l => l.StartsWith("VmRSS:", StringComparison.Ordinal));
                 if (linhaVmRss is null)
@@ -77,7 +89,7 @@ internal class LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcessosC
         {
             try
             {
-                var stat = File.ReadAllText(Path.Combine(CaminhoProc, pid.ToString(), "stat"));
+                var stat = File.ReadAllText(Path.Combine(_caminhoProc, pid.ToString(), "stat"));
                 var fecho = stat.LastIndexOf(')');
                 if (fecho < 0)
                     continue;
@@ -98,9 +110,9 @@ internal class LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcessosC
         return amostra;
     }
 
-    private static IEnumerable<int> EnumerarPids()
+    private IEnumerable<int> EnumerarPids()
     {
-        foreach (var diretorio in Directory.EnumerateDirectories(CaminhoProc))
+        foreach (var diretorio in Directory.EnumerateDirectories(_caminhoProc))
         {
             var nome = Path.GetFileName(diretorio);
             if (int.TryParse(nome, out var pid))
@@ -108,7 +120,7 @@ internal class LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcessosC
         }
     }
 
-    private static string LerNomeProcesso(int pid)
+    private string LerNomeProcesso(int pid)
     {
         var nome = LerNomeExecutavel(pid);
         if (!string.IsNullOrWhiteSpace(nome))
@@ -118,14 +130,14 @@ internal class LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcessosC
         if (!string.IsNullOrWhiteSpace(nome))
             return nome;
 
-        return LerTexto(Path.Combine(CaminhoProc, pid.ToString(), "comm"));
+        return LerTexto(Path.Combine(_caminhoProc, pid.ToString(), "comm"));
     }
 
-    private static string LerNomeExecutavel(int pid)
+    private string LerNomeExecutavel(int pid)
     {
         try
         {
-            var alvo = new FileInfo(Path.Combine(CaminhoProc, pid.ToString(), "exe")).LinkTarget;
+            var alvo = new FileInfo(Path.Combine(_caminhoProc, pid.ToString(), "exe")).LinkTarget;
             if (string.IsNullOrWhiteSpace(alvo))
                 return "";
 
@@ -143,11 +155,11 @@ internal class LinuxProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcessosC
         }
     }
 
-    private static string LerPrimeiroArgumento(int pid)
+    private string LerPrimeiroArgumento(int pid)
     {
         try
         {
-            var cmdline = File.ReadAllText(Path.Combine(CaminhoProc, pid.ToString(), "cmdline"));
+            var cmdline = File.ReadAllText(Path.Combine(_caminhoProc, pid.ToString(), "cmdline"));
             if (string.IsNullOrWhiteSpace(cmdline))
                 return "";
 
