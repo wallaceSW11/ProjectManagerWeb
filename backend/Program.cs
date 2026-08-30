@@ -42,16 +42,29 @@ builder.Services.AddSingleton<MigrationService>();
 builder.Services.AddSingleton<TerminalService>();
 builder.Services.AddHttpClient<VersaoService>();
 builder.Services.AddSingleton<MonitoramentoService>();
+builder.Services.AddSingleton<ProcessosService>();
 if (OperatingSystem.IsWindows())
+{
     builder.Services.AddSingleton<ICpuRamColetor, WindowsCpuRamColetor>();
+    builder.Services.AddSingleton<IProcessosColetor, WindowsProcessosColetor>();
+}
 else
+{
     builder.Services.AddSingleton<ICpuRamColetor, LinuxCpuRamColetor>();
+    builder.Services.AddSingleton<IProcessosColetor, LinuxProcessosColetor>();
+}
 builder.Services.AddSingleton<CpuRamColetor>();
 builder.Services.AddSingleton<DiscoColetor>();
+builder.Services.AddSingleton<RedeColetor>();
+if (OperatingSystem.IsWindows())
+    builder.Services.AddSingleton<IRedeColetor, WindowsRedeColetor>();
+else
+    builder.Services.AddSingleton<IRedeColetor, LinuxRedeColetor>();
 builder.Services.AddSingleton<IColetorMetricas>(sp => new ColetorComposto(
 [
     sp.GetRequiredService<CpuRamColetor>(),
-    sp.GetRequiredService<DiscoColetor>()
+    sp.GetRequiredService<DiscoColetor>(),
+    sp.GetRequiredService<RedeColetor>()
 ]));
 
 if (OperatingSystem.IsWindows())

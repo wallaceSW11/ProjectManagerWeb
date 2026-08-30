@@ -117,6 +117,64 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
 
     private double? LerTemperaturaCpu()
     {
+        var computador = AtualizarSensores();
+        if (computador is null)
+            return null;
+
+        double? maior = null;
+        foreach (var hardware in computador.Hardware)
+        {
+            if (hardware.HardwareType != HardwareType.Cpu)
+                continue;
+
+            foreach (var sensor in hardware.Sensors)
+            {
+                if (sensor.SensorType != SensorType.Temperature || sensor.Value is null)
+                    continue;
+
+                var celsius = (double)sensor.Value.Value;
+                if (!double.IsFinite(celsius) || celsius is < -20 or > 150)
+                    continue;
+
+                maior = maior is null ? celsius : Math.Max(maior.Value, celsius);
+            }
+        }
+
+        return maior;
+    }
+
+    public double? ObterDiscoTemperaturaCelsius()
+    {
+        var computador = AtualizarSensores();
+        if (computador is null)
+            return null;
+
+        double? maior = null;
+        foreach (var hardware in computador.Hardware)
+        {
+            if (hardware.HardwareType != HardwareType.Storage)
+                continue;
+
+            foreach (var sensor in hardware.Sensors)
+            {
+                if (sensor.SensorType != SensorType.Temperature || sensor.Value is null)
+                    continue;
+
+                var celsius = (double)sensor.Value.Value;
+                if (!double.IsFinite(celsius) || celsius is < 0 or > 120)
+                    continue;
+
+                maior = maior is null ? celsius : Math.Max(maior.Value, celsius);
+            }
+        }
+
+        return maior;
+    }
+
+    public (long total, long usado) ObterSwap() => (0, 0);
+
+    private Computer? AtualizarSensores()
+    {
         if (!_tentouAbrirComputador)
         {
             _computador = AbrirComputador();
@@ -129,27 +187,7 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         try
         {
             _computador.Accept(new UpdateVisitor());
-
-            double? maior = null;
-            foreach (var hardware in _computador.Hardware)
-            {
-                if (hardware.HardwareType != HardwareType.Cpu)
-                    continue;
-
-                foreach (var sensor in hardware.Sensors)
-                {
-                    if (sensor.SensorType != SensorType.Temperature || sensor.Value is null)
-                        continue;
-
-                    var celsius = (double)sensor.Value.Value;
-                    if (!double.IsFinite(celsius) || celsius is < -20 or > 150)
-                        continue;
-
-                    maior = maior is null ? celsius : Math.Max(maior.Value, celsius);
-                }
-            }
-
-            return maior;
+            return _computador;
         }
         catch
         {

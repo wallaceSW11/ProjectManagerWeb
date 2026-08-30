@@ -77,6 +77,25 @@ Nova migration: adicionar método `Migration_00X_NomeDaMigration()` no `Migratio
 - `.github/workflows/ci.yml` — build frontend + backend em todo **Pull Request** (para `develop` ou `main`)
 - `.github/workflows/release.yml` — push na `main` gera release com `PMW_Windows_*.zip` e `PMW_Linux_*.zip`
 
+## Teste local do backend — regras de segurança (obrigatórias)
+
+O PMW roda na máquina do usuário e é o gerenciador dos processos dele: **matar o PMW derruba junto os filhos** (IDEs como Kiro abertas por ele, terminais etc.). Por isso:
+
+- **NUNCA** usar `pkill`/`pgrep`/`killall` por padrão de nome (`ProjectManagerWeb`, `dotnet`, `pmw`). Sempre matar **somente pelo PID** do processo que o agente levantou.
+- **NUNCA** rodar `pkill -f` com um padrão que aparece no próprio comando (o shell casa com ele mesmo e se mata; pior, pode casar com a instância do usuário).
+- Porta `2024` (dev, launchSettings) ou `2025` (prod) ocupada = instância do usuário rodando. **Não derrubar.** Subir em porta alternativa.
+- O launch profile do backend força a porta 2024 e vence `--urls`. Usar `--no-launch-profile` + `ASPNETCORE_URLS`.
+
+Procedimento seguro para smoke test (em `backend/`):
+
+```bash
+ASPNETCORE_URLS=http://localhost:2034 ASPNETCORE_ENVIRONMENT=Development \
+  nohup dotnet run --no-build --no-launch-profile > /tmp/opencode/pmw-smoke.log 2>&1 &
+echo $! > /tmp/opencode/pmw-smoke.pid
+
+kill "$(cat /tmp/opencode/pmw-smoke.pid)"
+```
+
 ## Onde buscar informação
 
 | Preciso de | Arquivo |

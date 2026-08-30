@@ -18,6 +18,11 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
   discoTotalBytes: number | null;
   discoDisponivelBytes: number | null;
   discoUsadaBytes: number | null;
+  discoTemperaturaCelsius: number | null;
+  swapTotalBytes: number | null;
+  swapUsadaBytes: number | null;
+  redeDownloadBytesPorSegundo: number | null;
+  redeUploadBytesPorSegundo: number | null;
 
   constructor(obj: Partial<IMonitoramentoSnapshot> = {}) {
     this.timestamp = obj.timestamp || new Date().toISOString();
@@ -37,5 +42,10 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
     this.discoTotalBytes = obj.discoTotalBytes ?? null;
     this.discoDisponivelBytes = obj.discoDisponivelBytes ?? null;
     this.discoUsadaBytes = obj.discoUsadaBytes ?? null;
+    this.discoTemperaturaCelsius = obj.discoTemperaturaCelsius ?? null;
+    this.swapTotalBytes = obj.swapTotalBytes ?? null;
+    this.swapUsadaBytes = obj.swapUsadaBytes ?? null;
+    this.redeDownloadBytesPorSegundo = obj.redeDownloadBytesPorSegundo ?? null;
+    this.redeUploadBytesPorSegundo = obj.redeUploadBytesPorSegundo ?? null;
   }
 }

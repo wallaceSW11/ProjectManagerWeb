@@ -1,22 +1,30 @@
 import { defineStore } from 'pinia';
 import MonitoramentoService from '@/services/monitoramentoService';
-import type { IMonitoramentoSnapshot } from '@/types';
+import type {
+  IMonitoramentoSnapshot,
+  IProcessoInfo,
+  TipoTopProcessos
+} from '@/types';
 
 interface MonitoramentoState {
   snapshot: IMonitoramentoSnapshot | null;
   conectado: boolean;
   ultimaAtualizacao: Date | null;
   erro: string | null;
+  processos: Record<TipoTopProcessos, IProcessoInfo[]>;
+  carregandoProcessos: boolean;
+  erroProcessos: string | null;
 }
-
-let service: MonitoramentoService | null = null;
 
 export const useMonitoramentoStore = defineStore('monitoramento', {
   state: (): MonitoramentoState => ({
     snapshot: null,
     conectado: false,
     ultimaAtualizacao: null,
-    erro: null
+    erro: null,
+    processos: { cpu: [], ram: [] },
+    carregandoProcessos: false,
+    erroProcessos: null
   }),
 
   getters: {
@@ -27,10 +35,9 @@ export const useMonitoramentoStore = defineStore('monitoramento', {
 
   actions: {
     conectar(): void {
-      if (service) return;
-      service = new MonitoramentoService();
+      if (this.conectado) return;
 
-      service.conectar(
+      MonitoramentoService.conectar(
         (data: IMonitoramentoSnapshot) => {
           this.snapshot = data;
           this.ultimaAtualizacao = new Date();
@@ -44,10 +51,22 @@ export const useMonitoramentoStore = defineStore('monitoramento', {
     },
 
     desconectar(): void {
-      service?.desconectar();
-      service = null;
+      MonitoramentoService.desconectar();
       this.conectado = false;
       this.snapshot = null;
+    },
+
+    async carregarTopProcessos(tipo: TipoTopProcessos): Promise<void> {
+      this.carregandoProcessos = true;
+      try {
+        this.processos[tipo] =
+          await MonitoramentoService.obterTopProcessos(tipo);
+        this.erroProcessos = null;
+      } catch {
+        this.erroProcessos = 'Não foi possível carregar os processos.';
+      } finally {
+        this.carregandoProcessos = false;
+      }
     }
   }
 });

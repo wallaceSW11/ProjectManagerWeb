@@ -1,5 +1,9 @@
 <template>
-  <div class="conta-giros">
+  <div
+    class="conta-giros"
+    :class="{ 'conta-giros-clicavel': clicavel }"
+    @click="aoClicar"
+  >
     <svg
       class="conta-giros-svg"
       viewBox="0 0 200 200"
@@ -206,6 +210,7 @@
     valor: number | null;
     cor: string;
     animacaoEntrada: boolean;
+    clicavel?: boolean;
     detalhes?: {
       icone: string;
       cor: string;
@@ -215,7 +220,13 @@
 
   const emit = defineEmits<{
     animacaoEntradaConcluida: [];
+    clicar: [];
   }>();
+
+  const aoClicar = (): void => {
+    if (!props.clicavel) return;
+    emit('clicar');
+  };
 
   const idFundo = useId();
   const idAro = useId();
@@ -428,6 +439,10 @@
     fill: #15191a;
     stroke: #d7dbdc;
     stroke-width: 1.6;
+  }
+
+  .conta-giros-clicavel {
+    cursor: pointer;
   }
 
   .conta-giros-informacao {
