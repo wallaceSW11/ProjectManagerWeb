@@ -24,7 +24,12 @@ public class ColetorCompostoTests
         string? cpuNome = null,
         double? cpuFrequenciaMhz = null,
         double? cpuTemperaturaCelsius = null,
-        double? ramVelocidadeMhz = null) =>
+        double? ramVelocidadeMhz = null,
+        double? discoTemperaturaCelsius = null,
+        long? swapTotalBytes = null,
+        long? swapUsadaBytes = null,
+        long? redeDownloadBytesPorSegundo = null,
+        long? redeUploadBytesPorSegundo = null) =>
         new(
             DateTime.UtcNow,
             plataforma,
@@ -43,11 +48,11 @@ public class ColetorCompostoTests
             cpuFrequenciaMhz,
             cpuTemperaturaCelsius,
             ramVelocidadeMhz,
-            null,
-            null,
-            null,
-            null,
-            null);
+            discoTemperaturaCelsius,
+            swapTotalBytes,
+            swapUsadaBytes,
+            redeDownloadBytesPorSegundo,
+            redeUploadBytesPorSegundo);
 
     public class ColetarAsync : ColetorCompostoTests
     {
@@ -123,6 +128,46 @@ public class ColetorCompostoTests
 
             resultado.CpuPercentual.Should().Be(10.0);
             resultado.CpuNome.Should().Be("Intel");
+        }
+
+        [Fact]
+        public async Task Deve_mesclar_swap_e_rede_de_coletores_distintos()
+        {
+            _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
+                discoTemperaturaCelsius: 40.5,
+                swapTotalBytes: 1000,
+                swapUsadaBytes: 400));
+
+            _coletorB.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
+                redeDownloadBytesPorSegundo: 1024,
+                redeUploadBytesPorSegundo: 512));
+
+            var sut = new ColetorComposto([_coletorA, _coletorB]);
+
+            var resultado = await sut.ColetarAsync(CancellationToken.None);
+
+            resultado.DiscoTemperaturaCelsius.Should().Be(40.5);
+            resultado.SwapTotalBytes.Should().Be(1000);
+            resultado.SwapUsadaBytes.Should().Be(400);
+            resultado.RedeDownloadBytesPorSegundo.Should().Be(1024);
+            resultado.RedeUploadBytesPorSegundo.Should().Be(512);
+        }
+
+        [Fact]
+        public async Task Deve_sobrescrever_swap_com_valor_nao_nulo_do_segundo_coletor()
+        {
+            _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
+                swapTotalBytes: 1000,
+                swapUsadaBytes: 400));
+            _coletorB.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
+                swapTotalBytes: 2000,
+                swapUsadaBytes: 800));
+            var sut = new ColetorComposto([_coletorA, _coletorB]);
+
+            var resultado = await sut.ColetarAsync(CancellationToken.None);
+
+            resultado.SwapTotalBytes.Should().Be(2000);
+            resultado.SwapUsadaBytes.Should().Be(800);
         }
 
         [Fact]

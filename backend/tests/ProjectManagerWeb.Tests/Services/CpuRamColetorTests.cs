@@ -24,6 +24,8 @@ public class CpuRamColetorTests
             _coletorPlataforma.ObterCpuFrequenciaMhz().Returns(3800.0);
             _coletorPlataforma.ObterCpuTemperaturaCelsius().Returns(62.5);
             _coletorPlataforma.ObterRamVelocidadeMhz().Returns(3600.0);
+            _coletorPlataforma.ObterDiscoTemperaturaCelsius().Returns(40.5);
+            _coletorPlataforma.ObterSwap().Returns((total: 8589934592L, usado: 1073741824L));
 
             var snapshot = await _sut.ColetarAsync(CancellationToken.None);
 
@@ -36,6 +38,21 @@ public class CpuRamColetorTests
             snapshot.CpuFrequenciaMhz.Should().Be(3800.0);
             snapshot.CpuTemperaturaCelsius.Should().Be(62.5);
             snapshot.RamVelocidadeMhz.Should().Be(3600.0);
+            snapshot.DiscoTemperaturaCelsius.Should().Be(40.5);
+            snapshot.SwapTotalBytes.Should().Be(8589934592);
+            snapshot.SwapUsadaBytes.Should().Be(1073741824);
+        }
+
+        [Fact]
+        public async Task Deve_retornar_campos_de_swap_nulos_quando_swap_total_eh_zero()
+        {
+            _coletorPlataforma.ObterMemoria().Returns((total: 17179869184L, disponivel: 8589934592L));
+            _coletorPlataforma.ObterSwap().Returns((total: 0L, usado: 0L));
+
+            var snapshot = await _sut.ColetarAsync(CancellationToken.None);
+
+            snapshot.SwapTotalBytes.Should().BeNull();
+            snapshot.SwapUsadaBytes.Should().BeNull();
         }
 
         [Fact]
@@ -73,6 +90,9 @@ public class CpuRamColetorTests
             snapshot.CpuFrequenciaMhz.Should().BeNull();
             snapshot.CpuTemperaturaCelsius.Should().BeNull();
             snapshot.RamVelocidadeMhz.Should().BeNull();
+            snapshot.DiscoTemperaturaCelsius.Should().BeNull();
+            snapshot.SwapTotalBytes.Should().BeNull();
+            snapshot.SwapUsadaBytes.Should().BeNull();
         }
     }
 }

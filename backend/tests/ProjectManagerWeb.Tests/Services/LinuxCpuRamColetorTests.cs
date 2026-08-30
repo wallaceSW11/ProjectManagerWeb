@@ -180,6 +180,60 @@ public class LinuxCpuRamColetorTests : IDisposable
         }
     }
 
+    public class ObterSwap : LinuxCpuRamColetorTests
+    {
+        [Fact]
+        public void Deve_converter_kilobytes_para_bytes_quando_meminfo_tem_swap()
+        {
+            EscreverArquivo("meminfo", "SwapTotal:       8388608 kB\nSwapFree:        4194304 kB\n");
+            var coletor = CriarColetor();
+
+            var (total, usado) = coletor.ObterSwap();
+
+            total.Should().Be(8589934592);
+            usado.Should().Be(4294967296);
+        }
+
+        [Fact]
+        public void Deve_retornar_zero_quando_meminfo_nao_tem_swap_total()
+        {
+            EscreverArquivo("meminfo", "MemTotal:       16777216 kB\n");
+            var coletor = CriarColetor();
+
+            var (total, usado) = coletor.ObterSwap();
+
+            total.Should().Be(0);
+            usado.Should().Be(0);
+        }
+    }
+
+    public class ObterDiscoTemperaturaCelsius : LinuxCpuRamColetorTests
+    {
+        [Fact]
+        public void Deve_converter_miligraus_para_celsius_quando_hwmon_eh_nvme()
+        {
+            EscreverArquivo("hwmon/hwmon0/name", "nvme\n");
+            EscreverArquivo("hwmon/hwmon0/temp1_input", "40850\n");
+            var coletor = CriarColetor();
+
+            var resultado = coletor.ObterDiscoTemperaturaCelsius();
+
+            resultado.Should().Be(40.85);
+        }
+
+        [Fact]
+        public void Deve_retornar_null_quando_hwmon_nao_eh_nvme()
+        {
+            EscreverArquivo("hwmon/hwmon0/name", "k10temp\n");
+            EscreverArquivo("hwmon/hwmon0/temp1_input", "40850\n");
+            var coletor = CriarColetor();
+
+            var resultado = coletor.ObterDiscoTemperaturaCelsius();
+
+            resultado.Should().BeNull();
+        }
+    }
+
     public class ObterCpuTemperaturaCelsius : LinuxCpuRamColetorTests
     {
         [Fact]
