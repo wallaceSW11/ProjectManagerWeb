@@ -102,6 +102,13 @@ function Status-PMW {
     }
 }
 
+function Garantir-RegraFirewall {
+    if (-not (Get-NetFirewallRule -DisplayName "PMW" -ErrorAction SilentlyContinue)) {
+        New-NetFirewallRule -DisplayName "PMW" -Direction Inbound -Protocol TCP -LocalPort 2025 -Action Allow -Profile Any | Out-Null
+        Write-Host "   Regra de firewall 'PMW' criada (porta 2025)"
+    }
+}
+
 function Install-PMW {
     Write-Host "🔧 Configurando infraestrutura do PMW..." -ForegroundColor Cyan
 
@@ -145,6 +152,9 @@ function Install-PMW {
         Write-Host "   Diretório $PMW_TOOLS adicionado ao PATH do usuário"
         Write-Host "   Reabra o terminal para usar o comando 'pmw'"
     }
+
+    # Libera a porta no firewall para acesso pela rede (IP fixo)
+    Garantir-RegraFirewall
 
     Write-Host ""
     Write-Host "✅ PMW instalado em $dir" -ForegroundColor Green
@@ -245,6 +255,9 @@ function Update-PMW {
     Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
     Write-Host "✅ Atualização concluída." -ForegroundColor Green
+
+    # Garante a regra de firewall para acesso pela rede
+    Garantir-RegraFirewall
 
     # Iniciar
     Start-PMW
