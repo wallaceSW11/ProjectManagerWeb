@@ -121,8 +121,13 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         if (computador is null)
             return null;
 
+        return ObterMaiorTemperaturaCpu(computador.Hardware);
+    }
+
+    internal static double? ObterMaiorTemperaturaCpu(IList<IHardware> hardwares)
+    {
         double? maior = null;
-        foreach (var hardware in computador.Hardware)
+        foreach (var hardware in hardwares)
         {
             if (hardware.HardwareType != HardwareType.Cpu)
                 continue;
@@ -149,8 +154,13 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         if (computador is null)
             return null;
 
+        return ObterMaiorTemperaturaDisco(computador.Hardware);
+    }
+
+    internal static double? ObterMaiorTemperaturaDisco(IList<IHardware> hardwares)
+    {
         double? maior = null;
-        foreach (var hardware in computador.Hardware)
+        foreach (var hardware in hardwares)
         {
             if (hardware.HardwareType != HardwareType.Storage)
                 continue;
