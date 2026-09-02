@@ -121,8 +121,13 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         if (computador is null)
             return null;
 
+        return ObterMaiorTemperaturaCpu(computador.Hardware);
+    }
+
+    internal static double? ObterMaiorTemperaturaCpu(IList<IHardware> hardwares)
+    {
         double? maior = null;
-        foreach (var hardware in computador.Hardware)
+        foreach (var hardware in hardwares)
         {
             if (hardware.HardwareType != HardwareType.Cpu)
                 continue;
@@ -133,7 +138,7 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
                     continue;
 
                 var celsius = (double)sensor.Value.Value;
-                if (!double.IsFinite(celsius) || celsius is < -20 or > 150)
+                if (!double.IsFinite(celsius) || celsius is <= 0 or > 150)
                     continue;
 
                 maior = maior is null ? celsius : Math.Max(maior.Value, celsius);
@@ -149,8 +154,13 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         if (computador is null)
             return null;
 
+        return ObterMaiorTemperaturaDisco(computador.Hardware);
+    }
+
+    internal static double? ObterMaiorTemperaturaDisco(IList<IHardware> hardwares)
+    {
         double? maior = null;
-        foreach (var hardware in computador.Hardware)
+        foreach (var hardware in hardwares)
         {
             if (hardware.HardwareType != HardwareType.Storage)
                 continue;
@@ -158,6 +168,10 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
             foreach (var sensor in hardware.Sensors)
             {
                 if (sensor.SensorType != SensorType.Temperature || sensor.Value is null)
+                    continue;
+
+                if (sensor.Name.Contains("Warning", StringComparison.OrdinalIgnoreCase) ||
+                    sensor.Name.Contains("Critical", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 var celsius = (double)sensor.Value.Value;
@@ -199,7 +213,7 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
     {
         try
         {
-            var computador = new Computer { IsCpuEnabled = true };
+            var computador = new Computer { IsCpuEnabled = true, IsStorageEnabled = true };
             computador.Open();
             return computador;
         }
