@@ -20,6 +20,7 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
     private bool _tentouAbrirComputador;
     private double? _temperaturaWmi;
     private bool _temperaturaWmiDefinitiva;
+    private readonly ValidadorCoolerDinamico _validadorCooler = new();
 
     [DllImport("kernel32.dll")]
     private static extern bool GetSystemTimes(out long lpIdleTime, out long lpKernelTime, out long lpUserTime);
@@ -185,6 +186,39 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         return maior;
     }
 
+    public double? ObterCoolerRpm()
+    {
+        var computador = AtualizarSensores();
+        if (computador is null)
+            return null;
+
+        return _validadorCooler.Avaliar(ObterMaiorRotacaoCooler(computador.Hardware));
+    }
+
+    internal static double? ObterMaiorRotacaoCooler(IList<IHardware> hardwares)
+    {
+        double? maior = null;
+        foreach (var hardware in hardwares)
+        {
+            if (hardware.HardwareType is not (HardwareType.Motherboard or HardwareType.Cpu))
+                continue;
+
+            foreach (var sensor in hardware.Sensors)
+            {
+                if (sensor.SensorType != SensorType.Fan || sensor.Value is null)
+                    continue;
+
+                var rpm = (double)sensor.Value.Value;
+                if (!double.IsFinite(rpm) || rpm <= 0)
+                    continue;
+
+                maior = maior is null ? rpm : Math.Max(maior.Value, rpm);
+            }
+        }
+
+        return maior;
+    }
+
     public (long total, long usado) ObterSwap() => (0, 0);
 
     private Computer? AtualizarSensores()
@@ -213,7 +247,12 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
     {
         try
         {
-            var computador = new Computer { IsCpuEnabled = true, IsStorageEnabled = true };
+            var computador = new Computer
+            {
+                IsCpuEnabled = true,
+                IsStorageEnabled = true,
+                IsMotherboardEnabled = true
+            };
             computador.Open();
             return computador;
         }

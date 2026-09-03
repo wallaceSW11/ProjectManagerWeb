@@ -29,7 +29,8 @@ public class ColetorCompostoTests
         long? swapTotalBytes = null,
         long? swapUsadaBytes = null,
         long? redeDownloadBytesPorSegundo = null,
-        long? redeUploadBytesPorSegundo = null) =>
+        long? redeUploadBytesPorSegundo = null,
+        double? coolerRpm = null) =>
         new(
             DateTime.UtcNow,
             plataforma,
@@ -52,7 +53,8 @@ public class ColetorCompostoTests
             swapTotalBytes,
             swapUsadaBytes,
             redeDownloadBytesPorSegundo,
-            redeUploadBytesPorSegundo);
+            redeUploadBytesPorSegundo,
+            coolerRpm);
 
     public class ColetarAsync : ColetorCompostoTests
     {
@@ -168,6 +170,30 @@ public class ColetorCompostoTests
 
             resultado.SwapTotalBytes.Should().Be(2000);
             resultado.SwapUsadaBytes.Should().Be(800);
+        }
+
+        [Fact]
+        public async Task Deve_mesclar_cooler_rpm_de_coletores_distintos()
+        {
+            _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(coolerRpm: 2500.0));
+            _coletorB.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot());
+            var sut = new ColetorComposto([_coletorA, _coletorB]);
+
+            var resultado = await sut.ColetarAsync(CancellationToken.None);
+
+            resultado.CoolerRpm.Should().Be(2500.0);
+        }
+
+        [Fact]
+        public async Task Deve_sobrescrever_cooler_rpm_com_valor_nao_nulo_do_segundo_coletor()
+        {
+            _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(coolerRpm: 2500.0));
+            _coletorB.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(coolerRpm: 3200.0));
+            var sut = new ColetorComposto([_coletorA, _coletorB]);
+
+            var resultado = await sut.ColetarAsync(CancellationToken.None);
+
+            resultado.CoolerRpm.Should().Be(3200.0);
         }
 
         [Fact]

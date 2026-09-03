@@ -258,4 +258,77 @@ public class WindowsCpuRamColetorTests
             resultado.Should().Be(52.0);
         }
     }
+
+    public class ObterMaiorRotacaoCooler : WindowsCpuRamColetorTests
+    {
+        [Fact]
+        public void Deve_retornar_maior_rpm_entre_fans_de_motherboard_e_cpu()
+        {
+            var hardwareMotherboard = CriarHardware(HardwareType.Motherboard,
+                CriarSensor(SensorType.Fan, "Fan #1", 1200.0f),
+                CriarSensor(SensorType.Fan, "Fan #2", 1400.0f));
+            var hardwareCpu = CriarHardware(HardwareType.Cpu,
+                CriarSensor(SensorType.Fan, "CPU Fan", 1300.0f));
+
+            var resultado = WindowsCpuRamColetor.ObterMaiorRotacaoCooler(new[] { hardwareMotherboard, hardwareCpu });
+
+            resultado.Should().Be(1400.0);
+        }
+
+        [Fact]
+        public void Deve_ignorar_hardware_que_nao_eh_motherboard_nem_cpu()
+        {
+            var hardwareStorage = CriarHardware(HardwareType.Storage,
+                CriarSensor(SensorType.Fan, "Fan #1", 3000.0f));
+
+            var resultado = WindowsCpuRamColetor.ObterMaiorRotacaoCooler(new[] { hardwareStorage });
+
+            resultado.Should().BeNull();
+        }
+
+        [Fact]
+        public void Deve_ignorar_sensor_que_nao_eh_fan()
+        {
+            var hardwareMotherboard = CriarHardware(HardwareType.Motherboard,
+                CriarSensor(SensorType.Temperature, "Motherboard", 60.0f));
+
+            var resultado = WindowsCpuRamColetor.ObterMaiorRotacaoCooler(new[] { hardwareMotherboard });
+
+            resultado.Should().BeNull();
+        }
+
+        [Fact]
+        public void Deve_ignorar_valores_nulos_e_menores_ou_iguais_a_zero()
+        {
+            var hardwareMotherboard = CriarHardware(HardwareType.Motherboard,
+                CriarSensor(SensorType.Fan, "Fan #1", null),
+                CriarSensor(SensorType.Fan, "Fan #2", 0.0f),
+                CriarSensor(SensorType.Fan, "Fan #3", -5.0f),
+                CriarSensor(SensorType.Fan, "Fan #4", 900.0f));
+
+            var resultado = WindowsCpuRamColetor.ObterMaiorRotacaoCooler(new[] { hardwareMotherboard });
+
+            resultado.Should().Be(900.0);
+        }
+
+        [Fact]
+        public void Deve_ignorar_valores_nao_finitos()
+        {
+            var hardwareMotherboard = CriarHardware(HardwareType.Motherboard,
+                CriarSensor(SensorType.Fan, "Fan #1", float.NaN),
+                CriarSensor(SensorType.Fan, "Fan #2", float.PositiveInfinity));
+
+            var resultado = WindowsCpuRamColetor.ObterMaiorRotacaoCooler(new[] { hardwareMotherboard });
+
+            resultado.Should().BeNull();
+        }
+
+        [Fact]
+        public void Deve_retornar_null_quando_lista_vazia()
+        {
+            var resultado = WindowsCpuRamColetor.ObterMaiorRotacaoCooler(Array.Empty<IHardware>());
+
+            resultado.Should().BeNull();
+        }
+    }
 }

@@ -22,5 +22,6 @@ public sealed record MonitoramentoSnapshotDTO(
     long? SwapTotalBytes,
     long? SwapUsadaBytes,
     long? RedeDownloadBytesPorSegundo,
-    long? RedeUploadBytesPorSegundo
+    long? RedeUploadBytesPorSegundo,
+    double? CoolerRpm = null
 );

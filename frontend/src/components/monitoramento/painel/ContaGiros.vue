@@ -101,7 +101,7 @@
       />
       <path
         class="conta-giros-progresso"
-        :stroke="cor"
+        :stroke="corExibida"
         :filter="`url(#${idBrilho})`"
         :d="caminhoProgresso"
       />
@@ -144,7 +144,7 @@
       >
         <line
           class="conta-giros-ponteiro-linha"
-          :stroke="cor"
+          :stroke="corExibida"
           x1="100"
           y1="100"
           x2="100"
@@ -157,7 +157,7 @@
           r="7"
         />
         <circle
-          :fill="cor"
+          :fill="corExibida"
           cx="100"
           cy="100"
           r="3"
@@ -169,7 +169,7 @@
     <div class="conta-giros-informacao">
       <span
         class="conta-giros-valor"
-        :style="{ color: cor }"
+        :style="{ color: corExibida }"
       >
         {{ percentualTexto }}
       </span>
@@ -204,19 +204,24 @@
   const DURACAO_ANIMACAO_MS = 650;
   const DURACAO_ENTRADA_SUBIDA_MS = 1100;
   const DURACAO_ENTRADA_DESCIDA_MS = 800;
+  const LIMITE_ALERTA = 90;
 
-  const props = defineProps<{
-    titulo: string;
-    valor: number | null;
-    cor: string;
-    animacaoEntrada: boolean;
-    clicavel?: boolean;
-    detalhes?: {
-      icone: string;
+  const props = withDefaults(
+    defineProps<{
+      titulo: string;
+      valor: number | null;
       cor: string;
-      texto: string;
-    }[];
-  }>();
+      corAlerta?: string;
+      animacaoEntrada: boolean;
+      clicavel?: boolean;
+      detalhes?: {
+        icone: string;
+        cor: string;
+        texto: string;
+      }[];
+    }>(),
+    { corAlerta: '#ff3b30' }
+  );
 
   const emit = defineEmits<{
     animacaoEntradaConcluida: [];
@@ -234,6 +239,10 @@
   const exibido = ref(0);
   const animacaoEntradaAtiva = ref(false);
   let frameAnimacao: number | null = null;
+
+  const corExibida = computed(() =>
+    exibido.value >= LIMITE_ALERTA ? props.corAlerta : props.cor
+  );
 
   const limitar = (valor: number): number => Math.min(100, Math.max(0, valor));
 
@@ -270,7 +279,7 @@
         valor,
         angulo: ANGULO_INICIO + (valor / 100) * (ANGULO_FIM - ANGULO_INICIO),
         maior: valor % 10 === 0,
-        alerta: valor >= 90
+        alerta: valor >= LIMITE_ALERTA
       };
     })
   );
@@ -397,6 +406,10 @@
     stroke-linecap: round;
   }
 
+  .conta-giros-progresso {
+    transition: stroke 400ms ease;
+  }
+
   .conta-giros-trilha {
     stroke: #252a2b;
   }
@@ -433,6 +446,7 @@
     stroke-width: 3.2;
     stroke-linecap: round;
     filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.35));
+    transition: stroke 400ms ease;
   }
 
   .conta-giros-ponteiro-centro {
@@ -461,6 +475,7 @@
     font-style: italic;
     letter-spacing: -0.06em;
     text-shadow: 0 0 18px color-mix(in srgb, currentColor 24%, transparent);
+    transition: color 400ms ease;
   }
 
   .conta-giros-detalhes {

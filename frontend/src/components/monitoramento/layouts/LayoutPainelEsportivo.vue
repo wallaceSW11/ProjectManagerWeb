@@ -16,16 +16,26 @@
     <article class="painel-esportivo-instrumento">
       <div class="painel-esportivo-cpu-nome">{{ cpuNome }}</div>
 
-      <ContaGiros
-        titulo="CPU"
-        :valor="cpuPercentualExibido"
-        cor="#74d94b"
-        :animacao-entrada="animacaoEntradaAtiva"
-        :detalhes="detalhesCpu"
-        clicavel
-        @animacao-entrada-concluida="registrarConclusaoAnimacao"
-        @clicar="abrirModalProcessos('cpu')"
-      />
+      <div class="painel-esportivo-cpu-instrumento">
+        <ContaGiros
+          titulo="CPU"
+          :valor="cpuPercentualExibido"
+          cor="#74d94b"
+          :animacao-entrada="animacaoEntradaAtiva"
+          :detalhes="detalhesCpu"
+          clicavel
+          @animacao-entrada-concluida="registrarConclusaoAnimacao"
+          @clicar="abrirModalProcessos('cpu')"
+        />
+
+        <div
+          v-if="exibirCooler"
+          class="painel-esportivo-cooler"
+        >
+          <v-icon size="14">mdi-fan</v-icon>
+          <span>{{ coolerRpmTexto }}</span>
+        </div>
+      </div>
     </article>
 
     <aside class="painel-esportivo-centro">
@@ -221,6 +231,19 @@
     }
   ]);
 
+  const coolerRpm = computed(
+    () => monitoramentoStore.snapshot?.coolerRpm ?? null
+  );
+
+  const exibirCooler = computed(
+    () => !animacaoEntradaAtiva.value && coolerRpm.value !== null
+  );
+
+  const coolerRpmTexto = computed(() => {
+    const rpm = coolerRpm.value;
+    return rpm === null ? '' : `${Math.round(rpm)} RPM`;
+  });
+
   const sistemaOperacional = computed(() =>
     animacaoEntradaAtiva.value
       ? '--'
@@ -376,6 +399,27 @@
     text-align: center;
     text-overflow: ellipsis;
     text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .painel-esportivo-cpu-instrumento {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .painel-esportivo-cooler {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+    color: #899092;
+    font-size: clamp(10px, 1.3vw, 14px);
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
