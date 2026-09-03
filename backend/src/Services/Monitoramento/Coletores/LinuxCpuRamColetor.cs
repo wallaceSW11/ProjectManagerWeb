@@ -30,6 +30,7 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
     private long _softirqAnterior;
     private long _stealAnterior;
     private bool _possuiAmostraAnterior;
+    private readonly ValidadorCoolerDinamico _validadorCooler = new();
 
     public LinuxCpuRamColetor() : this(CaminhoStat, CaminhoMeminfo, CaminhoOsRelease)
     {
@@ -193,6 +194,35 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
     }
 
     public double? ObterRamVelocidadeMhz() => null;
+
+    public double? ObterCoolerRpm()
+    {
+        if (!Directory.Exists(_caminhoHwmon))
+            return null;
+
+        long? maiorRpm = null;
+
+        try
+        {
+            foreach (var hwmon in Directory.GetDirectories(_caminhoHwmon, "hwmon*"))
+            {
+                foreach (var fan in Directory.GetFiles(hwmon, "fan*_input"))
+                {
+                    var rpm = LerValorInteiro(fan);
+                    if (rpm is null or <= 1)
+                        continue;
+
+                    maiorRpm = maiorRpm is null ? rpm : Math.Max(maiorRpm.Value, rpm.Value);
+                }
+            }
+        }
+        catch
+        {
+            return null;
+        }
+
+        return _validadorCooler.Avaliar(maiorRpm);
+    }
 
     public (long total, long usado) ObterSwap()
     {

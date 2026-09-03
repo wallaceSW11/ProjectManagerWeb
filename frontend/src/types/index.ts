@@ -207,6 +207,7 @@ export interface IMonitoramentoSnapshot {
   discoDisponivelBytes: number | null;
   discoUsadaBytes: number | null;
   discoTemperaturaCelsius: number | null;
+  coolerRpm: number | null;
   swapTotalBytes: number | null;
   swapUsadaBytes: number | null;
   redeDownloadBytesPorSegundo: number | null;

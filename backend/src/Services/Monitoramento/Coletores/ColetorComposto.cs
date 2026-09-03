@@ -41,6 +41,7 @@ public class ColetorComposto(IColetorMetricas[] coletores) : IColetorMetricas
             SwapTotalBytes = b.SwapTotalBytes ?? a.SwapTotalBytes,
             SwapUsadaBytes = b.SwapUsadaBytes ?? a.SwapUsadaBytes,
             RedeDownloadBytesPorSegundo = b.RedeDownloadBytesPorSegundo ?? a.RedeDownloadBytesPorSegundo,
-            RedeUploadBytesPorSegundo = b.RedeUploadBytesPorSegundo ?? a.RedeUploadBytesPorSegundo
+            RedeUploadBytesPorSegundo = b.RedeUploadBytesPorSegundo ?? a.RedeUploadBytesPorSegundo,
+            CoolerRpm = b.CoolerRpm ?? a.CoolerRpm
         };
 }

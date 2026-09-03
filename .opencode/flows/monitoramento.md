@@ -12,7 +12,8 @@ Coleta acontece **somente enquanto houver cliente conectado** — zero consumo o
 MonitoramentoController        → GET /api/monitoramento/ws (handshake WebSocket)
 MonitoramentoService           → singleton: gerencia sockets + ciclo de coleta
 ColetorComposto                → mescla snapshots dos coletores (with { ... })
-├── CpuRamColetor              → CPU, RAM, SO, nome/frequência/temperatura CPU, velocidade RAM, temp disco, swap
+├── CpuRamColetor              → CPU, RAM, SO, nome/frequência/temperatura CPU, velocidade RAM, temp disco, swap, velocidade cooler (RPM)
+│   └── ValidadorCoolerDinamico → RPM do cooler só é entregue quando varia (ver regras do ciclo)
 │   ├── ICpuRamColetor         → interface por plataforma (registrada por OS no Program.cs)
 │   ├── WindowsCpuRamColetor   → LibreHardwareMonitor (temperatura CPU+Storage) + WMI (fallback) + P/Invoke kernel32
 │   └── LinuxCpuRamColetor     → /proc e /sys (swap via /proc/meminfo, temp disco via hwmon nvme)
@@ -34,6 +35,7 @@ Regras do ciclo:
 
 - Contador de sockets 0→1 inicia `PeriodicTimer` (1s); 1→0 para o loop.
 - `ClientesConectados` e `ContadorSnapshots` são preenchidos pelo `MonitoramentoService` via `snapshot with { ... }` — coletores nunca sabem de transporte.
+- `ValidadorCoolerDinamico` (sem janela fixa, sem timer): a 1ª leitura vira baseline e retorna null; qualquer leitura seguinte com diferença > 1 RPM marca o sensor como dinâmico e passa a entregar o valor real. Sensor que nunca varia (ex.: ACPI binário que reporta valor fixo — fan com `max_state=1` cuja firmware controla a rotação internamente) nunca é exibido. Custo: 1 `double` + 1 `bool` por coletor e 1 comparação por snapshot.
 - Novo coletor: implementar `IColetorMetricas`, adicionar campos `double?`/`long?` no `MonitoramentoSnapshotDTO` e registrar no `ColetorComposto` (Program.cs). Nada mais muda.
 
 ## DTO
@@ -51,6 +53,7 @@ Serializado camelCase para o frontend.
 | RAM | `GlobalMemoryStatusEx` (kernel32) | Total e disponível |
 | Frequência CPU | `Win32_Processor.MaxClockSpeed` × `% Processor Performance` | Fallback: `CurrentClockSpeed` |
 | Velocidade RAM | `Win32_PhysicalMemory` | `ConfiguredClockSpeed` → fallback `Speed` |
+| Velocidade cooler | `LibreHardwareMonitor` (`SensorType.Fan` em Motherboard/Cpu, `IsMotherboardEnabled`) | Maior RPM entre os fans, validado por `ValidadorCoolerDinamico`. Mesma exigência de admin da temperatura |
 
 ## Particularidades Linux
 
@@ -61,6 +64,7 @@ Serializado camelCase para o frontend.
 | RAM | `/proc/meminfo` (`MemTotal`, `MemAvailable` × 1024) |
 | Temperatura | `/sys/class/thermal` (type cpu/pkg) → `/sys/class/hwmon` (k10temp/coretemp) |
 | Nome/freq CPU | `/proc/cpuinfo` → fallback `scaling_cur_freq` |
+| Velocidade cooler | `/sys/class/hwmon/*/fan*_input` | Maior RPM entre chips; ignora valores ≤ 1; validado por `ValidadorCoolerDinamico` (ACPI binário com valor fixo fica oculto). Alguns drivers exigem root (sem leitura → `--`); muitos notebooks nem expõem |
 
 ## Frontend
 
@@ -78,6 +82,8 @@ components/monitoramento/
 ├── painel/ContaGiros.vue        → clicável (abre o modal de top processos)
 └── ModalTopProcessos.vue        → v-dialog 80% mobile-first, polling 2s enquanto aberto
 ```
+
+RPM do cooler: ícone `mdi-fan` + RPM abaixo do ContaGiros da CPU (`LayoutPainelEsportivo.vue`); oculto quando a plataforma não entrega leitura ou o sensor é estático (não varia).
 
 URL do WebSocket: dev `ws://localhost:2024/api/monitoramento/ws`; prod `ws://{location.host}/api/monitoramento/ws` (mesma origem, sem CORS).
 

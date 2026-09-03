@@ -19,6 +19,7 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
   discoDisponivelBytes: number | null;
   discoUsadaBytes: number | null;
   discoTemperaturaCelsius: number | null;
+  coolerRpm: number | null;
   swapTotalBytes: number | null;
   swapUsadaBytes: number | null;
   redeDownloadBytesPorSegundo: number | null;
@@ -43,6 +44,7 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
     this.discoDisponivelBytes = obj.discoDisponivelBytes ?? null;
     this.discoUsadaBytes = obj.discoUsadaBytes ?? null;
     this.discoTemperaturaCelsius = obj.discoTemperaturaCelsius ?? null;
+    this.coolerRpm = obj.coolerRpm ?? null;
     this.swapTotalBytes = obj.swapTotalBytes ?? null;
     this.swapUsadaBytes = obj.swapUsadaBytes ?? null;
     this.redeDownloadBytesPorSegundo = obj.redeDownloadBytesPorSegundo ?? null;
