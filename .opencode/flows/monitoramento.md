@@ -15,7 +15,7 @@ ColetorComposto                → mescla snapshots dos coletores (with { ... })
 ├── CpuRamColetor              → CPU, RAM, SO, nome/frequência/temperatura CPU, velocidade RAM, temp disco, swap, velocidade cooler (RPM)
 │   └── ValidadorCoolerDinamico → RPM do cooler só é entregue quando varia (ver regras do ciclo)
 │   ├── ICpuRamColetor         → interface por plataforma (registrada por OS no Program.cs)
-│   ├── WindowsCpuRamColetor   → LibreHardwareMonitor (temperatura CPU+Storage) + WMI (fallback) + P/Invoke kernel32
+│   ├── WindowsCpuRamColetor   → LibreHardwareMonitor (temperatura CPU+Storage, fan Motherboard/Cpu) + WMI (fallback) + P/Invoke kernel32
 │   └── LinuxCpuRamColetor     → /proc e /sys (swap via /proc/meminfo, temp disco via hwmon nvme)
 ├── DiscoColetor               → disco da raiz do diretório de trabalho
 └── RedeColetor                → download/upload em bytes/segundo (delta entre amostras)
@@ -111,4 +111,4 @@ docs/monitoramento-plan.md / docs/monitoramento-analise.md      → histórico d
 
 ## Testes
 
-`backend/tests/ProjectManagerWeb.Tests/Services/` — `MonitoramentoServiceTests.cs` (transição de estado, NSubstitute), `ColetorCompostoTests.cs`, `CpuRamColetorTests.cs`, `DiscoColetorTests.cs`, `LinuxCpuRamColetorTests.cs`.
+`backend/tests/ProjectManagerWeb.Tests/Services/` — `MonitoramentoServiceTests.cs` (transição de estado, NSubstitute), `ColetorCompostoTests.cs`, `CpuRamColetorTests.cs`, `DiscoColetorTests.cs`, `LinuxCpuRamColetorTests.cs`, `WindowsCpuRamColetorTests.cs`, `ValidadorCoolerDinamicoTests.cs`.
