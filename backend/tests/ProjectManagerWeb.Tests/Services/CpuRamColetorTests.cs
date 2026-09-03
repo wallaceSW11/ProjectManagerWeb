@@ -26,6 +26,7 @@ public class CpuRamColetorTests
             _coletorPlataforma.ObterRamVelocidadeMhz().Returns(3600.0);
             _coletorPlataforma.ObterDiscoTemperaturaCelsius().Returns(40.5);
             _coletorPlataforma.ObterSwap().Returns((total: 8589934592L, usado: 1073741824L));
+            _coletorPlataforma.ObterCoolerRpm().Returns(2500.0);
 
             var snapshot = await _sut.ColetarAsync(CancellationToken.None);
 
@@ -41,6 +42,7 @@ public class CpuRamColetorTests
             snapshot.DiscoTemperaturaCelsius.Should().Be(40.5);
             snapshot.SwapTotalBytes.Should().Be(8589934592);
             snapshot.SwapUsadaBytes.Should().Be(1073741824);
+            snapshot.CoolerRpm.Should().Be(2500.0);
         }
 
         [Fact]

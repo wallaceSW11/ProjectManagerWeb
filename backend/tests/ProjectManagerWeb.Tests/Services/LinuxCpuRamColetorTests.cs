@@ -282,4 +282,61 @@ public class LinuxCpuRamColetorTests : IDisposable
             resultado.Should().BeNull();
         }
     }
+
+    public class ObterCoolerRpm : LinuxCpuRamColetorTests
+    {
+        [Fact]
+        public void Deve_retornar_null_na_primeira_leitura_e_rpm_na_segunda_quando_varia()
+        {
+            EscreverArquivo("hwmon/hwmon0/fan1_input", "2500\n");
+            var coletor = CriarColetor();
+
+            coletor.ObterCoolerRpm().Should().BeNull();
+
+            EscreverArquivo("hwmon/hwmon0/fan1_input", "2800\n");
+            coletor.ObterCoolerRpm().Should().Be(2800.0);
+        }
+
+        [Fact]
+        public void Deve_retornar_null_quando_rpm_eh_estatico()
+        {
+            EscreverArquivo("hwmon/hwmon0/fan1_input", "2500\n");
+            var coletor = CriarColetor();
+
+            coletor.ObterCoolerRpm().Should().BeNull();
+            coletor.ObterCoolerRpm().Should().BeNull();
+        }
+
+        [Fact]
+        public void Deve_retornar_maior_rpm_entre_chips_quando_dinamico()
+        {
+            EscreverArquivo("hwmon/hwmon0/fan1_input", "2000\n");
+            EscreverArquivo("hwmon/hwmon1/fan1_input", "3000\n");
+            var coletor = CriarColetor();
+
+            coletor.ObterCoolerRpm().Should().BeNull();
+
+            EscreverArquivo("hwmon/hwmon1/fan1_input", "3200\n");
+            coletor.ObterCoolerRpm().Should().Be(3200.0);
+        }
+
+        [Fact]
+        public void Deve_ignorar_valores_menores_ou_iguais_a_um()
+        {
+            EscreverArquivo("hwmon/hwmon0/fan1_input", "1\n");
+            EscreverArquivo("hwmon/hwmon0/fan2_input", "0\n");
+            var coletor = CriarColetor();
+
+            coletor.ObterCoolerRpm().Should().BeNull();
+            coletor.ObterCoolerRpm().Should().BeNull();
+        }
+
+        [Fact]
+        public void Deve_retornar_null_quando_diretorio_hwmon_nao_existe()
+        {
+            var coletor = CriarColetor();
+
+            coletor.ObterCoolerRpm().Should().BeNull();
+        }
+    }
 }
