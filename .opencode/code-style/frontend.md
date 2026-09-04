@@ -34,6 +34,23 @@ async function carregar(): Promise<void> {
 }
 ```
 
+## Respiração vertical
+
+Separe parágrafos lógicos com linha em branco — nunca cole `const`, early return e `return` final.
+
+```ts
+const calcular = (valor: number | null): number | null => {
+  const limite = 10;
+
+  if (valor === null) return null;
+  if (valor < limite) return limite;
+
+  return valor * 2;
+};
+```
+
+Early returns consecutivos ficam juntos, sem linha em branco entre eles.
+
 ## Template
 
 Zero lógica. Condicionais e class bindings → computed.
