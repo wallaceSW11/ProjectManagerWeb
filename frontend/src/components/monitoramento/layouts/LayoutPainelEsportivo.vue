@@ -43,12 +43,21 @@
       <strong class="painel-esportivo-sistema">{{ sistemaOperacional }}</strong>
       <div class="painel-esportivo-divisor" />
       <span class="painel-esportivo-centro-rotulo">DISCO</span>
-      <strong class="painel-esportivo-disco-percentual">
-        {{ discoPercentualTexto }}
+      <strong
+        class="painel-esportivo-disco-disponivel"
+        :style="{ color: corDisco }"
+      >
+        {{ discoDisponivelTexto }}
       </strong>
       <span class="painel-esportivo-disco-capacidade">
-        {{ discoUsadaTexto }} / {{ discoTotalTexto }}
+        {{ discoUsadaTexto }} em uso de {{ discoTotalTexto }}
       </span>
+      <div class="painel-esportivo-disco-barra">
+        <div
+          class="painel-esportivo-disco-barra-preenchida"
+          :style="{ width: discoBarraLargura, background: corDisco }"
+        />
+      </div>
       <span class="painel-esportivo-disco-temperatura">
         <v-icon
           size="14"
@@ -116,6 +125,9 @@
   import type { TipoTopProcessos } from '@/types';
 
   const QUANTIDADE_CONTAGIROS = 2;
+  const SWAP_PISO_BYTES = 100 * 1024 * 1024;
+  const DISCO_LIVRE_LARANJA = 20;
+  const DISCO_LIVRE_VERMELHO = 10;
 
   const monitoramentoStore = useMonitoramentoStore();
   const { emTelaCheia, suportaTelaCheia, alternarTelaCheia } = useTelaCheia();
@@ -141,6 +153,7 @@
 
   const registrarConclusaoAnimacao = (): void => {
     conclusoesAnimacao.value += 1;
+
     if (conclusoesAnimacao.value >= QUANTIDADE_CONTAGIROS)
       animacaoEntradaAtiva.value = false;
   };
@@ -150,7 +163,15 @@
 
   const formatarGbExibicao = (bytes: number | null): string => {
     if (animacaoEntradaAtiva.value) return '0 GB';
+
     return bytes === null ? '--' : formatarGb(bytes);
+  };
+
+  const formatarGbInteiroExibicao = (bytes: number | null): string => {
+    if (animacaoEntradaAtiva.value) return '0 GB';
+    if (bytes === null) return '--';
+
+    return `${Math.round(bytes / 1024 ** 3)} GB`;
   };
 
   const formatarFrequencia = (mhz: number): string =>
@@ -172,14 +193,19 @@
 
   const cpuFrequenciaTexto = computed(() => {
     if (animacaoEntradaAtiva.value) return '0 MHz';
+
     const mhz = monitoramentoStore.snapshot?.cpuFrequenciaMhz ?? null;
+
     if (mhz === null) return '--';
+
     return formatarFrequencia(mhz);
   });
 
   const cpuTemperaturaTexto = computed(() => {
     if (animacaoEntradaAtiva.value) return '0°C';
+
     const celsius = monitoramentoStore.snapshot?.cpuTemperaturaCelsius ?? null;
+
     return celsius === null ? '--' : `${Math.round(celsius)}°C`;
   });
 
@@ -194,7 +220,9 @@
   const ramPercentual = computed(() => {
     const usada = ramUsadaBytes.value;
     const total = ramTotalBytes.value;
+
     if (usada === null || total === null || total === 0) return null;
+
     return (usada / total) * 100;
   });
 
@@ -241,6 +269,7 @@
 
   const coolerRpmTexto = computed(() => {
     const rpm = coolerRpm.value;
+
     return rpm === null ? '' : `${Math.round(rpm)} RPM`;
   });
 
@@ -250,7 +279,7 @@
       : monitoramentoStore.snapshot?.sistemaOperacional || '--'
   );
 
-  const discoPercentual = computed(
+  const discoPercentualUso = computed(
     () => monitoramentoStore.snapshot?.discoPercentual ?? null
   );
 
@@ -262,23 +291,66 @@
     () => monitoramentoStore.snapshot?.discoTotalBytes ?? null
   );
 
-  const discoPercentualTexto = computed(() => {
+  const discoDisponivelBytes = computed(
+    () => monitoramentoStore.snapshot?.discoDisponivelBytes ?? null
+  );
+
+  const discoPercentualLivre = computed(() => {
+    const disponivel = discoDisponivelBytes.value;
+    const total = discoTotalBytes.value;
+
+    if (disponivel === null || total === null || total === 0) return null;
+
+    return (disponivel / total) * 100;
+  });
+
+  const corDisco = computed(() => {
+    const livre = discoPercentualLivre.value;
+
+    if (livre === null) return '#d2d7d7';
+    if (livre < DISCO_LIVRE_VERMELHO) return '#ff3b30';
+    if (livre < DISCO_LIVRE_LARANJA) return '#ff9f12';
+
+    return '#74d94b';
+  });
+
+  const discoDisponivelTexto = computed(() => {
+    if (animacaoEntradaAtiva.value) return '0 GB (0%)';
+
+    const disponivel = discoDisponivelBytes.value;
+
+    if (disponivel === null) return '--';
+
+    const percentualUso = discoPercentualUso.value;
+    const sufixoPercentual =
+      percentualUso === null ? '' : ` (${Math.round(percentualUso)}%)`;
+
+    return `${Math.round(disponivel / 1024 ** 3)} GB${sufixoPercentual}`;
+  });
+
+  const discoBarraLargura = computed(() => {
     if (animacaoEntradaAtiva.value) return '0%';
-    if (discoPercentual.value === null) return '--';
-    return `${formatarDecimal(discoPercentual.value)}%`;
+
+    const percentualUso = discoPercentualUso.value;
+
+    if (percentualUso === null) return '0%';
+
+    return `${Math.min(100, Math.max(0, percentualUso))}%`;
   });
 
   const discoUsadaTexto = computed(() =>
-    formatarGbExibicao(discoUsadaBytes.value)
+    formatarGbInteiroExibicao(discoUsadaBytes.value)
   );
   const discoTotalTexto = computed(() =>
-    formatarGbExibicao(discoTotalBytes.value)
+    formatarGbInteiroExibicao(discoTotalBytes.value)
   );
 
   const discoTemperaturaTexto = computed(() => {
     if (animacaoEntradaAtiva.value) return '--';
+
     const celsius =
       monitoramentoStore.snapshot?.discoTemperaturaCelsius ?? null;
+
     return celsius === null ? '--' : `${Math.round(celsius)}°C`;
   });
 
@@ -295,7 +367,9 @@
       !animacaoEntradaAtiva.value &&
       monitoramentoStore.plataforma === 'linux' &&
       swapTotalBytes.value !== null &&
-      swapTotalBytes.value > 0
+      swapTotalBytes.value > 0 &&
+      swapUsadaBytes.value !== null &&
+      swapUsadaBytes.value >= SWAP_PISO_BYTES
   );
 
   const swapUsadaTexto = computed(() =>
@@ -308,7 +382,9 @@
   const formatarRede = (bytesPorSegundo: number | null): string => {
     if (animacaoEntradaAtiva.value) return '--';
     if (bytesPorSegundo === null) return '--';
+
     const kbps = (bytesPorSegundo * 8) / 1000;
+
     return kbps >= 1000
       ? `${formatarDecimal(kbps / 1000)} Mbps`
       : `${formatarDecimal(kbps)} kbps`;
@@ -465,10 +541,24 @@
     background: rgba(255, 255, 255, 0.11);
   }
 
-  .painel-esportivo-disco-percentual {
-    color: #d2d7d7;
+  .painel-esportivo-disco-disponivel {
     font-size: clamp(18px, 2.5vw, 28px);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .painel-esportivo-disco-barra {
+    width: min(100%, 150px);
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+  }
+
+  .painel-esportivo-disco-barra-preenchida {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 500ms ease;
   }
 
   .painel-esportivo-disco-capacidade {
