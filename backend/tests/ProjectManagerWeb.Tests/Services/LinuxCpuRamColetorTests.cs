@@ -27,7 +27,8 @@ public class LinuxCpuRamColetorTests : IDisposable
             Path.Combine(_tempPath, "cpuinfo"),
             Path.Combine(_tempPath, "scaling_cur_freq"),
             Path.Combine(_tempPath, "thermal"),
-            Path.Combine(_tempPath, "hwmon"));
+            Path.Combine(_tempPath, "hwmon"),
+            Path.Combine(_tempPath, "i2c"));
 
     private void EscreverArquivo(string caminhoRelativo, string conteudo)
     {
@@ -280,6 +281,106 @@ public class LinuxCpuRamColetorTests : IDisposable
             var resultado = coletor.ObterCpuTemperaturaCelsius();
 
             resultado.Should().BeNull();
+        }
+    }
+
+    public class ObterRamVelocidadeMhz : LinuxCpuRamColetorTests
+    {
+        [Fact]
+        public void Deve_retornar_3200_quando_eeprom_ddr4_com_tck_de_625ps()
+        {
+            EscreverEeprom("i2c/1-0050/eeprom", 0x0C, 5, 0);
+            var coletor = CriarColetor();
+
+            var resultado = coletor.ObterRamVelocidadeMhz();
+
+            resultado.Should().Be(3200.0);
+        }
+
+        [Fact]
+        public void Deve_retornar_maior_velocidade_entre_pentes()
+        {
+            EscreverEeprom("i2c/1-0050/eeprom", 0x0C, 5, 0);
+            EscreverEeprom("i2c/1-0051/eeprom", 0x0C, 6, 0);
+            var coletor = CriarColetor();
+
+            var resultado = coletor.ObterRamVelocidadeMhz();
+
+            resultado.Should().Be(3200.0);
+        }
+
+        [Fact]
+        public void Deve_aplicar_ajuste_jedec()
+        {
+            EscreverEeprom("i2c/1-0050/eeprom", 0x0C, 5, 57);
+            var coletor = CriarColetor();
+
+            var resultado = coletor.ObterRamVelocidadeMhz();
+
+            resultado.Should().BeApproximately(2933, 1);
+        }
+
+        [Fact]
+        public void Deve_ignorar_modulo_que_nao_eh_ddr4()
+        {
+            EscreverEeprom("i2c/1-0050/eeprom", 0x0B, 5, 0);
+            var coletor = CriarColetor();
+
+            var resultado = coletor.ObterRamVelocidadeMhz();
+
+            resultado.Should().BeNull();
+        }
+
+        [Fact]
+        public void Deve_ignorar_eeprom_menor_que_126_bytes()
+        {
+            EscreverEepromBytes("i2c/1-0050/eeprom", new byte[100]);
+            var coletor = CriarColetor();
+
+            var resultado = coletor.ObterRamVelocidadeMhz();
+
+            resultado.Should().BeNull();
+        }
+
+        [Fact]
+        public void Deve_retornar_null_quando_diretorio_i2c_nao_existe()
+        {
+            var coletor = CriarColetor();
+
+            var resultado = coletor.ObterRamVelocidadeMhz();
+
+            resultado.Should().BeNull();
+        }
+
+        [Fact]
+        public void Deve_cachear_valor_na_primeira_leitura()
+        {
+            EscreverEeprom("i2c/1-0050/eeprom", 0x0C, 5, 0);
+            var coletor = CriarColetor();
+
+            var primeira = coletor.ObterRamVelocidadeMhz();
+            Directory.Delete(Path.Combine(_tempPath, "i2c"), true);
+
+            var segunda = coletor.ObterRamVelocidadeMhz();
+
+            primeira.Should().Be(3200.0);
+            segunda.Should().Be(3200.0);
+        }
+
+        private void EscreverEeprom(string caminhoRelativo, byte tipo, byte tckMin, sbyte fine)
+        {
+            var spd = new byte[512];
+            spd[2] = tipo;
+            spd[18] = tckMin;
+            spd[125] = (byte)fine;
+            EscreverEepromBytes(caminhoRelativo, spd);
+        }
+
+        private void EscreverEepromBytes(string caminhoRelativo, byte[] conteudo)
+        {
+            var caminho = Path.Combine(_tempPath, caminhoRelativo);
+            Directory.CreateDirectory(Path.GetDirectoryName(caminho)!);
+            File.WriteAllBytes(caminho, conteudo);
         }
     }
 
