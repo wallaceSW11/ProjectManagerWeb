@@ -7,10 +7,14 @@ namespace ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 [SupportedOSPlatform("windows")]
 internal class WindowsRedeColetor : IRedeColetor
 {
+    private static readonly TimeSpan IntervaloAtualizacaoInterfaces = TimeSpan.FromSeconds(30);
+
     private readonly Stopwatch _cronometro = new();
     private long _downloadAnterior;
     private long _uploadAnterior;
     private bool _possuiAmostraAnterior;
+    private NetworkInterface[] _interfacesAtivas = [];
+    private DateTime _proximaAtualizacaoInterfaces = DateTime.MinValue;
 
     public (long?, long?) ObterBytesPorSegundo()
     {
@@ -37,18 +41,13 @@ internal class WindowsRedeColetor : IRedeColetor
         return ((long)(downloadDelta / decorridoSegundos), (long)(uploadDelta / decorridoSegundos));
     }
 
-    private static (long download, long upload) LerTotais()
+    private (long download, long upload) LerTotais()
     {
         long download = 0;
         long upload = 0;
 
-        foreach (var rede in NetworkInterface.GetAllNetworkInterfaces())
+        foreach (var rede in ObterInterfacesAtivas())
         {
-            if (rede.OperationalStatus != OperationalStatus.Up)
-                continue;
-            if (rede.NetworkInterfaceType == NetworkInterfaceType.Loopback)
-                continue;
-
             try
             {
                 var estatisticas = rede.GetIPStatistics();
@@ -61,5 +60,17 @@ internal class WindowsRedeColetor : IRedeColetor
         }
 
         return (download, upload);
+    }
+
+    private NetworkInterface[] ObterInterfacesAtivas()
+    {
+        if (DateTime.UtcNow < _proximaAtualizacaoInterfaces)
+            return _interfacesAtivas;
+
+        _interfacesAtivas = [.. NetworkInterface.GetAllNetworkInterfaces().Where(rede =>
+            rede.OperationalStatus == OperationalStatus.Up &&
+            rede.NetworkInterfaceType != NetworkInterfaceType.Loopback)];
+        _proximaAtualizacaoInterfaces = DateTime.UtcNow + IntervaloAtualizacaoInterfaces;
+        return _interfacesAtivas;
     }
 }

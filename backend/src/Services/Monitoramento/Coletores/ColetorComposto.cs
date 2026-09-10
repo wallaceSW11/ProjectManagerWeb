@@ -20,14 +20,12 @@ public class ColetorComposto(IColetorMetricas[] coletores) : IColetorMetricas
     private static MonitoramentoSnapshotDTO Mesclar(MonitoramentoSnapshotDTO a, MonitoramentoSnapshotDTO b) =>
         a with
         {
-            Timestamp = b.Timestamp,
             Plataforma = string.IsNullOrWhiteSpace(b.Plataforma) ? a.Plataforma : b.Plataforma,
             SistemaOperacional = string.IsNullOrWhiteSpace(b.SistemaOperacional)
                 ? a.SistemaOperacional
                 : b.SistemaOperacional,
             CpuPercentual = b.CpuPercentual ?? a.CpuPercentual,
             RamTotalBytes = b.RamTotalBytes ?? a.RamTotalBytes,
-            RamDisponivelBytes = b.RamDisponivelBytes ?? a.RamDisponivelBytes,
             RamUsadaBytes = b.RamUsadaBytes ?? a.RamUsadaBytes,
             DiscoPercentual = b.DiscoPercentual ?? a.DiscoPercentual,
             DiscoTotalBytes = b.DiscoTotalBytes ?? a.DiscoTotalBytes,
@@ -41,7 +39,6 @@ public class ColetorComposto(IColetorMetricas[] coletores) : IColetorMetricas
             SwapTotalBytes = b.SwapTotalBytes ?? a.SwapTotalBytes,
             SwapUsadaBytes = b.SwapUsadaBytes ?? a.SwapUsadaBytes,
             RedeDownloadBytesPorSegundo = b.RedeDownloadBytesPorSegundo ?? a.RedeDownloadBytesPorSegundo,
-            RedeUploadBytesPorSegundo = b.RedeUploadBytesPorSegundo ?? a.RedeUploadBytesPorSegundo,
-            CoolerRpm = b.CoolerRpm ?? a.CoolerRpm
+            RedeUploadBytesPorSegundo = b.RedeUploadBytesPorSegundo ?? a.RedeUploadBytesPorSegundo
         };
 }

@@ -12,15 +12,14 @@ Coleta acontece **somente enquanto houver cliente conectado** — zero consumo o
 MonitoramentoController        → GET /api/monitoramento/ws (handshake WebSocket)
 MonitoramentoService           → singleton: gerencia sockets + ciclo de coleta
 ColetorComposto                → mescla snapshots dos coletores (with { ... })
-├── CpuRamColetor              → CPU, RAM, SO, nome/frequência/temperatura CPU, velocidade RAM, temp disco, swap, velocidade cooler (RPM)
-│   └── ValidadorCoolerDinamico → RPM do cooler só é entregue quando varia (ver regras do ciclo)
+├── CpuRamColetor              → CPU, RAM, SO, nome/frequência/temperatura CPU, velocidade RAM, temp disco, swap
 │   ├── ICpuRamColetor         → interface por plataforma (registrada por OS no Program.cs)
-│   ├── WindowsCpuRamColetor   → LibreHardwareMonitor (temperatura CPU+Storage, fan Motherboard/Cpu) + WMI (fallback) + P/Invoke kernel32
-│   └── LinuxCpuRamColetor     → /proc e /sys (swap via /proc/meminfo, temp disco via hwmon nvme)
+│   ├── WindowsCpuRamColetor   → P/Invoke kernel32 + WMI (SO, RAM, frequência, temperatura ACPI); dados imutáveis cacheados e consultas WMI com TTL de 30s; nenhum driver externo (ver diagnóstico da temperatura)
+│   └── LinuxCpuRamColetor     → /proc e /sys (swap via /proc/meminfo, temp disco via hwmon nvme, velocidade RAM via SPD i2c); SO/nome da CPU/velocidade RAM cacheados
 ├── DiscoColetor               → disco da raiz do diretório de trabalho
 └── RedeColetor                → download/upload em bytes/segundo (delta entre amostras)
     ├── IRedeColetor           → interface por plataforma
-    ├── WindowsRedeColetor     → NetworkInterface.GetIPStatistics() somando interfaces ativas (sem loopback)
+    ├── WindowsRedeColetor     → NetworkInterface.GetIPStatistics() somando interfaces ativas (sem loopback); lista de interfaces revalidada a cada 30s
     └── LinuxRedeColetor       → /proc/net/dev somando todas as interfaces (sem lo)
 
 ProcessosService               → GET /api/monitoramento/processos/top/{tipo} (cpu|ram), sob demanda
@@ -34,8 +33,7 @@ Swap é exclusivo do Linux (Windows retorna nulo e o frontend oculta o bloco).
 Regras do ciclo:
 
 - Contador de sockets 0→1 inicia `PeriodicTimer` (1s); 1→0 para o loop.
-- `ClientesConectados` e `ContadorSnapshots` são preenchidos pelo `MonitoramentoService` via `snapshot with { ... }` — coletores nunca sabem de transporte.
-- `ValidadorCoolerDinamico` (sem janela fixa, sem timer): a 1ª leitura vira baseline e retorna null; qualquer leitura seguinte com diferença > 1 RPM marca o sensor como dinâmico e passa a entregar o valor real. Sensor que nunca varia (ex.: ACPI binário que reporta valor fixo — fan com `max_state=1` cuja firmware controla a rotação internamente) nunca é exibido. Custo: 1 `double` + 1 `bool` por coletor e 1 comparação por snapshot.
+- O snapshot carrega somente métricas — `MonitoramentoService` é quem decide quando coletar e para quem enviar (coletores nunca sabem de transporte).
 - Novo coletor: implementar `IColetorMetricas`, adicionar campos `double?`/`long?` no `MonitoramentoSnapshotDTO` e registrar no `ColetorComposto` (Program.cs). Nada mais muda.
 
 ## DTO
@@ -47,30 +45,30 @@ Serializado camelCase para o frontend.
 
 | Métrica | Fonte | Detalhe |
 |---------|-------|---------|
-| Nome do SO | WMI `Win32_OperatingSystem.Caption` | `RuntimeInformation.OSDescription` retorna versão do kernel ("Microsoft Windows 10.0.26200" no Win 11) — por isso usa WMI e remove o prefixo "Microsoft " |
-| Temperatura CPU | `LibreHardwareMonitorLib` (DLL mantida em `backend/libs/`, extraída do pacote NuGet oficial 0.9.6 — MPL-2.0) | Fonte primária: lê os sensores reais da CPU (MSR via driver WinRing0). `Computer` aberto lazy na primeira coleta e atualizado a cada snapshot; retorna a maior temperatura entre os sensores do hardware CPU. **Requer execução como administrador** — sem elevação o driver não carrega e cai no fallback WMI. Fallback: WMI `MSAcpi_ThermalZoneTemperature` (namespace `root\WMI` — o padrão do `ManagementObjectSearcher` é `root\cimv2`, então o escopo precisa ser explícito) e `Win32_PerfFormattedData_Counters_ThermalZoneInformation` (décimos de Kelvin). Se nada retornar sensor, vem `--`. A DLL é referenciada por `HintPath` (não PackageReference) porque o pacote só publica asset de runtime para RIDs Windows — como referência de pacote, o publish Linux ficava sem a DLL e o app crashava no scan de controllers; por HintPath ela entra no deps.json e vai em todos os builds. Dependências (HidSharp, DiskInfoToolkit, RAMSPDToolkit-NDD, Mono.Posix, System.IO.Ports) continuam via NuGet. |
+| Nome do SO | WMI `Win32_OperatingSystem.Caption` | `RuntimeInformation.OSDescription` retorna versão do kernel ("Microsoft Windows 10.0.26200" no Win 11) — por isso usa WMI e remove o prefixo "Microsoft ". Resultado cacheado após a 1ª leitura |
+| Temperatura CPU | WMI ACPI: `MSAcpi_ThermalZoneTemperature` (namespace `root\WMI` — o padrão do `ManagementObjectSearcher` é `root\cimv2`, então o escopo precisa ser explícito) → `Win32_PerfFormattedData_Counters_ThermalZoneInformation` (décimos de Kelvin) | Sem driver externo: o PMW não instala nada (decisão registrada em `diagnostico-temperatura-cpu.md`). A consulta roda no máximo a cada 30s e é desativada em definitivo quando nunca retorna leitura (nesse caso exibe `--` e loga um aviso único). A maioria dos notebooks não expõe essas classes — `--` é o comportamento esperado. |
 | CPU % | `GetSystemTimes` (kernel32) | Delta entre amostras; 1ª amostra retorna null |
 | RAM | `GlobalMemoryStatusEx` (kernel32) | Total e disponível |
-| Frequência CPU | `Win32_Processor.MaxClockSpeed` × `% Processor Performance` | Fallback: `CurrentClockSpeed` |
-| Velocidade RAM | `Win32_PhysicalMemory` | `ConfiguredClockSpeed` → fallback `Speed` |
-| Velocidade cooler | `LibreHardwareMonitor` (`SensorType.Fan` em Motherboard/Cpu, `IsMotherboardEnabled`) | Maior RPM entre os fans, validado por `ValidadorCoolerDinamico`. Mesma exigência de admin da temperatura |
+| Frequência CPU | `Win32_Processor.MaxClockSpeed` × `% Processor Performance` | Fallback: `CurrentClockSpeed` via WMI, no máximo a cada 30s |
+| Velocidade RAM | `Win32_PhysicalMemory` | `ConfiguredClockSpeed` → fallback `Speed`. Resultado cacheado após a 1ª leitura |
+| Temperatura disco | IOCTL `IOCTL_STORAGE_QUERY_PROPERTY` + `StorageDeviceTemperatureProperty` (P/Invoke `kernel32`) | Abre `\\.\PhysicalDrive0..15` com `FILE_READ_ATTRIBUTES` e usa a maior temperatura entre as entradas. Sem driver e sem admin (quando o driver de storage permite). Consulta no máximo a cada 10s; se nunca retornar leitura, é desativada em definitivo com log único |
 
 ## Particularidades Linux
 
 | Métrica | Fonte |
 |---------|-------|
-| Nome do SO | `/etc/os-release` `PRETTY_NAME` → fallback `RuntimeInformation.OSDescription` |
+| Nome do SO | `/etc/os-release` `PRETTY_NAME` → fallback `RuntimeInformation.OSDescription`. Resultado cacheado após a 1ª leitura |
 | CPU % | `/proc/stat` (delta da linha `cpu `) |
 | RAM | `/proc/meminfo` (`MemTotal`, `MemAvailable` × 1024) |
 | Temperatura | `/sys/class/thermal` (type cpu/pkg) → `/sys/class/hwmon` (k10temp/coretemp) |
-| Nome/freq CPU | `/proc/cpuinfo` → fallback `scaling_cur_freq` |
-| Velocidade cooler | `/sys/class/hwmon/*/fan*_input` | Maior RPM entre chips; ignora valores ≤ 1; validado por `ValidadorCoolerDinamico` (ACPI binário com valor fixo fica oculto). Alguns drivers exigem root (sem leitura → `--`); muitos notebooks nem expõem |
+| Nome/freq CPU | `/proc/cpuinfo` → fallback `scaling_cur_freq`. Nome cacheado, frequência relida a cada ciclo |
+| Velocidade RAM | SPD DDR4 via sysfs `/sys/bus/i2c/devices/*-005?/eeprom` (o kernel expõe o `ee1004` como `-r--r--r--`, sem root) | `tCKAVGmin` = byte 18 × 125 ps + byte 125 (fine, com sinal); converte para MT/s (`2 × 1000 / tCK`) com o arredondamento JEDEC do `decode-dimms` (7,5/divisor para DDR3-1866+); usa o maior valor entre os pentes. Tipos que não sejam DDR4 (`byte 2` diferente de `0x0C`/`0x0E`) são ignorados. Cacheado na 1ª leitura |
 
 ## Frontend
 
 Rota `/monitoramento` → `MonitoramentoView.vue` → `LayoutPainelEsportivo.vue` (layout único, o padrão foi removido).
 
-Animação de entrada: ao montar a tela (acesso ou F5), os dois ContaGiros fazem o bate-e-volta de carro (agulha 0→100→0) enquanto os campos numéricos ficam zerados; quando ambos concluem, os valores reais entram. Métricas sem leitura mostram `--`.
+Animação de entrada: ao montar a tela (acesso ou F5), os dois ContaGiros fazem o bate-e-volta de carro (agulha 0→100→0, via `requestAnimationFrame`, sem transição CSS) enquanto os campos numéricos ficam zerados; quando ambos concluem, os valores reais entram. Depois da entrada, as atualizações de 1 em 1 segundo usam transições CSS no ponteiro (`transform`) e no arco (`stroke-dashoffset` com `pathLength="1"`), sem rAF contínuo. Métricas sem leitura mostram `--`.
 
 ```
 services/monitoramentoService.ts → WebSocket (reconexão exponencial 2s → 30s) + REST top processos
@@ -83,7 +81,7 @@ components/monitoramento/
 └── ModalTopProcessos.vue        → v-dialog 80% mobile-first, polling 2s enquanto aberto
 ```
 
-RPM do cooler: ícone `mdi-fan` + RPM abaixo do ContaGiros da CPU (`LayoutPainelEsportivo.vue`); oculto quando a plataforma não entrega leitura ou o sensor é estático (não varia).
+Velocidade da RAM: rótulo acima do ContaGiros da RAM (`LayoutPainelEsportivo.vue`), exibido somente quando o backend entrega `ramVelocidadeMhz` (Windows).
 
 URL do WebSocket: dev `ws://localhost:2024/api/monitoramento/ws`; prod `ws://{location.host}/api/monitoramento/ws` (mesma origem, sem CORS).
 
@@ -107,8 +105,9 @@ frontend/src/services/monitoramentoService.ts
 frontend/src/models/MonitoramentoModel.ts
 frontend/src/utils/formatarNumero.ts
 docs/monitoramento-plan.md / docs/monitoramento-analise.md      → histórico de decisões
+diagnostico-temperatura-cpu.md                                   → diagnóstico e decisão sobre a temperatura no Windows
 ```
 
 ## Testes
 
-`backend/tests/ProjectManagerWeb.Tests/Services/` — `MonitoramentoServiceTests.cs` (transição de estado, NSubstitute), `ColetorCompostoTests.cs`, `CpuRamColetorTests.cs`, `DiscoColetorTests.cs`, `LinuxCpuRamColetorTests.cs`, `WindowsCpuRamColetorTests.cs`, `ValidadorCoolerDinamicoTests.cs`.
+`backend/tests/ProjectManagerWeb.Tests/Services/` — `MonitoramentoServiceTests.cs` (transição de estado, NSubstitute), `ColetorCompostoTests.cs`, `CpuRamColetorTests.cs`, `DiscoColetorTests.cs`, `LinuxCpuRamColetorTests.cs`.

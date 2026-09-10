@@ -9,7 +9,6 @@ import type {
 interface MonitoramentoState {
   snapshot: IMonitoramentoSnapshot | null;
   conectado: boolean;
-  ultimaAtualizacao: Date | null;
   erro: string | null;
   processos: Record<TipoTopProcessos, IProcessoInfo[]>;
   carregandoProcessos: boolean;
@@ -20,7 +19,6 @@ export const useMonitoramentoStore = defineStore('monitoramento', {
   state: (): MonitoramentoState => ({
     snapshot: null,
     conectado: false,
-    ultimaAtualizacao: null,
     erro: null,
     processos: { cpu: [], ram: [] },
     carregandoProcessos: false,
@@ -28,9 +26,7 @@ export const useMonitoramentoStore = defineStore('monitoramento', {
   }),
 
   getters: {
-    plataforma: (state): string => state.snapshot?.plataforma ?? '',
-    clientesConectados: (state): number =>
-      state.snapshot?.clientesConectados ?? 0
+    plataforma: (state): string => state.snapshot?.plataforma ?? ''
   },
 
   actions: {
@@ -40,7 +36,6 @@ export const useMonitoramentoStore = defineStore('monitoramento', {
       MonitoramentoService.conectar(
         (data: IMonitoramentoSnapshot) => {
           this.snapshot = data;
-          this.ultimaAtualizacao = new Date();
           this.erro = null;
         },
         (status: boolean) => {

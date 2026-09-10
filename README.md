@@ -56,7 +56,7 @@ Os dados são salvos em arquivos JSON em `%APPDATA%\PMW\Banco\`.
 - Painel estilo cockpit com conta-giros animado — CPU, RAM, disco, frequência e temperatura
 - Acessível de qualquer dispositivo na mesma rede, **inclusive do celular** (`http://IP-do-PC:2025/monitoramento`)
 - Animação de entrada estilo carro: ao abrir a tela, as agulhas varrem de 0 a 100 e voltam — depois os valores reais entram
-- Temperatura da CPU: **LibreHardwareMonitor** no Windows (rode como administrador) e sensores do kernel no Linux
+- Temperatura da CPU: sensores do kernel no Linux; no Windows usa apenas o ACPI nativo da máquina (sem driver/instalação — exibe `--` quando não suportado)
 - **Consumo zero quando ocioso**: a coleta só roda enquanto há alguém com a página aberta (WebSocket, 1 snapshot/segundo)
 
 ### 📁 Pastas e projetos

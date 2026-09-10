@@ -15,7 +15,6 @@ public class ColetorCompostoTests
         string sistemaOperacional = "",
         double? cpuPercentual = null,
         long? ramTotalBytes = null,
-        long? ramDisponivelBytes = null,
         long? ramUsadaBytes = null,
         double? discoPercentual = null,
         long? discoTotalBytes = null,
@@ -29,17 +28,12 @@ public class ColetorCompostoTests
         long? swapTotalBytes = null,
         long? swapUsadaBytes = null,
         long? redeDownloadBytesPorSegundo = null,
-        long? redeUploadBytesPorSegundo = null,
-        double? coolerRpm = null) =>
+        long? redeUploadBytesPorSegundo = null) =>
         new(
-            DateTime.UtcNow,
             plataforma,
-            0,
-            0,
             sistemaOperacional,
             cpuPercentual,
             ramTotalBytes,
-            ramDisponivelBytes,
             ramUsadaBytes,
             discoPercentual,
             discoTotalBytes,
@@ -53,8 +47,7 @@ public class ColetorCompostoTests
             swapTotalBytes,
             swapUsadaBytes,
             redeDownloadBytesPorSegundo,
-            redeUploadBytesPorSegundo,
-            coolerRpm);
+            redeUploadBytesPorSegundo);
 
     public class ColetarAsync : ColetorCompostoTests
     {
@@ -77,7 +70,6 @@ public class ColetorCompostoTests
                 sistemaOperacional: "Ubuntu",
                 cpuPercentual: 25.0,
                 ramTotalBytes: 1000,
-                ramDisponivelBytes: 400,
                 ramUsadaBytes: 600,
                 cpuNome: "Intel i7"));
 
@@ -97,7 +89,6 @@ public class ColetorCompostoTests
             resultado.SistemaOperacional.Should().Be("Ubuntu");
             resultado.CpuPercentual.Should().Be(25.0);
             resultado.RamTotalBytes.Should().Be(1000);
-            resultado.RamDisponivelBytes.Should().Be(400);
             resultado.RamUsadaBytes.Should().Be(600);
             resultado.CpuNome.Should().Be("Intel i7");
             resultado.DiscoPercentual.Should().Be(50.0);
@@ -170,30 +161,6 @@ public class ColetorCompostoTests
 
             resultado.SwapTotalBytes.Should().Be(2000);
             resultado.SwapUsadaBytes.Should().Be(800);
-        }
-
-        [Fact]
-        public async Task Deve_mesclar_cooler_rpm_de_coletores_distintos()
-        {
-            _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(coolerRpm: 2500.0));
-            _coletorB.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot());
-            var sut = new ColetorComposto([_coletorA, _coletorB]);
-
-            var resultado = await sut.ColetarAsync(CancellationToken.None);
-
-            resultado.CoolerRpm.Should().Be(2500.0);
-        }
-
-        [Fact]
-        public async Task Deve_sobrescrever_cooler_rpm_com_valor_nao_nulo_do_segundo_coletor()
-        {
-            _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(coolerRpm: 2500.0));
-            _coletorB.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(coolerRpm: 3200.0));
-            var sut = new ColetorComposto([_coletorA, _coletorB]);
-
-            var resultado = await sut.ColetarAsync(CancellationToken.None);
-
-            resultado.CoolerRpm.Should().Be(3200.0);
         }
 
         [Fact]

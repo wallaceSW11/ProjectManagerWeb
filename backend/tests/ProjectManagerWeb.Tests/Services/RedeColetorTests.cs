@@ -36,7 +36,6 @@ public class RedeColetorTests
 
             snapshot.CpuPercentual.Should().BeNull();
             snapshot.RamTotalBytes.Should().BeNull();
-            snapshot.RamDisponivelBytes.Should().BeNull();
             snapshot.RamUsadaBytes.Should().BeNull();
             snapshot.DiscoPercentual.Should().BeNull();
             snapshot.DiscoTotalBytes.Should().BeNull();

@@ -1,7 +1,6 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using ProjectManagerWeb.src.DTOs;
 
 namespace ProjectManagerWeb.src.Services.Monitoramento;
 
@@ -21,7 +20,6 @@ public class MonitoramentoService(IColetorMetricas coletor, ILogger<Monitorament
     private PeriodicTimer? _timer;
     private CancellationTokenSource? _cts;
     private Task? _loopTask;
-    private int _numeroSnapshots;
 
     public async Task HandleWebSocketAsync(WebSocket socket)
     {
@@ -136,22 +134,10 @@ public class MonitoramentoService(IColetorMetricas coletor, ILogger<Monitorament
                 var snapshotBase = await coletor.ColetarAsync(ct);
 
                 List<WebSocket> socketsCopia;
-                int clientes;
-                int numero;
                 lock (_socketsLock)
-                {
                     socketsCopia = [.. _sockets];
-                    clientes = _sockets.Count;
-                    numero = ++_numeroSnapshots;
-                }
 
-                var snapshot = snapshotBase with
-                {
-                    ClientesConectados = clientes,
-                    ContadorSnapshots = numero
-                };
-
-                var buffer = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(snapshot, JsonOptions));
+                var buffer = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(snapshotBase, JsonOptions));
                 var segmento = new ArraySegment<byte>(buffer);
 
                 for (int i = socketsCopia.Count - 1; i >= 0; i--)
