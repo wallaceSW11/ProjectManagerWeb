@@ -1,7 +1,10 @@
 <template>
   <div
     class="conta-giros"
-    :class="{ 'conta-giros-clicavel': clicavel }"
+    :class="{
+      'conta-giros-clicavel': clicavel,
+      'conta-giros-entrada': animacaoEntradaAtiva
+    }"
     @click="aoClicar"
   >
     <svg
@@ -101,9 +104,11 @@
       />
       <path
         class="conta-giros-progresso"
+        pathLength="1"
         :stroke="corExibida"
         :filter="`url(#${idBrilho})`"
-        :d="caminhoProgresso"
+        :d="caminhoTrilha"
+        :stroke-dashoffset="deslocamentoProgresso"
       />
 
       <g
@@ -201,7 +206,6 @@
   const ANGULO_INICIO = -140;
   const ANGULO_FIM = 140;
   const RAIO_NUMEROS = 59;
-  const DURACAO_ANIMACAO_MS = 650;
   const DURACAO_ENTRADA_SUBIDA_MS = 1100;
   const DURACAO_ENTRADA_DESCIDA_MS = 800;
   const LIMITE_ALERTA = 90;
@@ -267,10 +271,9 @@
 
   const caminhoTrilha = computed(() => caminhoArco(ANGULO_INICIO, ANGULO_FIM));
 
-  const caminhoProgresso = computed(() => {
-    if (exibido.value <= 0) return '';
-    return caminhoArco(ANGULO_INICIO, anguloPonteiro.value);
-  });
+  const deslocamentoProgresso = computed(
+    () => 1 - limitar(exibido.value) / 100
+  );
 
   const ticks = computed(() =>
     Array.from({ length: 21 }, (_, indice) => {
@@ -346,20 +349,7 @@
     () => props.valor,
     valor => {
       if (animacaoEntradaAtiva.value) return;
-      if (frameAnimacao !== null) cancelAnimationFrame(frameAnimacao);
-
-      const inicio = exibido.value;
-      const alvo = limitar(valor ?? 0);
-      const comeco = performance.now();
-
-      const animar = (agora: number): void => {
-        const progresso = Math.min((agora - comeco) / DURACAO_ANIMACAO_MS, 1);
-        exibido.value =
-          inicio + (alvo - inicio) * (1 - Math.pow(1 - progresso, 3));
-        frameAnimacao = progresso < 1 ? requestAnimationFrame(animar) : null;
-      };
-
-      frameAnimacao = requestAnimationFrame(animar);
+      exibido.value = limitar(valor ?? 0);
     },
     { immediate: true }
   );
@@ -407,7 +397,15 @@
   }
 
   .conta-giros-progresso {
-    transition: stroke 400ms ease;
+    stroke-dasharray: 1;
+    transition:
+      stroke 400ms ease,
+      stroke-dashoffset 650ms cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+
+  .conta-giros-entrada .conta-giros-ponteiro,
+  .conta-giros-entrada .conta-giros-progresso {
+    transition: none;
   }
 
   .conta-giros-trilha {
@@ -440,6 +438,7 @@
 
   .conta-giros-ponteiro {
     transform-origin: 100px 100px;
+    transition: transform 650ms cubic-bezier(0.215, 0.61, 0.355, 1);
   }
 
   .conta-giros-ponteiro-linha {

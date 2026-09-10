@@ -2,28 +2,60 @@ using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using LibreHardwareMonitor.Hardware;
+using Microsoft.Win32.SafeHandles;
 
 namespace ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 
 [SupportedOSPlatform("windows")]
-internal class WindowsCpuRamColetor : ICpuRamColetor
+internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpuRamColetor
 {
     private const string EscopoWmiRaiz = @"root\WMI";
     private const string ConsultaTemperaturaMsAcpi = "SELECT CurrentTemperature FROM MSAcpi_ThermalZoneTemperature";
     private const string ConsultaTemperaturaPerf = "SELECT Temperature FROM Win32_PerfFormattedData_Counters_ThermalZoneInformation";
-
-    private PerformanceCounter? _contadorPerformanceProcessor;
-    private string? _nomeCpu;
-    private int? _clockMaxMhz;
-    private Computer? _computador;
-    private bool _tentouAbrirComputador;
-    private double? _temperaturaWmi;
-    private bool _temperaturaWmiDefinitiva;
-    private readonly ValidadorCoolerDinamico _validadorCooler = new();
+    private const uint IoctlConsultaPropriedadeStorage = 0x002D1400;
+    private const int PropriedadeTemperaturaDisco = 22;
+    private const int ConsultaPadraoPropriedade = 0;
+    private const int MaximoDiscosFisicos = 16;
+    private const int TamanhoCabecalhoTemperatura = 16;
+    private const int TamanhoInfoTemperatura = 12;
+    private const uint AcessoLeituraAtributos = 0x80;
+    private const uint CompartilhamentoLeitura = 0x1;
+    private const uint CompartilhamentoEscrita = 0x2;
+    private const uint AbrirExistente = 3;
+    private static readonly TimeSpan IntervaloFallbackWmi = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan IntervaloAtualizacaoDisco = TimeSpan.FromSeconds(10);
 
     [DllImport("kernel32.dll")]
     private static extern bool GetSystemTimes(out long lpIdleTime, out long lpKernelTime, out long lpUserTime);
+
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern SafeFileHandle CreateFileW(
+        string lpFileName,
+        uint dwDesiredAccess,
+        uint dwShareMode,
+        IntPtr lpSecurityAttributes,
+        uint dwCreationDisposition,
+        uint dwFlagsAndAttributes,
+        IntPtr hTemplateFile);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool DeviceIoControl(
+        SafeFileHandle hDevice,
+        uint dwIoControlCode,
+        ref StoragePropertyQuery lpInBuffer,
+        uint nInBufferSize,
+        IntPtr lpOutBuffer,
+        uint nOutBufferSize,
+        out uint lpBytesReturned,
+        IntPtr lpOverlapped);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct StoragePropertyQuery
+    {
+        public int PropertyId;
+        public int QueryType;
+        public byte AdditionalParameters;
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct MemoryStatusEx
@@ -42,12 +74,28 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
     [DllImport("kernel32.dll")]
     private static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
 
+    private PerformanceCounter? _contadorPerformanceProcessor;
+    private string? _sistemaOperacional;
+    private string? _nomeCpu;
+    private int? _clockMaxMhz;
+    private double? _temperaturaWmi;
+    private bool _temperaturaWmiDefinitiva;
+    private DateTime _proximaConsultaTemperaturaWmi = DateTime.MinValue;
+    private double? _frequenciaFallbackWmi;
+    private DateTime _proximaConsultaFrequenciaWmi = DateTime.MinValue;
+    private double? _ramVelocidadeMhz;
+    private bool _tentouLerRamVelocidade;
+    private double? _discoTemperatura;
+    private bool _discoTemperaturaDefinitiva;
+    private DateTime _proximaConsultaDisco = DateTime.MinValue;
     private long _idleAnterior;
     private long _kernelAnterior;
     private long _userAnterior;
     private bool _possuiAmostraAnterior;
 
-    public string ObterSistemaOperacional()
+    public string ObterSistemaOperacional() => _sistemaOperacional ??= LerSistemaOperacional();
+
+    private static string LerSistemaOperacional()
     {
         var nome = ConsultarTextoUnico("SELECT Caption FROM Win32_OperatingSystem", "Caption");
         if (string.IsNullOrWhiteSpace(nome))
@@ -68,44 +116,59 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
 
     public double? ObterCpuFrequenciaMhz()
     {
-        if (_clockMaxMhz is null)
-            _clockMaxMhz = ConsultarInteiroUnico("SELECT MaxClockSpeed FROM Win32_Processor", "MaxClockSpeed");
+        _clockMaxMhz ??= ConsultarInteiroUnico("SELECT MaxClockSpeed FROM Win32_Processor", "MaxClockSpeed");
 
         var clockMaxMhz = _clockMaxMhz;
         if (clockMaxMhz is null || clockMaxMhz <= 0)
             return null;
 
+        var desempenho = LerDesempenhoProcessador();
+        if (desempenho > 0)
+            return clockMaxMhz * desempenho / 100.0;
+
+        return ObterFrequenciaFallbackWmi();
+    }
+
+    private float? LerDesempenhoProcessador()
+    {
         try
         {
             _contadorPerformanceProcessor ??= new PerformanceCounter("Processor Information", "% Processor Performance", "_Total");
-            var desempenho = _contadorPerformanceProcessor.NextValue();
-            if (desempenho > 0)
-                return clockMaxMhz * desempenho / 100.0;
+            return _contadorPerformanceProcessor.NextValue();
         }
         catch
         {
+            return null;
         }
+    }
 
-        return ConsultarInteiroUnico("SELECT CurrentClockSpeed FROM Win32_Processor", "CurrentClockSpeed");
+    private double? ObterFrequenciaFallbackWmi()
+    {
+        if (DateTime.UtcNow < _proximaConsultaFrequenciaWmi)
+            return _frequenciaFallbackWmi;
+
+        _frequenciaFallbackWmi = ConsultarInteiroUnico("SELECT CurrentClockSpeed FROM Win32_Processor", "CurrentClockSpeed");
+        _proximaConsultaFrequenciaWmi = DateTime.UtcNow + IntervaloFallbackWmi;
+        return _frequenciaFallbackWmi;
     }
 
     public double? ObterCpuTemperaturaCelsius()
     {
-        var celsius = LerTemperaturaCpu();
-        if (celsius is not null)
-            return celsius;
-
-        if (_temperaturaWmiDefinitiva)
+        if (_temperaturaWmiDefinitiva || DateTime.UtcNow < _proximaConsultaTemperaturaWmi)
             return _temperaturaWmi;
 
         _temperaturaWmi = LerTemperaturaWmi();
+        _proximaConsultaTemperaturaWmi = DateTime.UtcNow + IntervaloFallbackWmi;
         if (_temperaturaWmi is null)
+        {
             _temperaturaWmiDefinitiva = true;
+            logger.LogInformation("Temperatura de CPU não disponível via ACPI nesta máquina; exibindo --");
+        }
 
         return _temperaturaWmi;
     }
 
-    private double? LerTemperaturaWmi()
+    private static double? LerTemperaturaWmi()
     {
         var decimosKelvin = ConsultarInteiroUnico(ConsultaTemperaturaMsAcpi, "CurrentTemperature", EscopoWmiRaiz)
             ?? ConsultarInteiroUnico(ConsultaTemperaturaPerf, "Temperature");
@@ -116,153 +179,104 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
         return celsius is > -50 and < 150 ? celsius : null;
     }
 
-    private double? LerTemperaturaCpu()
-    {
-        var computador = AtualizarSensores();
-        if (computador is null)
-            return null;
-
-        return ObterMaiorTemperaturaCpu(computador.Hardware);
-    }
-
-    internal static double? ObterMaiorTemperaturaCpu(IList<IHardware> hardwares)
-    {
-        double? maior = null;
-        foreach (var hardware in hardwares)
-        {
-            if (hardware.HardwareType != HardwareType.Cpu)
-                continue;
-
-            foreach (var sensor in hardware.Sensors)
-            {
-                if (sensor.SensorType != SensorType.Temperature || sensor.Value is null)
-                    continue;
-
-                var celsius = (double)sensor.Value.Value;
-                if (!double.IsFinite(celsius) || celsius is <= 0 or > 150)
-                    continue;
-
-                maior = maior is null ? celsius : Math.Max(maior.Value, celsius);
-            }
-        }
-
-        return maior;
-    }
-
     public double? ObterDiscoTemperaturaCelsius()
     {
-        var computador = AtualizarSensores();
-        if (computador is null)
-            return null;
+        if (_discoTemperaturaDefinitiva || DateTime.UtcNow < _proximaConsultaDisco)
+            return _discoTemperatura;
 
-        return ObterMaiorTemperaturaDisco(computador.Hardware);
+        _discoTemperatura = LerTemperaturaDisco();
+        _proximaConsultaDisco = DateTime.UtcNow + IntervaloAtualizacaoDisco;
+        if (_discoTemperatura is null)
+        {
+            _discoTemperaturaDefinitiva = true;
+            logger.LogInformation("Temperatura de disco não disponível; exibindo --");
+        }
+
+        return _discoTemperatura;
     }
 
-    internal static double? ObterMaiorTemperaturaDisco(IList<IHardware> hardwares)
+    private static double? LerTemperaturaDisco()
     {
         double? maior = null;
-        foreach (var hardware in hardwares)
+
+        for (var numero = 0; numero < MaximoDiscosFisicos; numero++)
         {
-            if (hardware.HardwareType != HardwareType.Storage)
+            using var disco = CreateFileW(
+                $@"\\.\PhysicalDrive{numero}",
+                AcessoLeituraAtributos,
+                CompartilhamentoLeitura | CompartilhamentoEscrita,
+                IntPtr.Zero,
+                AbrirExistente,
+                0,
+                IntPtr.Zero);
+
+            if (disco.IsInvalid)
                 continue;
 
-            foreach (var sensor in hardware.Sensors)
-            {
-                if (sensor.SensorType != SensorType.Temperature || sensor.Value is null)
-                    continue;
-
-                if (sensor.Name.Contains("Warning", StringComparison.OrdinalIgnoreCase) ||
-                    sensor.Name.Contains("Critical", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                var celsius = (double)sensor.Value.Value;
-                if (!double.IsFinite(celsius) || celsius is < 0 or > 120)
-                    continue;
-
-                maior = maior is null ? celsius : Math.Max(maior.Value, celsius);
-            }
+            var temperatura = LerTemperaturaDiscoHandle(disco);
+            if (temperatura is not null)
+                maior = maior is null ? temperatura : Math.Max(maior.Value, temperatura.Value);
         }
 
         return maior;
     }
 
-    public double? ObterCoolerRpm()
+    private static double? LerTemperaturaDiscoHandle(SafeFileHandle disco)
     {
-        var computador = AtualizarSensores();
-        if (computador is null)
-            return null;
-
-        return _validadorCooler.Avaliar(ObterMaiorRotacaoCooler(computador.Hardware));
-    }
-
-    internal static double? ObterMaiorRotacaoCooler(IList<IHardware> hardwares)
-    {
-        double? maior = null;
-        foreach (var hardware in hardwares)
+        var buffer = Marshal.AllocHGlobal(TamanhoCabecalhoTemperatura + TamanhoInfoTemperatura * 8);
+        try
         {
-            if (hardware.HardwareType is not (HardwareType.Motherboard or HardwareType.Cpu))
-                continue;
-
-            foreach (var sensor in hardware.Sensors)
+            var consulta = new StoragePropertyQuery
             {
-                if (sensor.SensorType != SensorType.Fan || sensor.Value is null)
+                PropertyId = PropriedadeTemperaturaDisco,
+                QueryType = ConsultaPadraoPropriedade
+            };
+
+            var tamanhoBuffer = (uint)(TamanhoCabecalhoTemperatura + TamanhoInfoTemperatura * 8);
+            if (!DeviceIoControl(disco, IoctlConsultaPropriedadeStorage, ref consulta, (uint)Marshal.SizeOf<StoragePropertyQuery>(), buffer, tamanhoBuffer, out var retornado, IntPtr.Zero))
+                return null;
+
+            var tamanhoRetornado = (int)retornado;
+            if (tamanhoRetornado < TamanhoCabecalhoTemperatura)
+                return null;
+
+            double? maior = null;
+            var quantidade = (ushort)Marshal.ReadInt16(buffer, 12);
+            for (var indice = 0; indice < quantidade; indice++)
+            {
+                var offset = TamanhoCabecalhoTemperatura + indice * TamanhoInfoTemperatura;
+                if (offset + TamanhoInfoTemperatura > tamanhoRetornado)
+                    break;
+
+                var temperatura = Marshal.ReadInt16(buffer, offset + 2);
+                if (temperatura is <= 0 or > 120)
                     continue;
 
-                var rpm = (double)sensor.Value.Value;
-                if (!double.IsFinite(rpm) || rpm <= 0)
-                    continue;
-
-                maior = maior is null ? rpm : Math.Max(maior.Value, rpm);
+                maior = maior is null ? temperatura : Math.Max(maior.Value, temperatura);
             }
-        }
 
-        return maior;
+            return maior;
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(buffer);
+        }
     }
 
     public (long total, long usado) ObterSwap() => (0, 0);
 
-    private Computer? AtualizarSensores()
-    {
-        if (!_tentouAbrirComputador)
-        {
-            _computador = AbrirComputador();
-            _tentouAbrirComputador = true;
-        }
-
-        if (_computador is null)
-            return null;
-
-        try
-        {
-            _computador.Accept(new UpdateVisitor());
-            return _computador;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static Computer? AbrirComputador()
-    {
-        try
-        {
-            var computador = new Computer
-            {
-                IsCpuEnabled = true,
-                IsStorageEnabled = true,
-                IsMotherboardEnabled = true
-            };
-            computador.Open();
-            return computador;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     public double? ObterRamVelocidadeMhz()
+    {
+        if (!_tentouLerRamVelocidade)
+        {
+            _ramVelocidadeMhz = LerRamVelocidadeMhz();
+            _tentouLerRamVelocidade = true;
+        }
+
+        return _ramVelocidadeMhz;
+    }
+
+    private static double? LerRamVelocidadeMhz()
     {
         var velocidade = ConsultarInteiroUnico("SELECT ConfiguredClockSpeed FROM Win32_PhysicalMemory", "ConfiguredClockSpeed");
         if (velocidade is not null)
@@ -339,20 +353,4 @@ internal class WindowsCpuRamColetor : ICpuRamColetor
 
         return null;
     }
-}
-
-internal class UpdateVisitor : IVisitor
-{
-    public void VisitComputer(IComputer computer) => computer.Traverse(this);
-
-    public void VisitHardware(IHardware hardware)
-    {
-        hardware.Update();
-        foreach (var subHardware in hardware.SubHardware)
-            subHardware.Accept(this);
-    }
-
-    public void VisitSensor(ISensor sensor) { }
-
-    public void VisitParameter(IParameter parameter) { }
 }

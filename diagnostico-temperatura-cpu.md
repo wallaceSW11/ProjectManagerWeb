@@ -111,7 +111,13 @@ Documentar que a temperatura da CPU no Windows exige o driver PawnIO instalado (
 - `%TEMP%\opencode\lhm-src\` — fonte oficial v0.9.6
 - `%TEMP%\opencode\PawnIO_setup.exe` — instalador do driver extraído
 
-## Passos de validação pendentes
+## Desfecho (10/09/2026)
 
-1. [ ] (Decidir com o usuário) Instalar o PawnIO driver na máquina e revalidar o DiagTemp + PMW admin
-2. [ ] Se confirmado: decidir entre Opção A (manual/documentação), B (automatizar) ou C (aceitar `--`)
+Decisão: **não instalar driver algum** — o PMW deve funcionar com "instalou e acessou". A `LibreHardwareMonitorLib` foi removida do app (DLL, pacotes NuGet e testes), junto com as métricas que dependiam dela no Windows:
+
+- Temperatura de CPU: tenta somente o ACPI nativo (WMI) e desativa em definitivo após a primeira falha; exibe `--` na maioria dos notebooks.
+- Temperatura de disco: mantida no Windows via IOCTL nativo (`IOCTL_STORAGE_QUERY_PROPERTY` + `StorageDeviceTemperatureProperty`), sem driver e sem admin.
+- Velocidade do cooler: métrica removida do app (não aparecia em Windows nem Linux).
+- Linux não mudou: `/sys` cobre tudo sem driver.
+
+O fallback WMI roda no máximo a cada 30s; no cenário "sem leitura" custa uma consulta única por execução.

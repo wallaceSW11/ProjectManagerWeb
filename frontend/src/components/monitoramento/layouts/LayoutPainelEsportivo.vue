@@ -27,14 +27,6 @@
           @animacao-entrada-concluida="registrarConclusaoAnimacao"
           @clicar="abrirModalProcessos('cpu')"
         />
-
-        <div
-          v-if="exibirCooler"
-          class="painel-esportivo-cooler"
-        >
-          <v-icon size="14">mdi-fan</v-icon>
-          <span>{{ coolerRpmTexto }}</span>
-        </div>
       </div>
     </article>
 
@@ -96,6 +88,13 @@
     </aside>
 
     <article class="painel-esportivo-instrumento">
+      <div
+        v-if="ramVelocidadeTexto"
+        class="painel-esportivo-ram-velocidade"
+      >
+        {{ ramVelocidadeTexto }}
+      </div>
+
       <ContaGiros
         titulo="RAM"
         :valor="ramPercentualExibido"
@@ -233,6 +232,14 @@
   const ramUsadaTexto = computed(() => formatarGbExibicao(ramUsadaBytes.value));
   const ramTotalTexto = computed(() => formatarGbExibicao(ramTotalBytes.value));
 
+  const ramVelocidadeTexto = computed(() => {
+    if (animacaoEntradaAtiva.value) return '';
+
+    const mhz = monitoramentoStore.snapshot?.ramVelocidadeMhz ?? null;
+
+    return mhz === null ? '' : `${Math.round(mhz)} MHz`;
+  });
+
   const detalhesCpu = computed(() => [
     {
       icone: 'mdi-thermometer',
@@ -258,20 +265,6 @@
       texto: ramTotalTexto.value
     }
   ]);
-
-  const coolerRpm = computed(
-    () => monitoramentoStore.snapshot?.coolerRpm ?? null
-  );
-
-  const exibirCooler = computed(
-    () => !animacaoEntradaAtiva.value && coolerRpm.value !== null
-  );
-
-  const coolerRpmTexto = computed(() => {
-    const rpm = coolerRpm.value;
-
-    return rpm === null ? '' : `${Math.round(rpm)} RPM`;
-  });
 
   const sistemaOperacional = computed(() =>
     animacaoEntradaAtiva.value
@@ -461,7 +454,8 @@
     transform: translateY(10px);
   }
 
-  .painel-esportivo-cpu-nome {
+  .painel-esportivo-cpu-nome,
+  .painel-esportivo-ram-velocidade {
     position: absolute;
     z-index: 3;
     top: -6px;
@@ -486,17 +480,6 @@
     width: 100%;
     min-width: 0;
     min-height: 0;
-  }
-
-  .painel-esportivo-cooler {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 2px;
-    color: #899092;
-    font-size: clamp(10px, 1.3vw, 14px);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
   }
 
   .painel-esportivo-centro {

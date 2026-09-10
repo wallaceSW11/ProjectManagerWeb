@@ -6,14 +6,13 @@ public class DiscoColetor : IColetorMetricas
 {
     public Task<MonitoramentoSnapshotDTO> ColetarAsync(CancellationToken ct)
     {
-        var timestamp = DateTime.UtcNow;
         var plataforma = OperatingSystem.IsWindows() ? "windows" : "linux";
 
         try
         {
             var raiz = Path.GetPathRoot(Directory.GetCurrentDirectory());
             if (string.IsNullOrWhiteSpace(raiz))
-                return Task.FromResult(SnapshotVazio(timestamp, plataforma));
+                return Task.FromResult(SnapshotVazio(plataforma));
 
             var drive = new DriveInfo(raiz);
             var total = drive.TotalSize;
@@ -21,15 +20,11 @@ public class DiscoColetor : IColetorMetricas
             var usada = total - disponivel;
 
             if (total <= 0)
-                return Task.FromResult(SnapshotVazio(timestamp, plataforma));
+                return Task.FromResult(SnapshotVazio(plataforma));
 
             return Task.FromResult(new MonitoramentoSnapshotDTO(
-                timestamp,
                 plataforma,
-                0,
-                0,
                 "",
-                null,
                 null,
                 null,
                 null,
@@ -50,10 +45,10 @@ public class DiscoColetor : IColetorMetricas
         }
         catch
         {
-            return Task.FromResult(SnapshotVazio(timestamp, plataforma));
+            return Task.FromResult(SnapshotVazio(plataforma));
         }
     }
 
-    private static MonitoramentoSnapshotDTO SnapshotVazio(DateTime timestamp, string plataforma) =>
-        new(timestamp, plataforma, 0, 0, "", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    private static MonitoramentoSnapshotDTO SnapshotVazio(string plataforma) =>
+        new(plataforma, "", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 }

@@ -12,6 +12,7 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
     private const string CaminhoScalingCurFreq = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq";
     private const string CaminhoZonasTermicas = "/sys/class/thermal";
     private const string CaminhoHwmon = "/sys/class/hwmon";
+    private const string CaminhoI2cDevices = "/sys/bus/i2c/devices";
 
     private readonly string _caminhoStat;
     private readonly string _caminhoMeminfo;
@@ -20,6 +21,7 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
     private readonly string _caminhoScalingCurFreq;
     private readonly string _caminhoZonasTermicas;
     private readonly string _caminhoHwmon;
+    private readonly string _caminhoI2cDevices;
 
     private long _userAnterior;
     private long _niceAnterior;
@@ -30,7 +32,11 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
     private long _softirqAnterior;
     private long _stealAnterior;
     private bool _possuiAmostraAnterior;
-    private readonly ValidadorCoolerDinamico _validadorCooler = new();
+    private string? _sistemaOperacional;
+    private string? _cpuNome;
+    private bool _tentouLerCpuNome;
+    private double? _ramVelocidadeMhz;
+    private bool _tentouLerRamVelocidade;
 
     public LinuxCpuRamColetor() : this(CaminhoStat, CaminhoMeminfo, CaminhoOsRelease)
     {
@@ -43,7 +49,8 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
         string caminhoCpuinfo = CaminhoCpuinfo,
         string caminhoScalingCurFreq = CaminhoScalingCurFreq,
         string caminhoZonasTermicas = CaminhoZonasTermicas,
-        string caminhoHwmon = CaminhoHwmon)
+        string caminhoHwmon = CaminhoHwmon,
+        string caminhoI2cDevices = CaminhoI2cDevices)
     {
         _caminhoStat = caminhoStat;
         _caminhoMeminfo = caminhoMeminfo;
@@ -52,9 +59,12 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
         _caminhoScalingCurFreq = caminhoScalingCurFreq;
         _caminhoZonasTermicas = caminhoZonasTermicas;
         _caminhoHwmon = caminhoHwmon;
+        _caminhoI2cDevices = caminhoI2cDevices;
     }
 
-    public string ObterSistemaOperacional()
+    public string ObterSistemaOperacional() => _sistemaOperacional ??= LerSistemaOperacional();
+
+    private string LerSistemaOperacional()
     {
         try
         {
@@ -72,6 +82,17 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
     }
 
     public string? ObterCpuNome()
+    {
+        if (!_tentouLerCpuNome)
+        {
+            _cpuNome = LerCpuNome();
+            _tentouLerCpuNome = true;
+        }
+
+        return _cpuNome;
+    }
+
+    private string? LerCpuNome()
     {
         try
         {
@@ -193,27 +214,33 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
         return milesimosDeGrau.Value / 1000.0;
     }
 
-    public double? ObterRamVelocidadeMhz() => null;
-
-    public double? ObterCoolerRpm()
+    public double? ObterRamVelocidadeMhz()
     {
-        if (!Directory.Exists(_caminhoHwmon))
+        if (!_tentouLerRamVelocidade)
+        {
+            _ramVelocidadeMhz = LerRamVelocidadeMhz();
+            _tentouLerRamVelocidade = true;
+        }
+
+        return _ramVelocidadeMhz;
+    }
+
+    private double? LerRamVelocidadeMhz()
+    {
+        if (!Directory.Exists(_caminhoI2cDevices))
             return null;
 
-        long? maiorRpm = null;
+        double? maior = null;
 
         try
         {
-            foreach (var hwmon in Directory.GetDirectories(_caminhoHwmon, "hwmon*"))
+            foreach (var dispositivo in Directory.GetDirectories(_caminhoI2cDevices, "*-005?"))
             {
-                foreach (var fan in Directory.GetFiles(hwmon, "fan*_input"))
-                {
-                    var rpm = LerValorInteiro(fan);
-                    if (rpm is null or <= 1)
-                        continue;
+                var velocidade = LerVelocidadeModulo(Path.Combine(dispositivo, "eeprom"));
+                if (velocidade is null)
+                    continue;
 
-                    maiorRpm = maiorRpm is null ? rpm : Math.Max(maiorRpm.Value, rpm.Value);
-                }
+                maior = maior is null ? velocidade : Math.Max(maior.Value, velocidade.Value);
             }
         }
         catch
@@ -221,7 +248,44 @@ internal class LinuxCpuRamColetor : ICpuRamColetor
             return null;
         }
 
-        return _validadorCooler.Avaliar(maiorRpm);
+        return maior;
+    }
+
+    private static double? LerVelocidadeModulo(string caminhoEeprom)
+    {
+        try
+        {
+            if (!File.Exists(caminhoEeprom))
+                return null;
+
+            var spd = File.ReadAllBytes(caminhoEeprom);
+            if (spd.Length < 126 || spd[2] is not (0x0C or 0x0E))
+                return null;
+
+            var fine = (sbyte)spd[125];
+            var tempoCicloNs = (spd[18] * 125 + fine) / 1000.0;
+            tempoCicloNs = AjustarTempoCicloJedec(tempoCicloNs);
+            if (tempoCicloNs <= 0)
+                return null;
+
+            return 2 * (1000 / tempoCicloNs);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static double AjustarTempoCicloJedec(double tempoCicloNs)
+    {
+        for (var divisor = 7; divisor < 15; divisor++)
+        {
+            var padrao = 7.5 / divisor;
+            if (tempoCicloNs > padrao - 0.001 && tempoCicloNs < padrao + 0.001)
+                return padrao;
+        }
+
+        return tempoCicloNs;
     }
 
     public (long total, long usado) ObterSwap()

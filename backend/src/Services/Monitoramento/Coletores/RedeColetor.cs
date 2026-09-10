@@ -9,12 +9,8 @@ public class RedeColetor(IRedeColetor coletorPlataforma) : IColetorMetricas
         var (download, upload) = coletorPlataforma.ObterBytesPorSegundo();
 
         return Task.FromResult(new MonitoramentoSnapshotDTO(
-            DateTime.UtcNow,
             OperatingSystem.IsWindows() ? "windows" : "linux",
-            0,
-            0,
             "",
-            null,
             null,
             null,
             null,
