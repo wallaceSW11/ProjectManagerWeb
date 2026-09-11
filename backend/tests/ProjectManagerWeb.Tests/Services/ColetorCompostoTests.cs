@@ -155,6 +155,27 @@ public class ColetorCompostoTests
         }
 
         [Fact]
+        public async Task Deve_mesclar_io_de_disco_de_coletores_distintos()
+        {
+            _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
+                discoLeituraBytesPorSegundo: 1024,
+                discoEscritaBytesPorSegundo: 512));
+
+            _coletorB.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
+                discoAtividadePercentual: 75.5,
+                discoLatenciaLeituraMs: 2.5));
+
+            var sut = new ColetorComposto([_coletorA, _coletorB]);
+
+            var resultado = await sut.ColetarAsync(CancellationToken.None);
+
+            resultado.DiscoLeituraBytesPorSegundo.Should().Be(1024);
+            resultado.DiscoEscritaBytesPorSegundo.Should().Be(512);
+            resultado.DiscoAtividadePercentual.Should().Be(75.5);
+            resultado.DiscoLatenciaLeituraMs.Should().Be(2.5);
+        }
+
+        [Fact]
         public async Task Deve_sobrescrever_swap_com_valor_nao_nulo_do_segundo_coletor()
         {
             _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
