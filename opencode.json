@@ -1,6 +1,6 @@
 {
   "$schema": ".vscode/opencode-schema.json",
-  "model": "deepseek/deepseek-v4-flash",
+  "model": "deepseek/deepseek-flash",
   "default_agent": "fullstack-dev",
   "instructions": [
     "AGENTS.md",

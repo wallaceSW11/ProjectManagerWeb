@@ -29,6 +29,10 @@ public class CpuRamColetor(ICpuRamColetor coletorPlataforma) : IColetorMetricas
             swapTotal > 0 ? swapTotal : null,
             swapTotal > 0 ? swapUsado : null,
             null,
+            null,
+            null,
+            null,
+            null,
             null
         ));
     }

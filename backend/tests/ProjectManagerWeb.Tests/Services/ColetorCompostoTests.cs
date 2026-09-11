@@ -28,7 +28,11 @@ public class ColetorCompostoTests
         long? swapTotalBytes = null,
         long? swapUsadaBytes = null,
         long? redeDownloadBytesPorSegundo = null,
-        long? redeUploadBytesPorSegundo = null) =>
+        long? redeUploadBytesPorSegundo = null,
+        long? discoLeituraBytesPorSegundo = null,
+        long? discoEscritaBytesPorSegundo = null,
+        double? discoAtividadePercentual = null,
+        double? discoLatenciaLeituraMs = null) =>
         new(
             plataforma,
             sistemaOperacional,
@@ -47,7 +51,11 @@ public class ColetorCompostoTests
             swapTotalBytes,
             swapUsadaBytes,
             redeDownloadBytesPorSegundo,
-            redeUploadBytesPorSegundo);
+            redeUploadBytesPorSegundo,
+            discoLeituraBytesPorSegundo,
+            discoEscritaBytesPorSegundo,
+            discoAtividadePercentual,
+            discoLatenciaLeituraMs);
 
     public class ColetarAsync : ColetorCompostoTests
     {
@@ -144,6 +152,27 @@ public class ColetorCompostoTests
             resultado.SwapUsadaBytes.Should().Be(400);
             resultado.RedeDownloadBytesPorSegundo.Should().Be(1024);
             resultado.RedeUploadBytesPorSegundo.Should().Be(512);
+        }
+
+        [Fact]
+        public async Task Deve_mesclar_io_de_disco_de_coletores_distintos()
+        {
+            _coletorA.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
+                discoLeituraBytesPorSegundo: 1024,
+                discoEscritaBytesPorSegundo: 512));
+
+            _coletorB.ColetarAsync(Arg.Any<CancellationToken>()).Returns(CriarSnapshot(
+                discoAtividadePercentual: 75.5,
+                discoLatenciaLeituraMs: 2.5));
+
+            var sut = new ColetorComposto([_coletorA, _coletorB]);
+
+            var resultado = await sut.ColetarAsync(CancellationToken.None);
+
+            resultado.DiscoLeituraBytesPorSegundo.Should().Be(1024);
+            resultado.DiscoEscritaBytesPorSegundo.Should().Be(512);
+            resultado.DiscoAtividadePercentual.Should().Be(75.5);
+            resultado.DiscoLatenciaLeituraMs.Should().Be(2.5);
         }
 
         [Fact]

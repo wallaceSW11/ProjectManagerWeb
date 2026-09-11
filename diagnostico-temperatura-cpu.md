@@ -116,7 +116,7 @@ Documentar que a temperatura da CPU no Windows exige o driver PawnIO instalado (
 Decisão: **não instalar driver algum** — o PMW deve funcionar com "instalou e acessou". A `LibreHardwareMonitorLib` foi removida do app (DLL, pacotes NuGet e testes), junto com as métricas que dependiam dela no Windows:
 
 - Temperatura de CPU: tenta somente o ACPI nativo (WMI) e desativa em definitivo após a primeira falha; exibe `--` na maioria dos notebooks.
-- Temperatura de disco: mantida no Windows via IOCTL nativo (`IOCTL_STORAGE_QUERY_PROPERTY` + `StorageDeviceTemperatureProperty`), sem driver e sem admin.
+- Temperatura de disco: mantida no Windows via IOCTL nativo (`IOCTL_STORAGE_QUERY_PROPERTY` + `StorageDeviceTemperatureProperty`), sem driver e sem admin. **Correção (11/09/2026):** a versão inicial desta implementação usava `PropertyId = 22`, que cai num intervalo indefinido do enum `STORAGE_PROPERTY_ID` (o valor real é **52**, pois `StorageDeviceIoCapabilityProperty = 48`), e ainda lia o descritor com offsets errados (header de 24 bytes e info de 16 bytes). Por isso a temperatura do disco não aparecia no Windows mesmo sem depender de driver.
 - Velocidade do cooler: métrica removida do app (não aparecia em Windows nem Linux).
 - Linux não mudou: `/sys` cobre tudo sem driver.
 

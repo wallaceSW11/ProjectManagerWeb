@@ -39,6 +39,10 @@ public class ColetorComposto(IColetorMetricas[] coletores) : IColetorMetricas
             SwapTotalBytes = b.SwapTotalBytes ?? a.SwapTotalBytes,
             SwapUsadaBytes = b.SwapUsadaBytes ?? a.SwapUsadaBytes,
             RedeDownloadBytesPorSegundo = b.RedeDownloadBytesPorSegundo ?? a.RedeDownloadBytesPorSegundo,
-            RedeUploadBytesPorSegundo = b.RedeUploadBytesPorSegundo ?? a.RedeUploadBytesPorSegundo
+            RedeUploadBytesPorSegundo = b.RedeUploadBytesPorSegundo ?? a.RedeUploadBytesPorSegundo,
+            DiscoLeituraBytesPorSegundo = b.DiscoLeituraBytesPorSegundo ?? a.DiscoLeituraBytesPorSegundo,
+            DiscoEscritaBytesPorSegundo = b.DiscoEscritaBytesPorSegundo ?? a.DiscoEscritaBytesPorSegundo,
+            DiscoAtividadePercentual = b.DiscoAtividadePercentual ?? a.DiscoAtividadePercentual,
+            DiscoLatenciaLeituraMs = b.DiscoLatenciaLeituraMs ?? a.DiscoLatenciaLeituraMs
         };
 }

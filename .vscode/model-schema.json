@@ -1117,6 +1117,7 @@
         "deepinfra/zai-org/GLM-5",
         "deepinfra/zai-org/GLM-5.1",
         "deepseek/deepseek-chat",
+        "deepseek/deepseek-flash",
         "deepseek/deepseek-reasoner",
         "deepseek/deepseek-v4-flash",
         "deepseek/deepseek-v4-pro",

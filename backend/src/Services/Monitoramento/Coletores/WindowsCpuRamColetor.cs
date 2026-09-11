@@ -13,11 +13,11 @@ internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpu
     private const string ConsultaTemperaturaMsAcpi = "SELECT CurrentTemperature FROM MSAcpi_ThermalZoneTemperature";
     private const string ConsultaTemperaturaPerf = "SELECT Temperature FROM Win32_PerfFormattedData_Counters_ThermalZoneInformation";
     private const uint IoctlConsultaPropriedadeStorage = 0x002D1400;
-    private const int PropriedadeTemperaturaDisco = 22;
+    private const int PropriedadeTemperaturaDisco = 52;
     private const int ConsultaPadraoPropriedade = 0;
     private const int MaximoDiscosFisicos = 16;
-    private const int TamanhoCabecalhoTemperatura = 16;
-    private const int TamanhoInfoTemperatura = 12;
+    private const int TamanhoCabecalhoTemperatura = 24;
+    private const int TamanhoInfoTemperatura = 16;
     private const uint AcessoLeituraAtributos = 0x80;
     private const uint CompartilhamentoLeitura = 0x1;
     private const uint CompartilhamentoEscrita = 0x2;

@@ -4,7 +4,7 @@ description: >-
   Pinia Options API, models com constructor+toDTO.
   Segue rigorosamente o code-style frontend.
 mode: subagent
-model: deepseek/deepseek-v4-flash
+model: deepseek/deepseek-flash
 permission:
   edit: allow
   bash: allow

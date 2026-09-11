@@ -59,6 +59,48 @@
         </v-icon>
         {{ discoTemperaturaTexto }}
       </span>
+      <div class="painel-esportivo-disco-io">
+        <span class="painel-esportivo-disco-io-linha">
+          <span class="painel-esportivo-disco-io-item">
+            <v-icon
+              size="13"
+              color="#ff9f12"
+            >
+              mdi-arrow-down
+            </v-icon>
+            {{ discoLeituraTexto }}
+          </span>
+          <span class="painel-esportivo-disco-io-item">
+            <v-icon
+              size="13"
+              color="#74d94b"
+            >
+              mdi-arrow-up
+            </v-icon>
+            {{ discoEscritaTexto }}
+          </span>
+        </span>
+        <span class="painel-esportivo-disco-io-linha">
+          <span class="painel-esportivo-disco-io-item">
+            <v-icon
+              size="13"
+              color="#4bc3ff"
+            >
+              mdi-pulse
+            </v-icon>
+            {{ discoAtividadeTexto }}
+          </span>
+          <span class="painel-esportivo-disco-io-item">
+            <v-icon
+              size="13"
+              color="#cfd4d5"
+            >
+              mdi-timer-outline
+            </v-icon>
+            {{ discoLatenciaTexto }}
+          </span>
+        </span>
+      </div>
       <template v-if="exibirSwap">
         <span class="painel-esportivo-centro-rotulo">SWAP</span>
         <strong class="painel-esportivo-swap-valores">
@@ -347,6 +389,57 @@
     return celsius === null ? '--' : `${Math.round(celsius)}°C`;
   });
 
+  const discoLeituraBytesPorSegundo = computed(
+    () => monitoramentoStore.snapshot?.discoLeituraBytesPorSegundo ?? null
+  );
+
+  const discoEscritaBytesPorSegundo = computed(
+    () => monitoramentoStore.snapshot?.discoEscritaBytesPorSegundo ?? null
+  );
+
+  const discoAtividadePercentual = computed(
+    () => monitoramentoStore.snapshot?.discoAtividadePercentual ?? null
+  );
+
+  const discoLatenciaLeituraMs = computed(
+    () => monitoramentoStore.snapshot?.discoLatenciaLeituraMs ?? null
+  );
+
+  const formatarTaxaBytes = (bytesPorSegundo: number | null): string => {
+    if (animacaoEntradaAtiva.value) return '--';
+    if (bytesPorSegundo === null) return '--';
+
+    const kb = bytesPorSegundo / 1024;
+
+    return kb >= 1024
+      ? `${formatarDecimal(kb / 1024)} MB/s`
+      : `${formatarDecimal(kb)} KB/s`;
+  };
+
+  const discoLeituraTexto = computed(() =>
+    formatarTaxaBytes(discoLeituraBytesPorSegundo.value)
+  );
+
+  const discoEscritaTexto = computed(() =>
+    formatarTaxaBytes(discoEscritaBytesPorSegundo.value)
+  );
+
+  const discoAtividadeTexto = computed(() => {
+    if (animacaoEntradaAtiva.value) return '--';
+
+    const percentual = discoAtividadePercentual.value;
+
+    return percentual === null ? '--' : `${Math.round(percentual)}%`;
+  });
+
+  const discoLatenciaTexto = computed(() => {
+    if (animacaoEntradaAtiva.value) return '--';
+
+    const latencia = discoLatenciaLeituraMs.value;
+
+    return latencia === null ? '--' : `${formatarDecimal(latencia)} ms`;
+  });
+
   const swapTotalBytes = computed(
     () => monitoramentoStore.snapshot?.swapTotalBytes ?? null
   );
@@ -559,6 +652,30 @@
     font-size: clamp(10px, 1.3vw, 14px);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+
+  .painel-esportivo-disco-io {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: #a6adaf;
+    font-size: clamp(9px, 1.15vw, 12px);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .painel-esportivo-disco-io-linha {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 1.2vw, 14px);
+  }
+
+  .painel-esportivo-disco-io-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
   }
 
   .painel-esportivo-swap-valores {

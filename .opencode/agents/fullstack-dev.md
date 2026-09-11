@@ -4,7 +4,7 @@ description: >-
   Vue 3 + TypeScript + .NET 9 C#. Orquestrador do projeto PMW.
   Delega tarefas especializadas para @backend e @frontend.
 mode: primary
-model: deepseek/deepseek-v4-flash
+model: deepseek/deepseek-flash
 permission:
   task:
     "*": deny

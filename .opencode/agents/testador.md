@@ -1,7 +1,7 @@
 ---
 description: Especialista em testes unitários e de integração .NET 9 + xUnit. Escreve, refatora e mantém a suíte de testes do PMW. Segue o code-style do projeto. Sempre em português.
 mode: subagent
-model: deepseek/deepseek-v4-flash
+model: deepseek/deepseek-flash
 permission:
   task:
     "*": deny
