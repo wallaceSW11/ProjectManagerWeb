@@ -19,6 +19,10 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
   swapUsadaBytes: number | null;
   redeDownloadBytesPorSegundo: number | null;
   redeUploadBytesPorSegundo: number | null;
+  discoLeituraBytesPorSegundo: number | null;
+  discoEscritaBytesPorSegundo: number | null;
+  discoAtividadePercentual: number | null;
+  discoLatenciaLeituraMs: number | null;
 
   constructor(obj: Partial<IMonitoramentoSnapshot> = {}) {
     this.plataforma = obj.plataforma || '';
@@ -39,5 +43,9 @@ export default class MonitoramentoModel implements IMonitoramentoSnapshot {
     this.swapUsadaBytes = obj.swapUsadaBytes ?? null;
     this.redeDownloadBytesPorSegundo = obj.redeDownloadBytesPorSegundo ?? null;
     this.redeUploadBytesPorSegundo = obj.redeUploadBytesPorSegundo ?? null;
+    this.discoLeituraBytesPorSegundo = obj.discoLeituraBytesPorSegundo ?? null;
+    this.discoEscritaBytesPorSegundo = obj.discoEscritaBytesPorSegundo ?? null;
+    this.discoAtividadePercentual = obj.discoAtividadePercentual ?? null;
+    this.discoLatenciaLeituraMs = obj.discoLatenciaLeituraMs ?? null;
   }
 }

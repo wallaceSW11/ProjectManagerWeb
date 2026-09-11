@@ -17,6 +17,10 @@ ColetorComposto                → mescla snapshots dos coletores (with { ... })
 │   ├── WindowsCpuRamColetor   → P/Invoke kernel32 + WMI (SO, RAM, frequência, temperatura ACPI); dados imutáveis cacheados e consultas WMI com TTL de 30s; nenhum driver externo (ver diagnóstico da temperatura)
 │   └── LinuxCpuRamColetor     → /proc e /sys (swap via /proc/meminfo, temp disco via hwmon nvme, velocidade RAM via SPD i2c); SO/nome da CPU/velocidade RAM cacheados
 ├── DiscoColetor               → disco da raiz do diretório de trabalho
+├── DiscoIOColetor             → I/O do disco físico (leitura/escrita por segundo, atividade %, latência de leitura ms)
+│   ├── IDiscoIOColetor        → interface por plataforma (registrada por OS no Program.cs)
+│   ├── WindowsDiscoIOColetor  → IOCTL_DISK_PERFORMANCE em `\\.\PhysicalDrive0..15` (nativo, sem admin); handles mantidos abertos e deltas por amostra
+│   └── LinuxDiscoIOColetor    → `/proc/diskstats` filtrando dispositivos de `/sys/block` (lista revalidada a cada 30s)
 └── RedeColetor                → download/upload em bytes/segundo (delta entre amostras)
     ├── IRedeColetor           → interface por plataforma
     ├── WindowsRedeColetor     → NetworkInterface.GetIPStatistics() somando interfaces ativas (sem loopback); lista de interfaces revalidada a cada 30s
@@ -51,7 +55,8 @@ Serializado camelCase para o frontend.
 | RAM | `GlobalMemoryStatusEx` (kernel32) | Total e disponível |
 | Frequência CPU | `Win32_Processor.MaxClockSpeed` × `% Processor Performance` | Fallback: `CurrentClockSpeed` via WMI, no máximo a cada 30s |
 | Velocidade RAM | `Win32_PhysicalMemory` | `ConfiguredClockSpeed` → fallback `Speed`. Resultado cacheado após a 1ª leitura |
-| Temperatura disco | IOCTL `IOCTL_STORAGE_QUERY_PROPERTY` + `StorageDeviceTemperatureProperty` (P/Invoke `kernel32`) | Abre `\\.\PhysicalDrive0..15` com `FILE_READ_ATTRIBUTES` e usa a maior temperatura entre as entradas. Sem driver e sem admin (quando o driver de storage permite). Consulta no máximo a cada 10s; se nunca retornar leitura, é desativada em definitivo com log único |
+| Temperatura disco | IOCTL `IOCTL_STORAGE_QUERY_PROPERTY` + `StorageDeviceTemperatureProperty` (P/Invoke `kernel32`) | Abre `\\.\PhysicalDrive0..15` com `FILE_READ_ATTRIBUTES` e usa a maior temperatura entre as entradas. Sem driver e sem admin (quando o driver de storage permite). Consulta no máximo a cada 10s; se nunca retornar leitura, é desativada em definitivo com log único. O `PropertyId` correto é **52** (`StorageDeviceIoCapabilityProperty = 48` no header do SDK; `StorageDeviceTemperatureProperty` = 52). O header `STORAGE_TEMPERATURE_DATA_DESCRIPTOR` tem 24 bytes e cada `STORAGE_TEMPERATURE_INFO` tem 16 bytes (`Temperature` no offset +2) |
+| I/O do disco | `IOCTL_DISK_PERFORMANCE` em `\\.\PhysicalDrive0..15` | Lê `DISK_PERFORMANCE` (88 bytes): `BytesRead`, `BytesWritten`, `ReadTime`/`WriteTime`/`IdleTime` em 100ns, `ReadCount`. Calcula por delta (1s): leitura/escrita bytes/s, atividade % = (ΔReadTime+ΔWriteTime)/Δtempo e latência de leitura ms = ΔReadTime/ΔReadCount. Handles abertos uma vez (mantém os contadores habilitados) |
 
 ## Particularidades Linux
 
@@ -63,6 +68,7 @@ Serializado camelCase para o frontend.
 | Temperatura | `/sys/class/thermal` (type cpu/pkg) → `/sys/class/hwmon` (k10temp/coretemp) |
 | Nome/freq CPU | `/proc/cpuinfo` → fallback `scaling_cur_freq`. Nome cacheado, frequência relida a cada ciclo |
 | Velocidade RAM | SPD DDR4 via sysfs `/sys/bus/i2c/devices/*-005?/eeprom` (o kernel expõe o `ee1004` como `-r--r--r--`, sem root) | `tCKAVGmin` = byte 18 × 125 ps + byte 125 (fine, com sinal); converte para MT/s (`2 × 1000 / tCK`) com o arredondamento JEDEC do `decode-dimms` (7,5/divisor para DDR3-1866+); usa o maior valor entre os pentes. Tipos que não sejam DDR4 (`byte 2` diferente de `0x0C`/`0x0E`) são ignorados. Cacheado na 1ª leitura |
+| I/O do disco | `/proc/diskstats` | Soma apenas os dispositivos listados em `/sys/block` (evita contar partição + disco). Campos: reads completed (idx 3), setores lidos (5) ×512, ms lendo (6), setores escritos (9) ×512, ms ocupado (12). Delta por amostra → bytes/s, atividade % = ΔmsOcupado/Δms e latência de leitura = ΔmsLendo/Δreads |
 
 ## Frontend
 
@@ -83,6 +89,8 @@ components/monitoramento/
 
 Velocidade da RAM: rótulo acima do ContaGiros da RAM (`LayoutPainelEsportivo.vue`), exibido somente quando o backend entrega `ramVelocidadeMhz` (Windows).
 
+I/O do disco: no grupo DISCO, abaixo da temperatura, em duas linhas — a primeira com `mdi-arrow-down` (leitura) e `mdi-arrow-up` (escrita); a segunda com `mdi-pulse` (atividade %) e `mdi-timer-outline` (latência de leitura ms). `--` quando o backend não entrega a métrica.
+
 URL do WebSocket: dev `ws://localhost:2024/api/monitoramento/ws`; prod `ws://{location.host}/api/monitoramento/ws` (mesma origem, sem CORS).
 
 Formatação de disco %/GB e RAM GB: `utils/formatarNumero.ts` (`formatarDecimal` — pt-BR, 2 casas, vírgula).
@@ -96,6 +104,10 @@ backend/src/Services/Monitoramento/MonitoramentoService.cs
 backend/src/Services/Monitoramento/ProcessosService.cs
 backend/src/Services/Monitoramento/IColetorMetricas.cs
 backend/src/Services/Monitoramento/Coletores/*.cs               → inclui IProcessosColetor + Windows/LinuxProcessosColetor
+backend/src/Services/Monitoramento/Coletores/IDiscoIOColetor.cs
+backend/src/Services/Monitoramento/Coletores/DiscoIOColetor.cs
+backend/src/Services/Monitoramento/Coletores/WindowsDiscoIOColetor.cs
+backend/src/Services/Monitoramento/Coletores/LinuxDiscoIOColetor.cs
 backend/src/DTOs/MonitoramentoSnapshotDTO.cs
 backend/src/DTOs/ProcessoInfoDTO.cs
 frontend/src/views/MonitoramentoView.vue

@@ -55,15 +55,21 @@ else
 }
 builder.Services.AddSingleton<CpuRamColetor>();
 builder.Services.AddSingleton<DiscoColetor>();
+builder.Services.AddSingleton<DiscoIOColetor>();
 builder.Services.AddSingleton<RedeColetor>();
 if (OperatingSystem.IsWindows())
     builder.Services.AddSingleton<IRedeColetor, WindowsRedeColetor>();
 else
     builder.Services.AddSingleton<IRedeColetor, LinuxRedeColetor>();
+if (OperatingSystem.IsWindows())
+    builder.Services.AddSingleton<IDiscoIOColetor, WindowsDiscoIOColetor>();
+else
+    builder.Services.AddSingleton<IDiscoIOColetor, LinuxDiscoIOColetor>();
 builder.Services.AddSingleton<IColetorMetricas>(sp => new ColetorComposto(
 [
     sp.GetRequiredService<CpuRamColetor>(),
     sp.GetRequiredService<DiscoColetor>(),
+    sp.GetRequiredService<DiscoIOColetor>(),
     sp.GetRequiredService<RedeColetor>()
 ]));
 

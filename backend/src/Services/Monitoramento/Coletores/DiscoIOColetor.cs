@@ -2,11 +2,11 @@ using ProjectManagerWeb.src.DTOs;
 
 namespace ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 
-public class RedeColetor(IRedeColetor coletorPlataforma) : IColetorMetricas
+public class DiscoIOColetor(IDiscoIOColetor coletorPlataforma) : IColetorMetricas
 {
     public Task<MonitoramentoSnapshotDTO> ColetarAsync(CancellationToken ct)
     {
-        var (download, upload) = coletorPlataforma.ObterBytesPorSegundo();
+        var (leitura, escrita, atividade, latencia) = coletorPlataforma.ObterMetricas();
 
         return Task.FromResult(new MonitoramentoSnapshotDTO(
             OperatingSystem.IsWindows() ? "windows" : "linux",
@@ -25,12 +25,12 @@ public class RedeColetor(IRedeColetor coletorPlataforma) : IColetorMetricas
             null,
             null,
             null,
-            download,
-            upload,
             null,
             null,
-            null,
-            null
+            leitura,
+            escrita,
+            atividade,
+            latencia
         ));
     }
 }

@@ -18,5 +18,9 @@ public sealed record MonitoramentoSnapshotDTO(
     long? SwapTotalBytes,
     long? SwapUsadaBytes,
     long? RedeDownloadBytesPorSegundo,
-    long? RedeUploadBytesPorSegundo
+    long? RedeUploadBytesPorSegundo,
+    long? DiscoLeituraBytesPorSegundo,
+    long? DiscoEscritaBytesPorSegundo,
+    double? DiscoAtividadePercentual,
+    double? DiscoLatenciaLeituraMs
 );

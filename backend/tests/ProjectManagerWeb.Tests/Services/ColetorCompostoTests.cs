@@ -28,7 +28,11 @@ public class ColetorCompostoTests
         long? swapTotalBytes = null,
         long? swapUsadaBytes = null,
         long? redeDownloadBytesPorSegundo = null,
-        long? redeUploadBytesPorSegundo = null) =>
+        long? redeUploadBytesPorSegundo = null,
+        long? discoLeituraBytesPorSegundo = null,
+        long? discoEscritaBytesPorSegundo = null,
+        double? discoAtividadePercentual = null,
+        double? discoLatenciaLeituraMs = null) =>
         new(
             plataforma,
             sistemaOperacional,
@@ -47,7 +51,11 @@ public class ColetorCompostoTests
             swapTotalBytes,
             swapUsadaBytes,
             redeDownloadBytesPorSegundo,
-            redeUploadBytesPorSegundo);
+            redeUploadBytesPorSegundo,
+            discoLeituraBytesPorSegundo,
+            discoEscritaBytesPorSegundo,
+            discoAtividadePercentual,
+            discoLatenciaLeituraMs);
 
     public class ColetarAsync : ColetorCompostoTests
     {
