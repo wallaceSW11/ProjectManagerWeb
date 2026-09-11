@@ -4,7 +4,7 @@ description: >-
   Persistência JSON, sem EF, sem AutoMapper.
   Segue rigorosamente o code-style backend.
 mode: subagent
-model: deepseek/deepseek-v4-flash
+model: deepseek/deepseek-flash
 permission:
   edit: allow
   bash: allow
