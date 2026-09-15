@@ -112,6 +112,75 @@ public class MigrationServiceTests : IDisposable
         }
     }
 
+    public class Migration_007_ReindexarIndices : MigrationServiceTests
+    {
+        [Fact]
+        public async Task Migration_007_reindexa_projetos_com_indices_baguncados()
+        {
+            var repo = CriarRepositorioComProjetos(["Projeto A", "Projeto B", "Projeto C"]);
+            await _repositorioService.AddAsync(repo);
+
+            await _sut.Migration_007_ReindexarIndices();
+
+            var repositorios = await _repositorioService.GetAllAsync();
+            var projetos = repositorios[0].Projetos;
+            projetos[0].Indice.Should().Be(0);
+            projetos[1].Indice.Should().Be(1);
+            projetos[2].Indice.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task Migration_007_reindexa_menus_com_indices_baguncados()
+        {
+            var repo = CriarRepositorioComMenus(["Menu 1", "Menu 2"]);
+            await _repositorioService.AddAsync(repo);
+
+            await _sut.Migration_007_ReindexarIndices();
+
+            var repositorios = await _repositorioService.GetAllAsync();
+            var menus = repositorios[0].Menus!;
+            menus[0].Indice.Should().Be(0);
+            menus[1].Indice.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Migration_007_reindexa_perfis_com_indices_baguncados()
+        {
+            var perfis = new List<PerfilMarcacaoDTO>
+            {
+                new(Guid.NewGuid(), "Perfil 1", [], Indice: 5),
+                new(Guid.NewGuid(), "Perfil 2", [], Indice: 5)
+            };
+            var repo = CriarRepositorioComPerfis(perfis);
+            await _repositorioService.AddAsync(repo);
+
+            await _sut.Migration_007_ReindexarIndices();
+
+            var repositorios = await _repositorioService.GetAllAsync();
+            var perfisSalvos = repositorios[0].Perfis!;
+            perfisSalvos[0].Indice.Should().Be(0);
+            perfisSalvos[1].Indice.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Migration_007_lida_com_menus_e_perfis_nulos()
+        {
+            var repo = new RepositorioRequestDTO(
+                Guid.NewGuid(), "https://teste.com/repo.git", "Teste", "Teste",
+                null, "main",
+                [new ProjetoDTO(Guid.NewGuid(), "Unico", null, null, new ComandoDTO(null, null, null, null), null)],
+                null, null, null
+            );
+            await _repositorioService.AddAsync(repo);
+
+            await _sut.Migration_007_ReindexarIndices();
+
+            var repositorios = await _repositorioService.GetAllAsync();
+            repositorios.Should().HaveCount(1);
+            repositorios[0].Projetos[0].Indice.Should().Be(0);
+        }
+    }
+
     private static RepositorioRequestDTO CriarRepositorioComProjetos(string[] nomes)
     {
         var projetos = nomes.Select(n => new ProjetoDTO(

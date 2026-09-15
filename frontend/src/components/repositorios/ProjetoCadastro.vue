@@ -189,8 +189,15 @@
     return resposta.valid;
   };
 
+  const reindexarProjetos = (): void => {
+    repositorio.value.projetos.forEach((projeto, posicao) => {
+      projeto.indice = posicao;
+    });
+  };
+
   const adicionarProjeto = (): void => {
     repositorio.value.projetos.push(new ProjetoModel(projetoSelecionado));
+    reindexarProjetos();
   };
 
   const subirItem = (item: IProjeto): void => {
@@ -199,6 +206,7 @@
     const temp = repositorio.value.projetos[indice];
     repositorio.value.projetos[indice] = repositorio.value.projetos[indice - 1];
     repositorio.value.projetos[indice - 1] = temp;
+    reindexarProjetos();
   };
 
   const descerItem = (item: IProjeto): void => {
@@ -207,6 +215,7 @@
     const temp = repositorio.value.projetos[indice];
     repositorio.value.projetos[indice] = repositorio.value.projetos[indice + 1];
     repositorio.value.projetos[indice + 1] = temp;
+    reindexarProjetos();
   };
 
   const prepararParaCadastro = (): void => {
@@ -246,6 +255,7 @@
     if (indice !== -1) {
       Object.assign(repositorio.value.projetos[indice], projetoSelecionado);
     }
+    reindexarProjetos();
   };
 
   const excluirProjeto = (item: IProjeto): void => {
@@ -256,6 +266,7 @@
     repositorio.value.projetos = repositorio.value.projetos.filter(
       (p: IProjeto) => p.identificador !== item.identificador
     );
+    reindexarProjetos();
   };
 
   const limparCampos = (): void => {

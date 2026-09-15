@@ -277,12 +277,19 @@
     });
   };
 
+  const reindexarPerfis = (): void => {
+    repositorio.value.perfis.forEach((perfil, posicao) => {
+      perfil.indice = posicao;
+    });
+  };
+
   const subirItem = (item: IPerfilMarcacao): void => {
     const indice = repositorio.value.perfis.indexOf(item);
     if (indice <= 0) return;
     const temp = repositorio.value.perfis[indice];
     repositorio.value.perfis[indice] = repositorio.value.perfis[indice - 1];
     repositorio.value.perfis[indice - 1] = temp;
+    reindexarPerfis();
   };
 
   const descerItem = (item: IPerfilMarcacao): void => {
@@ -291,6 +298,7 @@
     const temp = repositorio.value.perfis[indice];
     repositorio.value.perfis[indice] = repositorio.value.perfis[indice + 1];
     repositorio.value.perfis[indice + 1] = temp;
+    reindexarPerfis();
   };
 
   const prepararParaCadastro = (): void => {
@@ -321,6 +329,7 @@
 
     if (emModoCadastro.value) {
       repositorio.value.perfis.push(new PerfilMarcacaoModel(perfilSelecionado));
+      reindexarPerfis();
       Object.assign(perfilSelecionado, new PerfilMarcacaoModel());
       notificar('sucesso', 'Perfil cadastrado');
       inicializarComandosSelecionados();
@@ -337,6 +346,7 @@
           repositorio.value.perfis[indice],
           new PerfilMarcacaoModel(perfilSelecionado)
         );
+      reindexarPerfis();
       notificar('sucesso', 'Perfil atualizado');
       descartarAlteracoes();
     }
@@ -349,6 +359,7 @@
     repositorio.value.perfis = repositorio.value.perfis.filter(
       p => p.identificador !== item.identificador
     );
+    reindexarPerfis();
   };
 
   const descartarAlteracoes = (): void => {
