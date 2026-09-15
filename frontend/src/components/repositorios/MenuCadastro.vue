@@ -358,12 +358,19 @@
     limparCamposPastas();
   };
 
+  const reindexarMenus = (): void => {
+    repositorio.value.menus.forEach((menu, posicao) => {
+      menu.indice = posicao;
+    });
+  };
+
   const subirItem = (item: IMenu): void => {
     const indice = repositorio.value.menus.indexOf(item);
     if (indice <= 0) return;
     const temp = repositorio.value.menus[indice];
     repositorio.value.menus[indice] = repositorio.value.menus[indice - 1];
     repositorio.value.menus[indice - 1] = temp;
+    reindexarMenus();
   };
 
   const descerItem = (item: IMenu): void => {
@@ -372,6 +379,7 @@
     const temp = repositorio.value.menus[indice];
     repositorio.value.menus[indice] = repositorio.value.menus[indice + 1];
     repositorio.value.menus[indice + 1] = temp;
+    reindexarMenus();
   };
 
   const prepararParaCadastro = (): void => {
@@ -539,6 +547,7 @@
 
   const adicionarMenu = (): void => {
     repositorio.value.menus.push(new MenuModel(menuSelecionado));
+    reindexarMenus();
   };
 
   const atualizarProjeto = (): void => {
@@ -548,6 +557,7 @@
 
     indice !== -1 &&
       Object.assign(repositorio.value.menus[indice], menuSelecionado);
+    reindexarMenus();
   };
 
   const excluirProjeto = (item: IMenu): void => {
@@ -558,6 +568,7 @@
     repositorio.value.menus = repositorio.value.menus.filter(
       p => p.identificador !== item.identificador
     );
+    reindexarMenus();
   };
 
   const excluirArquivo = (item: IArquivo): void => {

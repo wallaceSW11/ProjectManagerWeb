@@ -87,6 +87,7 @@ namespace ProjectManagerWeb.src.Services
                 await ExecutarMigration("004_AddAbrirWorkspace", Migration_004_AddAbrirWorkspace);
                 await ExecutarMigration("005_AddPastaFixada", Migration_005_AddPastaFixada);
                 await ExecutarMigration("006_AdicionarIndiceProjetosMenusPerfis", Migration_006_AdicionarIndiceProjetosMenusPerfis);
+                await ExecutarMigration("007_ReindexarIndices", Migration_007_ReindexarIndices);
 
                 _logger.LogInformation("Todas as migrations foram verificadas");
             }
@@ -357,6 +358,29 @@ namespace ProjectManagerWeb.src.Services
             }
 
             _logger.LogInformation("Migration 006: Indices atribuídos a projetos, menus e perfis existentes");
+        }
+
+        public async Task Migration_007_ReindexarIndices()
+        {
+            var repositorios = await _repositorioService.GetAllAsync();
+
+            foreach (var repo in repositorios)
+            {
+                var projetosAtualizados = repo.Projetos.Select((p, i) => p with { Indice = i }).ToList();
+                var menusAtualizados = (repo.Menus ?? []).Select((m, i) => m with { Indice = i }).ToList();
+                var perfisAtualizados = (repo.Perfis ?? []).Select((p, i) => p with { Indice = i }).ToList();
+
+                var atualizado = repo with
+                {
+                    Projetos = projetosAtualizados,
+                    Menus = menusAtualizados,
+                    Perfis = perfisAtualizados
+                };
+
+                await _repositorioService.UpdateAsync(repo.Identificador, atualizado);
+            }
+
+            _logger.LogInformation("Migration 007: Indices de projetos, menus e perfis reindexados pela posição no repositório");
         }
 
         private static async Task<MigrationsDTO> LerMigrationsDoArquivoAsync(bool locked = false)
