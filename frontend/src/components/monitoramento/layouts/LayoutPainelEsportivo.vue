@@ -60,45 +60,41 @@
         {{ discoTemperaturaTexto }}
       </span>
       <div class="painel-esportivo-disco-io">
-        <span class="painel-esportivo-disco-io-linha">
-          <span class="painel-esportivo-disco-io-item">
-            <v-icon
-              size="13"
-              color="#ff9f12"
-            >
-              mdi-arrow-down
-            </v-icon>
-            {{ discoLeituraTexto }}
-          </span>
-          <span class="painel-esportivo-disco-io-item">
-            <v-icon
-              size="13"
-              color="#74d94b"
-            >
-              mdi-arrow-up
-            </v-icon>
-            {{ discoEscritaTexto }}
-          </span>
+        <span class="painel-esportivo-disco-io-item">
+          <v-icon
+            size="13"
+            color="#ff9f12"
+          >
+            mdi-arrow-down
+          </v-icon>
+          {{ discoLeituraTexto }}
         </span>
-        <span class="painel-esportivo-disco-io-linha">
-          <span class="painel-esportivo-disco-io-item">
-            <v-icon
-              size="13"
-              color="#4bc3ff"
-            >
-              mdi-pulse
-            </v-icon>
-            {{ discoAtividadeTexto }}
-          </span>
-          <span class="painel-esportivo-disco-io-item">
-            <v-icon
-              size="13"
-              color="#cfd4d5"
-            >
-              mdi-timer-outline
-            </v-icon>
-            {{ discoLatenciaTexto }}
-          </span>
+        <span class="painel-esportivo-disco-io-item">
+          <v-icon
+            size="13"
+            color="#74d94b"
+          >
+            mdi-arrow-up
+          </v-icon>
+          {{ discoEscritaTexto }}
+        </span>
+        <span class="painel-esportivo-disco-io-item">
+          <v-icon
+            size="13"
+            color="#4bc3ff"
+          >
+            mdi-pulse
+          </v-icon>
+          {{ discoAtividadeTexto }}
+        </span>
+        <span class="painel-esportivo-disco-io-item">
+          <v-icon
+            size="13"
+            color="#cfd4d5"
+          >
+            mdi-timer-outline
+          </v-icon>
+          {{ discoLatenciaTexto }}
         </span>
       </div>
       <template v-if="exibirSwap">
@@ -109,24 +105,26 @@
       </template>
       <div class="painel-esportivo-divisor" />
       <span class="painel-esportivo-centro-rotulo">REDE</span>
-      <span class="painel-esportivo-rede painel-esportivo-rede-upload">
-        <v-icon
-          size="14"
-          color="#74d94b"
-        >
-          mdi-arrow-up
-        </v-icon>
-        {{ redeUploadTexto }}
-      </span>
-      <span class="painel-esportivo-rede painel-esportivo-rede-download">
-        <v-icon
-          size="14"
-          color="#ff9f12"
-        >
-          mdi-arrow-down
-        </v-icon>
-        {{ redeDownloadTexto }}
-      </span>
+      <div class="painel-esportivo-rede">
+        <span class="painel-esportivo-rede-item">
+          <v-icon
+            size="14"
+            color="#74d94b"
+          >
+            mdi-arrow-up
+          </v-icon>
+          {{ redeUploadTexto }}
+        </span>
+        <span class="painel-esportivo-rede-item">
+          <v-icon
+            size="14"
+            color="#ff9f12"
+          >
+            mdi-arrow-down
+          </v-icon>
+          {{ redeDownloadTexto }}
+        </span>
+      </div>
     </aside>
 
     <article class="painel-esportivo-instrumento">
@@ -655,27 +653,22 @@
   }
 
   .painel-esportivo-disco-io {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 150px);
+    gap: 2px clamp(6px, 1vw, 12px);
     color: #a6adaf;
     font-size: clamp(9px, 1.15vw, 12px);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
-  .painel-esportivo-disco-io-linha {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(8px, 1.2vw, 14px);
-  }
-
   .painel-esportivo-disco-io-item {
     display: inline-flex;
     align-items: center;
+    justify-content: flex-start;
     gap: 3px;
+    min-width: 0;
   }
 
   .painel-esportivo-swap-valores {
@@ -686,13 +679,22 @@
   }
 
   .painel-esportivo-rede {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: min(100%, 70px);
+    gap: 2px;
     color: #a6adaf;
     font-size: clamp(10px, 1.3vw, 14px);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+
+  .painel-esportivo-rede-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    min-width: 0;
   }
 
   @media (orientation: portrait) {
