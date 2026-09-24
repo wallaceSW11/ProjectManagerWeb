@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Services;
 using ProjectManagerWeb.src.Utils;
@@ -508,6 +509,181 @@ public class ComandoServiceTests
                 if (Directory.Exists(dirSrc))
                     Directory.Delete(dirSrc, true);
             }
+        }
+    }
+
+    public class RemoverSkipWorktreeDaPasta : ComandoServiceTests
+    {
+        [Fact]
+        public void Nao_deve_lancar_excecao_quando_diretorio_inexistente()
+        {
+            var diretorio = Path.Combine(Path.GetTempPath(), "pmw-skip-inexistente-" + Guid.NewGuid());
+
+            var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
+                new ReverterSkipWorktreeRequestDTO(diretorio, "repo"));
+
+            resultado.Should().ContainSingle();
+            resultado[0].Should().StartWith("Diretório não é um repositório git");
+        }
+
+        [Fact]
+        public void Deve_reverter_skip_worktree_no_subdiretorio_quando_informado()
+        {
+            var raiz = Path.Combine(Path.GetTempPath(), "pmw-skip-subdir-" + Guid.NewGuid());
+            var repositorio = Path.Combine(raiz, "meu-repo", "sub");
+            CriarRepositorioComSkipWorktree(repositorio);
+
+            try
+            {
+                var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
+                    new ReverterSkipWorktreeRequestDTO(raiz, "meu-repo", "sub"));
+
+                ObterFlagGit(repositorio, "arquivo.txt").Should().NotBe('S');
+                resultado.Should().Contain(r => r.Contains("OK"));
+            }
+            finally
+            {
+                if (Directory.Exists(raiz))
+                    Directory.Delete(raiz, true);
+            }
+        }
+
+        [Fact]
+        public void Deve_reverter_skip_worktree_no_clone_principal_quando_sem_subdiretorio_e_sem_workspace()
+        {
+            var raiz = Path.Combine(Path.GetTempPath(), "pmw-skip-clone-" + Guid.NewGuid());
+            var repositorio = Path.Combine(raiz, "meu-repo");
+            CriarRepositorioComSkipWorktree(repositorio);
+
+            try
+            {
+                var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
+                    new ReverterSkipWorktreeRequestDTO(raiz, "meu-repo"));
+
+                ObterFlagGit(repositorio, "arquivo.txt").Should().NotBe('S');
+                resultado.Should().Contain(r => r.Contains("OK"));
+            }
+            finally
+            {
+                if (Directory.Exists(raiz))
+                    Directory.Delete(raiz, true);
+            }
+        }
+
+        [Fact]
+        public void Deve_reverter_apenas_pasta_com_git_quando_workspace()
+        {
+            var raiz = Path.Combine(Path.GetTempPath(), "pmw-skip-workspace-" + Guid.NewGuid());
+            var comGit = Path.Combine(raiz, "com-git");
+            var semGit = Path.Combine(raiz, "sem-git");
+            CriarRepositorioComSkipWorktree(comGit);
+            Directory.CreateDirectory(semGit);
+
+            var workspace = Path.Combine(raiz, "projeto.code-workspace");
+            File.WriteAllText(workspace, """
+                {
+                  "folders": [
+                    { "path": "com-git" },
+                    { "path": "sem-git" }
+                  ]
+                }
+                """);
+
+            try
+            {
+                var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
+                    new ReverterSkipWorktreeRequestDTO(raiz, "repo-inexistente"));
+
+                ObterFlagGit(comGit, "arquivo.txt").Should().NotBe('S');
+                resultado.Should().ContainSingle(r => r.Contains("OK"));
+                resultado.Should().NotContain(r => r.Contains("não é um repositório git"));
+            }
+            finally
+            {
+                if (Directory.Exists(raiz))
+                    Directory.Delete(raiz, true);
+            }
+        }
+
+        [Fact]
+        public void Nao_deve_lancar_excecao_quando_workspace_sem_pasta_git()
+        {
+            var raiz = Path.Combine(Path.GetTempPath(), "pmw-skip-workspace-vazio-" + Guid.NewGuid());
+            Directory.CreateDirectory(Path.Combine(raiz, "sem-git"));
+
+            var workspace = Path.Combine(raiz, "projeto.code-workspace");
+            File.WriteAllText(workspace, """
+                {
+                  "folders": [
+                    { "path": "sem-git" }
+                  ]
+                }
+                """);
+
+            try
+            {
+                var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
+                    new ReverterSkipWorktreeRequestDTO(raiz, "repo-inexistente"));
+
+                resultado.Should().ContainSingle();
+                resultado[0].Should().StartWith("Diretório não é um repositório git");
+            }
+            finally
+            {
+                if (Directory.Exists(raiz))
+                    Directory.Delete(raiz, true);
+            }
+        }
+
+        private static void CriarRepositorioComSkipWorktree(string caminho)
+        {
+            Directory.CreateDirectory(caminho);
+            ExecutarGit(caminho, "init");
+            ExecutarGit(caminho, "config user.email teste@pmw.local");
+            ExecutarGit(caminho, "config user.name PMW Teste");
+            File.WriteAllText(Path.Combine(caminho, "arquivo.txt"), "conteudo");
+            ExecutarGit(caminho, "add arquivo.txt");
+            ExecutarGit(caminho, "update-index --skip-worktree arquivo.txt");
+        }
+
+        private static void ExecutarGit(string diretorio, string argumentos)
+        {
+            var inicioProcesso = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"-C \"{diretorio}\" {argumentos}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var processo = Process.Start(inicioProcesso)!;
+            processo.StandardOutput.ReadToEnd();
+            processo.StandardError.ReadToEnd();
+            processo.WaitForExit();
+        }
+
+        private static char ObterFlagGit(string repositorio, string arquivo)
+        {
+            var inicioProcesso = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"-C \"{repositorio}\" ls-files -v",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var processo = Process.Start(inicioProcesso)!;
+            var saida = processo.StandardOutput.ReadToEnd();
+            processo.StandardError.ReadToEnd();
+            processo.WaitForExit();
+
+            return saida
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .First(linha => linha.EndsWith(arquivo, StringComparison.Ordinal))[0];
         }
     }
 }
