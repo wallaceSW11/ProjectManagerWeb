@@ -29,6 +29,12 @@
   const toasts = ref<Toast[]>([]);
   let idCounter = 0;
 
+  const DURACAO_POR_TIPO: Record<NotificacaoTipo['tipo'], number> = {
+    sucesso: 3000,
+    aviso: 5000,
+    erro: 8000
+  };
+
   export default defineComponent({
     name: 'ToastNotificacao',
     setup() {
@@ -43,7 +49,7 @@
         setTimeout(() => {
           const index = toasts.value.findIndex(t => t.id === id);
           if (index !== -1) toasts.value.splice(index, 1);
-        }, 2000);
+        }, DURACAO_POR_TIPO[tipo]);
       };
 
       onMounted(() => eventBus.on('notificar', handleNotificar));
@@ -67,13 +73,28 @@
 
   /* cada toast */
   .toast {
-    min-width: 200px;
-    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 220px;
+    max-width: 380px;
     padding: 1rem;
     border-radius: 8px;
     color: white;
     font-weight: 500;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .toast strong {
+    font-size: 0.95rem;
+  }
+
+  .toast span {
+    font-size: 0.85rem;
+    font-weight: 400;
+    line-height: 1.35;
+    white-space: pre-line;
+    word-break: break-word;
   }
 
   /* cores por tipo */
