@@ -31,6 +31,12 @@ interface AbrirPastaIDE {
   abrirWorkspace?: boolean;
 }
 
+interface ReverterSkipWorktree {
+  diretorio: string;
+  nomeRepositorio?: string | null;
+  subdiretorio?: string | null;
+}
+
 class ComandosService extends BaseApiService {
   async executarComando(comandos: ComandoExecucao): Promise<void> {
     return await this.post('comandos', comandos);
@@ -48,10 +54,10 @@ class ComandosService extends BaseApiService {
     return await this.post('comandos/abrir-pasta-ide', request);
   }
 
-  async reverterSkipWorktree(diretorio: string): Promise<string[]> {
-    return await this.post('comandos/reverter-skip-worktree', {
-      comando: diretorio
-    });
+  async reverterSkipWorktree(
+    request: ReverterSkipWorktree
+  ): Promise<string[]> {
+    return await this.post('comandos/reverter-skip-worktree', request);
   }
 }
 

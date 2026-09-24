@@ -49,12 +49,12 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
     }
 
     [HttpPost("reverter-skip-worktree")]
-    public IActionResult ReverterSkipWorktree([FromBody] ComandoAvulsoRequestDTO request)
+    public IActionResult ReverterSkipWorktree([FromBody] ReverterSkipWorktreeRequestDTO request)
     {
-        if (string.IsNullOrWhiteSpace(request.Comando))
+        if (string.IsNullOrWhiteSpace(request.Diretorio))
             return BadRequest("Diretório não informado.");
 
-        var resultados = ComandoService.RemoverSkipWorktree(request.Comando);
+        var resultados = ComandoService.RemoverSkipWorktreeDaPasta(request);
         return Ok(resultados);
     }
 }

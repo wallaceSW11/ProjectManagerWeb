@@ -1163,17 +1163,17 @@
   };
 
   const reverterSkipWorktree = async (pasta: IPasta): Promise<void> => {
-    const sep = featuresStore.pathSeparator;
-    const repoDir = pasta.nomeRepositorio
-      ? `${pasta.diretorio}${sep}${pasta.nomeRepositorio}`
-      : pasta.diretorio;
     const confirmado = confirm(
-      `Remover skip-worktree de todos os arquivos?\n\n${repoDir}`
+      `Remover skip-worktree de todos os arquivos?\n\n${pasta.diretorio}`
     );
     if (!confirmado) return;
 
     try {
-      const resultados = await ComandosService.reverterSkipWorktree(repoDir);
+      const resultados = await ComandosService.reverterSkipWorktree({
+        diretorio: pasta.diretorio,
+        nomeRepositorio: pasta.nomeRepositorio,
+        subdiretorio: pasta.subdiretorio
+      });
       const sucessos = resultados.filter(r => r.includes(': OK')).length;
       const falhas = resultados.filter(
         r =>
