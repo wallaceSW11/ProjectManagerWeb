@@ -349,11 +349,13 @@
   };
 
   const descartarAlteracoesArquivos = (): void => {
+    arquivoEmEdicao.value = false;
     mudarParaPaginaTabela();
     limparCamposArquivos();
   };
 
   const descartarAlteracoesPastas = (): void => {
+    pastaEmEdicao.value = false;
     mudarParaPaginaTabela();
     limparCamposPastas();
   };
@@ -384,18 +386,22 @@
 
   const prepararParaCadastro = (): void => {
     definirModoCadastro();
+    arquivoEmEdicao.value = false;
+    pastaEmEdicao.value = false;
     limparCampos();
     abrirModalMenuCadastro();
     nextTick(() => campoTitulo.value?.focus());
   };
 
   const prepararParaCadastroArquivos = (): void => {
+    arquivoEmEdicao.value = false;
     paginaMenu.value = 1;
     limparCamposArquivos();
     nextTick(() => campoArquivo.value?.focus());
   };
 
   const prepararParaCadastroPastas = (): void => {
+    pastaEmEdicao.value = false;
     paginaMenu.value = 2;
     limparCamposPastas();
     nextTick(() => campoPastaOrigem.value?.focus());
@@ -426,7 +432,9 @@
   };
 
   const mudarParaEdicao = (item: IMenu): void => {
-    Object.assign(menuSelecionado, item);
+    Object.assign(menuSelecionado, new MenuModel(item));
+    arquivoEmEdicao.value = false;
+    pastaEmEdicao.value = false;
     definirModoEdicao();
     abrirModalMenuCadastro();
   };
@@ -511,10 +519,7 @@
     menuSelecionado.arquivos.push(new ArquivoModel(arquivoSelecionado));
     notificar('sucesso', 'Arquivo cadastrado');
     limparCamposArquivos();
-    nextTick(() => {
-      formArquivo.value.resetValidation();
-      campoArquivo.value?.focus();
-    });
+    mudarParaPaginaTabela();
   };
 
   const salvarAlteracoesPastas = async (): Promise<void> => {
@@ -539,10 +544,7 @@
     menuSelecionado.pastas.push(new PastaMenuModel(pastaSelecionada));
     notificar('sucesso', 'Pasta de menu cadastrada');
     limparCamposPastas();
-    nextTick(() => {
-      formPasta.value.resetValidation();
-      campoPastaOrigem.value?.focus();
-    });
+    mudarParaPaginaTabela();
   };
 
   const adicionarMenu = (): void => {
@@ -599,6 +601,8 @@
 
   const descartarAlteracoes = (): void => {
     // Perguntar sobre perder alteracoes
+    arquivoEmEdicao.value = false;
+    pastaEmEdicao.value = false;
     limparCampos();
     definirModoInicial();
     exibirModalMenuCadastro.value = false;

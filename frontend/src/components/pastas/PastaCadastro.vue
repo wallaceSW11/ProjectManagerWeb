@@ -92,8 +92,6 @@
   import type { IPasta, IRepositorio } from '@/types';
   import PastaModel from '@/models/PastaModel';
   import PastaService from '@/services/PastasService';
-  import { useConfiguracaoStore } from '@/stores/configuracao';
-  import { useFeaturesStore } from '@/stores/features';
   import RepositorioModel from '@/models/RepositorioModel';
   import { notificar, atualizarListaPastas } from '@/utils/eventBus';
   import SelectRepositorio from '@/components/repositorios/SelectRepositorio.vue';
@@ -108,8 +106,6 @@
   });
 
   const pasta = reactive<IPasta>(new PastaModel());
-  const configuracaoStore = useConfiguracaoStore();
-  const featuresStore = useFeaturesStore();
   const exibirModalPasta = defineModel<boolean>({ default: false });
   const repositorio = ref<IRepositorio>(new RepositorioModel());
   const formPasta = ref<any>(null);
@@ -128,36 +124,16 @@
   });
 
   const obterCodigoDescricao = (): { codigo: string; descricao: string } => {
-    const diretorio = pasta.diretorio.replace(
-      configuracaoStore.diretorioRaiz + featuresStore.pathSeparator,
-      ''
-    );
+    const nomePasta =
+      pasta.diretorio.split(/[\\/]/).filter(Boolean).pop() || '';
+    const separador = nomePasta.indexOf('_');
 
-    if (!diretorio) return { codigo: '', descricao: '' };
-
-    const comUnderscore = /^([A-Z0-9-]+)_(.+)$/i;
-    const match = diretorio.match(comUnderscore);
-
-    if (match) {
-      return {
-        codigo: match[1].toUpperCase(),
-        descricao: match[2].replace(/_/g, ' ')
-      };
-    }
-
-    const soCodigo = /^([A-Z]+\d*-?\d*)(.*)$/i;
-    const matchCodigo = diretorio.match(soCodigo);
-
-    if (matchCodigo && matchCodigo[2]) {
-      return {
-        codigo: matchCodigo[1].toUpperCase(),
-        descricao: matchCodigo[2]
-      };
-    }
+    if (separador === -1)
+      return { codigo: nomePasta.toUpperCase(), descricao: '' };
 
     return {
-      codigo: '',
-      descricao: diretorio
+      codigo: nomePasta.slice(0, separador).toUpperCase(),
+      descricao: nomePasta.slice(separador + 1).replace(/_/g, ' ')
     };
   };
 

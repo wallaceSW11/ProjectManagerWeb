@@ -8,6 +8,6 @@ export default class PerfilMarcacaoProjetoModel
 
   constructor(obj: Partial<IPerfilMarcacaoProjeto> = {}) {
     this.identificadorProjeto = obj.identificadorProjeto || '';
-    this.comandos = obj.comandos || [];
+    this.comandos = obj.comandos ? [...obj.comandos] : [];
   }
 }

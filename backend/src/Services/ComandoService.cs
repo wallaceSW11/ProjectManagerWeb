@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using ProjectManagerWeb.src.DTOs;
 using ProjectManagerWeb.src.Utils;
 using ProjectManagerWeb.src.Enuns;
@@ -268,6 +269,8 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
 
             if (string.IsNullOrEmpty(saida)) return;
 
+            var comandoSkip = $"git -C \"{raizGit}\" update-index --skip-worktree \"{caminhoRelativo}\"";
+
             var skipPsi = new ProcessStartInfo
             {
                 FileName = "git",
@@ -284,8 +287,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
             var erroSkip = procSkip.StandardError.ReadToEnd().Trim();
             procSkip.WaitForExit();
 
-            if (procSkip.ExitCode != 0)
-                ShellExecute.LogComando($"skip-worktree falhou ({procSkip.ExitCode}) para {caminhoRelativo}: {erroSkip}", "ERRO");
+            ShellExecute.LogComando(comandoSkip, procSkip.ExitCode == 0 ? "OK" : $"ERRO ({procSkip.ExitCode}): {erroSkip}");
         }
         catch
         {
@@ -351,6 +353,8 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
 
             foreach (var arquivo in arquivosComSkip)
             {
+                var comandoReverter = $"git -C \"{raizGit}\" update-index --no-skip-worktree \"{arquivo}\"";
+
                 var removerPsi = new ProcessStartInfo
                 {
                     FileName = "git",
@@ -365,16 +369,19 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
                 if (procRemover is null)
                 {
                     resultados.Add($"{arquivo}: erro ao iniciar processo");
+                    ShellExecute.LogComando(comandoReverter, "ERRO: não foi possível iniciar o processo");
                     continue;
                 }
 
                 var erro = procRemover.StandardError.ReadToEnd().Trim();
                 procRemover.WaitForExit();
 
-                resultados.Add($"{arquivo}: {(procRemover.ExitCode == 0 ? "OK" : $"FALHOU: {erro}")}");
+                var sucesso = procRemover.ExitCode == 0;
+                resultados.Add($"{arquivo}: {(sucesso ? "OK" : $"FALHOU: {erro}")}");
+                ShellExecute.LogComando(comandoReverter, sucesso ? "OK" : $"ERRO ({procRemover.ExitCode}): {erro}");
             }
 
-            ShellExecute.LogComando($"ReverterSkipWorktree em {raizGit}", $"{arquivosComSkip.Count} arquivo(s) processado(s)");
+            ShellExecute.LogComando($"ReverterSkipWorktree em {raizGit}: {arquivosComSkip.Count} arquivo(s) processado(s)", "RESUMO");
         }
         catch (Exception ex)
         {
@@ -382,6 +389,53 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
         }
 
         return resultados;
+    }
+
+    public static List<string> RemoverSkipWorktreeDaPasta(ReverterSkipWorktreeRequestDTO request)
+    {
+        var clonePrincipal = Path.Combine(request.Diretorio, request.NomeRepositorio ?? "");
+
+        if (!string.IsNullOrWhiteSpace(request.Subdiretorio))
+            return RemoverSkipWorktree(Path.Combine(clonePrincipal, request.Subdiretorio));
+
+        var diretoriosWorkspace = ObterDiretoriosDoWorkspace(request.Diretorio);
+
+        if (diretoriosWorkspace.Count == 0)
+            return RemoverSkipWorktree(clonePrincipal);
+
+        var resultados = new List<string>();
+
+        foreach (var diretorio in diretoriosWorkspace)
+            resultados.AddRange(RemoverSkipWorktree(diretorio));
+
+        return resultados;
+    }
+
+    private static List<string> ObterDiretoriosDoWorkspace(string diretorio)
+    {
+        if (!Directory.Exists(diretorio)) return [];
+
+        var arquivoWorkspace = Directory.GetFiles(diretorio, "*.code-workspace").FirstOrDefault();
+        if (arquivoWorkspace is null) return [];
+
+        using var documento = JsonDocument.Parse(File.ReadAllText(arquivoWorkspace));
+
+        if (!documento.RootElement.TryGetProperty("folders", out var folders)) return [];
+
+        var diretorioWorkspace = Path.GetDirectoryName(arquivoWorkspace) ?? diretorio;
+        var diretorios = new List<string>();
+
+        foreach (var folder in folders.EnumerateArray())
+        {
+            if (!folder.TryGetProperty("path", out var caminho)) continue;
+
+            var caminhoCompleto = Path.GetFullPath(Path.Combine(diretorioWorkspace, caminho.GetString() ?? ""));
+
+            if (Directory.Exists(Path.Combine(caminhoCompleto, ".git")) || File.Exists(Path.Combine(caminhoCompleto, ".git")))
+                diretorios.Add(caminhoCompleto);
+        }
+
+        return diretorios;
     }
 
     public async Task<bool> AbrirPastaIDE(AbrirPastaIDERequestDTO request)

@@ -65,7 +65,7 @@
             size="13"
             color="#ff9f12"
           >
-            mdi-arrow-down
+            mdi-eye
           </v-icon>
           {{ discoLeituraTexto }}
         </span>
@@ -74,7 +74,7 @@
             size="13"
             color="#74d94b"
           >
-            mdi-arrow-up
+            mdi-pencil
           </v-icon>
           {{ discoEscritaTexto }}
         </span>
