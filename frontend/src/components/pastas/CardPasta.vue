@@ -205,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import type { IPasta } from '@/types';
 
   interface Props {
@@ -232,6 +232,10 @@
 
   const menusAtivos = computed(() => {
     return props.pasta.menus.filter(menu => menu.ativo);
+  });
+
+  watch(menuAberto, aberto => {
+    if (!aberto) menusSelecionados.value = [];
   });
 
   const selecionarPasta = (pasta: IPasta): void => {

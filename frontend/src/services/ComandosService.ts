@@ -54,9 +54,7 @@ class ComandosService extends BaseApiService {
     return await this.post('comandos/abrir-pasta-ide', request);
   }
 
-  async reverterSkipWorktree(
-    request: ReverterSkipWorktree
-  ): Promise<string[]> {
+  async reverterSkipWorktree(request: ReverterSkipWorktree): Promise<string[]> {
     return await this.post('comandos/reverter-skip-worktree', request);
   }
 }
