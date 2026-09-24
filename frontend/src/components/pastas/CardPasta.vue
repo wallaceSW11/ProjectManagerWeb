@@ -83,6 +83,7 @@
           <v-menu
             location="bottom"
             v-model="menuAberto"
+            @update:model-value="aoAlternarMenu"
           >
             <template #activator="{ props }">
               <v-btn
@@ -143,12 +144,7 @@
                 class="my-2"
               />
 
-              <v-list-item
-                @click.stop="
-                  menuAberto = false;
-                  emit('reverterSkipWorktree', pasta);
-                "
-              >
+              <v-list-item @click.stop="reverterSkipWorktree">
                 <v-list-item-title>
                   <v-icon
                     color="warning"
@@ -160,12 +156,7 @@
                 </v-list-item-title>
               </v-list-item>
 
-              <v-list-item
-                @click.stop="
-                  menuAberto = false;
-                  emit('excluirPasta', pasta.diretorio);
-                "
-              >
+              <v-list-item @click.stop="excluirPasta">
                 <v-list-item-title>
                   <v-icon
                     color="error"
@@ -205,7 +196,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
+  import { computed, ref } from 'vue';
   import type { IPasta } from '@/types';
 
   interface Props {
@@ -234,9 +225,10 @@
     return props.pasta.menus.filter(menu => menu.ativo);
   });
 
-  watch(menuAberto, aberto => {
-    if (!aberto) menusSelecionados.value = [];
-  });
+  const aoAlternarMenu = (aberto: boolean): void => {
+    if (aberto) return;
+    menusSelecionados.value = [];
+  };
 
   const selecionarPasta = (pasta: IPasta): void => {
     emit('selecionarPasta', pasta);
@@ -244,6 +236,18 @@
 
   const exibirCadastroPasta = (pasta: IPasta): void => {
     emit('exibirCadastroPasta', pasta);
+  };
+
+  const reverterSkipWorktree = (): void => {
+    menuAberto.value = false;
+    menusSelecionados.value = [];
+    emit('reverterSkipWorktree', props.pasta);
+  };
+
+  const excluirPasta = (): void => {
+    menuAberto.value = false;
+    menusSelecionados.value = [];
+    emit('excluirPasta', props.pasta.diretorio);
   };
 
   const executarMenu = (pasta: IPasta, menuId: string): void => {

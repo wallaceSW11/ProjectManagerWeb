@@ -16,6 +16,26 @@
   ✅ `if (!item) return;`
   ❌ `if (!item) { return; }`
 - **Evite if/else** — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
+- **`watch`/`watchEffect`** — último recurso. Prefira `computed`, `@update:model-value` e handlers de evento.
+
+## Evite `watch`
+
+Só use `watch` quando não houver alternativa (ex: reagir a algo externo que não passa pelo template). Para sincronizar estado com a UI, use `computed` ou o próprio evento do componente.
+
+```ts
+// errado — watch só pra limpar estado ao fechar o menu
+watch(menuAberto, aberto => {
+  if (!aberto) selecionados.value = [];
+});
+
+// certo — o evento do v-menu já notifica a mudança
+// <v-menu v-model="menuAberto" @update:model-value="aoAlternarMenu" />
+
+const aoAlternarMenu = (aberto: boolean): void => {
+  if (aberto) return;
+  selecionados.value = [];
+};
+```
 
 ## Async
 
