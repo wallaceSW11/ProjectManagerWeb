@@ -230,7 +230,7 @@
     }
 
     modoOperacao.value = MODO_OPERACAO.EDICAO.valor;
-    Object.assign(repositorioSelecionado.value, repo);
+    Object.assign(repositorioSelecionado.value, new RepositorioModel(repo));
     irParaCadastro();
   };
 

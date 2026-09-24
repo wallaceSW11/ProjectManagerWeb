@@ -35,7 +35,7 @@ export default class ProjetoModel implements IProjeto {
 
     // Handle comandosObj from backend or frontend
     if (obj.comandosObj) {
-      this.comandosObj = obj.comandosObj;
+      this.comandosObj = { ...obj.comandosObj };
     } else if (
       (obj as any).comandos &&
       typeof (obj as any).comandos === 'object' &&

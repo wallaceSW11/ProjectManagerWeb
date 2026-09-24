@@ -179,7 +179,7 @@
   };
 
   const mudarParaEdicao = (item: IProjeto): void => {
-    Object.assign(projetoSelecionado, item);
+    Object.assign(projetoSelecionado, new ProjetoModel(item));
     definirModoEdicao();
     abrirModalCadastroProjeto();
   };
