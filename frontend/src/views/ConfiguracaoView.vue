@@ -11,6 +11,12 @@
               :acao="abrirBancoPath"
               top
             />
+            <IconeComTooltip
+              icone="mdi-history"
+              texto="Abrir histórico de comandos executados"
+              :acao="abrirHistoricoComandos"
+              top
+            />
           </div>
         </div>
       </v-col>
@@ -434,13 +440,18 @@
     }
   };
 
+  const abrirHistoricoComandos = async (): Promise<void> => {
+    try {
+      await ComandosService.abrirHistorico();
+    } catch (error: any) {
+      notificar('erro', 'Falha ao abrir histórico', error.message);
+    }
+  };
+
   const abrirBancoPath = async (): Promise<void> => {
     try {
       const caminho = await ConfiguracaoService.obterCaminhoBanco();
-      const explorador = featuresStore.isWindows ? 'explorer' : 'xdg-open';
-      await ComandosService.executarComandoAvulso({
-        comando: `cd "${caminho}"; ${explorador} .; Exit;`
-      });
+      await ComandosService.abrirDiretorio(caminho);
     } catch (error: any) {
       notificar('erro', 'Falha ao abrir diretório', error.message);
     }

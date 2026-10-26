@@ -64,6 +64,7 @@ Nomes em português: `ObterTodas`, `Cadastrar`, `Clonar`.
 
 `ShellExecute.ExecutarComando()` ou `ProcessStartInfo`.
 IIS: `Verb = "runas"`. Tratar `TimeoutException` com fallback.
+**Abrir pasta no gerenciador de arquivos:** `IShellProvider.AbrirDiretorio(caminho)` / `ComandoService.AbrirDiretorio`. Nunca montar `xdg-open`/`explorer` como comando avulso: no Linux o `xdg-open` respeita o handler do sistema e pode retornar sucesso **sem abrir nada** (ex.: handler do Dolphin via GIO). O provider detecta o gerenciador instalado (nautilus, dolphin, nemo, thunar, pcmanfm) e só cai no `xdg-open` se nenhum existir.
 
 ## Exclusão de diretórios no Windows
 

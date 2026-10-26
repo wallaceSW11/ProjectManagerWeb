@@ -7,6 +7,9 @@ namespace ProjectManagerWeb.src.Utils;
 
 public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShellProvider
 {
+    private static readonly string[] GerenciadoresArquivos = ["nautilus", "dolphin", "nemo", "thunar", "pcmanfm"];
+    private static readonly string[] EditoresTexto = ["code", "gnome-text-editor", "gedit", "kate", "xed", "mousepad", "sublime_text"];
+
     private ITerminalEmulator? _terminal;
 
     private ITerminalEmulator Terminal =>
@@ -113,6 +116,56 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
     }
 
     public List<string> ObterPerfisTerminal() => Terminal.ObterPerfis();
+
+    public void AbrirDiretorio(string caminho)
+    {
+        var executavel = ResolverGerenciadorArquivos(Environment.GetEnvironmentVariable("PATH") ?? "") ?? "xdg-open";
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = executavel,
+            Arguments = $"\"{caminho}\"",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        });
+    }
+
+    public void AbrirArquivo(string caminho)
+    {
+        var executavel = ResolverEditorTexto(Environment.GetEnvironmentVariable("PATH") ?? "") ?? "xdg-open";
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = executavel,
+            Arguments = $"\"{caminho}\"",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        });
+    }
+
+    internal static string? ResolverEditorTexto(string caminhoPath)
+    {
+        var diretorios = caminhoPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var editor in EditoresTexto)
+            foreach (var diretorio in diretorios)
+                if (File.Exists(Path.Combine(diretorio, editor)))
+                    return editor;
+
+        return null;
+    }
+
+    internal static string? ResolverGerenciadorArquivos(string caminhoPath)
+    {
+        var diretorios = caminhoPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var gerenciador in GerenciadoresArquivos)
+            foreach (var diretorio in diretorios)
+                if (File.Exists(Path.Combine(diretorio, gerenciador)))
+                    return gerenciador;
+
+        return null;
+    }
 
     public void RecarregarTerminal() => _terminal = null;
 

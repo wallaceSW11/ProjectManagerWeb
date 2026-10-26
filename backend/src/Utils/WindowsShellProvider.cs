@@ -58,7 +58,6 @@ public class WindowsShellProvider : IShellProvider
     {
         ProcessStartInfo psi;
         string executavel;
-
         if (!string.IsNullOrWhiteSpace(perfilTerminal))
         {
             var encodedCommand = Convert.ToBase64String(
@@ -86,6 +85,19 @@ public class WindowsShellProvider : IShellProvider
 
         Process.Start(psi);
     }
+
+    public void AbrirDiretorio(string caminho)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "explorer.exe",
+            Arguments = $"\"{caminho}\"",
+            UseShellExecute = true
+        });
+    }
+
+    public void AbrirArquivo(string caminho) =>
+        Process.Start(new ProcessStartInfo(caminho) { UseShellExecute = true });
 
     public List<string> ObterPerfisTerminal()
     {

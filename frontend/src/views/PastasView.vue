@@ -1118,12 +1118,10 @@
     }
   };
 
-  const abrirDiretorio = (diretorio: string): void => {
+  const abrirDiretorio = async (diretorio: string): Promise<void> => {
     try {
-      const explorador = featuresStore.isWindows ? 'explorer' : 'xdg-open';
-      const comando = `cd "${diretorio}"; ${explorador} .; Exit;`;
-      ComandosService.executarComandoAvulso({ comando });
-      notificar('sucesso', 'Comando solicitado');
+      await ComandosService.abrirDiretorio(diretorio);
+      notificar('sucesso', 'Diretório aberto');
     } catch (error) {
       console.error('Falha ao abrir o diretório: ', error);
       notificar('erro', 'Falha ao abrir o diretório', String(error));

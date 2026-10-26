@@ -50,6 +50,14 @@ class ComandosService extends BaseApiService {
     return await this.post('comandos/avulso', comando);
   }
 
+  async abrirDiretorio(diretorio: string): Promise<void> {
+    return await this.post('comandos/abrir-diretorio', { diretorio });
+  }
+
+  async abrirHistorico(): Promise<void> {
+    return await this.post('comandos/abrir-historico', {});
+  }
+
   async abrirPastaIDE(request: AbrirPastaIDE): Promise<void> {
     return await this.post('comandos/abrir-pasta-ide', request);
   }

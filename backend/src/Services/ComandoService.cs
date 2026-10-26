@@ -129,6 +129,12 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
         return true;
     }
 
+    public void AbrirDiretorio(string diretorio) =>
+        shellExecutor.AbrirDiretorio(diretorio);
+
+    public void AbrirHistoricoComandos() =>
+        shellExecutor.AbrirArquivo(ShellExecute.CaminhoLog);
+
     public bool ExecutarComandoAvulso(string comando, string? perfilTerminal = null, string? githubToken = null)
     {
         try

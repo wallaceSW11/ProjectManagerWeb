@@ -11,4 +11,14 @@ public class ShellExecutor : IShellExecutor
     {
         ShellExecute.ExecutarComandoSemInterface(command);
     }
+
+    public void AbrirDiretorio(string caminho)
+    {
+        ShellExecute.AbrirDiretorio(caminho);
+    }
+
+    public void AbrirArquivo(string caminho)
+    {
+        ShellExecute.AbrirArquivo(caminho);
+    }
 }
