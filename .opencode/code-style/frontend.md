@@ -1,5 +1,7 @@
 # Code Style — Frontend Vue 3 + TypeScript
 
+Boilerplates completos (store, model, carregamento, errado vs certo): `.opencode/referencias/frontend-boilerplates.md`.
+
 ## Proibido
 
 - `.then().catch()` — async/await sempre
@@ -12,77 +14,25 @@
 - Hardcodar cores — variáveis do Vuetify
 - `console.log` — snackbar/notify para erros
 - Prefixo `is`/`has` em booleanos: `loading`, não `isLoading`
-- **If de uma linha COM chaves `{}`** — early return incluso.
+- `booleano ?? false` — converta com `!!` (`ativo: !!obj.usoRecursos?.ativo`). `??` fica só para valores onde `0`/`''` são válidos
+- If de uma linha COM chaves `{}` — early return incluso.
   ✅ `if (!item) return;`
   ❌ `if (!item) { return; }`
-- **Evite if/else** — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
-- **`watch`/`watchEffect`** — último recurso. Prefira `computed`, `@update:model-value` e handlers de evento.
-
-## Evite `watch`
-
-Só use `watch` quando não houver alternativa (ex: reagir a algo externo que não passa pelo template). Para sincronizar estado com a UI, use `computed` ou o próprio evento do componente.
-
-```ts
-// errado — watch só pra limpar estado ao fechar o menu
-watch(menuAberto, aberto => {
-  if (!aberto) selecionados.value = [];
-});
-
-// certo — o evento do v-menu já notifica a mudança
-// <v-menu v-model="menuAberto" @update:model-value="aoAlternarMenu" />
-
-const aoAlternarMenu = (aberto: boolean): void => {
-  if (aberto) return;
-  selecionados.value = [];
-};
-```
+- If/else — ternário pra 2 caminhos ou objeto mapeado pra múltiplos.
+- `watch`/`watchEffect` — último recurso. Prefira `computed`, `@update:model-value` e handler de evento.
 
 ## Async
 
 Loading reseta no `finally`. Nunca no try ou catch.
 
-```ts
-async function carregar(): Promise<void> {
-  carregando.value = true;
-  try {
-    dados.value = await servico.obterTodos();
-  } catch {
-    notificar.erro('Erro', 'Erro ao carregar dados.');
-  } finally {
-    carregando.value = false;
-  }
-}
-```
-
 ## Respiração vertical
 
 Separe parágrafos lógicos com linha em branco — nunca cole `const`, early return e `return` final.
-
-```ts
-const calcular = (valor: number | null): number | null => {
-  const limite = 10;
-
-  if (valor === null) return null;
-  if (valor < limite) return limite;
-
-  return valor * 2;
-};
-```
-
 Early returns consecutivos ficam juntos, sem linha em branco entre eles.
 
 ## Template
 
-Zero lógica. Condicionais e class bindings → computed.
-
-```vue
-<!-- errado -->
-<v-btn v-if="itens.length > 0 && !carregando">Salvar</v-btn>
-
-<!-- certo -->
-<v-btn v-if="podeSalvar">Salvar</v-btn>
-const podeSalvar = computed(() => itens.value.length > 0 && !carregando.value)
-```
+Zero lógica. Condicional e class binding → computed.
 
 ## Componentes
 
@@ -101,45 +51,7 @@ Model/Type:  Produto.ts
 
 ## Pinia — Options API style
 
-Seguir o padrão das stores existentes:
-
-```ts
-export const useXStore = defineStore('x', {
-  state: (): XState => ({
-    itens: [],
-    carregando: false,
-    erro: null,
-  }),
-
-  getters: {
-    total: (state): number => state.itens.length,
-  },
-
-  actions: {
-    async carregar(): Promise<void> {
-      this.carregando = true;
-      this.erro = null;
-      try {
-        this.itens = await xService.obterTodos();
-      } catch (erro: any) {
-        this.erro = erro.message || 'Erro ao carregar';
-        throw erro;
-      } finally {
-        this.carregando = false;
-      }
-    },
-  },
-});
-```
-
-## Atualização de item na lista
-
-Usar `String()` nos dois lados do `findIndex`. Usar `splice`. Não ativar loading global.
-
-```ts
-const indice = itens.value.findIndex(o => String(o.id) === String(id));
-if (indice !== -1) itens.value.splice(indice, 1, atualizado);
-```
+`state` + `getters` + `actions`, como nas stores existentes. Lista: `String()` nos dois lados do `findIndex` + `splice`, sem ligar o loading global.
 
 ## Vuetify
 
@@ -160,21 +72,7 @@ CSS scoped só quando Vuetify não cobre. `variant="outlined"` nos inputs.
 
 Classe com `constructor(obj: Partial<IModel>)` + `toDTO()`. Interface em `types/index.ts`.
 
-```ts
-export default class RepositorioModel implements IRepositorio {
-  identificador: string;
-  url: string | null;
-
-  constructor(obj: Partial<IRepositorio> = {}) {
-    this.identificador = obj.identificador || crypto.randomUUID();
-    this.url = obj.url || null;
-  }
-
-  paraDTO() {
-    return { identificador: this.identificador, url: this.url };
-  }
-}
-```
+Booleano opcional no constructor usa `!!`: `this.ativo = !!obj.ativo;`. `?? false` só quando o default for explícito e o campo não for booleano.
 
 ## ProjetoModel — dois formatos de `comandos`
 
@@ -189,12 +87,7 @@ Nomes auto-documentados. Zero comentários no código.
 
 ## Confirmações destrutivas
 
-Usar `confirm()` nativo:
-
-```ts
-const confirmado = confirm(`Tem certeza que deseja excluir?\n\n${diretorio}\n\nEsta ação não pode ser desfeita.`);
-if (!confirmado) return;
-```
+`confirm()` nativo — sem modal customizado.
 
 ## DELETE com body no axios
 

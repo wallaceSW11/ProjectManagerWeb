@@ -9,11 +9,19 @@ public sealed record ConfiguracaoRequestDTO
     List<string>? DiretoriosOcultos = default,
     [property: JsonPropertyName("clis")] List<CliRequestDTO>? CLIs = default,
     string? TerminalLinux = "ptyxis",
-    List<PastaCentralizadoraDTO>? PastasCentralizadoras = default
+    List<PastaCentralizadoraDTO>? PastasCentralizadoras = default,
+    UsoRecursosDTO? UsoRecursos = default
 )
 {
     public string? DiretorioRaizEfetivo => DiretorioRaiz;
 }
+
+public sealed record UsoRecursosDTO(
+    bool Ativo = false,
+    double LimiarCpuPercentual = 80,
+    int IntervaloRegistroSegundos = 5,
+    int RetencaoDias = 30
+);
 
 public sealed record PerfilVSCodeRequestDTO(
     string Nome

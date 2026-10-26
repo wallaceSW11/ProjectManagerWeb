@@ -255,6 +255,58 @@ public class ConfiguracaoServiceTests : IDisposable
         }
     }
 
+    public class ObterConfiguracaoEmCacheAsync : ConfiguracaoServiceTests
+    {
+        [Fact]
+        public void Deve_retornar_nulo_no_cache_antes_da_primeira_leitura()
+        {
+            _sut.ConfiguracaoEmCache.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task Deve_preencher_cache_apos_primeira_leitura()
+        {
+            await _sut.ObterConfiguracaoEmCacheAsync();
+
+            _sut.ConfiguracaoEmCache.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task Deve_usar_cache_e_nao_reler_arquivo_dentro_do_ttl()
+        {
+            await SalvarDireto(new ConfiguracaoRequestDTO { DiretorioRaiz = "/primeiro" });
+            await _sut.ObterConfiguracaoEmCacheAsync();
+            await SalvarDireto(new ConfiguracaoRequestDTO { DiretorioRaiz = "/segundo" });
+
+            var config = await _sut.ObterConfiguracaoEmCacheAsync();
+
+            config.DiretorioRaiz.Should().Be("/primeiro");
+        }
+
+        [Fact]
+        public async Task Deve_atualizar_cache_imediatamente_ao_salvar()
+        {
+            await _sut.SalvarConfiguracaoAsync(new ConfiguracaoRequestDTO
+            {
+                UsoRecursos = new UsoRecursosDTO(LimiarCpuPercentual: 65)
+            });
+
+            _sut.ConfiguracaoEmCache!.UsoRecursos!.LimiarCpuPercentual.Should().Be(65);
+        }
+
+        [Fact]
+        public async Task Deve_refletir_salvamento_na_leitura_em_cache()
+        {
+            await SalvarDireto(new ConfiguracaoRequestDTO { DiretorioRaiz = "/antigo" });
+            await _sut.ObterConfiguracaoEmCacheAsync();
+
+            await _sut.SalvarConfiguracaoAsync(new ConfiguracaoRequestDTO { DiretorioRaiz = "/novo" });
+            var config = await _sut.ObterConfiguracaoEmCacheAsync();
+
+            config.DiretorioRaiz.Should().Be("/novo");
+        }
+    }
+
     private async Task SalvarDireto(ConfiguracaoRequestDTO config)
     {
         var json = JsonSerializer.Serialize(config);

@@ -7,6 +7,8 @@ description: Valida manualmente se arquivos modificados seguem o code-style do p
 
 Use quando quiser verificar code-style manualmente, complementar o plugin automático, ou revisar antes de entregar.
 
+O plugin `.opencode/plugins/validacao/` já checa as regras mecânicas a cada edição e injeta as violações no prompt. Esta skill cobre a revisão que o plugin não faz: camadas, duplicação, simplicidade.
+
 ## Backend (.cs)
 
 - AutoMapper (`AutoMapper`, `CreateMap`, `IMapper`)

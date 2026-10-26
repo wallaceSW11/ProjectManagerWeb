@@ -28,6 +28,10 @@
 
   const toasts = ref<Toast[]>([]);
   let idCounter = 0;
+  let ultimaAssinatura = '';
+  let instanteUltimaNotificacao = 0;
+
+  const JANELA_DEDUPLICACAO_MS = 1000;
 
   const DURACAO_POR_TIPO: Record<NotificacaoTipo['tipo'], number> = {
     sucesso: 3000,
@@ -35,24 +39,39 @@
     erro: 8000
   };
 
+  const handleNotificar = ({
+    tipo,
+    titulo,
+    mensagem
+  }: NotificacaoTipo): void => {
+    const agora = Date.now();
+    const assinatura = `${tipo}|${titulo}|${mensagem ?? ''}`;
+
+    if (
+      assinatura === ultimaAssinatura &&
+      agora - instanteUltimaNotificacao < JANELA_DEDUPLICACAO_MS
+    )
+      return;
+
+    ultimaAssinatura = assinatura;
+    instanteUltimaNotificacao = agora;
+
+    const id = idCounter++;
+    toasts.value.push({ id, tipo, titulo, mensagem });
+
+    setTimeout(() => {
+      const index = toasts.value.findIndex(t => t.id === id);
+      if (index !== -1) toasts.value.splice(index, 1);
+    }, DURACAO_POR_TIPO[tipo]);
+  };
+
   export default defineComponent({
     name: 'ToastNotificacao',
     setup() {
-      const handleNotificar = ({
-        tipo,
-        titulo,
-        mensagem
-      }: NotificacaoTipo): void => {
-        const id = idCounter++;
-        toasts.value.push({ id, tipo, titulo, mensagem });
-
-        setTimeout(() => {
-          const index = toasts.value.findIndex(t => t.id === id);
-          if (index !== -1) toasts.value.splice(index, 1);
-        }, DURACAO_POR_TIPO[tipo]);
-      };
-
-      onMounted(() => eventBus.on('notificar', handleNotificar));
+      onMounted(() => {
+        eventBus.off('notificar', handleNotificar);
+        eventBus.on('notificar', handleNotificar);
+      });
       onBeforeUnmount(() => eventBus.off('notificar', handleNotificar));
 
       return { toasts };

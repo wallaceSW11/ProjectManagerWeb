@@ -1,94 +1,74 @@
 # ProjectManagerWeb (PMW)
 
-Gerenciador de repositórios Git, pastas de projetos, IDEs e deploy IIS.
-
-## Stack
-
-- **Frontend:** Vue 3 + TypeScript + Vuetify 3 + Pinia + Vue Router + Axios + Vite + pnpm
-- **Backend:** .NET 9 + ASP.NET Core (sem EF, sem banco relacional)
-- **Persistência:** Arquivos JSON em `%APPDATA%\PMW\Banco\`
-- **Infra:** IIS local via `dotnet publish`
+Gerenciador local de repositórios Git, pastas de projetos, IDEs e deploy IIS.
+Stack, domínio, persistência, migrations e infraestrutura: `.opencode/ecosystem-pmw.md`.
 
 ## Estrutura
 
 ```
-/
-├── frontend/     Vue 3 SPA
-│   └── src/
-│       ├── views/
-│       ├── stores/
-│       ├── services/
-│       ├── models/
-│       ├── components/
-│       ├── types/
-│       └── composables/
-├── backend/      .NET 9 Web API
-│   └── src/
-│       ├── Controllers/
-│       ├── Services/
-│       ├── DTOs/
-│       └── Utils/
-└── .opencode/    Configuração do OpenCode
+frontend/   Vue 3 + TypeScript + Vuetify 3 + Pinia + Vite + pnpm
+backend/    .NET 9 + ASP.NET Core (sem EF, sem AutoMapper)
+.opencode/  agentes, skills, flows e code style do OpenCode
 ```
 
 ## Comandos
 
 ```bash
-# Frontend
-cd frontend
-pnpm install              # instalar dependências
-pnpm run dev              # dev server (localhost:5173)
-pnpm run build            # build produção
-pnpm run lint             # ESLint
+# frontend/
+pnpm install
+pnpm run dev        # localhost:5173
+pnpm run build
+pnpm run format     # prettier — rodar antes de entregar
+pnpm run lint
 
-# Backend
-cd backend
-dotnet build              # compilar
-dotnet run                # dev server (localhost:5000)
-dotnet publish            # publicar para IIS
-
-# Tudo junto (raiz)
-.\Atualizar_PMW.ps1      # atualizar do último release
-
-# Testes
-dotnet test backend/tests/ProjectManagerWeb.Tests/ProjectManagerWeb.Tests.csproj  # rodar testes
-bash backend/test-coverage.sh  # testes + relatório de cobertura HTML
+# backend/
+dotnet build
+dotnet run          # localhost:2024
+dotnet publish
 ```
 
-Para relatório de cobertura, instalar o ReportGenerator antes:
-```bash
-dotnet tool install -g dotnet-reportgenerator-globaltool
-```
-```
+Testes: `dotnet test backend/tests/ProjectManagerWeb.Tests/ProjectManagerWeb.Tests.csproj` — somente via skill `pipeline`.
 
-## Proibições (valem pra todo o repositório)
+## Code style
 
-- **Sem comentários no código** — nomes auto-documentados. Zero comentários, inclusive comentários de seção/bloco.
-- **If de uma linha SEM chaves** — early return incluso.  
-  ✅ `if (!item) return;`  
-  ❌ `if (!item) { return; }`
-- **Evite if/else** — use ternário pra 2 caminhos ou objetos mapeados para múltiplos.
+Sempre carregados: `.opencode/code-style/backend.md` e `.opencode/code-style/frontend.md`.
+O essencial:
+
+- Sem comentários no código — nomes auto-documentados
+- If de uma linha SEM chaves: `if (!item) return;`
+- Evite if/else — ternário pra 2 caminhos, objeto mapeado pra vários
+- Camadas: Component → Store → Service → API | Controller → Service → JsonService
+
+## Proibições
+
 - NUNCA hardcodar secrets, API keys ou connection strings
-- **NUNCA git add, commit, push, pull, merge, rebase — NUNCA.** Responsabilidade exclusiva do usuário. O usuário revisa e commita pessoalmente. Os skills `criar-mr` e `pipeline` têm permissão total.
-- NUNCA inventar informação — investigue antes
-- NUNCA pular camadas: Component → Store → Service → API | Controller → Service → JsonService
-- **NUNCA criar ou rodar testes unitários.** Implementação e testes são ciclos separados: implemento, você revisa/testa manualmente, depois roda skill de testes separadamente. Exceção: o skill `pipeline` pode criar e rodar testes.
+- **NUNCA git add, commit, push, pull, merge, rebase.** O usuário revisa e commita pessoalmente. Exceção: skills `criar-mr` e `pipeline`.
+- NUNCA inventar informação — investigue o fonte antes de responder
+- **NUNCA criar ou rodar testes unitários.** Ciclos separados: implemento, você valida manualmente, depois roda a skill de testes. Exceção: `pipeline`.
 
 ## Git
 
-Branches: `main`, `develop`, `feature/*`, `fix/*`, `chore/*`
-Commits: `tipo(escopo): descrição em pt-br`
-Tipos: feat, fix, chore, refactor, style, docs, test
-PRs sempre para `develop`. Commits atômicos. Sem secrets no commit.
+Branch de release: `main`. Trabalho em `PMW<n>`.
+Commits: `tipo(escopo): descrição em pt-br` — feat, fix, chore, refactor, style, docs, test.
+PR sempre contra `main`. Commits atômicos. Sem secrets no commit.
+
+### Contas git e push
+
+O notebook usa múltiplas contas via SSH (`~/.ssh/config` com um alias por conta). Este repositório usa:
+
+```
+git@github-wallacesw11:wallaceSW11/ProjectManagerWeb.git   → id_ed25519_wallacesw11
+```
+
+- `gh auth switch --user <conta>` afeta **só** a API/HTTPS do `gh` (criar PR, issues). **Não** afeta o push, que é SSH.
+- Push com `Permission denied (publickey)` = remote apontando para `github.com` sem alias, ou chave errada no `core.sshCommand`.
+- Fluxo: push pelo `origin` (alias) e `gh auth switch --user wallaceSW11` apenas para o `gh pr create`, restaurando `wallace-deeprocket` no final.
 
 ### Pós-merge
 
-Depois que uma PR é mergeada na `main`, o pipeline de release faz um commit de bump de versão.
-Para sincronizar a branch local:
+Cada PR mergeada na `main` gera commit de bump de versão. Para sincronizar a branch local:
 
 ```bash
 git checkout <sua-branch>
 git pull origin main
-# ou
-git rebase main
 ```

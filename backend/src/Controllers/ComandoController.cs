@@ -23,6 +23,34 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
         return Ok(comandos);
     }
 
+    [HttpPost("abrir-diretorio")]
+    public IActionResult AbrirDiretorio([FromBody] DiretorioRequestDTO diretorio)
+    {
+        try
+        {
+            comandoService.AbrirDiretorio(diretorio.Diretorio);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("abrir-historico")]
+    public IActionResult AbrirHistoricoComandos()
+    {
+        try
+        {
+            comandoService.AbrirHistoricoComandos();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpPost("menu")]
     public async Task<IActionResult> ExecutarComandoMenu([FromBody] MenuRequestDTO menu)
     {

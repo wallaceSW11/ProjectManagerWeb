@@ -400,7 +400,7 @@
   };
 
   const menuAtualizacaoAberto = ref(false);
-  const exibirCarregando = ref(true);
+  const exibirCarregando = ref(false);
   const exibirConteudoCarregando = ref(false);
   const mensagem = ref('Carregando...');
   let timeoutDelayCarregando = null;

@@ -2,10 +2,9 @@ namespace ProjectManagerWeb.src.Utils;
 
 public class ShellExecute
 {
-    private static readonly string LogFilePath =
-        Path.Combine(PathHelper.BancoPath, "comandos-executados.txt");
-
     private static readonly object _logLock = new();
+
+    public static string CaminhoLog => Path.Combine(PathHelper.BancoPath, "comandos-executados.txt");
 
     private static IShellProvider _provider = null!;
 
@@ -79,6 +78,45 @@ public class ShellExecute
         }
     }
 
+    public static void AbrirDiretorio(string caminho)
+    {
+        if (string.IsNullOrWhiteSpace(caminho))
+            throw new ArgumentException("O diretório não pode ser nulo ou vazio.", nameof(caminho));
+
+        LogComando($"abrir diretório: {caminho}", "SOLICITADO");
+
+        try
+        {
+            _provider.AbrirDiretorio(caminho);
+        }
+        catch (Exception ex)
+        {
+            LogComando($"abrir diretório: {caminho}", $"ERRO: {ex.Message}");
+            throw new Exception($"Erro ao abrir o diretório: {ex.Message}", ex);
+        }
+    }
+
+    public static void AbrirArquivo(string caminho)
+    {
+        if (string.IsNullOrWhiteSpace(caminho))
+            throw new ArgumentException("O arquivo não pode ser nulo ou vazio.", nameof(caminho));
+
+        if (!File.Exists(caminho))
+            throw new FileNotFoundException("Arquivo não encontrado.", caminho);
+
+        LogComando($"abrir arquivo: {caminho}", "SOLICITADO");
+
+        try
+        {
+            _provider.AbrirArquivo(caminho);
+        }
+        catch (Exception ex)
+        {
+            LogComando($"abrir arquivo: {caminho}", $"ERRO: {ex.Message}");
+            throw new Exception($"Erro ao abrir o arquivo: {ex.Message}", ex);
+        }
+    }
+
     private static string InjetarToken(string command, string? githubToken)
     {
         if (string.IsNullOrWhiteSpace(githubToken)) return command;
@@ -100,7 +138,7 @@ public class ShellExecute
 
             lock (_logLock)
             {
-                File.AppendAllText(LogFilePath, logEntry);
+                File.AppendAllText(CaminhoLog, logEntry);
             }
         }
         catch (Exception ex)

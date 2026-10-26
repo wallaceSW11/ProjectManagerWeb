@@ -515,19 +515,19 @@ public class ComandoServiceTests
     public class RemoverSkipWorktreeDaPasta : ComandoServiceTests
     {
         [Fact]
-        public void Nao_deve_lancar_excecao_quando_diretorio_inexistente()
+        public void Deve_retornar_mensagem_quando_diretorio_nao_existe()
         {
             var diretorio = Path.Combine(Path.GetTempPath(), "pmw-skip-inexistente-" + Guid.NewGuid());
 
             var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
-                new ReverterSkipWorktreeRequestDTO(diretorio, "repo"));
+                new ReverterSkipWorktreeRequestDTO(diretorio));
 
             resultado.Should().ContainSingle();
-            resultado[0].Should().StartWith("Diretório não é um repositório git");
+            resultado[0].Should().StartWith("Diretório não encontrado");
         }
 
         [Fact]
-        public void Deve_reverter_skip_worktree_no_subdiretorio_quando_informado()
+        public void Deve_reverter_skip_worktree_em_repositorio_aninhado()
         {
             var raiz = Path.Combine(Path.GetTempPath(), "pmw-skip-subdir-" + Guid.NewGuid());
             var repositorio = Path.Combine(raiz, "meu-repo", "sub");
@@ -536,7 +536,7 @@ public class ComandoServiceTests
             try
             {
                 var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
-                    new ReverterSkipWorktreeRequestDTO(raiz, "meu-repo", "sub"));
+                    new ReverterSkipWorktreeRequestDTO(raiz));
 
                 ObterFlagGit(repositorio, "arquivo.txt").Should().NotBe('S');
                 resultado.Should().Contain(r => r.Contains("OK"));
@@ -558,7 +558,7 @@ public class ComandoServiceTests
             try
             {
                 var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
-                    new ReverterSkipWorktreeRequestDTO(raiz, "meu-repo"));
+                    new ReverterSkipWorktreeRequestDTO(raiz));
 
                 ObterFlagGit(repositorio, "arquivo.txt").Should().NotBe('S');
                 resultado.Should().Contain(r => r.Contains("OK"));
@@ -571,7 +571,7 @@ public class ComandoServiceTests
         }
 
         [Fact]
-        public void Deve_reverter_apenas_pasta_com_git_quando_workspace()
+        public void Deve_reverter_apenas_pastas_que_sao_repositorio()
         {
             var raiz = Path.Combine(Path.GetTempPath(), "pmw-skip-workspace-" + Guid.NewGuid());
             var comGit = Path.Combine(raiz, "com-git");
@@ -579,20 +579,10 @@ public class ComandoServiceTests
             CriarRepositorioComSkipWorktree(comGit);
             Directory.CreateDirectory(semGit);
 
-            var workspace = Path.Combine(raiz, "projeto.code-workspace");
-            File.WriteAllText(workspace, """
-                {
-                  "folders": [
-                    { "path": "com-git" },
-                    { "path": "sem-git" }
-                  ]
-                }
-                """);
-
             try
             {
                 var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
-                    new ReverterSkipWorktreeRequestDTO(raiz, "repo-inexistente"));
+                    new ReverterSkipWorktreeRequestDTO(raiz));
 
                 ObterFlagGit(comGit, "arquivo.txt").Should().NotBe('S');
                 resultado.Should().ContainSingle(r => r.Contains("OK"));
@@ -606,27 +596,18 @@ public class ComandoServiceTests
         }
 
         [Fact]
-        public void Nao_deve_lancar_excecao_quando_workspace_sem_pasta_git()
+        public void Deve_retornar_mensagem_padrao_quando_nenhum_repositorio_encontrado()
         {
             var raiz = Path.Combine(Path.GetTempPath(), "pmw-skip-workspace-vazio-" + Guid.NewGuid());
             Directory.CreateDirectory(Path.Combine(raiz, "sem-git"));
 
-            var workspace = Path.Combine(raiz, "projeto.code-workspace");
-            File.WriteAllText(workspace, """
-                {
-                  "folders": [
-                    { "path": "sem-git" }
-                  ]
-                }
-                """);
-
             try
             {
                 var resultado = ComandoService.RemoverSkipWorktreeDaPasta(
-                    new ReverterSkipWorktreeRequestDTO(raiz, "repo-inexistente"));
+                    new ReverterSkipWorktreeRequestDTO(raiz));
 
                 resultado.Should().ContainSingle();
-                resultado[0].Should().StartWith("Diretório não é um repositório git");
+                resultado[0].Should().StartWith("Nenhum repositório git encontrado");
             }
             finally
             {

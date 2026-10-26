@@ -19,21 +19,32 @@ internal class WindowsProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcesso
         await Task.Delay(IntervaloAmostrasMs, ct);
         var segunda = ObterAmostraCpu();
 
-        var nucleos = Environment.ProcessorCount;
-        var decorridoSegundos = IntervaloAmostrasMs / 1000.0;
-        var processos = new List<ProcessoInfoDTO>();
+        return TopProcessosCpu.Calcular(primeira, segunda, IntervaloAmostrasMs / 1000.0, QuantidadeTop);
+    }
 
-        foreach (var par in segunda)
+    public Dictionary<int, AmostraProcessoDTO> ObterAmostraCpu()
+    {
+        var amostra = new Dictionary<int, AmostraProcessoDTO>();
+
+        foreach (var processo in Process.GetProcesses())
         {
-            if (!primeira.TryGetValue(par.Key, out var anterior))
-                continue;
-
-            var deltaSegundos = (par.Value.CpuTotal - anterior.CpuTotal).TotalSeconds;
-            var percentual = deltaSegundos / decorridoSegundos / nucleos * 100.0;
-            processos.Add(new ProcessoInfoDTO(par.Value.Nome, percentual, null));
+            try
+            {
+                amostra[processo.Id] = new AmostraProcessoDTO(
+                    processo.Id,
+                    processo.ProcessName,
+                    processo.TotalProcessorTime.TotalSeconds);
+            }
+            catch
+            {
+            }
+            finally
+            {
+                processo.Dispose();
+            }
         }
 
-        return processos.OrderByDescending(p => p.Percentual).Take(QuantidadeTop).ToList();
+        return amostra;
     }
 
     private List<ProcessoInfoDTO> ObterTopMemoria()
@@ -60,28 +71,4 @@ internal class WindowsProcessosColetor(ICpuRamColetor cpuRamColetor) : IProcesso
 
         return processos.OrderByDescending(p => p.MemoriaBytes).Take(QuantidadeTop).ToList();
     }
-
-    private static Dictionary<int, AmostraProcessoCpu> ObterAmostraCpu()
-    {
-        var amostra = new Dictionary<int, AmostraProcessoCpu>();
-
-        foreach (var processo in Process.GetProcesses())
-        {
-            try
-            {
-                amostra[processo.Id] = new AmostraProcessoCpu(processo.ProcessName, processo.TotalProcessorTime);
-            }
-            catch
-            {
-            }
-            finally
-            {
-                processo.Dispose();
-            }
-        }
-
-        return amostra;
-    }
-
-    private readonly record struct AmostraProcessoCpu(string Nome, TimeSpan CpuTotal);
 }

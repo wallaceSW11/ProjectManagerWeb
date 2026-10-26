@@ -11,6 +11,12 @@
               :acao="abrirBancoPath"
               top
             />
+            <IconeComTooltip
+              icone="mdi-history"
+              texto="Abrir histórico de comandos executados"
+              :acao="abrirHistoricoComandos"
+              top
+            />
           </div>
         </div>
       </v-col>
@@ -20,6 +26,7 @@
           <v-tab>Geral</v-tab>
           <v-tab>Pasta Centralizadora</v-tab>
           <v-tab>CLI de IA</v-tab>
+          <v-tab>Monitoramento</v-tab>
         </v-tabs>
 
         <v-tabs-window
@@ -148,6 +155,94 @@
               </div>
             </div>
           </v-tabs-window-item>
+
+          <!-- Aba: Monitoramento -->
+          <v-tabs-window-item>
+            <v-row
+              no-gutters
+              class="pt-4"
+            >
+              <v-col cols="12">
+                <v-switch
+                  label="Registrar uso da máquina"
+                  v-model="configuracao.usoRecursos.ativo"
+                  @update:model-value="salvarConfiguracao"
+                  color="primary"
+                  hide-details
+                />
+                <div class="text-caption text-medium-emphasis mb-4">
+                  Registra apenas com o painel de monitoramento aberto e a CPU
+                  igual ou acima do percentual informado. Um arquivo por dia,
+                  dentro da pasta do banco de dados.
+                </div>
+              </v-col>
+
+              <v-col
+                cols="12"
+                md="4"
+              >
+                <v-text-field
+                  label="CPU (%)"
+                  v-model="limiarCpu"
+                  type="number"
+                  min="1"
+                  max="100"
+                  :disabled="usoInativo"
+                  @change="salvarConfiguracao"
+                  autocomplete="off"
+                  name="pmw-uso-limiar"
+                />
+              </v-col>
+
+              <v-col
+                cols="12"
+                md="4"
+              >
+                <v-text-field
+                  label="Intervalo entre registros (s)"
+                  v-model="intervaloRegistro"
+                  type="number"
+                  min="1"
+                  :disabled="usoInativo"
+                  @change="salvarConfiguracao"
+                  autocomplete="off"
+                  name="pmw-uso-intervalo"
+                  class="px-4"
+                />
+              </v-col>
+
+              <v-col
+                cols="12"
+                md="4"
+              >
+                <v-text-field
+                  label="Retenção (dias)"
+                  v-model="retencaoDias"
+                  type="number"
+                  min="1"
+                  :disabled="usoInativo"
+                  @change="salvarConfiguracao"
+                  autocomplete="off"
+                  name="pmw-uso-retencao"
+                />
+              </v-col>
+
+              <v-col cols="12">
+                <v-btn
+                  color="primary"
+                  :loading="usoStore.gerandoRelatorio"
+                  @click="gerarRelatorio"
+                >
+                  <v-icon start>mdi-file-chart-outline</v-icon>
+                  Gerar relatório
+                </v-btn>
+                <span class="text-caption text-medium-emphasis ml-3">
+                  Gera o HTML com todos os registros do período e abre no
+                  navegador.
+                </span>
+              </v-col>
+            </v-row>
+          </v-tabs-window-item>
         </v-tabs-window>
       </v-col>
     </v-row>
@@ -155,18 +250,20 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref, nextTick } from 'vue';
+  import { computed, onMounted, reactive, ref, nextTick } from 'vue';
   import type { IConfiguracao, IPastaCentralizadora } from '@/types';
   import ConfiguracaoModel from '../models/ConfiguracaoModel';
   import ConfiguracaoService from '../services/ConfiguracaoService';
   import ComandosService from '@/services/ComandosService';
   import { useConfiguracaoStore } from '@/stores/configuracao';
   import { useFeaturesStore } from '@/stores/features';
+  import { useUsoStore } from '@/stores/uso';
   import { notificar } from '@/utils/eventBus';
   import IconeComTooltip from '@/components/comum/botao/IconeComTooltip.vue';
 
   const configuracaoStore = useConfiguracaoStore();
   const featuresStore = useFeaturesStore();
+  const usoStore = useUsoStore();
 
   // --- STATE ---
   const abaAtiva = ref<number>(0);
@@ -178,8 +275,34 @@
   const campoNomeCli = ref<any>(null);
   const configuracao = reactive<IConfiguracao>(new ConfiguracaoModel());
 
+  const usoInativo = computed<boolean>(() => !configuracao.usoRecursos.ativo);
+
+  const limiarCpu = computed<number, string | number>({
+    get: () => configuracao.usoRecursos.limiarCpuPercentual,
+    set: valor => {
+      configuracao.usoRecursos.limiarCpuPercentual = Number(valor) || 1;
+    }
+  });
+
+  const intervaloRegistro = computed<number, string | number>({
+    get: () => configuracao.usoRecursos.intervaloRegistroSegundos,
+    set: valor => {
+      configuracao.usoRecursos.intervaloRegistroSegundos = Number(valor) || 1;
+    }
+  });
+
+  const retencaoDias = computed<number, string | number>({
+    get: () => configuracao.usoRecursos.retencaoDias,
+    set: valor => {
+      configuracao.usoRecursos.retencaoDias = Number(valor) || 1;
+    }
+  });
+
   onMounted(() => {
-    Object.assign(configuracao, new ConfiguracaoModel(configuracaoStore));
+    Object.assign(
+      configuracao,
+      new ConfiguracaoModel(configuracaoStore.configuracao)
+    );
   });
 
   const colunasCli = reactive([
@@ -195,8 +318,7 @@
 
   const salvarConfiguracao = async (): Promise<void> => {
     try {
-      await ConfiguracaoService.postConfiguracao(configuracao);
-      configuracaoStore.salvarConfiguracao(configuracao);
+      await configuracaoStore.salvarConfiguracao(configuracao);
       notificar('sucesso', 'Configurações atualizadas');
     } catch (error: any) {
       notificar('erro', 'Falha ao salvar configuração', error.message);
@@ -305,13 +427,31 @@
     }
   };
 
+  const gerarRelatorio = async (): Promise<void> => {
+    try {
+      await usoStore.gerarRelatorio();
+      notificar(
+        'sucesso',
+        'Relatório gerado',
+        usoStore.ultimoRelatorio?.caminho ?? ''
+      );
+    } catch (error: any) {
+      notificar('erro', 'Falha ao gerar relatório', error.message);
+    }
+  };
+
+  const abrirHistoricoComandos = async (): Promise<void> => {
+    try {
+      await ComandosService.abrirHistorico();
+    } catch (error: any) {
+      notificar('erro', 'Falha ao abrir histórico', error.message);
+    }
+  };
+
   const abrirBancoPath = async (): Promise<void> => {
     try {
       const caminho = await ConfiguracaoService.obterCaminhoBanco();
-      const explorador = featuresStore.isWindows ? 'explorer' : 'xdg-open';
-      await ComandosService.executarComandoAvulso({
-        comando: `"${explorador}" "${caminho}"`
-      });
+      await ComandosService.abrirDiretorio(caminho);
     } catch (error: any) {
       notificar('erro', 'Falha ao abrir diretório', error.message);
     }

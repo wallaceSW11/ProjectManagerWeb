@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using ProjectManagerWeb.src.Services;
 using ProjectManagerWeb.src.Services.Monitoramento;
 using ProjectManagerWeb.src.Services.Monitoramento.Coletores;
+using ProjectManagerWeb.src.Services.Monitoramento.Uso;
 using ProjectManagerWeb.src.Utils;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -43,6 +44,10 @@ builder.Services.AddSingleton<TerminalService>();
 builder.Services.AddHttpClient<VersaoService>();
 builder.Services.AddSingleton<MonitoramentoService>();
 builder.Services.AddSingleton<ProcessosService>();
+builder.Services.AddSingleton<UsoJsonService>();
+builder.Services.AddSingleton<UsoRecursosService>();
+builder.Services.AddSingleton<RelatorioUsoService>();
+builder.Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<UsoRecursosService>());
 if (OperatingSystem.IsWindows())
 {
     builder.Services.AddSingleton<ICpuRamColetor, WindowsCpuRamColetor>();

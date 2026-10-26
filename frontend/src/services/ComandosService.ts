@@ -33,8 +33,6 @@ interface AbrirPastaIDE {
 
 interface ReverterSkipWorktree {
   diretorio: string;
-  nomeRepositorio?: string | null;
-  subdiretorio?: string | null;
 }
 
 class ComandosService extends BaseApiService {
@@ -48,6 +46,14 @@ class ComandosService extends BaseApiService {
 
   async executarComandoAvulso(comando: ComandoAvulso): Promise<void> {
     return await this.post('comandos/avulso', comando);
+  }
+
+  async abrirDiretorio(diretorio: string): Promise<void> {
+    return await this.post('comandos/abrir-diretorio', { diretorio });
+  }
+
+  async abrirHistorico(): Promise<void> {
+    return await this.post('comandos/abrir-historico', {});
   }
 
   async abrirPastaIDE(request: AbrirPastaIDE): Promise<void> {
