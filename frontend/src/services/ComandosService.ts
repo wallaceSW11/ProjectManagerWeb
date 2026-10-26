@@ -33,8 +33,6 @@ interface AbrirPastaIDE {
 
 interface ReverterSkipWorktree {
   diretorio: string;
-  nomeRepositorio?: string | null;
-  subdiretorio?: string | null;
 }
 
 class ComandosService extends BaseApiService {

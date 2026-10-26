@@ -1168,9 +1168,7 @@
 
     try {
       const resultados = await ComandosService.reverterSkipWorktree({
-        diretorio: pasta.diretorio,
-        nomeRepositorio: pasta.nomeRepositorio,
-        subdiretorio: pasta.subdiretorio
+        diretorio: pasta.diretorio
       });
       const sucessos = resultados.filter(r => r.includes(': OK')).length;
       const falhas = resultados.filter(

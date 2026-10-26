@@ -399,49 +399,71 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
 
     public static List<string> RemoverSkipWorktreeDaPasta(ReverterSkipWorktreeRequestDTO request)
     {
-        var clonePrincipal = Path.Combine(request.Diretorio, request.NomeRepositorio ?? "");
+        if (!Directory.Exists(request.Diretorio))
+            return [$"Diretório não encontrado: {request.Diretorio}"];
 
-        if (!string.IsNullOrWhiteSpace(request.Subdiretorio))
-            return RemoverSkipWorktree(Path.Combine(clonePrincipal, request.Subdiretorio));
+        var repositorios = DescobrirRepositorios(request.Diretorio);
 
-        var diretoriosWorkspace = ObterDiretoriosDoWorkspace(request.Diretorio);
-
-        if (diretoriosWorkspace.Count == 0)
-            return RemoverSkipWorktree(clonePrincipal);
+        if (repositorios.Count == 0)
+            return [$"Nenhum repositório git encontrado em {request.Diretorio}"];
 
         var resultados = new List<string>();
 
-        foreach (var diretorio in diretoriosWorkspace)
-            resultados.AddRange(RemoverSkipWorktree(diretorio));
+        foreach (var repositorio in repositorios)
+            resultados.AddRange(RemoverSkipWorktree(repositorio));
 
         return resultados;
     }
 
-    private static List<string> ObterDiretoriosDoWorkspace(string diretorio)
+    internal static List<string> DescobrirRepositorios(string raiz, int profundidade = 2)
     {
-        if (!Directory.Exists(diretorio)) return [];
+        var repositorios = new List<string>();
+        if (!Directory.Exists(raiz)) return repositorios;
 
-        var arquivoWorkspace = Directory.GetFiles(diretorio, "*.code-workspace").FirstOrDefault();
-        if (arquivoWorkspace is null) return [];
+        if (TemRepositorioGit(raiz))
+            repositorios.Add(raiz);
 
-        using var documento = JsonDocument.Parse(File.ReadAllText(arquivoWorkspace));
+        ColetarRepositorios(raiz, profundidade, repositorios);
+        return repositorios;
+    }
 
-        if (!documento.RootElement.TryGetProperty("folders", out var folders)) return [];
+    private static void ColetarRepositorios(string diretorio, int profundidadeRestante, List<string> repositorios)
+    {
+        if (profundidadeRestante <= 0) return;
 
-        var diretorioWorkspace = Path.GetDirectoryName(arquivoWorkspace) ?? diretorio;
-        var diretorios = new List<string>();
-
-        foreach (var folder in folders.EnumerateArray())
+        foreach (var subdiretorio in EnumerarSubdiretorios(diretorio))
         {
-            if (!folder.TryGetProperty("path", out var caminho)) continue;
+            if (TemRepositorioGit(subdiretorio))
+            {
+                repositorios.Add(subdiretorio);
+                continue;
+            }
 
-            var caminhoCompleto = Path.GetFullPath(Path.Combine(diretorioWorkspace, caminho.GetString() ?? ""));
-
-            if (Directory.Exists(Path.Combine(caminhoCompleto, ".git")) || File.Exists(Path.Combine(caminhoCompleto, ".git")))
-                diretorios.Add(caminhoCompleto);
+            ColetarRepositorios(subdiretorio, profundidadeRestante - 1, repositorios);
         }
+    }
 
-        return diretorios;
+    private static IEnumerable<string> EnumerarSubdiretorios(string diretorio)
+    {
+        try
+        {
+            return Directory.EnumerateDirectories(diretorio).Where(subdiretorio => !DeveIgnorar(subdiretorio)).ToList();
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            return [];
+        }
+    }
+
+    private static bool TemRepositorioGit(string diretorio) =>
+        Directory.Exists(Path.Combine(diretorio, ".git")) || File.Exists(Path.Combine(diretorio, ".git"));
+
+    private static bool DeveIgnorar(string diretorio)
+    {
+        var nome = Path.GetFileName(diretorio);
+
+        return nome.StartsWith('.')
+            || nome is "node_modules" or "bin" or "obj" or "dist" or "vendor" or "venv";
     }
 
     public async Task<bool> AbrirPastaIDE(AbrirPastaIDERequestDTO request)
