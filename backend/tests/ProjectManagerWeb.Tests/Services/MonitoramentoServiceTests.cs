@@ -2,7 +2,10 @@ using System.Net.WebSockets;
 using Microsoft.Extensions.Logging;
 using NSubstitute.ExceptionExtensions;
 using ProjectManagerWeb.src.DTOs;
+using ProjectManagerWeb.src.Services;
 using ProjectManagerWeb.src.Services.Monitoramento;
+using ProjectManagerWeb.src.Services.Monitoramento.Coletores;
+using ProjectManagerWeb.src.Services.Monitoramento.Uso;
 
 namespace ProjectManagerWeb.Tests.Services;
 
@@ -16,7 +19,18 @@ public class MonitoramentoServiceTests
     {
         _coletor.ColetarAsync(Arg.Any<CancellationToken>())
             .Returns(new MonitoramentoSnapshotDTO("linux", "Linux", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null));
-        _sut = new MonitoramentoService(_coletor, _logger);
+        _sut = new MonitoramentoService(_coletor, CriarUsoRecursos(), _logger);
+    }
+
+    private static UsoRecursosService CriarUsoRecursos()
+    {
+        var tempPath = Path.Combine(Path.GetTempPath(), "pmw-tests-" + Guid.NewGuid());
+
+        return new UsoRecursosService(
+            new ConfiguracaoService(Path.Combine(tempPath, "Configuracao.json")),
+            new UsoJsonService(Substitute.For<ILogger<UsoJsonService>>(), Path.Combine(tempPath, "uso")),
+            Substitute.For<IProcessosColetor>(),
+            Substitute.For<ILogger<UsoRecursosService>>());
     }
 
     private static WebSocket CriarSocketQueRespondeClose()

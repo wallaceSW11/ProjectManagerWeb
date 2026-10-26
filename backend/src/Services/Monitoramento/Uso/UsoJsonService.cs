@@ -7,11 +7,12 @@ using ProjectManagerWeb.src.Utils;
 
 namespace ProjectManagerWeb.src.Services.Monitoramento.Uso;
 
-public class UsoJsonService(ILogger<UsoJsonService> logger)
+public class UsoJsonService
 {
     private const string PrefixoArquivo = "uso-";
     private const string ExtensaoArquivo = ".jsonl";
     private const string FormatoData = "yyyy-MM-dd";
+    private const string NomeDiretorioUso = "uso";
     private const string NomeDiretorioRelatorios = "relatorios";
 
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -23,12 +24,26 @@ public class UsoJsonService(ILogger<UsoJsonService> logger)
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    private readonly ILogger<UsoJsonService> _logger;
+    private readonly string _diretorioUso;
+
     private DateOnly? _ultimoDiaVerificado;
     private readonly HashSet<DateOnly> _diasComMaquina = [];
 
-    public static string DiretorioUso => Path.Combine(PathHelper.BancoPath, "uso");
+    public UsoJsonService(ILogger<UsoJsonService> logger)
+        : this(logger, Path.Combine(PathHelper.BancoPath, NomeDiretorioUso))
+    {
+    }
 
-    public static string DiretorioRelatorios => Path.Combine(DiretorioUso, NomeDiretorioRelatorios);
+    internal UsoJsonService(ILogger<UsoJsonService> logger, string diretorioUso)
+    {
+        _logger = logger;
+        _diretorioUso = diretorioUso;
+    }
+
+    public string DiretorioUso => _diretorioUso;
+
+    public string DiretorioRelatorios => Path.Combine(_diretorioUso, NomeDiretorioRelatorios);
 
     public async Task GravarLoteAsync(
         IReadOnlyList<UsoAmostraDTO> lote,
@@ -54,10 +69,10 @@ public class UsoJsonService(ILogger<UsoJsonService> logger)
 
     public IEnumerable<DateOnly> ListarDias()
     {
-        if (!Directory.Exists(DiretorioUso)) return [];
+        if (!Directory.Exists(_diretorioUso)) return [];
 
         var dias = new List<DateOnly>();
-        foreach (var arquivo in Directory.GetFiles(DiretorioUso, $"{PrefixoArquivo}*{ExtensaoArquivo}"))
+        foreach (var arquivo in Directory.GetFiles(_diretorioUso, $"{PrefixoArquivo}*{ExtensaoArquivo}"))
         {
             var nome = Path.GetFileNameWithoutExtension(arquivo)[PrefixoArquivo.Length..];
             if (DateOnly.TryParseExact(nome, FormatoData, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dia))
@@ -93,7 +108,7 @@ public class UsoJsonService(ILogger<UsoJsonService> logger)
         }
 
         if (invalidas > 0)
-            logger.LogWarning("Relatório de uso: {Invalidas} linha(s) inválida(s) ignorada(s) em {Dia}", invalidas, dia);
+            _logger.LogWarning("Relatório de uso: {Invalidas} linha(s) inválida(s) ignorada(s) em {Dia}", invalidas, dia);
 
         return amostras;
     }
@@ -104,7 +119,7 @@ public class UsoJsonService(ILogger<UsoJsonService> logger)
         MaquinaDTO? maquina,
         CancellationToken ct)
     {
-        Directory.CreateDirectory(DiretorioUso);
+        Directory.CreateDirectory(_diretorioUso);
 
         var caminho = CaminhoDoDia(dia);
         var incluirMaquina = maquina is not null && await PrecisaGravarMaquinaAsync(dia, caminho, ct);
@@ -148,10 +163,10 @@ public class UsoJsonService(ILogger<UsoJsonService> logger)
         if (_ultimoDiaVerificado == hoje) return;
 
         _ultimoDiaVerificado = hoje;
-        if (retencaoDias <= 0 || !Directory.Exists(DiretorioUso)) return;
+        if (retencaoDias <= 0 || !Directory.Exists(_diretorioUso)) return;
 
         var limite = hoje.AddDays(-retencaoDias);
-        foreach (var arquivo in Directory.GetFiles(DiretorioUso, $"{PrefixoArquivo}*{ExtensaoArquivo}"))
+        foreach (var arquivo in Directory.GetFiles(_diretorioUso, $"{PrefixoArquivo}*{ExtensaoArquivo}"))
         {
             var nome = Path.GetFileNameWithoutExtension(arquivo)[PrefixoArquivo.Length..];
             var valido = DateOnly.TryParseExact(
@@ -166,6 +181,6 @@ public class UsoJsonService(ILogger<UsoJsonService> logger)
         }
     }
 
-    private static string CaminhoDoDia(DateOnly dia) =>
-        Path.Combine(DiretorioUso, $"{PrefixoArquivo}{dia.ToString(FormatoData, CultureInfo.InvariantCulture)}{ExtensaoArquivo}");
+    private string CaminhoDoDia(DateOnly dia) =>
+        Path.Combine(_diretorioUso, $"{PrefixoArquivo}{dia.ToString(FormatoData, CultureInfo.InvariantCulture)}{ExtensaoArquivo}");
 }

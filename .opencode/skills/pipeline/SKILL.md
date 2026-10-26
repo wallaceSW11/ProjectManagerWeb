@@ -40,13 +40,26 @@ Extraia a lista de arquivos modificados e avalie:
 - Arquivos `.vue` e `.ts` do frontend
 - Arquivos de teste existentes em `backend/tests/ProjectManagerWeb.Tests/`
 
-### 2. Verificar necessidade de testes
+### 2. Decidir se precisa de teste
 
-Para cada arquivo `.cs` no backend que foi:
-- **Criado**: verificar se existe teste correspondente em `backend/tests/ProjectManagerWeb.Tests/`. Se não existir, é necessária a criação.
-- **Modificado**: verificar se os métodos alterados/novos têm cobertura nos testes existentes. Se faltar cobertura, os testes precisam ser atualizados.
+**Arquivo novo não é motivo para teste.** A pergunta é: existe regra de negócio para proteger?
 
-Regra: siga o padrão `NomeClasseTests.cs` já existente nos testes.
+| Testar sempre | Não testar nunca |
+|---|---|
+| Cálculo, agregação, conversão **com regra** | DTO, record, model de dados — preencher campo não é lógica |
+| Parser de arquivo, saída de comando, formato externo | Enum, constante, interface |
+| Ramificação e tratamento de erro | Registro de DI, configuração, options |
+| Fronteira de regra (`>=` vs `>`, retenção, rotação, intervalo) | Mapeamento trivial campo→campo, sem regra |
+| Fallback e normalização de dado legado | Sanidade do ambiente (`> 0`, `<= ProcessorCount`) |
+| | Serialização JSON, qualquer coisa de framework |
+
+Exceção: um mapeamento pode ser teste se tiver regra dentro (ex.: `usada = total - livre` quando o campo novo falta) — aí o que se testa é a regra, não o mapeamento.
+
+**Critério de valor:** se este teste fosse removido, qual bug de negócio deixaria de ser pego? Se a resposta for "nenhum", não escreva.
+
+Se a lógica está presa numa classe difícil de testar (dependência estática, dado de ambiente), **extraia a parte pura** — ex.: parser recebendo `IEnumerable<string>` — e teste a regra. Verifique antes se já existe construtor `internal` para teste (padrão do projeto, ex.: `ConfiguracaoService(string test_filePath)`).
+
+Depois de decidir, para as classes que se qualificam: siga o padrão `NomeClasseTests.cs` existente.
 
 ### 3. Validar code style
 
@@ -58,8 +71,8 @@ Se encontrar violação, **corrija imediatamente** antes de prosseguir.
 
 Se na etapa 2 foi identificada necessidade de testes:
 
-**A)** Para CADA arquivo `.cs` criado no backend sem teste correspondente:
-  - Usar o subagent `@testador` com instruções detalhadas sobre qual classe testar
+**A)** Para cada arquivo `.cs` que passou no critério da etapa 2 e não tem teste correspondente:
+  - Usar o subagent `@testador` com instruções detalhadas sobre qual **regra** testar (não apenas "teste esta classe")
   - Seguir o padrão dos testes existentes: xUnit + FluentAssertions + NSubstitute
   - Criar o teste em `backend/tests/ProjectManagerWeb.Tests/Services/` (ou Utils/)
   - Nome do arquivo: `NomeClasseTests.cs`

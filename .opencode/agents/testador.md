@@ -124,18 +124,31 @@ public class EhBranchBase : CloneServiceTests
 | Situação | Sim/Não |
 |----------|---------|
 | Lógica de negócio pura (regras, validações) | ✅ Sempre |
-| Parsing de output de comandos | ✅ Sempre |
+| Cálculo, agregação, conversão com regra | ✅ Sempre |
+| Parsing de arquivo e de output de comandos | ✅ Sempre |
 | Montagem de scripts/comandos | ✅ Sempre |
 | Tratamento de erro e exceções | ✅ Sempre |
 | Ramificações (todos os caminhos if/else) | ✅ Sempre |
+| Fronteira de regra (`>=` vs `>`, retenção, rotação, intervalo) | ✅ Sempre |
+| Fallback e normalização de dado legado | ✅ Sempre |
+| DTO, record, model de dados (só preenche campo) | ❌ Nunca |
+| Mapeamento trivial campo→campo, sem regra | ❌ Nunca |
+| Enum, constante, interface | ❌ Nunca |
+| Sanidade do ambiente (`> 0`, `<= ProcessorCount`) | ❌ Nunca |
+| Serialização JSON | ❌ Nunca (é do framework) |
+| DI / configuração / options | ❌ Nunca |
 | `Process.Start` real | ❌ Nunca |
-| Serialização JSON | ❌ Não (é do framework) |
-| DI / configuração | ❌ Não |
+
+**Critério de valor:** se este teste fosse removido, qual bug de negócio deixaria de ser pego? Se a resposta for "nenhum", não escreva.
+
+**Não confunda cobertura com valor.** 100% em `MaquinaDTO.DoSnapshot` é ruído: o teste quebra quando o record muda e nunca pega um bug real. Cobertura alta em DTO não compensa um caso de borda de regra sem teste.
+
+Se a regra está presa numa classe difícil de testar (dependência estática, `/proc`, WMI), **extraia a parte pura** e teste a regra: ex. `HardwareInfo.ContarNucleos(IEnumerable<string> linhas)` em vez de testar `NucleosFisicos > 0`.
 
 ## Workflow
 
 1. **LER** — Leia a classe a ser testada e suas dependências.
-2. **IDENTIFICAR** — Liste os métodos puros (testáveis sem mock) vs métodos com dependências externas.
+2. **IDENTIFICAR** — Liste os métodos puros (testáveis sem mock) vs métodos com dependências externas. Descarte o que não tem regra de negócio (DTO, constante, mapeamento trivial).
 3. **REFATORAR** — Se necessário, extraia interfaces para dependências estáticas (`Process.Start`, `ShellExecute`).
 4. **TESTAR** — Escreva os testes seguindo o padrão AAA e a nomenclatura `Deve/NaoDeve`.
 5. **EXECUTAR** — Rode `dotnet test` e corrija falhas.

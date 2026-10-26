@@ -289,10 +289,35 @@ Limite de 10.000 linhas na tabela (`LimiteRegistrosTabela`) para o HTML não vir
 | 1 | Autostart no Windows | Perde utilidade: sem painel aberto não grava |
 | 2 | Conteúdo visual do HTML | Fica para a etapa posterior: primeiro registro de dados funcionando e medido |
 
-## Hipótese futura (não agora)
+## Dívidas conhecidas (decisão: observar 1 semana antes de mexer)
 
-Se o volume ou a análise exigirem consulta mais rica, trocar JSONL por **SQLite** (`BancoPath/uso.db`, tabela `amostras`).
-Não entra agora: exigiria dependência nova e escrita transacional por amostra — o JSONL em bloco é mais barato e resolve o relatório.
+Levantadas na revisão final da primeira versão. Nenhuma é bug — são lacunas de rastreabilidade e robustez.
+Ordem por risco real, não por esforço.
+
+| # | Dívida | Consequência | Correção proposta |
+|---|---|---|---|
+| 1 | **Limiar não é gravado junto ao dado.** O relatório aplica o limiar *atual* a registros coletados com outro limiar | Card "registros acima de 60%" pode descrever dados gravados quando o limiar era 80%. Inconsistência silenciosa — munição contra o próprio relatório | Gravar `limiar` e `intervalo` no **cabeçalho do dia** (mesma linha que já tem `maquina`) |
+| 2 | **Intervalo inferido pelos deltas.** Não é persistido | "Tempo acima do limiar" distorce se o intervalo mudar no meio do dia; não auditável | Mesma correção do item 1 |
+| 3 | **Falha de gravação perde o lote.** `RetirarBuffer` esvazia antes do `AppendAllTextAsync` | Erro de disco descarta até 60s de amostras, só com log | Devolver o lote ao buffer no `catch` do `FlushAsync` |
+| 4 | **Cobertura depende do painel estar aberto** | Episódio de saturação sem painel aberto não existe no relatório. Se questionarem "e nas outras 6 horas?", não há resposta | Se a evidência for contestada: autostart + gravação independente do painel (custo sobe, mas deixa de ser amostral) |
+| 5 | `pmwCpu` é a média do lote aplicada a todas as linhas | Valor por linha é aproximado | Ler `TotalProcessorTime` na linha, se algum dia importar precisão |
+| 6 | Retenção roda só na virada do dia | PMW parado por dias mantém arquivos além dos 30 | Rodar também no `StartAsync` |
+| 7 | JSONL cresce linear; relatório relê tudo a cada geração | 0,26 s para 12k registros; ~3 s para 30 dias a 5 s | SQLite (abaixo) |
+| 8 | Sem filtro de data na UI | Botão gera todo o histórico | Backend já aceita `dataInicio`/`dataFim`; falta só o seletor |
+| 9 | Fallback de máquina usa o coletor compartilhado | Se o painel estiver aberto ao gerar o relatório, 1 frame de CPU% fica impreciso | Coletor dedicado (keyed DI) |
+
+## Próxima iteração — após 1 semana de dados reais
+
+Decisão registrada: rodar uma semana com o JSONL, olhar o volume e a utilidade do relatório **antes** de trocar a persistência.
+
+Se a semana confirmar o valor da feature, migrar para **SQLite** (`BancoPath/uso.db`):
+
+- Tabela `amostras` com `ts` (índice), `cpu`, `ramPercentual`, `ramUsadaBytes`, `discoLivreBytes`, `discoAtividade`, `discoLatencia`, `freqMhz`, `tempCpu`, `tempDisco`, `coletaMs`, `pmwCpu`.
+- Tabela `processos` (`amostraId`, `nome`, `cpu`) ou coluna JSON — decidir pelo volume.
+- Tabela `dias` com `data`, `limiar`, `intervalo`, `maquina` — resolve os itens 1 e 2 das dívidas.
+- Migração única dos `.jsonl` existentes.
+- Ganhos: consulta por período sem varrer arquivo, relatório instantâneo com 30 dias, retenção por `DELETE` em vez de varrer diretório.
+- Custo: dependência nova (`Microsoft.Data.Sqlite`), escrita transacional por lote (não por amostra) e um serviço de migração.
 
 ## Critérios de aceite
 
@@ -322,6 +347,7 @@ Não entra agora: exigiria dependência nova e escrita transacional por amostra 
 | Hibernação/desligamento | relatório mostra lacuna, nunca interpola |
 | Relatório gigante para e-mail | agregação + downsample 1 ponto/min |
 | Só gravar acima do limiar ⇒ não há "normal" para comparar | aceito; o relatório fala em episódios, não em média |
+| Relatório descrever o limiar errado para dados antigos | dívida #1 — correção no cabeçalho do dia antes de usar o relatório como prova formal |
 
 ## Ordem de implementação sugerida
 

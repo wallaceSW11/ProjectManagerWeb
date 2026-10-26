@@ -45,28 +45,33 @@ public static class HardwareInfo
         {
             if (!File.Exists(CaminhoCpuInfo)) return 0;
 
-            var nucleos = new HashSet<string>();
-            string? physicalId = null;
-
-            foreach (var linha in File.ReadLines(CaminhoCpuInfo))
-            {
-                var partes = linha.Split(':', 2);
-                if (partes.Length != 2) continue;
-
-                var chave = partes[0].Trim();
-                var valor = partes[1].Trim();
-
-                if (chave == "physical id")
-                    physicalId = valor;
-                else if (chave == "core id")
-                    nucleos.Add($"{physicalId ?? "0"}:{valor}");
-            }
-
-            return nucleos.Count;
+            return ContarNucleos(File.ReadLines(CaminhoCpuInfo));
         }
         catch
         {
             return 0;
         }
+    }
+
+    internal static int ContarNucleos(IEnumerable<string> linhas)
+    {
+        var nucleos = new HashSet<string>();
+        string? physicalId = null;
+
+        foreach (var linha in linhas)
+        {
+            var partes = linha.Split(':', 2);
+            if (partes.Length != 2) continue;
+
+            var chave = partes[0].Trim();
+            var valor = partes[1].Trim();
+
+            if (chave == "physical id")
+                physicalId = valor;
+            else if (chave == "core id")
+                nucleos.Add($"{physicalId ?? "0"}:{valor}");
+        }
+
+        return nucleos.Count;
     }
 }

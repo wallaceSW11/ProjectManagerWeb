@@ -5,17 +5,42 @@ using ProjectManagerWeb.src.DTOs;
 
 namespace ProjectManagerWeb.src.Services.Monitoramento.Uso;
 
-public class RelatorioUsoService(
-    UsoJsonService usoJsonService,
-    ConfiguracaoService configuracaoService,
-    IColetorMetricas coletor,
-    ILogger<RelatorioUsoService> logger)
+public class RelatorioUsoService
 {
     private const int LimiteRegistrosTabela = 10000;
     private const int QuantidadeTopProcessos = 10;
     private const string FormatoData = "yyyy-MM-dd";
     private static readonly TimeSpan LacunaEpisodio = TimeSpan.FromMinutes(2);
     private static readonly Encoding Codificacao = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
+    private readonly UsoJsonService _usoJsonService;
+    private readonly ConfiguracaoService _configuracaoService;
+    private readonly IColetorMetricas _coletor;
+    private readonly ILogger<RelatorioUsoService> _logger;
+    private readonly Action<string> _abrirArquivo;
+
+    public RelatorioUsoService(
+        UsoJsonService usoJsonService,
+        ConfiguracaoService configuracaoService,
+        IColetorMetricas coletor,
+        ILogger<RelatorioUsoService> logger)
+        : this(usoJsonService, configuracaoService, coletor, logger, AbrirComShell)
+    {
+    }
+
+    internal RelatorioUsoService(
+        UsoJsonService usoJsonService,
+        ConfiguracaoService configuracaoService,
+        IColetorMetricas coletor,
+        ILogger<RelatorioUsoService> logger,
+        Action<string> abrirArquivo)
+    {
+        _usoJsonService = usoJsonService;
+        _configuracaoService = configuracaoService;
+        _coletor = coletor;
+        _logger = logger;
+        _abrirArquivo = abrirArquivo;
+    }
 
     public async Task<RelatorioUsoResponseDTO> GerarAsync(RelatorioUsoRequestDTO request, CancellationToken ct)
     {
@@ -27,7 +52,7 @@ public class RelatorioUsoService(
         var acumulador = new Acumulador(maquinaColetada?.RamTotalBytes);
 
         foreach (var dia in dias)
-            acumulador.Adicionar(await usoJsonService.LerDiaAsync(dia, ct));
+            acumulador.Adicionar(await _usoJsonService.LerDiaAsync(dia, ct));
 
         if (acumulador.Registros == 0)
             throw new InvalidOperationException("Nenhum registro de uso encontrado no período.");
@@ -46,24 +71,24 @@ public class RelatorioUsoService(
     {
         try
         {
-            return MaquinaDTO.DoSnapshot(await coletor.ColetarAsync(ct));
+            return MaquinaDTO.DoSnapshot(await _coletor.ColetarAsync(ct));
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Não foi possível coletar os dados da máquina para o relatório de uso");
+            _logger.LogWarning(ex, "Não foi possível coletar os dados da máquina para o relatório de uso");
             return null;
         }
     }
 
     private double? LimiarCpu() =>
-        configuracaoService.ConfiguracaoEmCache?.UsoRecursos?.LimiarCpuPercentual;
+        _configuracaoService.ConfiguracaoEmCache?.UsoRecursos?.LimiarCpuPercentual;
 
     private List<DateOnly> FiltrarDias(string? dataInicio, string? dataFim)
     {
         var inicio = ConverterData(dataInicio);
         var fim = ConverterData(dataFim);
 
-        return [.. usoJsonService.ListarDias()
+        return [.. _usoJsonService.ListarDias()
             .Where(dia => inicio is null || dia >= inicio)
             .Where(dia => fim is null || dia <= fim)];
     }
@@ -77,12 +102,13 @@ public class RelatorioUsoService(
             : null;
     }
 
-    private static string Salvar(string html)
+    private string Salvar(string html)
     {
-        Directory.CreateDirectory(UsoJsonService.DiretorioRelatorios);
+        var diretorio = _usoJsonService.DiretorioRelatorios;
+        Directory.CreateDirectory(diretorio);
 
         var nome = $"relatorio-uso-{DateTime.Now:yyyy-MM-dd}.html";
-        var caminho = Path.Combine(UsoJsonService.DiretorioRelatorios, nome);
+        var caminho = Path.Combine(diretorio, nome);
 
         File.WriteAllText(caminho, html, Codificacao);
         return caminho;
@@ -92,13 +118,17 @@ public class RelatorioUsoService(
     {
         try
         {
-            Process.Start(new ProcessStartInfo(caminho) { UseShellExecute = true });
+            _abrirArquivo(caminho);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Não foi possível abrir o relatório de uso automaticamente");
+            _logger.LogWarning(ex, "Não foi possível abrir o relatório de uso automaticamente");
         }
     }
+
+    private static void AbrirComShell(string caminho) =>
+        Process.Start(new ProcessStartInfo(caminho) { UseShellExecute = true });
+
 
     private sealed class Acumulador
     {
