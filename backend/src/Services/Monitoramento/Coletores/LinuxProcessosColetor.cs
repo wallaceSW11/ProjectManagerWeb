@@ -36,21 +36,7 @@ internal class LinuxProcessosColetor : IProcessosColetor
         await Task.Delay(IntervaloAmostrasMs, ct);
         var segunda = ObterAmostraCpu();
 
-        var nucleos = Environment.ProcessorCount;
-        var decorridoSegundos = IntervaloAmostrasMs / 1000.0;
-        var processos = new List<ProcessoInfoDTO>();
-
-        foreach (var par in segunda)
-        {
-            if (!primeira.TryGetValue(par.Key, out var anterior))
-                continue;
-
-            var deltaSegundos = (par.Value.CpuTicks - anterior.CpuTicks) / (double)_ticksPorSegundo;
-            var percentual = deltaSegundos / decorridoSegundos / nucleos * 100.0;
-            processos.Add(new ProcessoInfoDTO(par.Value.Nome, percentual, null));
-        }
-
-        return processos.OrderByDescending(p => p.Percentual).Take(QuantidadeTop).ToList();
+        return TopProcessosCpu.Calcular(primeira, segunda, IntervaloAmostrasMs / 1000.0, QuantidadeTop);
     }
 
     private List<ProcessoInfoDTO> ObterTopMemoria()
@@ -81,9 +67,9 @@ internal class LinuxProcessosColetor : IProcessosColetor
         return processos.OrderByDescending(p => p.MemoriaBytes).Take(QuantidadeTop).ToList();
     }
 
-    private Dictionary<int, AmostraProcessoCpu> ObterAmostraCpu()
+    public Dictionary<int, AmostraProcessoDTO> ObterAmostraCpu()
     {
-        var amostra = new Dictionary<int, AmostraProcessoCpu>();
+        var amostra = new Dictionary<int, AmostraProcessoDTO>();
 
         foreach (var pid in EnumerarPids())
         {
@@ -100,7 +86,10 @@ internal class LinuxProcessosColetor : IProcessosColetor
 
                 var utime = long.Parse(campos[11]);
                 var stime = long.Parse(campos[12]);
-                amostra[pid] = new AmostraProcessoCpu(LerNomeProcesso(pid), utime + stime);
+                amostra[pid] = new AmostraProcessoDTO(
+                    pid,
+                    LerNomeProcesso(pid),
+                    (utime + stime) / (double)_ticksPorSegundo);
             }
             catch
             {
@@ -201,6 +190,4 @@ internal class LinuxProcessosColetor : IProcessosColetor
 
         return 100;
     }
-
-    private readonly record struct AmostraProcessoCpu(string Nome, long CpuTicks);
 }

@@ -1,10 +1,15 @@
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using ProjectManagerWeb.src.Services.Monitoramento.Uso;
 
 namespace ProjectManagerWeb.src.Services.Monitoramento;
 
-public class MonitoramentoService(IColetorMetricas coletor, ILogger<MonitoramentoService> logger)
+public class MonitoramentoService(
+    IColetorMetricas coletor,
+    UsoRecursosService usoRecursos,
+    ILogger<MonitoramentoService> logger)
 {
     private static readonly TimeSpan IntervaloColeta = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan TimeoutEnvio = TimeSpan.FromSeconds(2);
@@ -123,6 +128,8 @@ public class MonitoramentoService(IColetorMetricas coletor, ILogger<Monitorament
         _timer = null;
         _cts = null;
         _loopTask = null;
+
+        await usoRecursos.FlushAsync();
     }
 
     private async Task LoopColetaAsync(CancellationToken ct)
@@ -131,7 +138,11 @@ public class MonitoramentoService(IColetorMetricas coletor, ILogger<Monitorament
         {
             while (await _timer!.WaitForNextTickAsync(ct))
             {
+                var inicioColeta = Stopwatch.GetTimestamp();
                 var snapshotBase = await coletor.ColetarAsync(ct);
+                var coletaMs = (int)Stopwatch.GetElapsedTime(inicioColeta).TotalMilliseconds;
+
+                usoRecursos.Registrar(snapshotBase, coletaMs);
 
                 List<WebSocket> socketsCopia;
                 lock (_socketsLock)

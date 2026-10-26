@@ -8,8 +8,14 @@ public class ConfiguracaoService
 {
     private static readonly string BasePath = PathHelper.BancoPath;
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
+    private static readonly TimeSpan ValidadeCache = TimeSpan.FromSeconds(30);
 
     private readonly string _filePath;
+
+    private ConfiguracaoRequestDTO? _cache;
+    private long _cacheExpiraEm;
+
+    public ConfiguracaoRequestDTO? ConfiguracaoEmCache => _cache;
 
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -36,19 +42,28 @@ public class ConfiguracaoService
         try
         {
             if (!File.Exists(_filePath))
-                return new ConfiguracaoRequestDTO();
+                return AtualizarCache(new ConfiguracaoRequestDTO());
 
             var jsonString = await File.ReadAllTextAsync(_filePath);
             if (string.IsNullOrWhiteSpace(jsonString))
-                return new ConfiguracaoRequestDTO();
+                return AtualizarCache(new ConfiguracaoRequestDTO());
 
             var config = JsonSerializer.Deserialize<ConfiguracaoRequestDTO>(jsonString, _jsonOptions);
-            return config ?? new ConfiguracaoRequestDTO();
+            return AtualizarCache(config ?? new ConfiguracaoRequestDTO());
         }
         finally
         {
             _semaphore.Release();
         }
+    }
+
+    public async Task<ConfiguracaoRequestDTO> ObterConfiguracaoEmCacheAsync()
+    {
+        var cache = _cache;
+        if (cache is not null && Environment.TickCount64 < Volatile.Read(ref _cacheExpiraEm))
+            return cache;
+
+        return await ObterConfiguracaoAsync();
     }
 
     public async Task SalvarConfiguracaoAsync(ConfiguracaoRequestDTO configuracao)
@@ -58,11 +73,19 @@ public class ConfiguracaoService
         {
             var jsonString = JsonSerializer.Serialize(configuracao, _jsonOptions);
             await File.WriteAllTextAsync(_filePath, jsonString);
+            AtualizarCache(configuracao);
         }
         finally
         {
             _semaphore.Release();
         }
+    }
+
+    private ConfiguracaoRequestDTO AtualizarCache(ConfiguracaoRequestDTO configuracao)
+    {
+        _cache = configuracao;
+        Volatile.Write(ref _cacheExpiraEm, Environment.TickCount64 + (long)ValidadeCache.TotalMilliseconds);
+        return configuracao;
     }
 
     public async Task<bool> RenomearPerfilAsync(string nomeAntigo, string nomeNovo)

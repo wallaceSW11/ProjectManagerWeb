@@ -169,6 +169,20 @@ export interface IConfiguracao {
   clis: Array<{ nome: string; comando: string }>;
   terminalLinux: string;
   pastasCentralizadoras: IPastaCentralizadora[];
+  usoRecursos: IUsoRecursos;
+}
+
+export interface IUsoRecursos {
+  ativo: boolean;
+  limiarCpuPercentual: number;
+  intervaloRegistroSegundos: number;
+  retencaoDias: number;
+}
+
+export interface IRelatorioUso {
+  caminho: string;
+  tamanhoBytes: number;
+  registros: number;
 }
 
 export interface ISite {

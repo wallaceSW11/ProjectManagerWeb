@@ -1,0 +1,234 @@
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using ProjectManagerWeb.src.DTOs;
+
+namespace ProjectManagerWeb.src.Services.Monitoramento.Uso;
+
+public class RelatorioUsoService(
+    UsoJsonService usoJsonService,
+    ConfiguracaoService configuracaoService,
+    IColetorMetricas coletor,
+    ILogger<RelatorioUsoService> logger)
+{
+    private const int LimiteRegistrosTabela = 10000;
+    private const int QuantidadeTopProcessos = 10;
+    private const string FormatoData = "yyyy-MM-dd";
+    private static readonly TimeSpan LacunaEpisodio = TimeSpan.FromMinutes(2);
+    private static readonly Encoding Codificacao = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
+    public async Task<RelatorioUsoResponseDTO> GerarAsync(RelatorioUsoRequestDTO request, CancellationToken ct)
+    {
+        var dias = FiltrarDias(request.DataInicio, request.DataFim);
+        if (dias.Count == 0)
+            throw new InvalidOperationException("Nenhum registro de uso encontrado no período.");
+
+        var maquinaColetada = await ColetarMaquinaAsync(ct);
+        var acumulador = new Acumulador(maquinaColetada?.RamTotalBytes);
+
+        foreach (var dia in dias)
+            acumulador.Adicionar(await usoJsonService.LerDiaAsync(dia, ct));
+
+        if (acumulador.Registros == 0)
+            throw new InvalidOperationException("Nenhum registro de uso encontrado no período.");
+
+        var maquina = maquinaColetada ?? acumulador.Maquina;
+        var dados = acumulador.Montar(LimiarCpu(), maquina);
+        var html = RelatorioUsoTemplate.Gerar(dados);
+        var caminho = Salvar(html);
+
+        AbrirNoNavegador(caminho);
+
+        return new RelatorioUsoResponseDTO(caminho, html.Length, acumulador.Registros);
+    }
+
+    private async Task<MaquinaDTO?> ColetarMaquinaAsync(CancellationToken ct)
+    {
+        try
+        {
+            return MaquinaDTO.DoSnapshot(await coletor.ColetarAsync(ct));
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Não foi possível coletar os dados da máquina para o relatório de uso");
+            return null;
+        }
+    }
+
+    private double? LimiarCpu() =>
+        configuracaoService.ConfiguracaoEmCache?.UsoRecursos?.LimiarCpuPercentual;
+
+    private List<DateOnly> FiltrarDias(string? dataInicio, string? dataFim)
+    {
+        var inicio = ConverterData(dataInicio);
+        var fim = ConverterData(dataFim);
+
+        return [.. usoJsonService.ListarDias()
+            .Where(dia => inicio is null || dia >= inicio)
+            .Where(dia => fim is null || dia <= fim)];
+    }
+
+    private static DateOnly? ConverterData(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor)) return null;
+
+        return DateOnly.TryParseExact(valor, FormatoData, CultureInfo.InvariantCulture, DateTimeStyles.None, out var data)
+            ? data
+            : null;
+    }
+
+    private static string Salvar(string html)
+    {
+        Directory.CreateDirectory(UsoJsonService.DiretorioRelatorios);
+
+        var nome = $"relatorio-uso-{DateTime.Now:yyyy-MM-dd}.html";
+        var caminho = Path.Combine(UsoJsonService.DiretorioRelatorios, nome);
+
+        File.WriteAllText(caminho, html, Codificacao);
+        return caminho;
+    }
+
+    private void AbrirNoNavegador(string caminho)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(caminho) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Não foi possível abrir o relatório de uso automaticamente");
+        }
+    }
+
+    private sealed class Acumulador
+    {
+        private readonly List<RegistroRelatorio> _registros = [];
+        private readonly Dictionary<string, DadosProcesso> _processos = [];
+        private readonly long? _ramTotalBytes;
+        private DateTimeOffset? _anterior;
+        private int _omitidos;
+        private double _minutos;
+
+        public Acumulador(long? ramTotalBytes)
+        {
+            _ramTotalBytes = ramTotalBytes;
+        }
+
+        public int Registros { get; private set; }
+        public MaquinaDTO? Maquina { get; private set; }
+
+        public void Adicionar(List<UsoAmostraDTO> amostras)
+        {
+            if (amostras.Count == 0) return;
+
+            Maquina ??= amostras.FirstOrDefault(amostra => amostra.Maquina is not null)?.Maquina;
+
+            foreach (var amostra in amostras)
+                AdicionarAmostra(amostra);
+        }
+
+        public DadosRelatorio Montar(double? limiarCpu, MaquinaDTO? maquina) => new()
+        {
+            GeradoEm = DateTimeOffset.Now,
+            Maquina = ConverterMaquina(maquina),
+            RegistrosOmitidos = _omitidos,
+            Registros = _registros,
+            TopProcessos = MontarTopProcessos(),
+            Resumo = new ResumoRelatorio
+            {
+                Registros = Registros,
+                MinutosRegistrados = Arredondar(_minutos, 1),
+                LimiarCpu = limiarCpu
+            }
+        };
+
+        private void AdicionarAmostra(UsoAmostraDTO amostra)
+        {
+            Registros++;
+
+            TimeSpan? delta = _anterior is null ? null : amostra.Ts - _anterior.Value;
+            if (delta is not null && delta <= LacunaEpisodio)
+                _minutos += delta.Value.TotalMinutes;
+
+            _anterior = amostra.Ts;
+
+            AcumularProcessos(amostra.Processos);
+
+            if (_registros.Count < LimiteRegistrosTabela)
+                _registros.Add(ConverterRegistro(amostra, _ramTotalBytes ?? Maquina?.RamTotalBytes));
+            else
+                _omitidos++;
+        }
+
+        private void AcumularProcessos(List<UsoProcessoDTO>? processos)
+        {
+            if (processos is null) return;
+
+            foreach (var processo in processos)
+            {
+                if (!_processos.TryGetValue(processo.Nome, out var dados))
+                    dados = new DadosProcesso();
+
+                dados.Somar(processo.Cpu);
+                _processos[processo.Nome] = dados;
+            }
+        }
+
+        private List<string> MontarTopProcessos() =>
+            [.. _processos
+                .OrderByDescending(par => par.Value.Soma / par.Value.Ocorrencias)
+                .Take(QuantidadeTopProcessos)
+                .Select(par => par.Key)];
+
+        private static RegistroRelatorio ConverterRegistro(UsoAmostraDTO amostra, long? ramTotalBytes) => new()
+        {
+            Ts = amostra.Ts,
+            Cpu = Arredondar(amostra.Cpu),
+            Ram = amostra.RamPercentual,
+            RamUsada = amostra.RamUsadaBytes ?? CalcularRamUsada(amostra.RamLivreBytes, ramTotalBytes),
+            DiscoLivre = amostra.DiscoLivreBytes,
+            Atividade = Arredondar(amostra.DiscoAtividadePercentual),
+            Latencia = Arredondar(amostra.DiscoLatenciaLeituraMs),
+            Freq = Arredondar(amostra.CpuFrequenciaMhz),
+            TempCpu = Arredondar(amostra.CpuTemperaturaCelsius),
+            TempDisco = Arredondar(amostra.DiscoTemperaturaCelsius),
+            Coleta = amostra.ColetaMs,
+            Pmw = amostra.PmwCpu,
+            Proc = amostra.Processos?
+                .Select(processo => new ProcessoRelatorio { Nome = processo.Nome, Cpu = processo.Cpu })
+                .ToList()
+        };
+
+        private static long? CalcularRamUsada(long? ramLivreBytes, long? ramTotalBytes) =>
+            ramLivreBytes is null || ramTotalBytes is null ? null : ramTotalBytes - ramLivreBytes;
+
+        private static MaquinaRelatorio? ConverterMaquina(MaquinaDTO? maquina) => maquina is null
+            ? null
+            : new MaquinaRelatorio
+            {
+                SistemaOperacional = maquina.SistemaOperacional,
+                CpuNome = maquina.CpuNome,
+                Nucleos = maquina.Nucleos,
+                Threads = maquina.Threads,
+                RamTotalBytes = maquina.RamTotalBytes,
+                DiscoTotalBytes = maquina.DiscoTotalBytes
+            };
+
+        private static double? Arredondar(double? valor, int casas = 1) =>
+            valor is null ? null : Math.Round(valor.Value, casas);
+
+        private static double Arredondar(double valor, int casas = 1) => Math.Round(valor, casas);
+
+        private struct DadosProcesso
+        {
+            public double Soma;
+            public int Ocorrencias;
+
+            public void Somar(double cpu)
+            {
+                Soma += cpu;
+                Ocorrencias++;
+            }
+        }
+    }
+}

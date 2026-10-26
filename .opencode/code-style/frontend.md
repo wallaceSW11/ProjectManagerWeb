@@ -14,6 +14,7 @@ Boilerplates completos (store, model, carregamento, errado vs certo): `.opencode
 - Hardcodar cores — variáveis do Vuetify
 - `console.log` — snackbar/notify para erros
 - Prefixo `is`/`has` em booleanos: `loading`, não `isLoading`
+- `booleano ?? false` — converta com `!!` (`ativo: !!obj.usoRecursos?.ativo`). `??` fica só para valores onde `0`/`''` são válidos
 - If de uma linha COM chaves `{}` — early return incluso.
   ✅ `if (!item) return;`
   ❌ `if (!item) { return; }`
@@ -70,6 +71,8 @@ CSS scoped só quando Vuetify não cobre. `variant="outlined"` nos inputs.
 ## Models
 
 Classe com `constructor(obj: Partial<IModel>)` + `toDTO()`. Interface em `types/index.ts`.
+
+Booleano opcional no constructor usa `!!`: `this.ativo = !!obj.ativo;`. `?? false` só quando o default for explícito e o campo não for booleano.
 
 ## ProjetoModel — dois formatos de `comandos`
 
