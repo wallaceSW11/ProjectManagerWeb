@@ -96,6 +96,10 @@ echo $! > /tmp/opencode/pmw-smoke.pid
 kill "$(cat /tmp/opencode/pmw-smoke.pid)"
 ```
 
+## Validação automática
+
+`.opencode/plugins/validacao/` valida cada `.cs`, `.vue`, `.ts` e cada script de infra editado, e injeta as violações no próximo prompt. Corrija antes de entregar.
+
 ## Onde buscar informação
 
 | Preciso de | Arquivo |
@@ -105,11 +109,14 @@ kill "$(cat /tmp/opencode/pmw-smoke.pid)"
 | Repositórios / projetos / agregados | `.opencode/flows/repositorios.md` |
 | IDEs | `.opencode/flows/ides.md` |
 | Sites IIS / Deploy | `.opencode/flows/sitesiis.md` |
-| Monitoramento da máquina | `.opencode/flows/monitoramento.md` |
+| Monitoramento da máquina | `.opencode/flows/monitoramento.md` (detalhe por plataforma: `docs/monitoramento-fluxo.md`) |
 | Deploy Linux | `infra/pmw.sh`, `bootstrap.sh` |
 | Deploy Windows | `bootstrap.ps1`, `infra/pmw.ps1`, `Atualizar_PMW.ps1` |
 | Code style backend | `.opencode/code-style/backend.md` |
 | Code style frontend | `.opencode/code-style/frontend.md` |
+| Boilerplates de código | `.opencode/referencias/` |
+| Editar a documentação do agente | `.opencode/skills/manter-docs/SKILL.md` |
+| Skills e agentes do OpenCode | `.opencode/skills/`, `.opencode/agents/` |
 | Git / commits | `AGENTS.md` (seção Git) |
 
 Leia o fluxo relevante antes de implementar qualquer alteração na feature.

@@ -50,29 +50,7 @@ Regra: siga o padrão `NomeClasseTests.cs` já existente nos testes.
 
 ### 3. Validar code style
 
-Percorrer os arquivos modificados e verificar:
-
-**Backend (.cs):**
-- Sem AutoMapper (`AutoMapper`, `CreateMap`, `IMapper`)
-- Sem `.Result` / `.Wait()` — deve ser async/await
-- Sem `Console.WriteLine` (exceto `Program.cs`)
-- Sem catch vazio — sempre tratar ou relançar
-- Controller sem lógica de negócio — delegar ao Service
-- Usar `IActionResult`, não `ActionResult<T>`
-- If de uma linha sem chaves — early return
-- Sem if/else aninhados — ternário ou early return
-- Primary constructor quando possível
-- Async/await com sufixo `Async`
-
-**Frontend (.vue / .ts):**
-- Sem `.then().catch()` — async/await
-- Sem `var` — const/let
-- Sem `console.log`
-- Sem `!important` no CSS
-- Loading reseta no `finally`, nunca no try/catch
-- Component → Store → Service (nunca chamar service direto do component)
-- If de uma linha sem chaves — early return
-- Evitar if/else — ternário pra 2 caminhos ou objetos mapeados
+Rode o checklist da skill `validar-code-style` nos arquivos modificados — o plugin `.opencode/plugins/validacao/` já checa as regras mecânicas e injeta as violações no prompt.
 
 Se encontrar violação, **corrija imediatamente** antes de prosseguir.
 

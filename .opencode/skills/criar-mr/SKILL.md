@@ -5,13 +5,12 @@ description: Cria um Pull Request no GitHub contra a branch main. Commit, push e
 
 # Skill: criar-mr
 
-Use quando quiser criar um Pull Request. Faz todo o fluxo: commit (se necessário), push e PR.
+Use quando quiser criar um Pull Request. Faz todo o fluxo: commit (se necessário), push e PR contra `main`.
 
 ## Comportamento
 
-- Autorizado a git add, commit, push e gh pr create (essa skill sobrescreve a proibição geral)
-- Tudo em português
-- Seja direto sem enrolação
+- Autorizado a git add, commit, push e gh pr create (sobrescreve a proibição geral)
+- Tudo em português, direto sem enrolação
 
 ## Workflow
 
@@ -23,13 +22,12 @@ git log --oneline -5
 git branch --show-current
 ```
 
-### 2. Se houver arquivos não commitados
+### 2. Commit (se houver alterações)
 
 Pergunte: "Tem X arquivos não commitados. Descreva o que foi feito para eu montar a mensagem de commit."
 
-Use o formato do projeto: `tipo(escopo): descrição em pt-br`
+Formato: `tipo(escopo): descrição em pt-br`
 
-Após receber a descrição:
 ```bash
 git add -A
 git commit -m "tipo(escopo): descrição"
@@ -41,15 +39,13 @@ git commit -m "tipo(escopo): descrição"
 git push origin <branch-atual>
 ```
 
-### 4. Se não houver commits a enviar (working tree limpo e up-to-date)
+### 4. Criar PR
 
-Pular direto para o passo 5. Usar `git log main..HEAD` para obter os commits e `git diff --stat main..HEAD` para o resumo dos arquivos modificados. Extrair o tipo/escopo do commit mais recente para o título do PR.
+Se não houver commits novos (working tree limpo e up-to-date), pule direto para cá.
 
-### 5. Criar PR
+Use `git log main..HEAD --oneline` para os commits e `git diff --stat main..HEAD` para o resumo dos arquivos.
 
-Usar `gh pr create` com o template abaixo. Extrair informações do `git log` e do contexto.
-
-**Template do PR:**
+`gh pr create --base main` com o template:
 
 ```markdown
 ## O que mudou
@@ -58,12 +54,12 @@ Usar `gh pr create` com o template abaixo. Extrair informações do `git log` e 
 {descrição concisa das mudanças}
 
 ### Correções de bugs
-{se houver, listar}
+{se houver}
 
 ## Como testar
 {comandos ou passos}
 ```
 
-O título do PR deve seguir: `tipo(escopo): descrição`
+Título do PR: `tipo(escopo): descrição`
 
 ### 5. Retornar a URL do PR

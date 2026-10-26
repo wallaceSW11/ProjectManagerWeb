@@ -5,11 +5,16 @@ description: >-
   Valida sintaxe, caminhos, compatibilidade Linux+Windows.
 mode: subagent
 model: deepseek/deepseek-v4-pro
-permission:
-  edit: allow
-  bash: allow
-  task:
-    "*": deny
+permissions:
+  - action: edit
+    resource: "*"
+    effect: allow
+  - action: shell
+    resource: "*"
+    effect: allow
+  - action: subagent
+    resource: "*"
+    effect: deny
 color: "#dc3545"
 ---
 

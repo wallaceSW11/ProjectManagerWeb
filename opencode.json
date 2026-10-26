@@ -1,28 +1,19 @@
 {
-  "$schema": ".vscode/opencode-schema.json",
+  "$schema": "https://opencode.ai/config.json",
   "model": "deepseek/deepseek-flash",
   "default_agent": "fullstack-dev",
   "instructions": [
-    "AGENTS.md",
     ".opencode/ecosystem-pmw.md",
     ".opencode/code-style/backend.md",
     ".opencode/code-style/frontend.md"
   ],
-  "plugin": [
-    ".opencode/plugins/validate-code-style.js",
-    ".opencode/plugins/validate-infra.js",
-    ".opencode/plugins/validar-ao-finalizar.js"
-  ],
   "shell": "pwsh",
   "formatter": true,
-  "command": {
-    "criar-mr": {
-      "template": "Use the criar-mr skill to create a Pull Request. Follow the skill workflow: check git status, commit if needed, push, and create PR.",
-      "description": "Cria um Pull Request no GitHub (commit, push e PR)"
-    },
-    "pipeline": {
-      "template": "Use the pipeline skill to run the full delivery pipeline: diff analysis, test analysis, code style validation, test creation, commit, and PR.",
-      "description": "Pipeline completa: diff, testes, code style e MR"
-    }
-  }
+  "permissions": [
+    { "action": "shell", "resource": "*", "effect": "allow" },
+    { "action": "shell", "resource": "*git push --force*", "effect": "ask" },
+    { "action": "shell", "resource": "*git reset --hard*", "effect": "ask" },
+    { "action": "shell", "resource": "*git clean -*", "effect": "ask" },
+    { "action": "shell", "resource": "*git branch -D*", "effect": "ask" }
+  ]
 }
