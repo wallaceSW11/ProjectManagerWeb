@@ -121,6 +121,8 @@ git commit -m "tipo(escopo): descrição"
 git push origin <branch-atual>
 ```
 
+Push é SSH via alias, não `gh` — ver `AGENTS.md` → *Contas git e push*. Se falhar com `Permission denied (publickey)`, o remote está sem alias.
+
 Use `git log main..HEAD` para obter os commits e `git diff --stat main..HEAD` para o resumo das mudanças. Gere o título do PR a partir do commit message.
 
 Criar PR com `gh pr create` preenchendo o template automaticamente:

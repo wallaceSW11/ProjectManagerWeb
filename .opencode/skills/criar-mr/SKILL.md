@@ -39,6 +39,8 @@ git commit -m "tipo(escopo): descrição"
 git push origin <branch-atual>
 ```
 
+Push é SSH via alias, não `gh` — ver `AGENTS.md` → *Contas git e push*.
+
 ### 4. Criar PR
 
 Se não houver commits novos (working tree limpo e up-to-date), pule direto para cá.

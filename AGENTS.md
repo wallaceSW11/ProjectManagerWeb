@@ -52,6 +52,18 @@ Branch de release: `main`. Trabalho em `PMW<n>`.
 Commits: `tipo(escopo): descrição em pt-br` — feat, fix, chore, refactor, style, docs, test.
 PR sempre contra `main`. Commits atômicos. Sem secrets no commit.
 
+### Contas git e push
+
+O notebook usa múltiplas contas via SSH (`~/.ssh/config` com um alias por conta). Este repositório usa:
+
+```
+git@github-wallacesw11:wallaceSW11/ProjectManagerWeb.git   → id_ed25519_wallacesw11
+```
+
+- `gh auth switch --user <conta>` afeta **só** a API/HTTPS do `gh` (criar PR, issues). **Não** afeta o push, que é SSH.
+- Push com `Permission denied (publickey)` = remote apontando para `github.com` sem alias, ou chave errada no `core.sshCommand`.
+- Fluxo: push pelo `origin` (alias) e `gh auth switch --user wallaceSW11` apenas para o `gh pr create`, restaurando `wallace-deeprocket` no final.
+
 ### Pós-merge
 
 Cada PR mergeada na `main` gera commit de bump de versão. Para sincronizar a branch local:
