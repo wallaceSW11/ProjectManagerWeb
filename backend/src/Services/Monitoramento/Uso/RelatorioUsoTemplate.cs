@@ -239,6 +239,11 @@ const textoRam = registro => {
   return partes.length > 0 ? partes.join(" · ") : "—";
 };
 
+const rotulosMetricaCpu = {
+  utility: "Utility (Gerenciador de Tarefas)",
+  "processor-time": "Tempo de processador"
+};
+
 const sufixoLimiar = () => {
   const limiar = dados.resumo && dados.resumo.limiarCpu;
   return limiar === null || limiar === undefined ? "" : " " + fmtNum(limiar, 0) + "%";
@@ -316,6 +321,7 @@ const montarDetalhe = registro => {
   const linhas = [
     ["Data / hora", fmtDataHora(registro.ts)],
     ["CPU", fmtNum(registro.cpu, 2) + "%"],
+    ["Métrica da CPU", rotulosMetricaCpu[registro.metricaCpu] || "não registrada"],
     ["RAM usada", fmtBytes(registro.ramUsada)],
     ["RAM", fmtNum(registro.ram, 1) + "%"],
     ["Disco livre", fmtBytes(registro.discoLivre)],

@@ -4,17 +4,18 @@ namespace ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 
 public class DiscoColetor : IColetorMetricas
 {
+    private DriveInfo? _drive;
+
     public Task<MonitoramentoSnapshotDTO> ColetarAsync(CancellationToken ct)
     {
         var plataforma = OperatingSystem.IsWindows() ? "windows" : "linux";
 
         try
         {
-            var raiz = Path.GetPathRoot(Directory.GetCurrentDirectory());
-            if (string.IsNullOrWhiteSpace(raiz))
+            var drive = ObterDrive();
+            if (drive is null)
                 return Task.FromResult(SnapshotVazio(plataforma));
 
-            var drive = new DriveInfo(raiz);
             var total = drive.TotalSize;
             var disponivel = drive.AvailableFreeSpace;
             var usada = total - disponivel;
@@ -51,6 +52,19 @@ public class DiscoColetor : IColetorMetricas
         {
             return Task.FromResult(SnapshotVazio(plataforma));
         }
+    }
+
+    private DriveInfo? ObterDrive()
+    {
+        if (_drive is not null)
+            return _drive;
+
+        var raiz = Path.GetPathRoot(Directory.GetCurrentDirectory());
+        if (string.IsNullOrWhiteSpace(raiz))
+            return null;
+
+        _drive = new DriveInfo(raiz);
+        return _drive;
     }
 
     private static MonitoramentoSnapshotDTO SnapshotVazio(string plataforma) =>

@@ -16,6 +16,8 @@ public class UsoRecursosService(
     private const int QuantidadeTopProcessos = 10;
     private const int TamanhoMaximoBuffer = 300;
     private const int RetencaoPadraoDias = 30;
+    private const string MetricaCpuUtility = "utility";
+    private const string MetricaCpuTempo = "processor-time";
 
     private readonly object _bufferLock = new();
     private readonly List<UsoAmostraDTO> _buffer = [];
@@ -232,11 +234,15 @@ public class UsoRecursosService(
             snapshot.DiscoTemperaturaCelsius,
             coletaMs,
             0,
-            null);
+            null,
+            MetricaCpu: MetricaCpuAtual());
 
     private static double? CalcularRamPercentual(MonitoramentoSnapshotDTO snapshot)
     {
         if (snapshot.RamTotalBytes is null or 0 || snapshot.RamUsadaBytes is null) return null;
         return Math.Round(snapshot.RamUsadaBytes.Value * 100.0 / snapshot.RamTotalBytes.Value, 1);
     }
+
+    private static string MetricaCpuAtual() =>
+        OperatingSystem.IsWindows() ? MetricaCpuUtility : MetricaCpuTempo;
 }

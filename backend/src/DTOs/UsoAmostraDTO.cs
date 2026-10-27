@@ -15,7 +15,8 @@ public sealed record UsoAmostraDTO(
     double PmwCpu,
     List<UsoProcessoDTO>? Processos,
     MaquinaDTO? Maquina = null,
-    long? RamLivreBytes = null
+    long? RamLivreBytes = null,
+    string? MetricaCpu = null
 );
 
 public sealed record UsoProcessoDTO(
