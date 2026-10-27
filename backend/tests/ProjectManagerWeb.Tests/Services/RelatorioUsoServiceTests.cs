@@ -163,6 +163,17 @@ public class RelatorioUsoServiceTests : IDisposable
         }
 
         [Fact]
+        public async Task Deve_detalhar_metrica_de_cpu_do_registro()
+        {
+            await GravarAmostrasAsync(DateTimeOffset.Now, 1);
+
+            var resultado = await CriarServico().GerarAsync(new RelatorioUsoRequestDTO(), CancellationToken.None);
+            var html = await File.ReadAllTextAsync(resultado.Caminho);
+
+            html.Should().Contain("Métrica da CPU");
+        }
+
+        [Fact]
         public async Task Deve_considerar_apenas_segundo_dia_quando_data_inicio_informada()
         {
             await GravarAmostrasAsync(MeioDia(10), 2);

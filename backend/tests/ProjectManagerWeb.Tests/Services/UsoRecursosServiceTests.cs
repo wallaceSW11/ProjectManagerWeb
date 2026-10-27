@@ -136,6 +136,18 @@ public class UsoRecursosServiceTests : IDisposable
         }
 
         [Fact]
+        public async Task Deve_registrar_metrica_de_cpu_da_plataforma()
+        {
+            var sut = await CriarServicoAsync(UsoAtivo());
+
+            sut.Registrar(CriarSnapshot(cpu: 95), 100);
+            await sut.FlushAsync();
+
+            var amostra = (await LerHojeAsync()).Should().ContainSingle().Subject;
+            amostra.MetricaCpu.Should().Be(OperatingSystem.IsWindows() ? "utility" : "processor-time");
+        }
+
+        [Fact]
         public async Task Nao_deve_registrar_quando_intervalo_minimo_nao_atingido()
         {
             var sut = await CriarServicoAsync(UsoAtivo(intervalo: 5));
