@@ -224,6 +224,7 @@ public class RelatorioUsoService
             TempDisco = Arredondar(amostra.DiscoTemperaturaCelsius),
             Coleta = amostra.ColetaMs,
             Pmw = amostra.PmwCpu,
+            MetricaCpu = amostra.MetricaCpu,
             Proc = amostra.Processos?
                 .Select(processo => new ProcessoRelatorio { Nome = processo.Nome, Cpu = processo.Cpu })
                 .ToList()

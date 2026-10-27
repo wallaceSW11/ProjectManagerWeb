@@ -47,5 +47,6 @@ internal sealed class RegistroRelatorio
     public double? TempDisco { get; set; }
     public int Coleta { get; set; }
     public double Pmw { get; set; }
+    public string? MetricaCpu { get; set; }
     public List<ProcessoRelatorio>? Proc { get; set; }
 }

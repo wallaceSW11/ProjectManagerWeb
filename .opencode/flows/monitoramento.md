@@ -9,7 +9,7 @@ Detalhe técnico por plataforma (WMI, ioctl, /proc, /sys): `docs/monitoramento-f
 MonitoramentoController   → GET /api/monitoramento/ws (handshake)
 MonitoramentoService      → singleton: sockets + ciclo de coleta
 ColetorComposto           → mescla snapshots (with { ... })
-├── CpuRamColetor         → ICpuRamColetor → Windows* (P/Invoke + WMI) | Linux* (/proc, /sys)
+├── CpuRamColetor         → ICpuRamColetor → Windows* (PerformanceCounter + P/Invoke + WMI) | Linux* (/proc, /sys)
 ├── DiscoColetor          → disco da raiz do diretório de trabalho
 ├── DiscoIOColetor        → IDiscoIOColetor → Windows* (IOCTL_DISK_PERFORMANCE) | Linux* (/proc/diskstats)
 └── RedeColetor           → IRedeColetor → Windows* (GetIPStatistics) | Linux* (/proc/net/dev)

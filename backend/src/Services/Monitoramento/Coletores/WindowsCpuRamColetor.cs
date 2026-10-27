@@ -9,6 +9,10 @@ namespace ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 [SupportedOSPlatform("windows")]
 internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpuRamColetor
 {
+    private const string CategoriaInformacaoProcessador = "Processor Information";
+    private const string ContadorUtilidadeProcessador = "% Processor Utility";
+    private const string ContadorDesempenhoProcessador = "% Processor Performance";
+    private const string InstanciaTotal = "_Total";
     private const string EscopoWmiRaiz = @"root\WMI";
     private const string ConsultaTemperaturaMsAcpi = "SELECT CurrentTemperature FROM MSAcpi_ThermalZoneTemperature";
     private const string ConsultaTemperaturaPerf = "SELECT Temperature FROM Win32_PerfFormattedData_Counters_ThermalZoneInformation";
@@ -75,6 +79,8 @@ internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpu
     private static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
 
     private PerformanceCounter? _contadorPerformanceProcessor;
+    private PerformanceCounter? _contadorUtilidadeProcessor;
+    private bool _utilidadeProcessorIndisponivel;
     private string? _sistemaOperacional;
     private string? _nomeCpu;
     private int? _clockMaxMhz;
@@ -87,6 +93,7 @@ internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpu
     private bool _tentouLerRamVelocidade;
     private double? _discoTemperatura;
     private bool _discoTemperaturaDefinitiva;
+    private readonly List<SafeFileHandle> _discosTemperatura = [];
     private DateTime _proximaConsultaDisco = DateTime.MinValue;
     private long _idleAnterior;
     private long _kernelAnterior;
@@ -133,7 +140,7 @@ internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpu
     {
         try
         {
-            _contadorPerformanceProcessor ??= new PerformanceCounter("Processor Information", "% Processor Performance", "_Total");
+            _contadorPerformanceProcessor ??= new PerformanceCounter(CategoriaInformacaoProcessador, ContadorDesempenhoProcessador, InstanciaTotal);
             return _contadorPerformanceProcessor.NextValue();
         }
         catch
@@ -195,13 +202,28 @@ internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpu
         return _discoTemperatura;
     }
 
-    private static double? LerTemperaturaDisco()
+    private double? LerTemperaturaDisco()
     {
         double? maior = null;
 
+        foreach (var disco in ObterDiscosTemperatura())
+        {
+            var temperatura = LerTemperaturaDiscoHandle(disco);
+            if (temperatura is not null)
+                maior = maior is null ? temperatura : Math.Max(maior.Value, temperatura.Value);
+        }
+
+        return maior;
+    }
+
+    private IReadOnlyList<SafeFileHandle> ObterDiscosTemperatura()
+    {
+        if (_discosTemperatura.Count > 0)
+            return _discosTemperatura;
+
         for (var numero = 0; numero < MaximoDiscosFisicos; numero++)
         {
-            using var disco = CreateFileW(
+            var disco = CreateFileW(
                 $@"\\.\PhysicalDrive{numero}",
                 AcessoLeituraAtributos,
                 CompartilhamentoLeitura | CompartilhamentoEscrita,
@@ -210,15 +232,11 @@ internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpu
                 0,
                 IntPtr.Zero);
 
-            if (disco.IsInvalid)
-                continue;
-
-            var temperatura = LerTemperaturaDiscoHandle(disco);
-            if (temperatura is not null)
-                maior = maior is null ? temperatura : Math.Max(maior.Value, temperatura.Value);
+            if (!disco.IsInvalid)
+                _discosTemperatura.Add(disco);
         }
 
-        return maior;
+        return _discosTemperatura;
     }
 
     private static double? LerTemperaturaDiscoHandle(SafeFileHandle disco)
@@ -285,6 +303,34 @@ internal class WindowsCpuRamColetor(ILogger<WindowsCpuRamColetor> logger) : ICpu
     }
 
     public double? ObterCpuPercentual()
+    {
+        var utilidade = LerUtilidadeProcessador();
+        if (utilidade is not null)
+            return utilidade.Value;
+
+        return LerCpuPercentualPorTempos();
+    }
+
+    private double? LerUtilidadeProcessador()
+    {
+        if (_utilidadeProcessorIndisponivel)
+            return null;
+
+        try
+        {
+            _contadorUtilidadeProcessor ??= new PerformanceCounter(CategoriaInformacaoProcessador, ContadorUtilidadeProcessador, InstanciaTotal);
+            var utilidade = _contadorUtilidadeProcessor.NextValue();
+            return utilidade > 0 ? Math.Min(utilidade, 100f) : null;
+        }
+        catch (Exception ex)
+        {
+            _utilidadeProcessorIndisponivel = true;
+            logger.LogWarning(ex, "Contador '% Processor Utility' indisponível; exibindo % Processor Time de GetSystemTimes");
+            return null;
+        }
+    }
+
+    private double? LerCpuPercentualPorTempos()
     {
         if (!GetSystemTimes(out var idle, out var kernel, out var user))
             return null;
