@@ -71,6 +71,9 @@ public class RelatorioUsoServiceTests : IDisposable
     private static UsoAmostraDTO CriarAmostra(DateTimeOffset ts) =>
         new(ts, 90, 40, 1_000, 5_000, 10, 2, 3_000, 50, 40, 100, 1.5, null);
 
+    private static UsoAmostraDTO CriarAmostraComProcessos(DateTimeOffset ts, params (string Nome, double Cpu)[] processos) =>
+        CriarAmostra(ts) with { Processos = [.. processos.Select(processo => new UsoProcessoDTO(processo.Nome, processo.Cpu))] };
+
     private Task GravarAmostrasAsync(DateTimeOffset ts, int quantidade, MaquinaDTO? maquina = null) =>
         _usoJsonService.GravarLoteAsync(
             [.. Enumerable.Range(0, quantidade).Select(indice => CriarAmostra(ts.AddMinutes(indice)))],
@@ -171,6 +174,41 @@ public class RelatorioUsoServiceTests : IDisposable
             var html = await File.ReadAllTextAsync(resultado.Caminho);
 
             html.Should().Contain("Métrica da CPU");
+        }
+
+        [Fact]
+        public async Task Deve_ordenar_top_processos_por_soma_de_cpu()
+        {
+            var agora = DateTimeOffset.Now;
+            await _usoJsonService.GravarLoteAsync(
+                [
+                    CriarAmostraComProcessos(agora, ("pico", 80), ("constante", 30)),
+                    CriarAmostraComProcessos(agora.AddMinutes(1), ("constante", 30)),
+                    CriarAmostraComProcessos(agora.AddMinutes(2), ("constante", 30))
+                ],
+                null,
+                0,
+                CancellationToken.None);
+
+            var resultado = await CriarServico().GerarAsync(new RelatorioUsoRequestDTO(), CancellationToken.None);
+            var html = await File.ReadAllTextAsync(resultado.Caminho);
+
+            html.Should().Contain("\"topProcessos\":[\"constante\",\"pico\"]");
+        }
+
+        [Fact]
+        public async Task Deve_desempatar_top_processos_por_nome_quando_a_soma_empata()
+        {
+            await _usoJsonService.GravarLoteAsync(
+                [CriarAmostraComProcessos(DateTimeOffset.Now, ("zeta", 10), ("alfa", 10))],
+                null,
+                0,
+                CancellationToken.None);
+
+            var resultado = await CriarServico().GerarAsync(new RelatorioUsoRequestDTO(), CancellationToken.None);
+            var html = await File.ReadAllTextAsync(resultado.Caminho);
+
+            html.Should().Contain("\"topProcessos\":[\"alfa\",\"zeta\"]");
         }
 
         [Fact]
