@@ -44,23 +44,19 @@ public class RelatorioUsoService
 
     public async Task<RelatorioUsoResponseDTO> GerarAsync(RelatorioUsoRequestDTO request, CancellationToken ct)
     {
-        var dias = FiltrarDias(request.DataInicio, request.DataFim);
-        if (dias.Count == 0)
-            throw new InvalidOperationException("Nenhum registro de uso encontrado no período.");
+        var dia = ConverterData(request.Data) ?? DateOnly.FromDateTime(DateTime.Now);
 
         var maquinaColetada = await ColetarMaquinaAsync(ct);
         var acumulador = new Acumulador(maquinaColetada?.RamTotalBytes);
-
-        foreach (var dia in dias)
-            acumulador.Adicionar(await _usoJsonService.LerDiaAsync(dia, ct));
+        acumulador.Adicionar(await _usoJsonService.LerDiaAsync(dia, ct));
 
         if (acumulador.Registros == 0)
-            throw new InvalidOperationException("Nenhum registro de uso encontrado no período.");
+            throw new InvalidOperationException($"Nenhum registro de uso em {dia.ToString(FormatoData, CultureInfo.InvariantCulture)}.");
 
         var maquina = maquinaColetada ?? acumulador.Maquina;
         var dados = acumulador.Montar(LimiarCpu(), maquina);
         var html = RelatorioUsoTemplate.Gerar(dados);
-        var caminho = Salvar(html);
+        var caminho = Salvar(html, dia);
 
         AbrirNoNavegador(caminho);
 
@@ -83,16 +79,6 @@ public class RelatorioUsoService
     private double? LimiarCpu() =>
         _configuracaoService.ConfiguracaoEmCache?.UsoRecursos?.LimiarCpuPercentual;
 
-    private List<DateOnly> FiltrarDias(string? dataInicio, string? dataFim)
-    {
-        var inicio = ConverterData(dataInicio);
-        var fim = ConverterData(dataFim);
-
-        return [.. _usoJsonService.ListarDias()
-            .Where(dia => inicio is null || dia >= inicio)
-            .Where(dia => fim is null || dia <= fim)];
-    }
-
     private static DateOnly? ConverterData(string? valor)
     {
         if (string.IsNullOrWhiteSpace(valor)) return null;
@@ -102,12 +88,12 @@ public class RelatorioUsoService
             : null;
     }
 
-    private string Salvar(string html)
+    private string Salvar(string html, DateOnly dia)
     {
         var diretorio = _usoJsonService.DiretorioRelatorios;
         Directory.CreateDirectory(diretorio);
 
-        var nome = $"relatorio-uso-{DateTime.Now:yyyy-MM-dd}.html";
+        var nome = $"relatorio-uso-{dia.ToString(FormatoData, CultureInfo.InvariantCulture)}.html";
         var caminho = Path.Combine(diretorio, nome);
 
         File.WriteAllText(caminho, html, Codificacao);

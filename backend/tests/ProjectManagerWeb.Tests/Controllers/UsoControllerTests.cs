@@ -18,12 +18,18 @@ public class UsoControllerTests : IDisposable
         _tempPath = Path.Combine(Path.GetTempPath(), "pmw-tests-" + Guid.NewGuid());
         Directory.CreateDirectory(_tempPath);
 
-        _sut = new UsoController(new RelatorioUsoService(
-            new UsoJsonService(Substitute.For<ILogger<UsoJsonService>>(), Path.Combine(_tempPath, "uso")),
-            new ConfiguracaoService(Path.Combine(_tempPath, "Configuracao.json")),
-            Substitute.For<IColetorMetricas>(),
-            Substitute.For<ILogger<RelatorioUsoService>>(),
-            _ => { }));
+        var usoJsonService = new UsoJsonService(
+            Substitute.For<ILogger<UsoJsonService>>(),
+            Path.Combine(_tempPath, "uso"));
+
+        _sut = new UsoController(
+            usoJsonService,
+            new RelatorioUsoService(
+                usoJsonService,
+                new ConfiguracaoService(Path.Combine(_tempPath, "Configuracao.json")),
+                Substitute.For<IColetorMetricas>(),
+                Substitute.For<ILogger<RelatorioUsoService>>(),
+                _ => { }));
     }
 
     public void Dispose()

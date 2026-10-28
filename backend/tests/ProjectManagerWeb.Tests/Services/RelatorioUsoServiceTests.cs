@@ -174,13 +174,13 @@ public class RelatorioUsoServiceTests : IDisposable
         }
 
         [Fact]
-        public async Task Deve_considerar_apenas_segundo_dia_quando_data_inicio_informada()
+        public async Task Deve_considerar_apenas_o_dia_informado()
         {
             await GravarAmostrasAsync(MeioDia(10), 2);
             await GravarAmostrasAsync(MeioDia(11), 3);
 
             var resultado = await CriarServico().GerarAsync(
-                new RelatorioUsoRequestDTO(DataInicio: "2026-03-11"),
+                new RelatorioUsoRequestDTO(Data: "2026-03-11"),
                 CancellationToken.None);
 
             resultado.Registros.Should().Be(3);

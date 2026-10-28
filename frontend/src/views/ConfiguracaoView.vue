@@ -227,18 +227,32 @@
                 />
               </v-col>
 
+              <v-col
+                cols="12"
+                md="4"
+              >
+                <v-select
+                  label="Dia do relatório"
+                  v-model="usoStore.diaSelecionado"
+                  :items="diasDisponiveis"
+                  :disabled="usoInativo"
+                  no-data-text="Nenhum dia registrado"
+                />
+              </v-col>
+
               <v-col cols="12">
                 <v-btn
                   color="primary"
                   :loading="usoStore.gerandoRelatorio"
+                  :disabled="!usoStore.diaSelecionado"
                   @click="gerarRelatorio"
                 >
                   <v-icon start>mdi-file-chart-outline</v-icon>
                   Gerar relatório
                 </v-btn>
                 <span class="text-caption text-medium-emphasis ml-3">
-                  Gera o HTML com todos os registros do período e abre no
-                  navegador.
+                  Gera o HTML apenas com os registros do dia selecionado e abre
+                  no navegador.
                 </span>
               </v-col>
             </v-row>
@@ -277,6 +291,13 @@
 
   const usoInativo = computed<boolean>(() => !configuracao.usoRecursos.ativo);
 
+  const diasDisponiveis = computed(() =>
+    usoStore.dias.map(dia => ({
+      title: new Date(`${dia.data}T12:00:00`).toLocaleDateString('pt-BR'),
+      value: dia.data
+    }))
+  );
+
   const limiarCpu = computed<number, string | number>({
     get: () => configuracao.usoRecursos.limiarCpuPercentual,
     set: valor => {
@@ -298,11 +319,13 @@
     }
   });
 
-  onMounted(() => {
+  onMounted(async () => {
     Object.assign(
       configuracao,
       new ConfiguracaoModel(configuracaoStore.configuracao)
     );
+
+    await usoStore.carregarDias();
   });
 
   const colunasCli = reactive([

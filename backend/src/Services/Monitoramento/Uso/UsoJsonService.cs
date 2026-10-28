@@ -82,6 +82,13 @@ public class UsoJsonService
         return [.. dias.OrderBy(dia => dia)];
     }
 
+    public List<UsoDiaDTO> ListarDiasDisponiveis() =>
+        [.. ListarDias().Select(dia =>
+        {
+            var arquivo = new FileInfo(CaminhoDoDia(dia));
+            return new UsoDiaDTO(dia.ToString(FormatoData, CultureInfo.InvariantCulture), arquivo.Exists ? arquivo.Length : 0);
+        })];
+
     public async Task<List<UsoAmostraDTO>> LerDiaAsync(DateOnly dia, CancellationToken ct)
     {
         var caminho = CaminhoDoDia(dia);
