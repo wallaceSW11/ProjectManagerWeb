@@ -1,9 +1,13 @@
 import BaseApiService from './BaseApiService';
-import type { IRelatorioUso } from '@/types';
+import type { IRelatorioUso, IUsoDia } from '@/types';
 
 class UsoService extends BaseApiService {
-  async gerarRelatorio(): Promise<IRelatorioUso> {
-    return await this.post<IRelatorioUso>('uso/relatorio', {});
+  async listarDias(): Promise<IUsoDia[]> {
+    return await this.get<IUsoDia[]>('uso/dias');
+  }
+
+  async gerarRelatorio(data?: string): Promise<IRelatorioUso> {
+    return await this.post<IRelatorioUso>('uso/relatorio', { data });
   }
 }
 

@@ -6,8 +6,12 @@ namespace ProjectManagerWeb.src.Controllers
 {
     [ApiController]
     [Route("api/uso")]
-    public class UsoController(RelatorioUsoService relatorioUsoService) : ControllerBase
+    public class UsoController(UsoJsonService usoJsonService, RelatorioUsoService relatorioUsoService) : ControllerBase
     {
+        [HttpGet("dias")]
+        public IActionResult ListarDias() =>
+            Ok(usoJsonService.ListarDiasDisponiveis());
+
         [HttpPost("relatorio")]
         public async Task<IActionResult> GerarRelatorio([FromBody] RelatorioUsoRequestDTO? request)
         {

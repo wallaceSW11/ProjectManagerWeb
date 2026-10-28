@@ -185,12 +185,11 @@ UsoRecursosDTO? UsoRecursos = default
 ### Endpoints
 
 ```
-GET  /api/uso/dias                        → [{ data, amostras, tamanhoBytes }]
-POST /api/uso/relatorio                   → body { dataInicio, dataFim } → { caminho, tamanhoBytes }
-GET  /api/uso/relatorio/download?arquivo=  → entrega o HTML
+GET  /api/uso/dias                        → [{ data, tamanhoBytes }]
+POST /api/uso/relatorio                   → body { data } → { caminho, tamanhoBytes, registros }
 ```
 
-O HTML é salvo em `{BancoPath}/uso/relatorios/relatorio-uso-YYYY-MM-DD.html` (1 por dia, **sobrescrito** se gerar de novo) e aberto no navegador pelo backend
+O HTML é salvo em `{BancoPath}/uso/relatorios/relatorio-uso-YYYY-MM-DD.html` (do dia escolhido, **sobrescrito** se gerar de novo) e aberto no navegador pelo backend
 (`ShellExecute` com `IShellProvider`, mesmo caminho usado para abrir IDE/pasta) imediatamente após salvar.
 
 ### Relatório (HTML + CSS + JS puro, arquivo único)
@@ -209,7 +208,7 @@ Layout final (enxuto, sem enfeite):
 - Registros antigos (antes da troca de `ramLivreBytes` por `ramUsadaBytes`): o relatório calcula `usada = ramTotal - ramLivre`, então o histórico continua mostrando GB.
 - Time acima do limiar = soma dos deltas entre registros consecutivos, descartando lacunas > 2 min.
 - Top de apps agregado por **nome** (não por PID), ordenado pela média de CPU.
-- Estrutura pronta para período (`dataInicio`/`dataFim` no request), mas o botão gera tudo por enquanto.
+- Sempre de **um dia**: a aba tem seletor de dia (default = hoje) e o arquivo é `relatorio-uso-YYYY-MM-DD.html` daquele dia. Sem `data` no request, usa o dia atual.
 
 ### Frontend
 

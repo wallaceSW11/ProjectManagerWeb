@@ -185,6 +185,11 @@ export interface IRelatorioUso {
   registros: number;
 }
 
+export interface IUsoDia {
+  data: string;
+  tamanhoBytes: number;
+}
+
 export interface ISite {
   nome: string;
   porta: string;
