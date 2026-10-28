@@ -310,6 +310,21 @@ const renderCards = () => {
   });
 };
 
+const montarTabelaProcessos = processos => {
+  const tabela = el("table", { class: "proc-tabela" });
+  const corpo = el("tbody");
+
+  processos.forEach(processo => {
+    const linha = el("tr");
+    linha.appendChild(el("td", {}, processo.nome));
+    linha.appendChild(el("td", {}, fmtNum(processo.cpu) + "%"));
+    corpo.appendChild(linha);
+  });
+
+  tabela.appendChild(corpo);
+  return tabela;
+};
+
 const montarDetalhe = registro => {
   const tr = el("tr", { class: "detalhe", hidden: "hidden" });
   const td = el("td", { colspan: "8" });
@@ -320,12 +335,12 @@ const montarDetalhe = registro => {
   const dl = el("dl");
   const linhas = [
     ["Data / hora", fmtDataHora(registro.ts)],
-    ["CPU", fmtNum(registro.cpu, 2) + "%"],
+    ["CPU", fmtPct(registro.cpu, 2)],
     ["Métrica da CPU", rotulosMetricaCpu[registro.metricaCpu] || "não registrada"],
     ["RAM usada", fmtBytes(registro.ramUsada)],
-    ["RAM", fmtNum(registro.ram, 1) + "%"],
+    ["RAM", fmtPct(registro.ram, 1)],
     ["Disco livre", fmtBytes(registro.discoLivre)],
-    ["Atividade do disco", fmtNum(registro.atividade) + "%"],
+    ["Atividade do disco", fmtPct(registro.atividade)],
     ["Latência de leitura", registro.latencia == null ? "—" : fmtNum(registro.latencia, 0) + " ms"],
     ["Frequência da CPU", registro.freq == null ? "—" : fmtNum(registro.freq, 0) + " MHz"],
     ["Temperatura da CPU", registro.tempCpu == null ? "—" : fmtNum(registro.tempCpu) + " °C"],
@@ -343,20 +358,12 @@ const montarDetalhe = registro => {
   const blocoProc = el("div", { class: "detalhe-bloco" });
   blocoProc.appendChild(el("h3", {}, "Processos naquele momento"));
 
-  if (registro.proc && registro.proc.length > 0) {
-    const tabela = el("table", { class: "proc-tabela" });
-    const corpo = el("tbody");
-    registro.proc.forEach(processo => {
-      const linha = el("tr");
-      linha.appendChild(el("td", {}, processo.nome));
-      linha.appendChild(el("td", {}, fmtNum(processo.cpu) + "%"));
-      corpo.appendChild(linha);
-    });
-    tabela.appendChild(corpo);
-    blocoProc.appendChild(tabela);
-  } else {
-    blocoProc.appendChild(el("div", { class: "vazio" }, "Este registro não teve amostragem de processos."));
-  }
+  const processos = registro.proc || [];
+  blocoProc.appendChild(
+    processos.length > 0
+      ? montarTabelaProcessos(processos)
+      : el("div", { class: "vazio" }, "Este registro não teve amostragem de processos.")
+  );
 
   conteudo.appendChild(blocoProc);
   td.appendChild(conteudo);

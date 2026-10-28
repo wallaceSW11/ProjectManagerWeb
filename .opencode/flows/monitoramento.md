@@ -38,6 +38,8 @@ stores/monitoramento.ts          → conexão, snapshot, status, processos (cpu/
 models/MonitoramentoModel.ts     → constructor + toDTO
 views/MonitoramentoView.vue      → barra discreta + `LayoutPainelEsportivo.vue`
 components/monitoramento/        → ContaGiros (SVG), ModalTopProcessos
+composables/useTelaCheia.ts       → entrar/sair da tela cheia (Fullscreen API + webkit)
+utils/dispositivoMovel.ts        → `ehDispositivoMovel()`: detecção por UA, não por largura
 ```
 
 WebSocket: dev `ws://localhost:2024/api/monitoramento/ws`; prod `ws://{location.host}/api/monitoramento/ws`.
@@ -58,6 +60,8 @@ frontend/src/components/monitoramento/**/*.vue
 frontend/src/stores/monitoramento.ts
 frontend/src/services/monitoramentoService.ts
 frontend/src/models/MonitoramentoModel.ts
+frontend/src/composables/useTelaCheia.ts
+frontend/src/utils/dispositivoMovel.ts
 frontend/src/utils/formatarNumero.ts
 backend/tests/ProjectManagerWeb.Tests/Services/                  → MonitoramentoServiceTests, ColetorCompostoTests, CpuRamColetorTests, DiscoColetorTests, LinuxCpuRamColetorTests
 ```
