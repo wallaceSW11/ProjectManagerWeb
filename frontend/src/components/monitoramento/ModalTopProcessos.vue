@@ -1,14 +1,15 @@
 <template>
   <v-dialog
     v-model="modelValue"
-    width="40%"
+    width="80%"
     max-width="640px"
+    content-class="conteudo-modal-processos"
   >
     <div class="modal-processos">
       <header class="modal-processos-cabecalho">
         <v-icon
-          :color="corBarra"
-          size="20"
+          :color="corDestaque"
+          size="16"
         >
           {{ icone }}
         </v-icon>
@@ -17,11 +18,11 @@
           class="modal-processos-fechar"
           icon
           variant="plain"
-          size="small"
+          size="x-small"
           :ripple="false"
           @click="fechar"
         >
-          <v-icon size="18">mdi-close</v-icon>
+          <v-icon size="16">mdi-close</v-icon>
         </v-btn>
       </header>
 
@@ -34,33 +35,22 @@
           :key="indice"
           class="modal-processos-item"
         >
-          <div class="modal-processos-linha">
-            <span class="modal-processos-posicao">{{ indice + 1 }}</span>
-            <span class="modal-processos-nome">{{ processo.nome }}</span>
-            <span class="modal-processos-valores">
-              <strong
-                class="modal-processos-percentual"
-                :style="{ color: corBarra }"
-              >
-                {{ formatarPercentual(processo.percentual) }}
-              </strong>
-              <span
-                v-if="tipo === 'ram'"
-                class="modal-processos-memoria"
-              >
-                {{ formatarGb(processo.memoriaBytes) }}
-              </span>
+          <span class="modal-processos-posicao">{{ indice + 1 }}</span>
+          <span class="modal-processos-nome">{{ processo.nome }}</span>
+          <span class="modal-processos-valores">
+            <span
+              v-if="tipo === 'ram'"
+              class="modal-processos-memoria"
+            >
+              {{ formatarGb(processo.memoriaBytes) }}
             </span>
-          </div>
-          <div class="modal-processos-barra">
-            <div
-              class="modal-processos-barra-preenchida"
-              :style="{
-                width: larguraBarra(processo.percentual),
-                backgroundColor: corBarra
-              }"
-            />
-          </div>
+            <strong
+              class="modal-processos-percentual"
+              :style="{ color: corDestaque }"
+            >
+              {{ formatarPercentual(processo.percentual) }}
+            </strong>
+          </span>
         </div>
       </main>
 
@@ -99,7 +89,7 @@
     props.tipo === 'cpu' ? 'mdi-cpu-64-bit' : 'mdi-memory'
   );
 
-  const corBarra = computed(() =>
+  const corDestaque = computed(() =>
     props.tipo === 'cpu' ? '#74d94b' : '#ff9f12'
   );
 
@@ -122,11 +112,6 @@
 
   const formatarGb = (bytes: number | null): string =>
     bytes === null ? '' : `${formatarDecimal(bytes / 1024 ** 3)} GB`;
-
-  const larguraBarra = (percentual: number): string => {
-    const minimoVisivel = percentual > 0 ? 1.5 : 0;
-    return `${Math.min(100, Math.max(minimoVisivel, percentual))}%`;
-  };
 
   const iniciarPolling = (): void => {
     void monitoramentoStore.carregarTopProcessos(props.tipo);
@@ -153,7 +138,8 @@
   .modal-processos {
     display: flex;
     flex-direction: column;
-    max-height: 80vh;
+    height: 100%;
+    max-height: 100%;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 12px;
@@ -169,8 +155,8 @@
   .modal-processos-cabecalho {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
+    gap: 6px;
+    padding: 3px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(5, 7, 8, 0.72);
   }
@@ -179,9 +165,10 @@
     flex: 1;
     overflow: hidden;
     color: #edf0f0;
-    font-size: 0.95rem;
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.06em;
+    line-height: 1.2;
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
@@ -192,12 +179,16 @@
   }
 
   .modal-processos-lista {
+    flex: 1;
     overflow-y: auto;
-    padding: 8px 16px 14px;
+    padding: 2px 10px 6px;
   }
 
   .modal-processos-item {
-    padding: 9px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
@@ -205,17 +196,11 @@
     border-bottom: none;
   }
 
-  .modal-processos-linha {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
   .modal-processos-posicao {
     flex-shrink: 0;
-    width: 22px;
+    width: 20px;
     color: #747c7e;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
     font-style: italic;
     text-align: center;
@@ -226,21 +211,20 @@
     min-width: 0;
     overflow: hidden;
     color: #cfd4d5;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .modal-processos-valores {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 1px;
+    align-items: baseline;
+    gap: 8px;
     flex-shrink: 0;
   }
 
   .modal-processos-percentual {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
@@ -251,25 +235,19 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .modal-processos-barra {
-    height: 4px;
-    margin: 6px 0 0 32px;
-    overflow: hidden;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  .modal-processos-barra-preenchida {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.5s ease;
-  }
-
   .modal-processos-vazio {
     padding: 28px 16px;
     color: #899092;
     font-size: 0.85rem;
     font-style: italic;
     text-align: center;
+  }
+</style>
+
+<style>
+  .v-dialog > .v-overlay__content.conteudo-modal-processos {
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
   }
 </style>

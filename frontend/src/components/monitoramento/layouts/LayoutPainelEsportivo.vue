@@ -155,11 +155,12 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
   import ContaGiros from '@/components/monitoramento/painel/ContaGiros.vue';
   import ModalTopProcessos from '@/components/monitoramento/ModalTopProcessos.vue';
   import { useMonitoramentoStore } from '@/stores/monitoramento';
   import { useTelaCheia } from '@/composables/useTelaCheia';
+  import { ehDispositivoMovel } from '@/utils/dispositivoMovel';
   import { formatarDecimal } from '@/utils/formatarNumero';
   import type { TipoTopProcessos } from '@/types';
 
@@ -186,6 +187,23 @@
   const tituloTelaCheia = computed(() =>
     emTelaCheia.value ? 'Sair da tela cheia' : 'Tela cheia'
   );
+
+  const entrarNoPrimeiroToque = (): void => {
+    void alternarTelaCheia();
+  };
+
+  const entrarTelaCheiaNoMovel = async (): Promise<void> => {
+    if (!suportaTelaCheia.value || emTelaCheia.value || !ehDispositivoMovel())
+      return;
+
+    try {
+      await alternarTelaCheia();
+    } catch {
+      document.addEventListener('pointerdown', entrarNoPrimeiroToque, {
+        once: true
+      });
+    }
+  };
 
   const conclusoesAnimacao = ref(0);
   const animacaoEntradaAtiva = ref(true);
@@ -483,6 +501,14 @@
       monitoramentoStore.snapshot?.redeDownloadBytesPorSegundo ?? null
     )
   );
+
+  onMounted(() => {
+    void entrarTelaCheiaNoMovel();
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('pointerdown', entrarNoPrimeiroToque);
+  });
 </script>
 
 <style scoped>

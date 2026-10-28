@@ -119,7 +119,7 @@ public class RelatorioUsoService
     private sealed class Acumulador
     {
         private readonly List<RegistroRelatorio> _registros = [];
-        private readonly Dictionary<string, DadosProcesso> _processos = [];
+        private readonly Dictionary<string, double> _processos = [];
         private readonly long? _ramTotalBytes;
         private DateTimeOffset? _anterior;
         private int _omitidos;
@@ -181,18 +181,13 @@ public class RelatorioUsoService
             if (processos is null) return;
 
             foreach (var processo in processos)
-            {
-                if (!_processos.TryGetValue(processo.Nome, out var dados))
-                    dados = new DadosProcesso();
-
-                dados.Somar(processo.Cpu);
-                _processos[processo.Nome] = dados;
-            }
+                _processos[processo.Nome] = _processos.GetValueOrDefault(processo.Nome) + processo.Cpu;
         }
 
         private List<string> MontarTopProcessos() =>
             [.. _processos
-                .OrderByDescending(par => par.Value.Soma / par.Value.Ocorrencias)
+                .OrderByDescending(par => par.Value)
+                .ThenBy(par => par.Key, StringComparer.OrdinalIgnoreCase)
                 .Take(QuantidadeTopProcessos)
                 .Select(par => par.Key)];
 
@@ -235,17 +230,5 @@ public class RelatorioUsoService
             valor is null ? null : Math.Round(valor.Value, casas);
 
         private static double Arredondar(double valor, int casas = 1) => Math.Round(valor, casas);
-
-        private struct DadosProcesso
-        {
-            public double Soma;
-            public int Ocorrencias;
-
-            public void Somar(double cpu)
-            {
-                Soma += cpu;
-                Ocorrencias++;
-            }
-        }
     }
 }

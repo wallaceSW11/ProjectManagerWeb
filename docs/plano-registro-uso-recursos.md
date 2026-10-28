@@ -207,7 +207,7 @@ Layout final (enxuto, sem enfeite):
 - Cabeçalho da máquina: **sempre** faz 1 coleta sob demanda ao gerar (`IColetorMetricas`) e usa a `maquina` do arquivo apenas como fallback se a coleta falhar. Motivo: arquivos gravados por versões antigas trazem `maquina` incompleta (sem `threads`) e envenenariam o cabeçalho. Custo: uma amostra extra; se o painel estiver aberto, o CPU% dele fica 1 frame levemente impreciso.
 - Registros antigos (antes da troca de `ramLivreBytes` por `ramUsadaBytes`): o relatório calcula `usada = ramTotal - ramLivre`, então o histórico continua mostrando GB.
 - Time acima do limiar = soma dos deltas entre registros consecutivos, descartando lacunas > 2 min.
-- Top de apps agregado por **nome** (não por PID), ordenado pela média de CPU.
+- Top de apps agregado por **nome** (não por PID), ordenado pela **soma** das porcentagens registradas em cada amostra — quem apareceu no top 10 acumulou mais CPU no período fica no topo (top 10 vilões), independente de ter sido pico único ou consumo constante.
 - Sempre de **um dia**: a aba tem seletor de dia (default = hoje) e o arquivo é `relatorio-uso-YYYY-MM-DD.html` daquele dia. Sem `data` no request, usa o dia atual.
 
 ### Frontend
