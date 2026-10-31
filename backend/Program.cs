@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using ProjectManagerWeb.src.Services;
+using ProjectManagerWeb.src.Services.MeuQuerido;
 using ProjectManagerWeb.src.Services.Monitoramento;
 using ProjectManagerWeb.src.Services.Monitoramento.Coletores;
 using ProjectManagerWeb.src.Services.Monitoramento.Uso;
@@ -41,6 +42,9 @@ builder.Services.AddSingleton<IDEJsonService>();
 builder.Services.AddSingleton<IIDEJsonService>(sp => sp.GetRequiredService<IDEJsonService>());
 builder.Services.AddSingleton<MigrationService>();
 builder.Services.AddSingleton<TerminalService>();
+builder.Services.AddSingleton<OpenCodeDescoberta>();
+builder.Services.AddSingleton<IOpenCodeClient, OpenCodeClient>();
+builder.Services.AddSingleton<ProjetoLocalService>();
 builder.Services.AddHttpClient<VersaoService>();
 builder.Services.AddSingleton<MonitoramentoService>();
 builder.Services.AddSingleton<ProcessosService>();
