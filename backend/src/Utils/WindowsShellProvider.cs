@@ -5,7 +5,7 @@ namespace ProjectManagerWeb.src.Utils;
 
 public class WindowsShellProvider : IShellProvider
 {
-    public void ExecutarComInterface(string command, string? perfilTerminal = null)
+    public void ExecutarComInterface(string command, string? perfilTerminal = null, string? complementoTerminal = null)
     {
         ProcessStartInfo psi;
         string executavel;
@@ -14,12 +14,13 @@ public class WindowsShellProvider : IShellProvider
         {
             var encodedCommand = Convert.ToBase64String(
                 System.Text.Encoding.Unicode.GetBytes(command));
+            var complemento = MontarComplemento(complementoTerminal);
 
             executavel = "wt.exe";
             psi = new ProcessStartInfo
             {
                 FileName = executavel,
-                Arguments = $"-w 0 new-tab -p \"{perfilTerminal}\" pwsh -NoExit -EncodedCommand {encodedCommand}",
+                Arguments = $"-w 0 new-tab -p \"{perfilTerminal}\"{complemento} pwsh -NoExit -EncodedCommand {encodedCommand}",
                 UseShellExecute = true
             };
         }
@@ -98,6 +99,9 @@ public class WindowsShellProvider : IShellProvider
 
     public void AbrirArquivo(string caminho) =>
         Process.Start(new ProcessStartInfo(caminho) { UseShellExecute = true });
+
+    private static string MontarComplemento(string? complementoTerminal) =>
+        string.IsNullOrWhiteSpace(complementoTerminal) ? "" : $" {complementoTerminal.Trim()}";
 
     public List<string> ObterPerfisTerminal()
     {
