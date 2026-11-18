@@ -55,7 +55,8 @@ namespace ProjectManagerWeb.src.DTOs
         string? ArquivoCoverage,
         bool Expandido = false,
         string? PerfilTerminal = null,
-        int Indice = 0
+        int Indice = 0,
+        string? ComplementoTerminal = null
     );
 
     /// <summary>

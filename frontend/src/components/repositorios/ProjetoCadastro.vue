@@ -100,6 +100,12 @@
             hint="Perfil do Windows Terminal usado ao iniciar"
           />
           <v-text-field
+            label="Complemento do terminal"
+            v-model="projetoSelecionado.complementoTerminal"
+            hint="Argumentos extras do terminal (ex: -T Frontend)"
+            autocomplete="off"
+          />
+          <v-text-field
             :label="TIPO_COMANDO.BUILDAR.titulo"
             v-model="projetoSelecionado.comandosObj!.buildar"
             autocomplete="off"

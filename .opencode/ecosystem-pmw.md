@@ -116,7 +116,7 @@ kill "$(cat /tmp/opencode/pmw-smoke.pid)"
 | Code style frontend | `.opencode/code-style/frontend.md` |
 | Boilerplates de código | `.opencode/referencias/` |
 | Editar a documentação do agente | `.opencode/skills/manter-docs/SKILL.md` |
-| Skills e agentes do OpenCode | `.opencode/skills/`, `.opencode/agents/` |
+| Skills e agentes do OpenCode | `.opencode/skills/`, `.opencode/agents/`, `.opencode/commands/` |
 | Git / commits | `AGENTS.md` (seção Git) |
 
 Leia o fluxo relevante antes de implementar qualquer alteração na feature.

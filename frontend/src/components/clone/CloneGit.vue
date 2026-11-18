@@ -235,13 +235,12 @@
   });
 
   const aoColar = async (event: ClipboardEvent) => {
-    const texto = event.clipboardData?.getData('text') || '';
-    const padrao = /^[A-Za-z]+\d+$/;
-    if (!padrao.test(texto.trim())) return;
+    const texto = event.clipboardData?.getData('text')?.trim() ?? '';
+    if (!texto) return;
 
     event.preventDefault();
-    codigoTarefaInput.value = texto.trim().toUpperCase();
-    await processarCodigoTarefa();
+    codigoTarefaInput.value = texto.toUpperCase();
+
     await nextTick();
     campoDescricao.value?.focus();
   };

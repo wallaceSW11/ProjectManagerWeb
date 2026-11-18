@@ -8,7 +8,6 @@ namespace ProjectManagerWeb.src.Utils;
 public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShellProvider
 {
     private static readonly string[] GerenciadoresArquivos = ["nautilus", "dolphin", "nemo", "thunar", "pcmanfm"];
-    private static readonly string[] EditoresTexto = ["code", "gnome-text-editor", "gedit", "kate", "xed", "mousepad", "sublime_text"];
 
     private ITerminalEmulator? _terminal;
 
@@ -89,10 +88,10 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
         return trimmed;
     }
 
-    public void ExecutarComInterface(string command, string? perfilTerminal = null)
+    public void ExecutarComInterface(string command, string? perfilTerminal = null, string? complementoTerminal = null)
     {
         var workingDirectory = ExtrairDiretorioDoComando(command);
-        Terminal.Executar(GarantirPathUsuario(command), perfilTerminal, workingDirectory);
+        Terminal.Executar(GarantirPathUsuario(command), perfilTerminal, workingDirectory, complementoTerminal);
     }
 
     public void ExecutarSemInterface(string command)
@@ -120,39 +119,23 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
     public void AbrirDiretorio(string caminho)
     {
         var executavel = ResolverGerenciadorArquivos(Environment.GetEnvironmentVariable("PATH") ?? "") ?? "xdg-open";
+        AbrirComAmbienteGrafico(executavel, caminho);
+    }
+
+    public void AbrirArquivo(string caminho) =>
+        AbrirComAmbienteGrafico("xdg-open", caminho);
+
+    private static void AbrirComAmbienteGrafico(string executavel, string caminho)
+    {
+        var comando = GarantirAmbienteGrafico($"\"{executavel}\" \"{caminho}\"");
 
         Process.Start(new ProcessStartInfo
         {
-            FileName = executavel,
-            Arguments = $"\"{caminho}\"",
+            FileName = "bash",
+            Arguments = $"-l -c \"{EscapeBash(comando)}\"",
             UseShellExecute = false,
             CreateNoWindow = true
         });
-    }
-
-    public void AbrirArquivo(string caminho)
-    {
-        var executavel = ResolverEditorTexto(Environment.GetEnvironmentVariable("PATH") ?? "") ?? "xdg-open";
-
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = executavel,
-            Arguments = $"\"{caminho}\"",
-            UseShellExecute = false,
-            CreateNoWindow = true
-        });
-    }
-
-    internal static string? ResolverEditorTexto(string caminhoPath)
-    {
-        var diretorios = caminhoPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var editor in EditoresTexto)
-            foreach (var diretorio in diretorios)
-                if (File.Exists(Path.Combine(diretorio, editor)))
-                    return editor;
-
-        return null;
     }
 
     internal static string? ResolverGerenciadorArquivos(string caminhoPath)
