@@ -38,7 +38,8 @@ namespace ProjectManagerWeb.src.DTOs
         string? CaminhoChaveSSH = null,
         string? GitHubToken = null,
         List<string>? BranchesAdicionais = null,
-        string? ComplementoTerminal = null
+        string? ComplementoTerminal = null,
+        string? ComandoAposClone = null
     );
 
     /// <summary>

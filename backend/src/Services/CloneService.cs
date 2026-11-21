@@ -84,7 +84,7 @@ public class CloneService
             ? string.Empty
             : $"export GIT_SSH_COMMAND=\"ssh -i {gitPrincipal.CaminhoChaveSSH}\"; ";
 
-        var scriptPrincipal = tokenExport + sshExport + MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal, gitPrincipal.BranchesAdicionais);
+        var scriptPrincipal = tokenExport + sshExport + MontarScript(diretorioCompleto, gitPrincipal.Url!, gitPrincipal.Nome, clone, branchPrincipal, gitPrincipal.BranchesAdicionais, gitPrincipal.ComandoAposClone);
         ShellExecute.ExecutarComando(scriptPrincipal, githubToken: gitPrincipal.GitHubToken);
 
         if (clone.BaixarAgregados)
@@ -128,7 +128,7 @@ public class CloneService
                 else
                     cloneAgregado = clone;
 
-                var scriptAgregado = tokenExportAgregado + sshExportAgregado + MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado, agregado.BranchesAdicionais);
+                var scriptAgregado = tokenExportAgregado + sshExportAgregado + MontarScript(diretorioCompleto, agregado.Url!, agregado.Nome, cloneAgregado, branchPrincipalAgregado, agregado.BranchesAdicionais, agregado.ComandoAposClone);
                 ShellExecute.ExecutarComando(scriptAgregado, githubToken: agregado.GitHubToken);
             });
         }
@@ -136,7 +136,7 @@ public class CloneService
         return true;
     }
 
-    internal static string MontarScript(string diretorioCompleto, string url, string nomeRepo, CloneRequestDTO clone, string branchPrincipal = "", List<string>? branchesAdicionais = null)
+    internal static string MontarScript(string diretorioCompleto, string url, string nomeRepo, CloneRequestDTO clone, string branchPrincipal = "", List<string>? branchesAdicionais = null, string? comandoAposClone = null)
     {
         var ehNaoBase = !string.IsNullOrEmpty(branchPrincipal);
         var branchParaClone = ehNaoBase ? branchPrincipal : clone.Branch;
@@ -168,6 +168,9 @@ public class CloneService
                 .Where(b => !string.IsNullOrWhiteSpace(b) && b != clone.Branch && b != branchParaClone)
                 .Distinct())
                 script.Append($"git fetch origin refs/heads/{extra}:refs/remotes/origin/{extra}; ");
+
+        if (!string.IsNullOrWhiteSpace(comandoAposClone))
+            script.Append($"{comandoAposClone.Trim()}; ");
 
         return script.ToString();
     }

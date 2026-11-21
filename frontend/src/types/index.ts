@@ -97,6 +97,7 @@ export interface IRepositorio {
   caminhoChaveSSH?: string | null;
   githubToken?: string | null;
   branchesAdicionais?: string[];
+  comandoAposClone?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {

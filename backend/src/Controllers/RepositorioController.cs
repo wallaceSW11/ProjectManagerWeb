@@ -109,7 +109,8 @@ namespace ProjectManagerWeb.src.Controllers
                         repo.UrlBaseGestorTarefas,
                         repo.CaminhoChaveSSH,
                         repo.GitHubToken,
-                        repo.ComplementoTerminal
+                        repo.ComplementoTerminal,
+                        repo.ComandoAposClone
                     }
                 });
             }
