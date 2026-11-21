@@ -11,14 +11,14 @@ public class ShellExecute
     public static void Configure(IShellProvider provider) =>
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
-    public static void ExecutarComando(string command, string? perfilTerminal = null, string? githubToken = null)
+    public static void ExecutarComando(string command, string? perfilTerminal = null, string? githubToken = null, bool semInterface = false)
     {
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
 
         var comandoFinal = InjetarToken(command, githubToken);
 
-        if (comandoFinal.Contains("Exit;", StringComparison.OrdinalIgnoreCase))
+        if (semInterface || comandoFinal.Contains("Exit;", StringComparison.OrdinalIgnoreCase))
             ExecutarComandoSemInterface(comandoFinal);
         else
             ExecutarComandoComInterface(comandoFinal, perfilTerminal);
