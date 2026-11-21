@@ -14,6 +14,7 @@ export default class ProjetoModel implements IProjeto {
   comandosObj: IComandos;
   nomeIDE?: string | null;
   perfilTerminal?: string | null;
+  complementoTerminal?: string | null;
   comandosSelecionados: string[];
   indice: number;
 
@@ -31,6 +32,7 @@ export default class ProjetoModel implements IProjeto {
       obj.identificadorRepositorioAgregado;
     this.nomeIDE = obj.nomeIDE;
     this.perfilTerminal = obj.perfilTerminal || null;
+    this.complementoTerminal = obj.complementoTerminal || null;
     this.indice = obj.indice ?? 0;
 
     // Handle comandosObj from backend or frontend
@@ -148,6 +150,7 @@ export default class ProjetoModel implements IProjeto {
       arquivoCoverage: this.arquivoCoverage || null,
       expandido: this.expandido,
       perfilTerminal: this.perfilTerminal || null,
+      complementoTerminal: this.complementoTerminal || null,
       indice: this.indice
     };
   }

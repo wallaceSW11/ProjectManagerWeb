@@ -11,7 +11,7 @@ public class ShellExecute
     public static void Configure(IShellProvider provider) =>
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
-    public static void ExecutarComando(string command, string? perfilTerminal = null, string? githubToken = null, bool semInterface = false)
+    public static void ExecutarComando(string command, string? perfilTerminal = null, string? githubToken = null, string? complementoTerminal = null, bool semInterface = false)
     {
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
@@ -21,10 +21,10 @@ public class ShellExecute
         if (semInterface || comandoFinal.Contains("Exit;", StringComparison.OrdinalIgnoreCase))
             ExecutarComandoSemInterface(comandoFinal);
         else
-            ExecutarComandoComInterface(comandoFinal, perfilTerminal);
+            ExecutarComandoComInterface(comandoFinal, perfilTerminal, complementoTerminal);
     }
 
-    public static void ExecutarComandoComInterface(string command, string? perfilTerminal = null)
+    public static void ExecutarComandoComInterface(string command, string? perfilTerminal = null, string? complementoTerminal = null)
     {
         if (string.IsNullOrWhiteSpace(command))
             throw new ArgumentException("O comando não pode ser nulo ou vazio.", nameof(command));
@@ -33,7 +33,7 @@ public class ShellExecute
 
         try
         {
-            _provider.ExecutarComInterface(command, perfilTerminal);
+            _provider.ExecutarComInterface(command, perfilTerminal, complementoTerminal);
         }
         catch (Exception ex)
         {

@@ -50,6 +50,7 @@ export interface IProjeto {
   expandido: boolean;
   nomeIDE?: string | null; // Nome da IDE vindo do backend
   perfilTerminal?: string | null;
+  complementoTerminal?: string | null;
   indice?: number;
   getComandosDisponiveis?(): Array<{
     titulo: string;

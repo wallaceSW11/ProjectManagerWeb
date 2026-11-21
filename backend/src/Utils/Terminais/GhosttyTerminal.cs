@@ -4,7 +4,7 @@ namespace ProjectManagerWeb.src.Utils.Terminais;
 
 public class GhosttyTerminal : ITerminalEmulator
 {
-    public void Executar(string command, string shell, string? perfilTerminal = null, string? workingDirectory = null)
+    public void Executar(string command, string shell, string? perfilTerminal = null, string? workingDirectory = null, string? complementoTerminal = null)
     {
         var psi = new ProcessStartInfo
         {
@@ -12,6 +12,7 @@ public class GhosttyTerminal : ITerminalEmulator
             UseShellExecute = false
         };
 
+        ScriptTerminalPosix.AdicionarComplemento(psi, complementoTerminal);
         psi.ArgumentList.Add("-e");
         ScriptTerminalPosix.AdicionarShell(psi, shell, command, workingDirectory);
 

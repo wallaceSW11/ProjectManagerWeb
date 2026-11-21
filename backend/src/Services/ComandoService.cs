@@ -11,7 +11,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
     public async Task<bool> ExecutarComando(PastaRequestDTO pasta)
     {
         var repositorio = await repositorioJsonService.GetByIdAsync(pasta.RepositorioId) ?? throw new Exception("Repositório não encontrado");
-        var comandos = new List<(string Comando, string? Perfil, bool SemInterface)>();
+        var comandos = new List<(string Comando, string? Perfil, string? Complemento, bool SemInterface)>();
 
         var diretorio = Path.Combine(pasta.Diretorio, repositorio.Nome);
 
@@ -26,16 +26,16 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
                 if (comando == ETipoComando.INICIAR)
                 {
                     if (!string.IsNullOrEmpty(projetoCadastrado.Comandos.Instalar) && !Directory.Exists(Path.Combine(pathProjeto, "node_modules")))
-                        comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal, false));
+                        comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; {projetoCadastrado.Comandos.Iniciar};", projetoCadastrado.PerfilTerminal, projetoCadastrado.ComplementoTerminal, false));
                     else
-                        comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal, false));
+                        comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Iniciar}; ", projetoCadastrado.PerfilTerminal, projetoCadastrado.ComplementoTerminal, false));
                 }
 
                 if (comando == ETipoComando.INSTALAR)
-                    comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; ", projetoCadastrado.PerfilTerminal, false));
+                    comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Instalar}; ", projetoCadastrado.PerfilTerminal, projetoCadastrado.ComplementoTerminal, false));
 
                 if (comando == ETipoComando.BUILDAR)
-                    comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Buildar}; ", projetoCadastrado.PerfilTerminal, false));
+                    comandos.Add(($"cd \"{pathProjeto}\"; {projetoCadastrado.Comandos.Buildar}; ", projetoCadastrado.PerfilTerminal, projetoCadastrado.ComplementoTerminal, false));
 
                 if (comando == ETipoComando.ABRIR_NA_IDE)
                 {
@@ -54,7 +54,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
                                     ? $"{ide.ComandoParaExecutar.TrimEnd()} --profile \"{projetoCadastrado.PerfilVSCode}\""
                                     : $"{ide.ComandoParaExecutar} --profile \"{projetoCadastrado.PerfilVSCode}\" .";
 
-                            comandos.Add(($"cd \"{pathProjeto}\"; {texto};", null, true));
+                            comandos.Add(($"cd \"{pathProjeto}\"; {texto};", null, null, true));
                         }
                     }
                 }
@@ -78,16 +78,16 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
                 if (comando == ETipoComando.INICIAR)
                 {
                     if (!string.IsNullOrEmpty(projetoAgregadoCadastrado.Comandos.Instalar) && !Directory.Exists(Path.Combine(pathProjetoAgregado, "node_modules")))
-                        comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal, false));
+                        comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; {projetoAgregadoCadastrado.Comandos.Iniciar};", projetoAgregadoCadastrado.PerfilTerminal, projetoAgregadoCadastrado.ComplementoTerminal, false));
                     else
-                        comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal, false));
+                        comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Iniciar}; ", projetoAgregadoCadastrado.PerfilTerminal, projetoAgregadoCadastrado.ComplementoTerminal, false));
                 }
 
                 if (comando == ETipoComando.INSTALAR)
-                    comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; ", projetoAgregadoCadastrado.PerfilTerminal, false));
+                    comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Instalar}; ", projetoAgregadoCadastrado.PerfilTerminal, projetoAgregadoCadastrado.ComplementoTerminal, false));
 
                 if (comando == ETipoComando.BUILDAR)
-                    comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Buildar}; ", projetoAgregadoCadastrado.PerfilTerminal, false));
+                    comandos.Add(($"cd \"{pathProjetoAgregado}\"; {projetoAgregadoCadastrado.Comandos.Buildar}; ", projetoAgregadoCadastrado.PerfilTerminal, projetoAgregadoCadastrado.ComplementoTerminal, false));
 
                 if (comando == ETipoComando.ABRIR_NA_IDE)
                 {
@@ -106,7 +106,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
                                     ? $"{ide.ComandoParaExecutar.TrimEnd()} --profile \"{projetoAgregadoCadastrado.PerfilVSCode}\""
                                     : $"{ide.ComandoParaExecutar} --profile \"{projetoAgregadoCadastrado.PerfilVSCode}\" .";
 
-                            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {texto};", null, true));
+                            comandos.Add(($"cd \"{pathProjetoAgregado}\"; {texto};", null, null, true));
                         }
                     }
                 }
@@ -115,7 +115,7 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
 
         try
         {
-            comandos.ForEach(c => shellExecutor.ExecutarComando(c.Comando, c.Perfil, repositorio.GitHubToken, c.SemInterface));
+            comandos.ForEach(c => shellExecutor.ExecutarComando(c.Comando, c.Perfil, repositorio.GitHubToken, c.Complemento, c.SemInterface));
         }
         catch
         {

@@ -4,7 +4,7 @@ namespace ProjectManagerWeb.src.Utils.Terminais;
 
 public class PtyxisTerminal : ITerminalEmulator
 {
-    public void Executar(string command, string shell, string? perfilTerminal = null, string? workingDirectory = null)
+    public void Executar(string command, string shell, string? perfilTerminal = null, string? workingDirectory = null, string? complementoTerminal = null)
     {
         var aba = string.IsNullOrWhiteSpace(perfilTerminal)
             ? "--tab"
@@ -17,6 +17,7 @@ public class PtyxisTerminal : ITerminalEmulator
         };
 
         psi.ArgumentList.Add(aba);
+        ScriptTerminalPosix.AdicionarComplemento(psi, complementoTerminal);
         psi.ArgumentList.Add("--");
         ScriptTerminalPosix.AdicionarShell(psi, shell, command, workingDirectory);
 

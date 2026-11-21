@@ -26,8 +26,8 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
         return trimmed;
     }
 
-    public void ExecutarComInterface(string command, string? perfilTerminal = null) =>
-        Terminal.Executar(GarantirPathUsuario(command), ShellPosix.Resolver(), perfilTerminal, ExtrairDiretorioDoComando(command));
+    public void ExecutarComInterface(string command, string? perfilTerminal = null, string? complementoTerminal = null) =>
+        Terminal.Executar(GarantirPathUsuario(command), ShellPosix.Resolver(), perfilTerminal, ExtrairDiretorioDoComando(command), complementoTerminal);
 
     public void ExecutarSemInterface(string command)
     {
@@ -61,27 +61,28 @@ public class LinuxShellProvider(ConfiguracaoService configuracaoService) : IShel
     public void AbrirDiretorio(string caminho)
     {
         var executavel = ResolverGerenciadorArquivos(Environment.GetEnvironmentVariable("PATH") ?? "") ?? "xdg-open";
-
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = executavel,
-            Arguments = $"\"{caminho}\"",
-            UseShellExecute = false,
-            CreateNoWindow = true
-        });
+        AbrirComAmbienteGrafico(executavel, caminho);
     }
 
     public void AbrirArquivo(string caminho)
     {
         var executavel = ResolverEditorTexto(Environment.GetEnvironmentVariable("PATH") ?? "") ?? "xdg-open";
+        AbrirComAmbienteGrafico(executavel, caminho);
+    }
 
-        Process.Start(new ProcessStartInfo
+    private static void AbrirComAmbienteGrafico(string executavel, string caminho)
+    {
+        var psi = new ProcessStartInfo
         {
             FileName = executavel,
             Arguments = $"\"{caminho}\"",
             UseShellExecute = false,
             CreateNoWindow = true
-        });
+        };
+
+        AmbienteGrafico.Aplicar(psi);
+
+        Process.Start(psi);
     }
 
     internal static string? ResolverEditorTexto(string caminhoPath)
