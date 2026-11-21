@@ -19,7 +19,7 @@ public class ComandoController(ComandoService comandoService) : ControllerBase
     [HttpPost("avulso")]
     public IActionResult ExecutarComandoAvulso([FromBody] ComandoAvulsoRequestDTO comando)
     {
-        var comandos = comandoService.ExecutarComandoAvulso(comando.Comando, comando.PerfilTerminal, comando.GitHubToken);
+        var comandos = comandoService.ExecutarComandoAvulso(comando.Comando, comando.PerfilTerminal, comando.GitHubToken, comando.ComplementoTerminal);
         return Ok(comandos);
     }
 

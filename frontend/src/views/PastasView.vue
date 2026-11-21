@@ -1237,7 +1237,8 @@
       ComandosService.executarComandoAvulso({
         comando,
         perfilTerminal: pasta.perfilTerminal,
-        githubToken: pasta.githubToken
+        githubToken: pasta.githubToken,
+        complementoTerminal: pasta.complementoTerminal
       });
       notificar('sucesso', `Abrindo ${comandoCli}`);
     } catch (error) {

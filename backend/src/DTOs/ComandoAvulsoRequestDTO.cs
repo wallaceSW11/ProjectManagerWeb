@@ -1,3 +1,3 @@
 namespace ProjectManagerWeb.src.DTOs;
 
-public sealed record ComandoAvulsoRequestDTO(string Comando, string? PerfilTerminal = null, string? GitHubToken = null);
+public sealed record ComandoAvulsoRequestDTO(string Comando, string? PerfilTerminal = null, string? GitHubToken = null, string? ComplementoTerminal = null);

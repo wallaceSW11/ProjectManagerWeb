@@ -135,11 +135,11 @@ public class ComandoService(RepositorioJsonService repositorioJsonService, IIDEJ
     public void AbrirHistoricoComandos() =>
         shellExecutor.AbrirArquivo(ShellExecute.CaminhoLog);
 
-    public bool ExecutarComandoAvulso(string comando, string? perfilTerminal = null, string? githubToken = null)
+    public bool ExecutarComandoAvulso(string comando, string? perfilTerminal = null, string? githubToken = null, string? complementoTerminal = null)
     {
         try
         {
-            shellExecutor.ExecutarComando(comando, perfilTerminal, githubToken);
+            shellExecutor.ExecutarComando(comando, perfilTerminal, githubToken, complementoTerminal);
         }
         catch
         {

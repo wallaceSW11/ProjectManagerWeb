@@ -90,6 +90,7 @@ export interface IRepositorio {
   perfilTerminal?: string | null;
   abrirWorkspace?: boolean;
   cliComandoComplementar?: string | null;
+  complementoTerminal?: string | null;
   branchBase?: string | null;
   urlBaseGestorTarefas?: string | null;
   pastaCentralizadora?: string | null;
@@ -137,6 +138,7 @@ export interface IPasta {
   fixada?: boolean;
   ordemFixada?: number;
   cliComandoComplementar?: string | null;
+  complementoTerminal?: string | null;
   nomeCli?: string | null;
   nomeAba?: string | null;
   urlBaseGestorTarefas?: string | null;

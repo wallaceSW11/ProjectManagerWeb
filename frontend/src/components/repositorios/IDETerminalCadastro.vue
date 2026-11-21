@@ -73,6 +73,19 @@
       cols="12"
       class="mb-4"
     >
+      <v-text-field
+        label="Complemento do terminal"
+        v-model="repositorio.complementoTerminal"
+        hint='Argumentos do emulador de terminal (ex: -T "Frontend")'
+        persistent-hint
+        clearable
+      />
+    </v-col>
+
+    <v-col
+      cols="12"
+      class="mb-4"
+    >
       <SelectPerfilTerminal
         v-model="repositorio.perfilTerminal"
         hint="Perfil do Windows Terminal usado ao abrir a CLI de IA"

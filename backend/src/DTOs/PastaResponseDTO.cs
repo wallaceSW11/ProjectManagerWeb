@@ -29,7 +29,8 @@ public sealed record PastaResponseDTO(
     string? NomeCli = null,
     string? NomeAba = null,
     string? UrlBaseGestorTarefas = null,
-    string? GitHubToken = null
+    string? GitHubToken = null,
+    string? ComplementoTerminal = null
 );
 
 public sealed record ProjetoDisponivelDTO(

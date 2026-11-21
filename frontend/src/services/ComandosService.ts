@@ -22,6 +22,7 @@ interface ComandoAvulso {
   comando: string;
   perfilTerminal?: string | null;
   githubToken?: string | null;
+  complementoTerminal?: string | null;
 }
 
 interface AbrirPastaIDE {

@@ -25,6 +25,7 @@ export default class PastaModel implements IPasta {
   fixada: boolean;
   ordemFixada: number;
   cliComandoComplementar?: string | null;
+  complementoTerminal?: string | null;
   nomeCli?: string | null;
   nomeAba?: string | null;
   urlBaseGestorTarefas?: string | null;
@@ -54,6 +55,7 @@ export default class PastaModel implements IPasta {
     this.fixada = obj.fixada || false;
     this.ordemFixada = obj.ordemFixada || 0;
     this.cliComandoComplementar = obj.cliComandoComplementar || null;
+    this.complementoTerminal = obj.complementoTerminal || null;
     this.nomeCli = obj.nomeCli || null;
     this.nomeAba = obj.nomeAba || null;
     this.urlBaseGestorTarefas = obj.urlBaseGestorTarefas || null;
