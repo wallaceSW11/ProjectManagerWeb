@@ -90,12 +90,14 @@ export interface IRepositorio {
   perfilTerminal?: string | null;
   abrirWorkspace?: boolean;
   cliComandoComplementar?: string | null;
+  complementoTerminal?: string | null;
   branchBase?: string | null;
   urlBaseGestorTarefas?: string | null;
   pastaCentralizadora?: string | null;
   caminhoChaveSSH?: string | null;
   githubToken?: string | null;
   branchesAdicionais?: string[];
+  comandoAposClone?: string | null;
 }
 
 export interface IPerfilMarcacaoProjeto {
@@ -137,6 +139,7 @@ export interface IPasta {
   fixada?: boolean;
   ordemFixada?: number;
   cliComandoComplementar?: string | null;
+  complementoTerminal?: string | null;
   nomeCli?: string | null;
   nomeAba?: string | null;
   urlBaseGestorTarefas?: string | null;

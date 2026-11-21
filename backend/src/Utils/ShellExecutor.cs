@@ -2,9 +2,9 @@ namespace ProjectManagerWeb.src.Utils;
 
 public class ShellExecutor : IShellExecutor
 {
-    public void ExecutarComando(string command, string? perfilTerminal = null, string? githubToken = null, string? complementoTerminal = null)
+    public void ExecutarComando(string command, string? perfilTerminal = null, string? githubToken = null, string? complementoTerminal = null, bool semInterface = false)
     {
-        ShellExecute.ExecutarComando(command, perfilTerminal, githubToken, complementoTerminal);
+        ShellExecute.ExecutarComando(command, perfilTerminal, githubToken, complementoTerminal, semInterface);
     }
 
     public void ExecutarComandoSemInterface(string command)

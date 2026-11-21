@@ -64,6 +64,18 @@
         />
       </v-col>
 
+      <v-col cols="12">
+        <v-text-field
+          label="Comando após o clone"
+          v-model="repositorio.comandoAposClone"
+          hint="Executado dentro do repositório clonado. Ex: git submodule update --init themes"
+          persistent-hint
+          clearable
+          autocomplete="off"
+          name="pmw-comando-pos-clone"
+        />
+      </v-col>
+
       <v-col
         cols="12"
         class="pb-3"

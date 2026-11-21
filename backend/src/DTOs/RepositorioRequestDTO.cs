@@ -37,7 +37,9 @@ namespace ProjectManagerWeb.src.DTOs
         string? PastaCentralizadora = null,
         string? CaminhoChaveSSH = null,
         string? GitHubToken = null,
-        List<string>? BranchesAdicionais = null
+        List<string>? BranchesAdicionais = null,
+        string? ComplementoTerminal = null,
+        string? ComandoAposClone = null
     );
 
     /// <summary>

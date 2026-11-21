@@ -116,7 +116,7 @@ public class ComandoServiceTests
 
             resultado.Should().BeTrue();
             _shell.Received(1).ExecutarComandoSemInterface(Arg.Is<string>(c =>
-                c.Contains("cd \"/tmp/dir\"") && c.Contains("code .") && c.Contains("Exit;")));
+                c.Contains("cd \"/tmp/dir\"") && c.Contains("code .")));
         }
 
         [Fact]

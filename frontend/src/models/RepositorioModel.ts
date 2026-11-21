@@ -27,12 +27,14 @@ export default class RepositorioModel implements IRepositorio {
   perfilTerminal?: string | null;
   abrirWorkspace: boolean;
   cliComandoComplementar?: string | null;
+  complementoTerminal?: string | null;
   branchBase?: string | null;
   urlBaseGestorTarefas?: string | null;
   pastaCentralizadora?: string | null;
   caminhoChaveSSH?: string | null;
   githubToken?: string | null;
   branchesAdicionais: string[];
+  comandoAposClone?: string | null;
 
   constructor(obj: Partial<IRepositorio> = {}) {
     this.identificador = obj.identificador || crypto.randomUUID();
@@ -55,6 +57,7 @@ export default class RepositorioModel implements IRepositorio {
     this.abrirWorkspace =
       obj.abrirWorkspace !== undefined ? obj.abrirWorkspace : true;
     this.cliComandoComplementar = obj.cliComandoComplementar || null;
+    this.complementoTerminal = obj.complementoTerminal || null;
     this.branchBase = obj.branchBase || null;
     this.urlBaseGestorTarefas = obj.urlBaseGestorTarefas || null;
     this.pastaCentralizadora = obj.pastaCentralizadora || null;
@@ -63,6 +66,7 @@ export default class RepositorioModel implements IRepositorio {
     this.branchesAdicionais = obj.branchesAdicionais
       ? [...obj.branchesAdicionais]
       : [];
+    this.comandoAposClone = obj.comandoAposClone || null;
   }
 
   toDTO() {
@@ -84,12 +88,14 @@ export default class RepositorioModel implements IRepositorio {
       perfilTerminal: this.perfilTerminal,
       abrirWorkspace: this.abrirWorkspace,
       cliComandoComplementar: this.cliComandoComplementar,
+      complementoTerminal: this.complementoTerminal,
       branchBase: this.branchBase,
       urlBaseGestorTarefas: this.urlBaseGestorTarefas,
       pastaCentralizadora: this.pastaCentralizadora,
       caminhoChaveSSH: this.caminhoChaveSSH,
       githubToken: this.githubToken,
-      branchesAdicionais: this.branchesAdicionais
+      branchesAdicionais: this.branchesAdicionais,
+      comandoAposClone: this.comandoAposClone
     };
   }
 }

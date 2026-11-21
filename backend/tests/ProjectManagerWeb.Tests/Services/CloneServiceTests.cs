@@ -258,6 +258,42 @@ public class CloneServiceTests
 
             script.Split("git fetch origin").Length.Should().Be(2);
         }
+
+        [Fact]
+        public void Deve_anexar_comando_apos_clone_no_final_do_script()
+        {
+            var clone = CriarClone("main");
+
+            var script = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "", null, "git submodule update --init themes");
+
+            script.Should().EndWith("git submodule update --init themes; ");
+            script.IndexOf("git submodule update --init themes").Should().BeGreaterThan(script.IndexOf("cd \"repo\""));
+        }
+
+        [Fact]
+        public void Deve_trim_comando_apos_clone()
+        {
+            var clone = CriarClone("main");
+
+            var script = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "", null, "  git submodule update --init themes  ");
+
+            script.Should().EndWith("git submodule update --init themes; ");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Nao_deve_anexar_comando_quando_vazio(string? comando)
+        {
+            var clone = CriarClone("main");
+
+            var comandoVazio = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone, "", null, comando);
+
+            var semParametro = CloneService.MontarScript("/raiz/FAT-123_descricao", "url", "repo", clone);
+
+            comandoVazio.Should().Be(semParametro);
+        }
     }
 
     public class FiltrarWarnings : CloneServiceTests

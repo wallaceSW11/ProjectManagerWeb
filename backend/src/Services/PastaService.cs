@@ -218,7 +218,8 @@ public class PastaService(ConfiguracaoService configuracaoService, RepositorioJs
                 : null,
               nomeAba,
               repositorio.UrlBaseGestorTarefas,
-              repositorio.GitHubToken
+              repositorio.GitHubToken,
+              repositorio.ComplementoTerminal
             );
 
             pastaResponseList.Add(pastaResponse);

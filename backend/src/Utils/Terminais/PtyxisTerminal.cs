@@ -4,23 +4,24 @@ namespace ProjectManagerWeb.src.Utils.Terminais;
 
 public class PtyxisTerminal : ITerminalEmulator
 {
-    public void Executar(string command, string? perfilTerminal = null, string? workingDirectory = null, string? complementoTerminal = null)
+    public void Executar(string command, string shell, string? perfilTerminal = null, string? workingDirectory = null, string? complementoTerminal = null)
     {
-        var trimmed = command.TrimEnd(' ', ';');
-        var execShell = !string.IsNullOrWhiteSpace(workingDirectory)
-            ? $"cd '{EscapeBash(workingDirectory)}' && stty sane && exec \"$SHELL\""
-            : "stty sane && exec \"$SHELL\"";
         var aba = string.IsNullOrWhiteSpace(perfilTerminal)
             ? "--tab"
-            : $"--tab-with-profile=\"{ResolverUuidPerfil(perfilTerminal)}\"";
-        var complemento = string.IsNullOrWhiteSpace(complementoTerminal) ? "" : $" {complementoTerminal.Trim()}";
+            : $"--tab-with-profile={ResolverUuidPerfil(perfilTerminal)}";
 
-        Process.Start(new ProcessStartInfo
+        var psi = new ProcessStartInfo
         {
             FileName = "ptyxis",
-            Arguments = $"{aba}{complemento} -- bash -l -i -c \"trap '' INT; (trap - INT; {EscapeBash(trimmed)}); {execShell}\"",
             UseShellExecute = false
-        });
+        };
+
+        psi.ArgumentList.Add(aba);
+        ScriptTerminalPosix.AdicionarComplemento(psi, complementoTerminal);
+        psi.ArgumentList.Add("--");
+        ScriptTerminalPosix.AdicionarShell(psi, shell, command, workingDirectory);
+
+        Process.Start(psi);
     }
 
     public List<string> ObterPerfis()
@@ -93,7 +94,4 @@ public class PtyxisTerminal : ITerminalEmulator
         process.WaitForExit(3000);
         return output;
     }
-
-    private static string EscapeBash(string command) =>
-        command.Replace("\"", "\\\"");
 }
